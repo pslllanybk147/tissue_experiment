@@ -494,3 +494,6 @@
 - ขั้นถัดไป: deploy diagnostic change และทำ upload ซ้ำเพื่อระบุ root cause ก่อนแก้ configuration/code
 - deployment `xFZC2Ve5yWLx9Q4XShmBkczFNq6G` ของ diagnostic change ผ่าน แต่ retry ยังได้ fallback แสดงว่า response ไม่ใช่ `{ error: string }`
 - ขยาย diagnostic แบบปลอดภัยให้รองรับ nested Vercel error และแสดงเฉพาะ HTTP status เมื่อ response ไม่ใช่ JSON; ไม่แสดง response body หรือ secret
+- retry บน deployment `EaUE6Ac9qkiUTRuf2v5FqET3N6Qy` ระบุ HTTP 500 จาก `/api/media/sign`; เป็น failure นอก intended 401/400/503 paths
+- เพิ่ม Node runtime + force-dynamic และ outer phase boundary ที่รายงานเฉพาะ `request`/`firebase`/`cloudinary` พร้อม error class ใน server log โดยไม่บันทึก token/key/value
+- verification: 33 test files / 74 tests ผ่าน, ESLint ผ่าน และ Next production build ผ่าน
