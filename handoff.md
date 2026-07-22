@@ -329,3 +329,15 @@
 - commits: `6fc963c`, `ce35f8e`, `157fc3e`
 - npm install ยังคงรายงาน dependency audit 10 รายการ (8 moderate, 2 high); ยังไม่ใช้ forced fix
 - ขั้นถัดไป: Task 4 Firestore repository + paired batch writes + rules validation
+
+### Preview regression and checkpoint 2
+
+- Vercel Preview ของ commit `dc15ea5` ล้มที่ TypeScript เพราะ dashboard ยังใช้ legacy fields `lot.day`, `lot.protocol`, และ `lot.startedAtLabel`
+- ทำให้เกิดซ้ำด้วย `npm run build` และยืนยัน root cause ว่า schema migration ของ `ExperimentLot` ไม่ครบ
+- เพิ่ม regression tests ให้ demo seed ใช้ schema ใหม่ และเพิ่ม `lotAgeDays(startedAt)` แทน stored day
+- แก้ dashboard ให้ใช้ `protocolTitle`, `startedAt` และคำนวณ Day จากวันที่
+- regression tests ผ่าน 7 tests, local build ผ่าน และ Vercel Preview commit `eac88ff` สำเร็จ
+- Task 4 เสร็จ: Firestore experiment repository ผ่าน adapter พร้อม paired observation/audit batch contract
+- Task 4 tests ผ่าน 4 tests; ชุดรวมผ่าน 7 files, 30 tests; lint ไม่มี warning; build ผ่าน
+- rules เดิมครอบคลุม nested owner-only subcollections อยู่แล้ว จึงยังไม่เปลี่ยนหรือ deploy rules ใน checkpoint นี้
+- ขั้นถัดไป: shared LabShell และ routes/components สำหรับ Experiment list/create/detail
