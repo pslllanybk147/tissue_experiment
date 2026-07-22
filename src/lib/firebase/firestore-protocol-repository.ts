@@ -1,5 +1,5 @@
 import { collection, doc, getDoc, getDocs, writeBatch, type Firestore } from "firebase/firestore";
-import type { ProtocolDraftInput, ProtocolRecord, ProtocolVersion } from "../domain/models";
+import type { ProtocolRecord, ProtocolVersion } from "../domain/models";
 import type { ProtocolAuditEvent, ProtocolRepository } from "../repositories/protocol-repository";
 import { getFirebaseServices } from "./client";
 

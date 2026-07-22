@@ -1,4 +1,4 @@
-import type { ProtocolDraftInput, ProtocolRecord, ProtocolVersion } from "../domain/models";
+import type { ProtocolRecord, ProtocolVersion } from "../domain/models";
 import type { ProtocolAuditEvent, ProtocolRepository } from "./protocol-repository";
 
 const clone = <T,>(value: T): T => structuredClone(value);

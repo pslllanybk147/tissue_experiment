@@ -409,3 +409,16 @@
 - implementation plan: `docs/superpowers/plans/2026-07-22-protocol-media-navigation.md`
 - แผนแบ่ง 10 tasks พร้อม TDD, Firebase emulator, rendered browser sandbox, Vercel Preview และ production merge gate
 - ยังไม่มี production code เปลี่ยนใน checkpoint นี้; ขั้นถัดไปคือเลือกวิธี execution
+
+### Protocol media implementation checkpoint 1 — 2026-07-22
+
+- ผู้ใช้เลือก Inline Execution และ isolated worktree `.worktrees/pmn` บน branch `feature/protocol-media-navigation`
+- baseline ผ่าน 14 files / 41 tests
+- Task 1 เสร็จ: navigation รองรับ Overview, Protocols, Experiments, Research พร้อม `aria-current`; เพิ่ม `/research` แบบ read-only
+- Task 2 เสร็จ: protocol domain, draft validation และ semantic draft versioning
+- Task 3 เสร็จ: memory Protocol repository พร้อม owner guard, immutable published version, idempotent activation และ audit
+- Task 4 ส่วน repository เสร็จ: Firestore Protocol adapter จับคู่ protocol/version/audit ใน mutation เดียว; owner rule เดิมครอบคลุม nested paths
+- ยืนยัน RED ก่อน implementation ทุกส่วน; checkpoint ผ่าน 19 files / 50 tests, ESLint ผ่าน และ Next production build ผ่าน
+- Next build มีเพียง warning เรื่องหลาย lockfiles จาก isolated worktree; ไม่ใช่ application error
+- commits: `0d1d0ef`, `50be398`, `94e27df`, `c067905`
+- ขั้นถัดไป: Protocol list/editor/version history และ lot-specific progress
