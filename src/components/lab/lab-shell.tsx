@@ -35,6 +35,9 @@ export function LabShell({ children, section, sessionLabel, onSignOut }: LabShel
           <span className={`session-chip ${sessionLabel === "DEMO" ? "demo" : "authenticated"}`}>{sessionLabel}</span>
           <button className="mobile-sign-out" type="button" onClick={onSignOut}>ออก</button>
         </header>
+        <nav aria-label="Mobile navigation" className="lab-route-mobile-nav">
+          {destinations.map((item) => <Link aria-current={section === item.label ? "page" : undefined} className={section === item.label ? "active" : ""} href={item.href} key={item.href}>{item.label}</Link>)}
+        </nav>
         <main className="lab-route-main">{children}</main>
       </div>
     </div>

@@ -12,4 +12,11 @@ describe("LotForm", () => {
     expect(html).toContain("Stage");
     expect(html).toContain("วันที่เริ่ม");
   });
+
+  it("offers published protocol snapshots instead of free text", () => {
+    const html = renderToStaticMarkup(<LotForm onSubmit={async () => undefined} protocolOptions={[{ id: "p1", title: "Sterile start", versionId: "v1", version: "1.0.0" }]} />);
+    expect(html).toContain('value="p1::v1"');
+    expect(html).toContain("Sterile start · v1.0.0");
+    expect(html).toContain('name="protocolVersion"');
+  });
 });

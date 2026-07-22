@@ -5,16 +5,25 @@ import { useState, type FormEvent } from "react";
 import { validateLotInput } from "../../lib/domain/experiment-validation";
 import type { CreateLotInput, ExperimentStatus } from "../../lib/domain/models";
 
-type LotFormProps = { onSubmit: (input: CreateLotInput) => Promise<void> };
+export type ProtocolOption = { id: string; title: string; versionId: string; version: string };
+type LotFormProps = { onSubmit: (input: CreateLotInput) => Promise<void>; protocolOptions?: ProtocolOption[] };
 
 const initial: CreateLotInput = { id: "", plant: "", protocolId: "protocol-nodal-v01", protocolTitle: "Nodal establishment v0.1", stage: "Establishment", status: "Healthy", startedAt: new Date().toISOString().slice(0, 10) };
 
-export function LotForm({ onSubmit }: LotFormProps) {
-  const [value, setValue] = useState(initial);
+export function LotForm({ onSubmit, protocolOptions = [] }: LotFormProps) {
+  const [value, setValue] = useState<CreateLotInput>(() => {
+    const selected = protocolOptions[0];
+    return selected ? { ...initial, protocolId: selected.id, protocolTitle: selected.title, protocolVersionId: selected.versionId } : initial;
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pending, setPending] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const update = (field: keyof CreateLotInput, next: string) => setValue((current) => ({ ...current, [field]: next }));
+
+  function selectProtocol(compositeId: string) {
+    const selected = protocolOptions.find((option) => `${option.id}::${option.versionId}` === compositeId);
+    if (selected) setValue((current) => ({ ...current, protocolId: selected.id, protocolTitle: selected.title, protocolVersionId: selected.versionId }));
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -30,8 +39,10 @@ export function LotForm({ onSubmit }: LotFormProps) {
     <div className="form-grid">
       <Field error={errors.id} label="Lot ID"><input aria-invalid={Boolean(errors.id)} onChange={(e) => update("id", e.target.value)} placeholder="PPP-001" value={value.id} /></Field>
       <Field error={errors.plant} label="ชื่อพืช"><input aria-invalid={Boolean(errors.plant)} onChange={(e) => update("plant", e.target.value)} placeholder="Pink Princess" value={value.plant} /></Field>
-      <Field error={errors.protocolTitle} label="Protocol"><input aria-invalid={Boolean(errors.protocolTitle)} onChange={(e) => update("protocolTitle", e.target.value)} value={value.protocolTitle} /></Field>
-      <Field error={errors.protocolId} label="Protocol ID"><input aria-invalid={Boolean(errors.protocolId)} onChange={(e) => update("protocolId", e.target.value)} value={value.protocolId} /></Field>
+      {protocolOptions.length > 0 ? <Field error={errors.protocolTitle ?? errors.protocolId} label="Protocol version"><select name="protocolVersion" onChange={(e) => selectProtocol(e.target.value)} value={`${value.protocolId}::${value.protocolVersionId ?? ""}`}>{protocolOptions.map((option) => <option key={option.versionId} value={`${option.id}::${option.versionId}`}>{option.title} · v{option.version}</option>)}</select></Field> : <>
+        <Field error={errors.protocolTitle} label="Protocol"><input aria-invalid={Boolean(errors.protocolTitle)} onChange={(e) => update("protocolTitle", e.target.value)} value={value.protocolTitle} /></Field>
+        <Field error={errors.protocolId} label="Protocol ID"><input aria-invalid={Boolean(errors.protocolId)} onChange={(e) => update("protocolId", e.target.value)} value={value.protocolId} /></Field>
+      </>}
       <Field error={errors.stage} label="Stage"><input aria-invalid={Boolean(errors.stage)} onChange={(e) => update("stage", e.target.value)} value={value.stage} /></Field>
       <Field error={errors.startedAt} label="วันที่เริ่ม"><input aria-invalid={Boolean(errors.startedAt)} onChange={(e) => update("startedAt", e.target.value)} type="date" value={value.startedAt} /></Field>
       <Field error={errors.status} label="สถานะ"><select onChange={(e) => update("status", e.target.value as ExperimentStatus)} value={value.status}><option>Healthy</option><option>Review</option><option>At risk</option><option>Contaminated</option></select></Field>

@@ -453,3 +453,18 @@
 - Firebase emulator sandbox ถูกบล็อก: local `java` เป็น Java 8 (`1.8.0_471`) แต่ firebase-tools ปัจจุบันต้อง Java 21 ขึ้นไป; ยังไม่มีการติดตั้งหรือเปลี่ยน Java โดยไม่ได้รับอนุญาต
 - ยังไม่ push Preview และยังไม่ merge production
 - ขั้นถัดไป: ขออนุญาตติดตั้ง Java 21 หรือให้ผู้ใช้ติดตั้งเอง จากนั้นรัน emulator + browser sandbox ก่อน Preview
+
+### Protocol media implementation checkpoint 5 — 2026-07-22
+
+- ติดตั้ง Microsoft OpenJDK 21.0.11.10 สำเร็จโดยคง Java 8 เดิมเป็นค่า default ของเครื่อง และกำหนด `JAVA_HOME`/`Path` เฉพาะ session ที่รัน emulator
+- Firebase Auth + Firestore emulator sandbox ผ่าน: 33 test files / 72 tests, 0 failures และ emulator ปิดตัวเรียบร้อยหลังทดสอบ
+- เพิ่ม mobile route navigation ใน shared `LabShell`; ที่ 390×844 แสดง Overview, Protocols, Experiments, Research และซ่อน desktop sidebar
+- ปรับหน้า New Experiment ให้ดึงเฉพาะ Active Protocol และเลือก immutable published version snapshot; Lot ใหม่บันทึก `protocolId`, `protocolTitle` และ `protocolVersionId` พร้อมกัน
+- ข้อมูล Lot รุ่นเก่ายัง fallback ไป current version ได้เพื่อ migration compatibility
+- ล็อก `turbopack.root` เป็น working directory ปัจจุบัน หลัง sandbox พบว่า Next.js เคยอนุมาน root ไป repo หลักเพราะมี lockfile ทั้ง repo และ isolated worktree ทำให้ server ตรวจโค้ดเก่า
+- responsive sandbox แบบ isolated headless Chrome ผ่านที่ 390×844, 1024×768 และ 1440×900: ไม่มี horizontal overflow, mobile/desktop navigation สลับถูก breakpoint, keyboard focus มี visible outline และ reduced-motion context โหลดได้
+- React best-practices review แก้การ sync props เข้า state ผ่าน effect โดย initialize snapshot ตอน form mount หลัง Protocol list โหลดเสร็จ
+- fresh verification ปัจจุบัน: 33 test files / 72 tests ผ่าน, ESLint ผ่าน และ Next production build ผ่าน 10 routes
+- Cloudinary live upload ยังต้องใช้ server credentials จริง 6 ตัวใน Vercel environment ก่อนตรวจ upload บน Preview; secret ห้ามมี `NEXT_PUBLIC_`
+- ยังไม่ push branch, ยังไม่สร้าง Preview checkpoint ใหม่ และยังไม่ merge production
+- ขั้นถัดไป: commit/push branch, รอ Vercel Preview, ตรวจ Firebase authenticated workflow และ Cloudinary credential gate แล้วจึงขออนุมัติ merge
