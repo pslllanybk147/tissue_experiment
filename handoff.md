@@ -502,3 +502,6 @@
 - local verification หลัง lazy import: 33 test files / 74 tests ผ่าน, ESLint ผ่าน และ Next production build ผ่าน
 - deployment `6wUjDSKSGwBQjyh4HjDGcYmsLMTJ` หลัง lazy import เปลี่ยน raw HTTP 500 เป็น controlled `Invalid authentication`; ยืนยันว่า route bootstrap แก้แล้วและ failure อยู่ใน Firebase Admin phase
 - แยก Firebase Admin initialization/config error เป็น 503 `Firebase Admin configuration invalid` และ ID token verification error เป็น 401 `Invalid authentication`
+- deployment `2tq1y3Q1zfRCidAxzTun81nP3vCy` ยืนยันผลเป็น `Firebase Admin configuration invalid`; Cloudinary endpoint ยังไม่ถูกเรียก
+- root cause boundary: ค่า `FIREBASE_ADMIN_PROJECT_ID`, `FIREBASE_ADMIN_CLIENT_EMAIL` หรือ `FIREBASE_ADMIN_PRIVATE_KEY` ไม่สามารถสร้าง Firebase Admin credential ได้; client Firebase login/Firestore read ยังปกติ
+- ขั้นถัดไปสำหรับผู้ใช้: ตรวจสามค่าเทียบ service-account JSON เดียวกัน โดยไม่ใส่ JSON quotes/comma และ private key ต้องรวม BEGIN/END; redeploy แล้ว retry
