@@ -24,6 +24,7 @@
 .DS_Store
 *.pem
 /work/
+/.worktrees/
 
 # debug
 npm-debug.log*
