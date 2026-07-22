@@ -268,3 +268,5 @@
 - หลังแก้ hotfix: `npm test` ผ่าน 7 tests, `npm run lint` ผ่าน และ `npm run build` ผ่าน
 - Firebase Environment Variables ยังไม่ได้ตั้งบน Vercel จึงเปิดได้ใน demo mode; ยังไม่มีการเขียนข้อมูลจริงไป Firestore
 - พบการเชื่อม Vercel ซ้ำ 2 project กับ repository เดียวกัน ควรเก็บ project ที่ต้องการเพียงตัวเดียวภายหลังเพื่อลด deployment ซ้ำ
+- hotfix commit `b32829e` deploy สำเร็จทั้งสอง Vercel projects
+- production sandbox หลัง hotfix ที่ `tissue-experiment-93.vercel.app`: eyebrow เป็น `SECURE WORKSPACE`, demo session แสดง `DEMO`, desktop 1440px แสดง sidebar, mobile 390px ซ่อน sidebar พร้อมมีปุ่ม sign-out, ทั้งสองขนาดไม่มี horizontal overflow
