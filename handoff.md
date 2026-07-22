@@ -301,3 +301,14 @@
 - production ที่ไม่มี web session ยังคงถูกกั้นไว้หน้า Sign in ตามที่ออกแบบ
 - พบ console history `auth/popup-closed-by-user` ในแท็บหนึ่งจากการปิด Google popup; ไม่มี Firestore deployment error
 - งานถัดไป: ผู้ใช้ล็อกอินหน้า production แล้วตรวจว่า dashboard แสดง `FIREBASE` และ seed/read/write ใต้ `users/{uid}` สำเร็จ
+
+## Experiment observations design — 2026-07-22
+
+- ผู้ใช้ยืนยันว่า production dashboard แสดง `FIREBASE`
+- ล็อกขอบเขตรอบถัดไปเป็น Experiment Lot + structured observations + audit history
+- Observation แก้ไขได้และใช้ soft delete พร้อม restore
+- เลือก Direct Firestore + batch write สำหรับ observation และ audit event
+- ข้อมูล observation มีวันที่/เวลา, status, stage, note, shoot count, root count และ contamination count
+- Cloudinary และ Protocol editor ถูกแยกไป increment ถัดไป
+- เขียน design specification ที่ `docs/superpowers/specs/2026-07-22-experiment-observations-design.md`
+- ยังไม่เริ่ม implementation; ขั้นถัดไปคือผู้ใช้ตรวจ spec จากนั้นจึงเขียน implementation plan ตาม TDD
