@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Philodendron Lab
 
-## Getting Started
+Evidence-led tissue culture research workspace built with Next.js, Firebase Auth and Firestore.
 
-First, run the development server:
+## Local preview without Firebase
 
-```bash
+```powershell
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000` and choose **Continue in demo mode**. Demo records stay in memory and are not written to cloud storage.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Connect a Firebase project
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Create separate Firebase projects for development and production.
+2. Enable Google Authentication and create a Firestore database.
+3. Copy `.env.example` to `.env.local` and fill all `NEXT_PUBLIC_FIREBASE_*` values from Firebase Web App settings.
+4. Deploy `firestore.rules` and `firestore.indexes.json` from a trusted terminal.
+5. Add the same public Firebase values to Vercel Environment Variables. Never add a service-account JSON file to this repository.
 
-## Learn More
+The browser Firebase SDK is initialized lazily. Missing environment values show a safe demo gate instead of crashing `next build`.
 
-To learn more about Next.js, take a look at the following resources:
+## Firebase emulator
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Set the values below in `.env.local` using a demo Firebase configuration and enable emulator routing:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```text
+NEXT_PUBLIC_USE_FIREBASE_EMULATORS=true
+```
 
-## Deploy on Vercel
+Then run:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```powershell
+npm run firebase:emulators
+npm run dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Auth runs at `127.0.0.1:9099`, Firestore at `127.0.0.1:8080`, and Emulator UI at `127.0.0.1:4000`.
+
+## Data ownership
+
+All cloud records live below `users/{uid}`. Firestore rules require the signed-in UID to match the path owner and reject data whose `ownerId` points to another account.
+
+## Required checks
+
+```powershell
+npm test
+npm run lint
+npm run build
+```
+
+Before delivery, also inspect the running site at desktop, tablet and mobile widths and append the results to `handoff.md`.

@@ -6,9 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "firebase:emulators": "firebase emulators:start --only auth,firestore --project demo-philodendron-lab",
+    "firebase:verify": "firebase emulators:exec --only auth,firestore --project demo-philodendron-lab \"npm test\""
   },
   "dependencies": {
+    "firebase": "^12.16.0",
     "next": "16.2.11",
     "react": "19.2.4",
     "react-dom": "19.2.4"
@@ -20,7 +24,9 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.11",
+    "firebase-tools": "^15.24.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.10"
   }
 }
