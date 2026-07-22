@@ -278,3 +278,7 @@
 - ยืนยันว่า production project ที่ใช้งานคือ `tissue-experiment-93`; URL ของ project ซ้ำ `tissue-experiment.vercel.app` ตอบ `DEPLOYMENT_NOT_FOUND`
 - push บันทึกนี้ไป `master` เพื่อกระตุ้น Vercel rebuild หลัง environment variables ถูกตั้งค่า แล้วต้องตรวจว่าหน้าเว็บเปลี่ยนเป็น Firebase sign-in ก่อนถือว่าเสร็จ
 - พบไฟล์ local ชื่อ `env.local` (ไม่มีจุดนำหน้า) และไม่เปิดอ่านเพื่อหลีกเลี่ยงการแสดง configuration; เพิ่ม `/env.local` ใน `.gitignore` เพื่อป้องกัน accidental commit โดยไฟล์ local ที่ Next.js รองรับควรชื่อ `.env.local`
+- rebuild commit `ed5daf6` deploy สำเร็จบน Vercel project `tissue-experiment-93`
+- production เปลี่ยนจาก unconfigured fallback เป็นหน้า `เข้าสู่ Philodendron Lab` พร้อมปุ่ม `Sign in with Google` แล้ว ยืนยันว่า Firebase public configuration ถูกฝังใน build สำเร็จ
+- ตรวจ production auth screen ที่ desktop 1440px และ mobile 390px: ไม่มี horizontal overflow, ปุ่ม Google แสดงทั้งสองขนาด และไม่มี console warning/error
+- ยังไม่กด Google sign-in ในการตรวจอัตโนมัติ เพราะจะเริ่ม external account authentication; ผู้ใช้ต้องทดลองล็อกอินเพื่อยืนยัน Authorized Domains และ Firestore round trip ในขั้นถัดไป
