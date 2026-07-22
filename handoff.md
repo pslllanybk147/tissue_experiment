@@ -482,3 +482,5 @@
 - Preview auth gate โหลดถูกต้อง แต่ browser session ของ alias ใหม่นี้ยังไม่ได้ Sign in with Google
 - Cloudinary live upload ยังทดสอบไม่ได้จนกว่าจะเพิ่ม server variables ทั้ง 6 ตัวใน Preview scope แล้ว redeploy; ห้ามใช้ `NEXT_PUBLIC_` กับตัวแปรเหล่านี้
 - ขั้นถัดไปสำหรับผู้ใช้: เพิ่ม variables ทั้ง 6 ตัวใน Vercel, redeploy Preview และ sign in ที่ branch alias จากนั้นแจ้งว่าเรียบร้อยเพื่อให้ตรวจ protocol → lot → observation → image upload แบบ end-to-end
+- ผู้ใช้เพิ่ม server-only variables ทั้ง 6 ตัวแล้ว; ตรวจชื่อและ scope ผ่าน Vercel dashboard พบครบทั้งหมดและใช้ `Production and Preview`
+- ขั้นถัดไป: trigger deployment ใหม่เพื่อให้ environment snapshot มีค่าชุดล่าสุด แล้วตรวจ authenticated sign/upload workflow
