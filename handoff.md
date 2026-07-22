@@ -312,3 +312,6 @@
 - Cloudinary และ Protocol editor ถูกแยกไป increment ถัดไป
 - เขียน design specification ที่ `docs/superpowers/specs/2026-07-22-experiment-observations-design.md`
 - ยังไม่เริ่ม implementation; ขั้นถัดไปคือผู้ใช้ตรวจ spec จากนั้นจึงเขียน implementation plan ตาม TDD
+- ผู้ใช้ตรวจและอนุมัติ specification แล้ว
+- เขียน implementation plan ที่ `docs/superpowers/plans/2026-07-22-experiment-observations.md` ครบ 8 tasks พร้อม TDD, sandbox, Firebase rules release และ Vercel Preview gate
+- ยังไม่มี production code เปลี่ยนในรอบ plan; ขั้นถัดไปเลือกวิธี execution แล้วเริ่ม Task 1 บน isolated workspace
