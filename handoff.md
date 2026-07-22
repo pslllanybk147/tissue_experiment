@@ -385,3 +385,11 @@
 - หมายเหตุ: test lot `QA-20260722` และ audit เดิมสองรายการจากการค้น defect ยังคงอยู่ใน Firestore เพื่อรักษา audit trail; ระบบยังไม่มี lot delete
 - commit/push idempotency fix สำเร็จที่ `1122c2b`; Vercel Preview check ผ่าน และ smoke test บน deployment ล่าสุดยืนยัน authenticated lot detail, observation timeline, audit history และไม่มี Next error overlay
 - Draft PR #2 พร้อมขออนุมัติ merge เข้า `master`; ยังไม่มีการ merge หรือเปลี่ยน production ใน checkpoint นี้
+
+### Production merge — 2026-07-22
+
+- ผู้ใช้อนุมัติตัวเลือก 1 ให้ merge `feature/experiment-observations` เข้า `master`
+- merge สำเร็จด้วย merge commit `Merge experiment observations workflow`
+- แก้ tooling หลัง merge ให้ ESLint และ Vitest ไม่สแกน `.worktrees` ซึ่งเป็น source/build สำเนาและทำให้ lint ผิดพลาดหรือรันทดสอบซ้ำ
+- verification บนผล merge: 14 test files / 41 tests ผ่าน, ESLint ผ่าน และ Next production build ผ่าน
+- ขั้นถัดไป: push `master`, รอ Production Deployment และตรวจ production smoke test ก่อนปิดงาน
