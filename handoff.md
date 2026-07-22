@@ -315,3 +315,17 @@
 - ผู้ใช้ตรวจและอนุมัติ specification แล้ว
 - เขียน implementation plan ที่ `docs/superpowers/plans/2026-07-22-experiment-observations.md` ครบ 8 tasks พร้อม TDD, sandbox, Firebase rules release และ Vercel Preview gate
 - ยังไม่มี production code เปลี่ยนในรอบ plan; ขั้นถัดไปเลือกวิธี execution แล้วเริ่ม Task 1 บน isolated workspace
+
+### Implementation checkpoint 1
+
+- ผู้ใช้เลือก Inline Execution และอนุญาต isolated worktree
+- worktree: `.worktrees/experiment-observations` บน branch `feature/experiment-observations`
+- baseline `npm test` ผ่าน 7 tests ก่อนเริ่ม
+- Task 1 เสร็จ: domain types และ validation แบบ TDD
+- Task 2 เสร็จ: lot search/status filter/newest-first แบบ pure function
+- Task 3 เสร็จ: memory experiment repository พร้อม owner guard, create/update, soft delete, restore และ audit before/after
+- ยืนยัน RED ก่อน implementation สำหรับทั้ง validation, query และ repository tests
+- checkpoint test: `npm test` ผ่าน 6 files, 24 tests
+- commits: `6fc963c`, `ce35f8e`, `157fc3e`
+- npm install ยังคงรายงาน dependency audit 10 รายการ (8 moderate, 2 high); ยังไม่ใช้ forced fix
+- ขั้นถัดไป: Task 4 Firestore repository + paired batch writes + rules validation
