@@ -1,4 +1,24 @@
 export type EvidenceState = "Verified" | "Adapted" | "Experimental" | "Pending review";
+export type ProtocolStatus = "Draft" | "Active" | "Archived";
+
+export type ProtocolStep = {
+  id: string; order: number; title: string; instruction: string; durationMinutes: number | null;
+  criticalControls: string[]; safetyNotes: string[]; referenceIds: string[]; evidenceState: EvidenceState;
+};
+
+export type ProtocolDraftInput = {
+  title: string; plantScope: string; evidenceState: EvidenceState; summary: string; changeNote: string; steps: ProtocolStep[];
+};
+
+export type ProtocolRecord = {
+  id: string; ownerId: string; title: string; slug: string; plantScope: string; evidenceState: EvidenceState;
+  status: ProtocolStatus; currentVersionId: string; createdAt: string; updatedAt: string; deletedAt: string | null;
+};
+
+export type ProtocolVersion = {
+  id: string; protocolId: string; ownerId: string; version: string; summary: string; changeNote: string;
+  steps: ProtocolStep[]; createdBy: string; createdAt: string; publishedAt: string | null;
+};
 export type ExperimentStatus = "Healthy" | "Review" | "At risk" | "Contaminated";
 export type LotStatus = ExperimentStatus;
 
