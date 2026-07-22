@@ -472,3 +472,13 @@
 - push branch `feature/protocol-media-navigation` สำเร็จ และเปิด Draft PR #3: `https://github.com/pslllanybk147/tissue_experiment/pull/3`
 - Vercel และ Vercel Preview Comments checks ของ commit `a827d76` ผ่านทั้งคู่; deployment dashboard id `Fh48AjzwVRYJx3VHRZYiaGUoq5jY`
 - ยังไม่ merge production; Preview authenticated + Cloudinary live upload เป็น release gate ที่เหลือ
+
+### Protocol media implementation checkpoint 6 — 2026-07-23
+
+- ตรวจ Vercel Environment Variables ผ่าน authenticated dashboard โดยอ่านเฉพาะชื่อและ scope ไม่เปิดเผยค่า secret
+- พบเฉพาะ Firebase client variables 6 ตัว (`NEXT_PUBLIC_FIREBASE_*`) ครบสำหรับ Production และ Preview
+- ยังขาด server-only variables 6 ตัว: `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `FIREBASE_ADMIN_PROJECT_ID`, `FIREBASE_ADMIN_CLIENT_EMAIL`, `FIREBASE_ADMIN_PRIVATE_KEY`
+- Preview ล่าสุดของ commit `c07fd9a` อยู่สถานะ Ready; branch alias: `https://tissue-experiment-93-git-featu-3216fc-pslllanybk-2845s-projects.vercel.app`
+- Preview auth gate โหลดถูกต้อง แต่ browser session ของ alias ใหม่นี้ยังไม่ได้ Sign in with Google
+- Cloudinary live upload ยังทดสอบไม่ได้จนกว่าจะเพิ่ม server variables ทั้ง 6 ตัวใน Preview scope แล้ว redeploy; ห้ามใช้ `NEXT_PUBLIC_` กับตัวแปรเหล่านี้
+- ขั้นถัดไปสำหรับผู้ใช้: เพิ่ม variables ทั้ง 6 ตัวใน Vercel, redeploy Preview และ sign in ที่ branch alias จากนั้นแจ้งว่าเรียบร้อยเพื่อให้ตรวจ protocol → lot → observation → image upload แบบ end-to-end
