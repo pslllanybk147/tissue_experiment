@@ -1,6 +1,7 @@
 import { collection, doc, getDoc, getDocs, writeBatch, type Firestore } from "firebase/firestore";
 
 import type { AuditEvent, CreateLotInput, ExperimentLot, Observation, ObservationInput } from "@/lib/domain/models";
+import { normalizeExperimentLot } from "../domain/experiment-migration";
 import type { ExperimentRepository } from "@/lib/repositories/experiment-repository";
 import { getFirebaseServices } from "./client";
 
@@ -36,11 +37,11 @@ function createFirebaseAdapter(firestore: Firestore, uid: string): ExperimentPer
   return {
     async listLots() {
       const result = await getDocs(collection(firestore, "users", uid, "lots"));
-      return result.docs.map((item) => item.data() as ExperimentLot);
+      return result.docs.map((item) => normalizeExperimentLot(item.data()));
     },
     async getLot(lotId) {
       const result = await getDoc(lotRef(lotId));
-      return result.exists() ? result.data() as ExperimentLot : null;
+      return result.exists() ? normalizeExperimentLot(result.data()) : null;
     },
     async createLotWithAudit(lot, audit) {
       const batch = writeBatch(firestore);

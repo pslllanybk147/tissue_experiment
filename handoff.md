@@ -341,3 +341,20 @@
 - Task 4 tests ผ่าน 4 tests; ชุดรวมผ่าน 7 files, 30 tests; lint ไม่มี warning; build ผ่าน
 - rules เดิมครอบคลุม nested owner-only subcollections อยู่แล้ว จึงยังไม่เปลี่ยนหรือ deploy rules ใน checkpoint นี้
 - ขั้นถัดไป: shared LabShell และ routes/components สำหรับ Experiment list/create/detail
+
+### Experiment workflow checkpoint 3 — 2026-07-22
+
+- branch: `feature/experiment-observations`; worktree: `.worktrees/experiment-observations`
+- เพิ่ม shared responsive `LabShell` และ navigation จริงไป `/`, `/experiments`, `/experiments/new`
+- เพิ่ม Experiment list พร้อมค้นหา Lot ID/ชื่อพืช, filter status, desktop table และ mobile stacked rows
+- เพิ่ม structured Lot form พร้อม validation, pending/error state และ create ผ่าน demo memory repository หรือ authenticated Firestore repository
+- เพิ่ม detail route `/experiments/[lotId]` พร้อม structured observation form, timeline, edit, soft delete, show deleted, restore และ immutable audit history
+- observation mutations ใช้ repository contract เดิมที่จับคู่ observation + audit event ใน Firestore batch
+- เพิ่ม compatibility normalizer สำหรับ Firestore documents รุ่นเก่าที่มี `day` และ `protocol` เพื่อไม่ให้ production dashboard/page ใหม่แตก
+- TDD: ยืนยัน RED ก่อนสร้าง list/form/observation/timeline/audit components และ legacy migration normalizer
+- automated verification ล่าสุด: 13 files / 38 tests ผ่าน, ESLint ผ่าน, Next production build ผ่าน, routes ครบ `/experiments`, `/experiments/new`, `/experiments/[lotId]`
+- React best-practices review แก้ synchronous effect state reset เป็น keyed form และ asynchronous repository callbacks
+- local browser sandbox ใช้ production server port 3011 เพราะ Windows path ของ isolated worktree ยาวเกินข้อจำกัด Turbopack dev sourcemap; production build/server ไม่พบปัญหานี้
+- browser sandbox ผ่านการโหลดหน้า, demo auth gate, list, create Lot, create observation, edit observation และ responsive overflow checks ที่ 1440×900, 1024×768, 390×844
+- soft-delete browser click เปิด native confirmation สำเร็จ แต่ browser-control channel timeout ระหว่าง dialog handoff; repository soft-delete/restore/audit behavior ยังผ่าน automated tests
+- ขั้นถัดไป: fresh full verification, commit/push branch, รอ Vercel Preview และตรวจ authenticated Firebase workflow บน Preview ก่อน merge
