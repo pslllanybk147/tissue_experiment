@@ -247,3 +247,11 @@
 - หยุดก่อน commit/push เนื่องจาก repository นี้ยังไม่มี Git remote (`git remote -v` ว่าง)
 - ยังไม่มี commit, push หรือ Pull Request จากรอบนี้
 - ขั้นตอนถัดไป: เพิ่ม `origin` จาก URL ที่ผู้ใช้ระบุ หรือสร้าง GitHub repository ใหม่หลังผู้ใช้ยืนยันชื่อและ visibility แล้วจึง commit, push และเปิด Draft PR
+
+### Publish completed
+
+- เพิ่ม `origin`: `https://github.com/pslllanybk147/tissue_experiment.git`
+- repository เดิมว่าง จึง push `master` ที่ initial commit เพื่อสร้าง base branch ก่อน
+- commit หลัก: `0020ed3 Add Firebase research lab foundation`
+- push branch `feature/firebase-foundation` สำเร็จ
+- เปิด Draft Pull Request #1 ไปยัง `master`: `https://github.com/pslllanybk147/tissue_experiment/pull/1`
