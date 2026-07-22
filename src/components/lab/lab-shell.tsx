@@ -5,10 +5,19 @@ import type { ReactNode } from "react";
 
 type LabShellProps = {
   children: ReactNode;
-  section: "Overview" | "Experiments";
+  section: LabSection;
   sessionLabel: "DEMO" | "FIREBASE";
   onSignOut: () => void;
 };
+
+export type LabSection = "Overview" | "Protocols" | "Experiments" | "Research";
+
+const destinations: { label: LabSection; href: string }[] = [
+  { label: "Overview", href: "/" },
+  { label: "Protocols", href: "/protocols" },
+  { label: "Experiments", href: "/experiments" },
+  { label: "Research", href: "/research" },
+];
 
 export function LabShell({ children, section, sessionLabel, onSignOut }: LabShellProps) {
   return (
@@ -16,8 +25,7 @@ export function LabShell({ children, section, sessionLabel, onSignOut }: LabShel
       <aside className="lab-route-sidebar">
         <Link className="lab-route-brand" href="/"><span>PL</span><strong>Philodendron Lab</strong></Link>
         <nav aria-label="Main navigation" className="lab-route-nav">
-          <Link className={section === "Overview" ? "active" : ""} href="/">Overview</Link>
-          <Link className={section === "Experiments" ? "active" : ""} href="/experiments">Experiments</Link>
+          {destinations.map((item) => <Link aria-current={section === item.label ? "page" : undefined} className={section === item.label ? "active" : ""} href={item.href} key={item.href}>{item.label}</Link>)}
         </nav>
         <div className="lab-route-session"><span className={`session-chip ${sessionLabel === "DEMO" ? "demo" : "authenticated"}`}>{sessionLabel}</span><button type="button" onClick={onSignOut}>ออก</button></div>
       </aside>
