@@ -395,3 +395,13 @@
 - push `master` สำเร็จ; PR #2 ถูกปิดเป็น `MERGED` และ Vercel Production Deployment ผ่าน
 - production smoke test ที่ `https://tissue-experiment-93.vercel.app/` ผ่าน: โหลดหน้า Firebase auth gate ได้, title ถูกต้อง, ไม่พบ horizontal overflow ที่ viewport เริ่มต้น และไม่มี Next error overlay
 - ผู้ใช้ต้อง Sign in with Google บน production origin แยกจาก Preview ก่อนทดสอบข้อมูล authenticated ในการใช้งานครั้งแรก
+
+### Protocol + navigation + media design — 2026-07-22
+
+- ผู้ใช้ขอทำ dashboard navigation, Protocol workflow และ Cloudinary observation media ให้ครบใน release เดียว
+- ล็อกแนวทางเป็น Next.js/Firebase application เดิม, feature branch เดียว, Preview checkpoints แยกโมดูล และ production merge ครั้งเดียวเมื่อทุกส่วนผ่าน
+- Protocol ใช้ immutable version snapshots; progress เป็นข้อมูลเฉพาะแต่ละ experiment lot
+- Cloudinary ใช้ signed upload จาก server-only credentials; Firestore เก็บ metadata, soft delete และ audit history
+- Research route ใน release นี้เป็น evidence-labelled read-only register; AI review workflow และ image processing ยังไม่อยู่ในขอบเขต
+- design specification: `docs/superpowers/specs/2026-07-22-protocol-media-navigation-design.md`
+- ขั้นถัดไป: ผู้ใช้ตรวจ written spec แล้วจึงสร้าง implementation plan ตาม TDD
