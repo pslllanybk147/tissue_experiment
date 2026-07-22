@@ -188,6 +188,7 @@ export interface ProtocolRepository {
   get(ownerId: string, protocolId: string): Promise<{ protocol: ProtocolRecord; versions: ProtocolVersion[] } | null>;
   createDraft(ownerId: string, input: ProtocolDraftInput): Promise<ProtocolRecord>;
   saveDraftVersion(ownerId: string, protocolId: string, versionId: string, input: ProtocolDraftInput): Promise<ProtocolVersion>;
+  createDraftVersion(ownerId: string, protocolId: string, sourceVersionId: string, changeNote: string): Promise<ProtocolVersion>;
   activateVersion(ownerId: string, protocolId: string, versionId: string): Promise<ProtocolRecord>;
   archive(ownerId: string, protocolId: string): Promise<ProtocolRecord>;
   listAuditEvents(ownerId: string, protocolId: string): Promise<AuditEvent[]>;

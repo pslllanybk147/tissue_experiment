@@ -25,4 +25,15 @@ describe("memory protocol repository", () => {
     expect(await repository.listAuditEvents("owner-1", created.id)).toHaveLength(2);
     await expect(repository.list("owner-2")).rejects.toThrow("Owner mismatch");
   });
+
+  it("creates a new editable minor version from a published snapshot", async () => {
+    const repository = createMemoryProtocolRepository("owner-1");
+    const created = await repository.createDraft("owner-1", input);
+    await repository.activateVersion("owner-1", created.id, created.currentVersionId);
+    const draft = await repository.createDraftVersion("owner-1", created.id, created.currentVersionId, "Improve controls");
+    expect(draft.version).toBe("0.2.0");
+    expect(draft.publishedAt).toBeNull();
+    expect(draft.steps).toEqual(input.steps);
+    expect((await repository.listAuditEvents("owner-1", created.id)).map(event => event.action)).toContain("version_created");
+  });
 });

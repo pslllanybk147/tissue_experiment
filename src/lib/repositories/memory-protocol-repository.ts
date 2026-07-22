@@ -1,4 +1,5 @@
 import type { ProtocolRecord, ProtocolVersion } from "../domain/models";
+import { nextDraftVersion } from "../domain/protocol-versioning";
 import type { ProtocolAuditEvent, ProtocolRepository } from "./protocol-repository";
 
 const clone = <T,>(value: T): T => structuredClone(value);
@@ -27,6 +28,12 @@ export function createMemoryProtocolRepository(uid: string): ProtocolRepository 
       if (!protocol || !current) throw new Error("Protocol not found");
       if (current.publishedAt) throw new Error("Published versions are immutable");
       const updated = { ...current, summary: input.summary, changeNote: input.changeNote, steps: clone(input.steps) }; versions.set(protocolId, items.map(v => v.id === versionId ? updated : v)); event(protocolId, "updated", current, updated); return clone(updated);
+    },
+    async createDraftVersion(ownerId, protocolId, sourceVersionId, changeNote) {
+      guard(ownerId); const protocol = protocols.get(protocolId); const items = versions.get(protocolId) ?? []; const source = items.find(v => v.id === sourceVersionId);
+      if (!protocol || !source) throw new Error("Protocol not found");
+      const now = new Date().toISOString(); const draft: ProtocolVersion = { ...clone(source), id: `version-${crypto.randomUUID()}`, version: nextDraftVersion(source.version), changeNote, createdAt: now, createdBy: ownerId, publishedAt: null };
+      const next = { ...protocol, status: "Draft" as const, currentVersionId: draft.id, updatedAt: now }; versions.set(protocolId, [...items, draft]); protocols.set(protocolId, next); event(protocolId, "version_created", source, draft); return clone(draft);
     },
     async activateVersion(ownerId, protocolId, versionId) {
       guard(ownerId); const protocol = protocols.get(protocolId); const items = versions.get(protocolId) ?? []; const current = items.find(v => v.id === versionId);

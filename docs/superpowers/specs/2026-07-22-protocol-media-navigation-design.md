@@ -81,6 +81,8 @@ Required fields:
 
 Published versions are immutable. Editing an active protocol creates a new draft version. Existing experiment lots continue referencing the version selected when the lot was created.
 
+The repository exposes `createDraftVersion(ownerId, protocolId, sourceVersionId, changeNote)`. It clones the published snapshot, increments the minor semantic version, points the protocol working state at the new draft, and records `version_created` in audit history.
+
 ### Protocol step
 
 Each version snapshot contains ordered structured steps:

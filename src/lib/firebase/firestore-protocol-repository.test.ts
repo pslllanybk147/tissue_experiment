@@ -29,4 +29,12 @@ describe("Firestore protocol repository", () => {
   it("rejects owner mismatch before persistence", async () => {
     await expect(harness().repository.list("owner-2")).rejects.toThrow("Owner mismatch");
   });
+
+  it("creates an editable version after activation", async () => {
+    const { repository, mutations } = harness(); const created = await repository.createDraft("owner-1", input);
+    await repository.activateVersion("owner-1", created.id, created.currentVersionId);
+    const draft = await repository.createDraftVersion("owner-1", created.id, created.currentVersionId, "Revise");
+    expect(draft.version).toBe("0.2.0"); expect(draft.publishedAt).toBeNull();
+    expect(mutations.at(-1)?.audit.action).toBe("version_created");
+  });
 });
