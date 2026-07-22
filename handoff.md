@@ -363,3 +363,10 @@
 - Vercel check ของ commit `d2071fe` ผ่าน และ Preview พร้อมใช้งานที่ `https://tissue-experiment-93-git-featu-f89199-pslllanybk-2845s-projects.vercel.app`
 - fresh final verification หลังแก้ migration import: 14 files / 39 tests ผ่าน, ESLint ผ่าน, production build ผ่าน, `git diff --check` ผ่าน
 - ยังไม่ merge production; ต้องตรวจ authenticated Firebase create/edit/delete/restore บน Preview แล้วขออนุมัติผู้ใช้ก่อน merge
+
+### Deferred roadmap — Machine Learning / Image Processing
+
+- งาน Machine Learning และ Image Processing สำหรับวิเคราะห์ชนิดหรือสายพันธุ์พืชถูกบันทึกไว้เป็นโครงการในอนาคต
+- **ห้ามเริ่มพัฒนา Image Processing จนกว่า project เดิมด้าน Protocol, Experiment Lots, Observations, Audit History และ production validation จะเสร็จสมบูรณ์ก่อน**
+- หลัง project เดิมเสร็จ จึงค่อยออกแบบ Plant Profile, licensed image dataset, label review, image similarity และโมเดลจำแนกสายพันธุ์เป็น phase แยก
+- ภาพจาก Google Images ห้ามนำมาใช้เป็น training dataset โดยอัตโนมัติ; ต้องใช้แหล่งที่มี license และ provenance ตรวจสอบได้ เช่น iNaturalist, GBIF, Pl@ntNet หรือ Wikimedia Commons
