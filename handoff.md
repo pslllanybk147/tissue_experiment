@@ -432,3 +432,14 @@
 - checkpoint ผ่าน 24 files / 57 tests, ESLint ผ่าน และ Next build ผ่าน routes ใหม่ทั้งหมด
 - commits: `a366659`, `7601f8b`, `9e34df8`
 - ขั้นถัดไป: Firestore progress repository + lot integration ก่อนเริ่ม Cloudinary
+
+### Protocol media implementation checkpoint 3 — 2026-07-22
+
+- Task 6 เสร็จ: Firestore progress repository, owner guard, paired audit mutation, idempotent completion และ ProtocolRunner บน Lot detail
+- เพิ่ม optional `protocolVersionId` สำหรับ Lot ใหม่; ข้อมูล legacy fallback ไป current version เพื่อไม่ทำให้เอกสารเดิมแตก
+- Task 7 code foundation เสร็จ: Cloudinary config validation, deterministic SHA-1 signature, Firebase Admin token verification และ `POST /api/media/sign`
+- endpoint จำกัด JPEG/PNG/WebP, 10 MB และ owner-scoped Cloudinary folder; secret ไม่มี `NEXT_PUBLIC_` prefix
+- เพิ่ม `firebase-admin` dependency และ `.env.example` สำหรับ server credentials
+- Task 8 foundation: ObservationMedia domain, memory media repository แบบ soft delete/restore idempotent และ MediaStrip
+- verification: 30 files / 66 tests ผ่าน, Next production build ผ่าน; lint เหลือ warning `<img>` แล้วแก้เป็น Next Image ก่อน commit
+- ขั้นถัดไป: Firestore media repository, uploader state machine, observation integration และ Cloudinary sandbox
