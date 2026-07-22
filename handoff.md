@@ -500,3 +500,5 @@
 - retry หลัง outer boundary ยังเป็น raw HTTP 500 จึงยืนยันว่า failure เกิดก่อนเข้า `POST()` handler ระหว่าง module bootstrap
 - hypothesis แรก: top-level `firebase-admin` import ทำให้ serverless module bootstrap ล้มเหลว; ย้ายเป็น lazy import ภายใน Firebase phase เพื่อให้จับ authentication/config error ได้
 - local verification หลัง lazy import: 33 test files / 74 tests ผ่าน, ESLint ผ่าน และ Next production build ผ่าน
+- deployment `6wUjDSKSGwBQjyh4HjDGcYmsLMTJ` หลัง lazy import เปลี่ยน raw HTTP 500 เป็น controlled `Invalid authentication`; ยืนยันว่า route bootstrap แก้แล้วและ failure อยู่ใน Firebase Admin phase
+- แยก Firebase Admin initialization/config error เป็น 503 `Firebase Admin configuration invalid` และ ID token verification error เป็น 401 `Invalid authentication`
