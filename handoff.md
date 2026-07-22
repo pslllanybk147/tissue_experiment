@@ -255,3 +255,16 @@
 - commit หลัก: `0020ed3 Add Firebase research lab foundation`
 - push branch `feature/firebase-foundation` สำเร็จ
 - เปิด Draft Pull Request #1 ไปยัง `master`: `https://github.com/pslllanybk147/tissue_experiment/pull/1`
+
+## Production release — 2026-07-22
+
+- ผู้ใช้ยืนยันให้ release ไป Vercel
+- เปลี่ยน PR #1 จาก Draft เป็น Ready และ merge เข้า `master` สำเร็จ
+- merge commit: `25ab31bd4353302bf50f9246e6886ef5a5cf9f64`
+- Vercel status จาก GitHub สำเร็จ 2 project: `tissue-experiment-93` และ `tissue-experiment`
+- ตรวจ HTTP production แล้วทั้งสอง URL ตอบ `200` และ title เป็น `Philodendron Lab`
+- URL ที่ตรงกับ project ในภาพของผู้ใช้: `https://tissue-experiment-93.vercel.app`
+- production sandbox พบข้อความ `LOCAL DEVELOPMENT` บนหน้า Firebase setup จึงแก้เป็น `SECURE WORKSPACE` และปรับคำอธิบายให้ใช้ได้ทั้ง local/Vercel
+- หลังแก้ hotfix: `npm test` ผ่าน 7 tests, `npm run lint` ผ่าน และ `npm run build` ผ่าน
+- Firebase Environment Variables ยังไม่ได้ตั้งบน Vercel จึงเปิดได้ใน demo mode; ยังไม่มีการเขียนข้อมูลจริงไป Firestore
+- พบการเชื่อม Vercel ซ้ำ 2 project กับ repository เดียวกัน ควรเก็บ project ที่ต้องการเพียงตัวเดียวภายหลังเพื่อลด deployment ซ้ำ
