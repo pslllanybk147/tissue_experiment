@@ -168,6 +168,7 @@ export function createFirestoreExperimentRepository(uid: string, options: Reposi
     assertOwner(ownerId);
     await requireLot(lotId);
     const before = await requireObservation(lotId, observationId);
+    if (before.deletedAt !== null) return before;
     const timestamp = now();
     const observation = { ...before, deletedAt: timestamp, updatedAt: timestamp };
     await adapter.commitObservationMutation({
@@ -181,6 +182,7 @@ export function createFirestoreExperimentRepository(uid: string, options: Reposi
     assertOwner(ownerId);
     await requireLot(lotId);
     const before = await requireObservation(lotId, observationId);
+    if (before.deletedAt === null) return before;
     const observation = { ...before, deletedAt: null, updatedAt: now() };
     await adapter.commitObservationMutation({
       observation,

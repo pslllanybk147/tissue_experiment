@@ -121,6 +121,7 @@ export function createMemoryExperimentRepository(uid: string, options: Repositor
     assertOwner(ownerId);
     requireLot(lotId);
     const current = requireObservation(lotId, observationId);
+    if (current.deletedAt !== null) return clone(current);
     const timestamp = now();
     const updated = { ...current, deletedAt: timestamp, updatedAt: timestamp };
     observations.set(observationId, updated);
@@ -132,6 +133,7 @@ export function createMemoryExperimentRepository(uid: string, options: Repositor
     assertOwner(ownerId);
     requireLot(lotId);
     const current = requireObservation(lotId, observationId);
+    if (current.deletedAt === null) return clone(current);
     const updated = { ...current, deletedAt: null, updatedAt: now() };
     observations.set(observationId, updated);
     addAudit(lotId, "observation", observationId, "restored", current as unknown as Record<string, unknown>, updated as unknown as Record<string, unknown>);

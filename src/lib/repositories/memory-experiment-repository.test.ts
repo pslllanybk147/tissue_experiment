@@ -92,6 +92,19 @@ describe("memory experiment repository", () => {
     ]);
   });
 
+  it("does not create duplicate audit events for repeated delete or restore", async () => {
+    const repo = repository();
+    await repo.createLot("owner-1", lot);
+    const created = await repo.createObservation("owner-1", lot.id, observation);
+    await repo.softDeleteObservation("owner-1", lot.id, created.id);
+    await repo.softDeleteObservation("owner-1", lot.id, created.id);
+    await repo.restoreObservation("owner-1", lot.id, created.id);
+    await repo.restoreObservation("owner-1", lot.id, created.id);
+    const actions = (await repo.listAuditEvents("owner-1", lot.id)).map((event) => event.action);
+    expect(actions.filter((action) => action === "deleted")).toHaveLength(1);
+    expect(actions.filter((action) => action === "restored")).toHaveLength(1);
+  });
+
   it("rejects missing lots and observations", async () => {
     const repo = repository();
     await expect(repo.createObservation("owner-1", "missing", observation)).rejects.toThrow("Lot not found");

@@ -370,3 +370,17 @@
 - **ห้ามเริ่มพัฒนา Image Processing จนกว่า project เดิมด้าน Protocol, Experiment Lots, Observations, Audit History และ production validation จะเสร็จสมบูรณ์ก่อน**
 - หลัง project เดิมเสร็จ จึงค่อยออกแบบ Plant Profile, licensed image dataset, label review, image similarity และโมเดลจำแนกสายพันธุ์เป็น phase แยก
 - ภาพจาก Google Images ห้ามนำมาใช้เป็น training dataset โดยอัตโนมัติ; ต้องใช้แหล่งที่มี license และ provenance ตรวจสอบได้ เช่น iNaturalist, GBIF, Pl@ntNet หรือ Wikimedia Commons
+
+### Authenticated Preview validation — 2026-07-22
+
+- ผู้ใช้ล็อกอิน Vercel Deployment Protection และ Firebase Google Auth สำเร็จ; Preview แสดง session `FIREBASE`
+- ตรวจอ่าน Firestore owner-scoped data สำเร็จ และสร้าง test lot `QA-20260722` (`Sandbox validation control`) ไว้เป็น validation control
+- ตรวจ create observation, edit observation และ audit `created`/`updated` สำเร็จบน Firestore จริง
+- ตรวจ soft delete สำเร็จ: observation ถูกซ่อนจาก default timeline และ audit แสดง `deleted`
+- ตรวจ show-deleted และ restore สำเร็จ: observation กลับมาใน timeline และ audit แสดง `restored`
+- พบระหว่าง browser retry ว่า delete request ซ้ำสร้าง audit `deleted` ซ้ำได้ เพราะ repository mutation ยังไม่ idempotent
+- เพิ่ม regression tests ทั้ง memory และ Firestore repositories แล้วแก้ repeated delete/restore ให้คืน current state โดยไม่สร้าง audit ซ้ำ
+- verification หลังแก้: 14 test files / 41 tests ผ่าน, ESLint ผ่าน, Next production build ผ่าน และ `git diff --check` ผ่าน
+- responsive Preview ตรวจที่ 1440×900, 1024×768 และ 390×844; ไม่พบ horizontal overflow หรือ Next error overlay
+- หมายเหตุ: test lot `QA-20260722` และ audit เดิมสองรายการจากการค้น defect ยังคงอยู่ใน Firestore เพื่อรักษา audit trail; ระบบยังไม่มี lot delete
+- ขั้นถัดไป: commit/push idempotency fix, รอ Vercel Preview ใหม่, smoke test แล้วจึงเสนอ merge ให้ผู้ใช้อนุมัติ

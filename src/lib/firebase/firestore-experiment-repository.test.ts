@@ -84,6 +84,16 @@ describe("Firestore experiment repository contract", () => {
     expect(mutations[3].observation.deletedAt).toBeNull();
   });
 
+  it("treats repeated delete and restore requests as idempotent", async () => {
+    const { repository, mutations } = harness();
+    const created = await repository.createObservation("owner-1", "PPP-001", observationInput);
+    await repository.softDeleteObservation("owner-1", "PPP-001", created.id);
+    await repository.softDeleteObservation("owner-1", "PPP-001", created.id);
+    await repository.restoreObservation("owner-1", "PPP-001", created.id);
+    await repository.restoreObservation("owner-1", "PPP-001", created.id);
+    expect(mutations.map((item) => item.audit.action)).toEqual(["created", "deleted", "restored"]);
+  });
+
   it("rejects writes for missing lots and observations", async () => {
     const { repository } = harness();
     await expect(repository.createObservation("owner-1", "missing", observationInput)).rejects.toThrow("Lot not found");
