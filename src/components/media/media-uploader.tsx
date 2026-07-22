@@ -9,10 +9,12 @@ const accepted = "image/jpeg,image/png,image/webp";
 
 export async function readApiError(response: Response, fallback: string): Promise<string> {
   try {
-    const body = await response.json() as { error?: string };
-    return body.error || fallback;
+    const body = await response.json() as { error?: string | { message?: string } };
+    if (typeof body.error === "string") return body.error;
+    if (body.error?.message) return body.error.message;
+    return `${fallback} (HTTP ${response.status})`;
   } catch {
-    return fallback;
+    return `${fallback} (HTTP ${response.status})`;
   }
 }
 
