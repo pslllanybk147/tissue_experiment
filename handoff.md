@@ -443,3 +443,13 @@
 - Task 8 foundation: ObservationMedia domain, memory media repository แบบ soft delete/restore idempotent และ MediaStrip
 - verification: 30 files / 66 tests ผ่าน, Next production build ผ่าน; lint เหลือ warning `<img>` แล้วแก้เป็น Next Image ก่อน commit
 - ขั้นถัดไป: Firestore media repository, uploader state machine, observation integration และ Cloudinary sandbox
+
+### Protocol media implementation checkpoint 4 — 2026-07-22
+
+- Task 8 เสร็จในโค้ด: Firestore media repository, paired audit, owner guard, idempotent delete/restore, signed Cloudinary uploader และ Observation integration
+- uploader ขอ Firebase ID token, รับ signed parameters จาก server, upload ตรงไป Cloudinary แล้วจึงบันทึก metadata ใน Firestore
+- Task 9 เสร็จ: แทน dashboard mock เดิมด้วย repository-backed dashboard และ real links ไป Protocols, Experiments, Research
+- verification: 33 files / 71 tests ผ่าน, ESLint ผ่าน และ Next production build ผ่านทุก route รวม `/api/media/sign`
+- Firebase emulator sandbox ถูกบล็อก: local `java` เป็น Java 8 (`1.8.0_471`) แต่ firebase-tools ปัจจุบันต้อง Java 21 ขึ้นไป; ยังไม่มีการติดตั้งหรือเปลี่ยน Java โดยไม่ได้รับอนุญาต
+- ยังไม่ push Preview และยังไม่ merge production
+- ขั้นถัดไป: ขออนุญาตติดตั้ง Java 21 หรือให้ผู้ใช้ติดตั้งเอง จากนั้นรัน emulator + browser sandbox ก่อน Preview
