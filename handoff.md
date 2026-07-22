@@ -468,3 +468,7 @@
 - Cloudinary live upload ยังต้องใช้ server credentials จริง 6 ตัวใน Vercel environment ก่อนตรวจ upload บน Preview; secret ห้ามมี `NEXT_PUBLIC_`
 - ยังไม่ push branch, ยังไม่สร้าง Preview checkpoint ใหม่ และยังไม่ merge production
 - ขั้นถัดไป: commit/push branch, รอ Vercel Preview, ตรวจ Firebase authenticated workflow และ Cloudinary credential gate แล้วจึงขออนุมัติ merge
+- commit checkpoint: `a827d76` (`Complete responsive protocol release gate`)
+- push branch `feature/protocol-media-navigation` สำเร็จ และเปิด Draft PR #3: `https://github.com/pslllanybk147/tissue_experiment/pull/3`
+- Vercel และ Vercel Preview Comments checks ของ commit `a827d76` ผ่านทั้งคู่; deployment dashboard id `Fh48AjzwVRYJx3VHRZYiaGUoq5jY`
+- ยังไม่ merge production; Preview authenticated + Cloudinary live upload เป็น release gate ที่เหลือ
