@@ -277,3 +277,4 @@
 - ตรวจ production ก่อน rebuild ยังแสดง Firebase unconfigured fallback ซึ่งเป็น expected behavior เพราะ `NEXT_PUBLIC_*` ถูกฝังตอน build
 - ยืนยันว่า production project ที่ใช้งานคือ `tissue-experiment-93`; URL ของ project ซ้ำ `tissue-experiment.vercel.app` ตอบ `DEPLOYMENT_NOT_FOUND`
 - push บันทึกนี้ไป `master` เพื่อกระตุ้น Vercel rebuild หลัง environment variables ถูกตั้งค่า แล้วต้องตรวจว่าหน้าเว็บเปลี่ยนเป็น Firebase sign-in ก่อนถือว่าเสร็จ
+- พบไฟล์ local ชื่อ `env.local` (ไม่มีจุดนำหน้า) และไม่เปิดอ่านเพื่อหลีกเลี่ยงการแสดง configuration; เพิ่ม `/env.local` ใน `.gitignore` เพื่อป้องกัน accidental commit โดยไฟล์ local ที่ Next.js รองรับควรชื่อ `.env.local`
