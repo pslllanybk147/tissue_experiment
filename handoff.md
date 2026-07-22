@@ -405,3 +405,7 @@
 - Research route ใน release นี้เป็น evidence-labelled read-only register; AI review workflow และ image processing ยังไม่อยู่ในขอบเขต
 - design specification: `docs/superpowers/specs/2026-07-22-protocol-media-navigation-design.md`
 - ขั้นถัดไป: ผู้ใช้ตรวจ written spec แล้วจึงสร้าง implementation plan ตาม TDD
+- ผู้ใช้อนุมัติ written spec แล้ว (ข้อความ `jok` ถูกตีความตามบริบทเป็น `ok`)
+- implementation plan: `docs/superpowers/plans/2026-07-22-protocol-media-navigation.md`
+- แผนแบ่ง 10 tasks พร้อม TDD, Firebase emulator, rendered browser sandbox, Vercel Preview และ production merge gate
+- ยังไม่มี production code เปลี่ยนใน checkpoint นี้; ขั้นถัดไปคือเลือกวิธี execution
