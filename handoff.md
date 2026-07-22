@@ -392,4 +392,6 @@
 - merge สำเร็จด้วย merge commit `Merge experiment observations workflow`
 - แก้ tooling หลัง merge ให้ ESLint และ Vitest ไม่สแกน `.worktrees` ซึ่งเป็น source/build สำเนาและทำให้ lint ผิดพลาดหรือรันทดสอบซ้ำ
 - verification บนผล merge: 14 test files / 41 tests ผ่าน, ESLint ผ่าน และ Next production build ผ่าน
-- ขั้นถัดไป: push `master`, รอ Production Deployment และตรวจ production smoke test ก่อนปิดงาน
+- push `master` สำเร็จ; PR #2 ถูกปิดเป็น `MERGED` และ Vercel Production Deployment ผ่าน
+- production smoke test ที่ `https://tissue-experiment-93.vercel.app/` ผ่าน: โหลดหน้า Firebase auth gate ได้, title ถูกต้อง, ไม่พบ horizontal overflow ที่ viewport เริ่มต้น และไม่มี Next error overlay
+- ผู้ใช้ต้อง Sign in with Google บน production origin แยกจาก Preview ก่อนทดสอบข้อมูล authenticated ในการใช้งานครั้งแรก
