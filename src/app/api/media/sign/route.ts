@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 
 import { getCloudinaryConfig } from "../../../../lib/cloudinary/config";
 import { buildSignedUpload } from "../../../../lib/cloudinary/signature";
-import { getAdminAuth } from "../../../../lib/firebase/admin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,6 +17,7 @@ export async function POST(request: Request) {
     phase = "firebase";
     let uid: string;
     try {
+      const { getAdminAuth } = await import("../../../../lib/firebase/admin");
       uid = (await getAdminAuth().verifyIdToken(header.slice(7))).uid;
     } catch {
       return NextResponse.json({ error: "Invalid authentication" }, { status: 401 });
