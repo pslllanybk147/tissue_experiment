@@ -484,3 +484,6 @@
 - ขั้นถัดไปสำหรับผู้ใช้: เพิ่ม variables ทั้ง 6 ตัวใน Vercel, redeploy Preview และ sign in ที่ branch alias จากนั้นแจ้งว่าเรียบร้อยเพื่อให้ตรวจ protocol → lot → observation → image upload แบบ end-to-end
 - ผู้ใช้เพิ่ม server-only variables ทั้ง 6 ตัวแล้ว; ตรวจชื่อและ scope ผ่าน Vercel dashboard พบครบทั้งหมดและใช้ `Production and Preview`
 - ขั้นถัดไป: trigger deployment ใหม่เพื่อให้ environment snapshot มีค่าชุดล่าสุด แล้วตรวจ authenticated sign/upload workflow
+- trigger Preview ใหม่ด้วย commit `cc0de34`; Vercel deployment `2rABjL9SR5pQdjh2PTsnWFgphLf8` ผ่านและรับ environment snapshot ล่าสุดแล้ว
+- branch alias ยังคงเป็น `https://tissue-experiment-93-git-featu-3216fc-pslllanybk-2845s-projects.vercel.app`
+- เปิด Google Sign-in บน Preview แล้ว; ต้องให้ผู้ใช้เลือกบัญชีเองก่อนทดสอบ authenticated `/api/media/sign` และ Cloudinary upload
