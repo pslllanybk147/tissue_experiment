@@ -422,3 +422,13 @@
 - Next build มีเพียง warning เรื่องหลาย lockfiles จาก isolated worktree; ไม่ใช่ application error
 - commits: `0d1d0ef`, `50be398`, `94e27df`, `c067905`
 - ขั้นถัดไป: Protocol list/editor/version history และ lot-specific progress
+
+### Protocol media implementation checkpoint 2 — 2026-07-22
+
+- เพิ่ม `createDraftVersion()` หลังผู้ใช้อนุมัติ เพื่อ clone published snapshot, เพิ่ม minor version และ audit `version_created`
+- Task 5 เสร็จ: routes `/protocols`, `/protocols/new`, `/protocols/[protocolId]`, `/protocols/[protocolId]/edit` พร้อม list, editor, publish และ version history
+- Protocol editor ใช้ปุ่มขึ้น/ลงที่รองรับ keyboard/mobile และสร้างร่างใหม่อัตโนมัติเมื่อแก้ฉบับเผยแพร่แล้ว
+- Task 6 foundation เสร็จ: progress domain, memory repository แบบ idempotent และ ProtocolRunner component
+- checkpoint ผ่าน 24 files / 57 tests, ESLint ผ่าน และ Next build ผ่าน routes ใหม่ทั้งหมด
+- commits: `a366659`, `7601f8b`, `9e34df8`
+- ขั้นถัดไป: Firestore progress repository + lot integration ก่อนเริ่ม Cloudinary
