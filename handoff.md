@@ -290,3 +290,14 @@
 - ตรวจ `firestore.rules` และ `firebase.json` แล้ว: deploy scope จำกัดเฉพาะ Firestore rules/indexes และกฎอนุญาตเฉพาะ owner UID
 - Firebase CLI ตอบ `No authorized accounts`; จึงหยุดก่อน deploy และยังไม่มีการเปลี่ยนกฎบน Firebase project
 - ขั้นตอนปลด blocker: ผู้ใช้รัน `npx firebase-tools login` ใน terminal และยืนยันบัญชี Google แล้วแจ้งให้ทำต่อ
+
+### Firestore deployment completed
+
+- Firebase CLI login สำเร็จด้วยบัญชีผู้ใช้
+- deploy ไป Firebase project `tissue-experiment` สำเร็จ
+- `firestore.rules` compile สำเร็จและถูก release ไป Cloud Firestore
+- `firestore.indexes.json` deploy สำเร็จสำหรับ database `(default)`
+- deployment scope ใช้ `--only firestore:rules,firestore:indexes`; ไม่แตะ Authentication หรือ document data
+- production ที่ไม่มี web session ยังคงถูกกั้นไว้หน้า Sign in ตามที่ออกแบบ
+- พบ console history `auth/popup-closed-by-user` ในแท็บหนึ่งจากการปิด Google popup; ไม่มี Firestore deployment error
+- งานถัดไป: ผู้ใช้ล็อกอินหน้า production แล้วตรวจว่า dashboard แสดง `FIREBASE` และ seed/read/write ใต้ `users/{uid}` สำเร็จ
