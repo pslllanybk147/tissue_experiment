@@ -358,3 +358,8 @@
 - browser sandbox ผ่านการโหลดหน้า, demo auth gate, list, create Lot, create observation, edit observation และ responsive overflow checks ที่ 1440×900, 1024×768, 390×844
 - soft-delete browser click เปิด native confirmation สำเร็จ แต่ browser-control channel timeout ระหว่าง dialog handoff; repository soft-delete/restore/audit behavior ยังผ่าน automated tests
 - ขั้นถัดไป: fresh full verification, commit/push branch, รอ Vercel Preview และตรวจ authenticated Firebase workflow บน Preview ก่อน merge
+- commits ของ checkpoint: `f56032a` (list/create) และ `d2071fe` (detail observations + migration)
+- push branch สำเร็จและเปิด Draft PR #2: `https://github.com/pslllanybk147/tissue_experiment/pull/2`
+- Vercel check ของ commit `d2071fe` ผ่าน และ Preview พร้อมใช้งานที่ `https://tissue-experiment-93-git-featu-f89199-pslllanybk-2845s-projects.vercel.app`
+- fresh final verification หลังแก้ migration import: 14 files / 39 tests ผ่าน, ESLint ผ่าน, production build ผ่าน, `git diff --check` ผ่าน
+- ยังไม่ merge production; ต้องตรวจ authenticated Firebase create/edit/delete/restore บน Preview แล้วขออนุมัติผู้ใช้ก่อน merge
