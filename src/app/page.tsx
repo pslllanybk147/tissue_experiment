@@ -4,10 +4,15 @@ import { useEffect, useMemo, useState } from "react";
 import { AuthGate } from "@/components/auth/auth-gate";
 import { useAuth } from "@/components/auth/auth-provider";
 import type { EvidenceState, ExperimentLot } from "@/lib/domain/models";
+import { lotAgeDays } from "@/lib/domain/experiment-query";
 import { createFirestoreLabRepository } from "@/lib/firebase/firestore-lab-repository";
 import { createDemoLabRepository, createDemoSnapshot } from "@/lib/repositories/demo-lab-repository";
 
 const initialSnapshot = createDemoSnapshot("demo-owner");
+
+function formatStartedAt(value: string) {
+  return new Intl.DateTimeFormat("th-TH", { dateStyle: "medium" }).format(new Date(`${value}T00:00:00`));
+}
 
 const protocolSteps = [
   { number: "01", title: "เตรียมระบบปลอดเชื้อ", meta: "อุปกรณ์ · blank control", state: "done" },
@@ -133,13 +138,13 @@ export default function Home() {
           </section>
 
           <section className="section-grid">
-            <div className="section-block lots-block"><div className="section-heading"><div><p className="eyebrow">LIVE WORK</p><h2>Experiment lots</h2></div><button className="quiet-button" onClick={() => setActiveNav("Experiments")}>View all <Icon name="arrow" /></button></div><div className="lot-list">{lots.map((lot) => <button key={lot.id} className={`lot-row ${selectedLot === lot.id ? "lot-row-selected" : ""}`} onClick={() => setSelectedLot(lot.id)}><span className={`lot-status status-${lot.status.toLowerCase().replace(" ", "-")}`} /><span className="lot-id">{lot.id}</span><span className="lot-plant">{lot.plant}</span><span className="lot-stage">{lot.stage}</span><span className="lot-day">D+{lot.day}</span><Badge>{lot.status}</Badge><span className="row-arrow">↗</span></button>)}</div></div>
+            <div className="section-block lots-block"><div className="section-heading"><div><p className="eyebrow">LIVE WORK</p><h2>Experiment lots</h2></div><button className="quiet-button" onClick={() => setActiveNav("Experiments")}>View all <Icon name="arrow" /></button></div><div className="lot-list">{lots.map((lot) => <button key={lot.id} className={`lot-row ${selectedLot === lot.id ? "lot-row-selected" : ""}`} onClick={() => setSelectedLot(lot.id)}><span className={`lot-status status-${lot.status.toLowerCase().replace(" ", "-")}`} /><span className="lot-id">{lot.id}</span><span className="lot-plant">{lot.plant}</span><span className="lot-stage">{lot.stage}</span><span className="lot-day">D+{lotAgeDays(lot.startedAt)}</span><Badge>{lot.status}</Badge><span className="row-arrow">↗</span></button>)}</div></div>
             <div className="section-block next-block"><div className="section-heading"><div><p className="eyebrow">UP NEXT</p><h2>Protocol steps</h2></div><button className="quiet-button" onClick={() => setActiveNav("Protocols")}>Open <Icon name="arrow" /></button></div><div className="step-list">{protocolSteps.slice(0, 4).map((step, index) => <button key={step.number} className={`step-row ${index === activeStep ? "step-row-active" : ""}`} onClick={() => setActiveStep(index)}><span className={`step-index ${step.state}`} >{step.state === "done" ? <Icon name="check" /> : step.number}</span><span className="step-text"><strong>{step.title}</strong><small>{step.meta}</small></span>{index === activeStep && <span className="step-now">NOW</span>}</button>)}</div></div>
           </section>
 
           <section className="lower-grid">
             <div className="section-block research-block"><div className="section-heading"><div><p className="eyebrow">EVIDENCE BASE</p><h2>Research to review</h2></div><button className="quiet-button" onClick={() => setActiveNav("Research")}>Library <Icon name="arrow" /></button></div><div className="research-list">{research.map((item) => <div className="research-row" key={item.id}><div className="source-icon"><Icon name="book" /></div><div className="research-copy"><div className="research-title-row"><strong>{item.title}</strong><Badge>{item.evidence}</Badge></div><p>{item.source}</p><small>{item.note}</small></div></div>)}</div></div>
-            <div className="section-block selected-block"><div className="section-heading"><div><p className="eyebrow">SELECTED LOT</p><h2>{selected.id}</h2></div><span className="selected-status"><span className="lot-status status-healthy" /> {selected.status}</span></div><div className="selected-profile"><div className="plant-placeholder"><Icon name="leaf" /><span>{selected.plant.slice(0, 2).toUpperCase()}</span></div><div><p className="selected-name">{selected.plant}</p><p className="selected-protocol">{selected.protocol}</p><p className="selected-date">Started {selected.startedAtLabel} · Day {selected.day}</p></div></div><div className="selected-actions"><button className="secondary-button" onClick={() => setNotice("เปิดหน้าบันทึก observation ของ " + selected.id)}>Add observation</button><button className="square-button" aria-label="Add photo" onClick={() => setNotice("พร้อมอัปโหลดรูปสำหรับ " + selected.id)}><Icon name="camera" /></button></div></div>
+            <div className="section-block selected-block"><div className="section-heading"><div><p className="eyebrow">SELECTED LOT</p><h2>{selected.id}</h2></div><span className="selected-status"><span className="lot-status status-healthy" /> {selected.status}</span></div><div className="selected-profile"><div className="plant-placeholder"><Icon name="leaf" /><span>{selected.plant.slice(0, 2).toUpperCase()}</span></div><div><p className="selected-name">{selected.plant}</p><p className="selected-protocol">{selected.protocolTitle}</p><p className="selected-date">Started {formatStartedAt(selected.startedAt)} · Day {lotAgeDays(selected.startedAt)}</p></div></div><div className="selected-actions"><button className="secondary-button" onClick={() => setNotice("เปิดหน้าบันทึก observation ของ " + selected.id)}>Add observation</button><button className="square-button" aria-label="Add photo" onClick={() => setNotice("พร้อมอัปโหลดรูปสำหรับ " + selected.id)}><Icon name="camera" /></button></div></div>
           </section>
 
           <footer className="page-footer"><span><span className="footer-dot" /> Private workspace</span><span>Protocol data is evidence-labeled before publication.</span><span className="mono">v0.1 · local preview</span></footer>

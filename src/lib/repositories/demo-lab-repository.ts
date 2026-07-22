@@ -2,9 +2,9 @@ import type { ExperimentLot, Protocol, ResearchSource } from "@/lib/domain/model
 import type { LabRepository, LabSnapshot } from "./lab-repository";
 
 const lots: Omit<ExperimentLot, "ownerId">[] = [
-  { id: "PPP-001", plant: "Pink Princess", protocol: "Nodal establishment v0.1", stage: "รอตรวจวันที่ 14", day: 12, status: "Healthy", startedAtLabel: "22 ก.ค. 2026" },
-  { id: "VIO-001", plant: "Violin variegated", protocol: "Nodal establishment v0.1", stage: "ลงอาหารแล้ว", day: 4, status: "Review", startedAtLabel: "18 ก.ค. 2026" },
-  { id: "BLK-004", plant: "Philodendron green control", protocol: "Sterility blank test", stage: "ผ่านวันที่ 7", day: 7, status: "Healthy", startedAtLabel: "15 ก.ค. 2026" },
+  { id: "PPP-001", plant: "Pink Princess", protocolId: "protocol-nodal-v01", protocolTitle: "Nodal establishment v0.1", stage: "รอตรวจวันที่ 14", status: "Healthy", startedAt: "2026-07-10", createdAt: "2026-07-10T00:00:00.000Z", updatedAt: "2026-07-10T00:00:00.000Z" },
+  { id: "VIO-001", plant: "Violin variegated", protocolId: "protocol-nodal-v01", protocolTitle: "Nodal establishment v0.1", stage: "ลงอาหารแล้ว", status: "Review", startedAt: "2026-07-18", createdAt: "2026-07-18T00:00:00.000Z", updatedAt: "2026-07-18T00:00:00.000Z" },
+  { id: "BLK-004", plant: "Philodendron green control", protocolId: "protocol-blank-v01", protocolTitle: "Sterility blank test", stage: "ผ่านวันที่ 7", status: "Healthy", startedAt: "2026-07-15", createdAt: "2026-07-15T00:00:00.000Z", updatedAt: "2026-07-15T00:00:00.000Z" },
 ];
 
 const research: Omit<ResearchSource, "ownerId">[] = [

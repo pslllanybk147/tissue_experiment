@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { ExperimentLot } from "./models";
-import { filterLots } from "./experiment-query";
+import { filterLots, lotAgeDays } from "./experiment-query";
 
 const lots: ExperimentLot[] = [
   { id: "PPP-001", ownerId: "u1", plant: "Pink Princess", protocolId: "p1", protocolTitle: "Nodal", stage: "Establishment", status: "Healthy", startedAt: "2026-07-20", createdAt: "2026-07-20", updatedAt: "2026-07-20" },
@@ -23,5 +23,15 @@ describe("filterLots", () => {
     const original = lots.map((lot) => lot.id);
     expect(filterLots(lots, "", "All").map((lot) => lot.id)).toEqual(["VIO-002", "PPP-003", "PPP-001"]);
     expect(lots.map((lot) => lot.id)).toEqual(original);
+  });
+});
+
+describe("lotAgeDays", () => {
+  it("calculates whole elapsed calendar days without legacy day fields", () => {
+    expect(lotAgeDays("2026-07-18", new Date("2026-07-22T12:00:00Z"))).toBe(4);
+  });
+
+  it("never returns a negative age for future start dates", () => {
+    expect(lotAgeDays("2026-07-23", new Date("2026-07-22T12:00:00Z"))).toBe(0);
   });
 });
