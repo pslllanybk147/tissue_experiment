@@ -282,3 +282,11 @@
 - production เปลี่ยนจาก unconfigured fallback เป็นหน้า `เข้าสู่ Philodendron Lab` พร้อมปุ่ม `Sign in with Google` แล้ว ยืนยันว่า Firebase public configuration ถูกฝังใน build สำเร็จ
 - ตรวจ production auth screen ที่ desktop 1440px และ mobile 390px: ไม่มี horizontal overflow, ปุ่ม Google แสดงทั้งสองขนาด และไม่มี console warning/error
 - ยังไม่กด Google sign-in ในการตรวจอัตโนมัติ เพราะจะเริ่ม external account authentication; ผู้ใช้ต้องทดลองล็อกอินเพื่อยืนยัน Authorized Domains และ Firestore round trip ในขั้นถัดไป
+
+## Firestore deployment attempt — 2026-07-22
+
+- ผู้ใช้ยืนยันว่าสร้าง Firestore Database แล้วและอนุญาตให้ deploy rules/indexes
+- ตรวจพบ `NEXT_PUBLIC_FIREBASE_PROJECT_ID` ใน local environment โดยไม่แสดงค่าออกมา
+- ตรวจ `firestore.rules` และ `firebase.json` แล้ว: deploy scope จำกัดเฉพาะ Firestore rules/indexes และกฎอนุญาตเฉพาะ owner UID
+- Firebase CLI ตอบ `No authorized accounts`; จึงหยุดก่อน deploy และยังไม่มีการเปลี่ยนกฎบน Firebase project
+- ขั้นตอนปลด blocker: ผู้ใช้รัน `npx firebase-tools login` ใน terminal และยืนยันบัญชี Google แล้วแจ้งให้ทำต่อ
