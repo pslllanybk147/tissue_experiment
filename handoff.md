@@ -487,3 +487,8 @@
 - trigger Preview ใหม่ด้วย commit `cc0de34`; Vercel deployment `2rABjL9SR5pQdjh2PTsnWFgphLf8` ผ่านและรับ environment snapshot ล่าสุดแล้ว
 - branch alias ยังคงเป็น `https://tissue-experiment-93-git-featu-3216fc-pslllanybk-2845s-projects.vercel.app`
 - เปิด Google Sign-in บน Preview แล้ว; ต้องให้ผู้ใช้เลือกบัญชีเองก่อนทดสอบ authenticated `/api/media/sign` และ Cloudinary upload
+- ผู้ใช้ Sign in บน Preview สำเร็จ; Firebase session แสดง `FIREBASE` และอ่าน Experiment/Observation เดิมได้
+- upload screenshot ทดสอบไปยัง Observation ของ `QA-20260722` ล้มเหลวที่ขั้นขอลายเซ็นก่อนส่งไฟล์ไป Cloudinary; UI เดิมซ่อน status จริงด้วยข้อความรวม
+- เพิ่ม `readApiError()` พร้อม regression test เพื่อแสดง safe server error (`Invalid authentication`, `Media service unavailable` หรือ Cloudinary error) โดยไม่เปิดเผย secret
+- verification หลัง diagnostic change: 33 test files / 73 tests ผ่าน, ESLint ผ่าน และ Next production build ผ่าน
+- ขั้นถัดไป: deploy diagnostic change และทำ upload ซ้ำเพื่อระบุ root cause ก่อนแก้ configuration/code
