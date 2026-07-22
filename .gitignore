@@ -24,12 +24,14 @@
 .DS_Store
 *.pem
 /work/
+/.worktrees/
 
 # debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+.sandbox-*.log
 
 # env files (can opt-in for committing if needed)
 .env*

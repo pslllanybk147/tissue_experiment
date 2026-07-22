@@ -301,3 +301,87 @@
 - production ที่ไม่มี web session ยังคงถูกกั้นไว้หน้า Sign in ตามที่ออกแบบ
 - พบ console history `auth/popup-closed-by-user` ในแท็บหนึ่งจากการปิด Google popup; ไม่มี Firestore deployment error
 - งานถัดไป: ผู้ใช้ล็อกอินหน้า production แล้วตรวจว่า dashboard แสดง `FIREBASE` และ seed/read/write ใต้ `users/{uid}` สำเร็จ
+
+## Experiment observations design — 2026-07-22
+
+- ผู้ใช้ยืนยันว่า production dashboard แสดง `FIREBASE`
+- ล็อกขอบเขตรอบถัดไปเป็น Experiment Lot + structured observations + audit history
+- Observation แก้ไขได้และใช้ soft delete พร้อม restore
+- เลือก Direct Firestore + batch write สำหรับ observation และ audit event
+- ข้อมูล observation มีวันที่/เวลา, status, stage, note, shoot count, root count และ contamination count
+- Cloudinary และ Protocol editor ถูกแยกไป increment ถัดไป
+- เขียน design specification ที่ `docs/superpowers/specs/2026-07-22-experiment-observations-design.md`
+- ยังไม่เริ่ม implementation; ขั้นถัดไปคือผู้ใช้ตรวจ spec จากนั้นจึงเขียน implementation plan ตาม TDD
+- ผู้ใช้ตรวจและอนุมัติ specification แล้ว
+- เขียน implementation plan ที่ `docs/superpowers/plans/2026-07-22-experiment-observations.md` ครบ 8 tasks พร้อม TDD, sandbox, Firebase rules release และ Vercel Preview gate
+- ยังไม่มี production code เปลี่ยนในรอบ plan; ขั้นถัดไปเลือกวิธี execution แล้วเริ่ม Task 1 บน isolated workspace
+
+### Implementation checkpoint 1
+
+- ผู้ใช้เลือก Inline Execution และอนุญาต isolated worktree
+- worktree: `.worktrees/experiment-observations` บน branch `feature/experiment-observations`
+- baseline `npm test` ผ่าน 7 tests ก่อนเริ่ม
+- Task 1 เสร็จ: domain types และ validation แบบ TDD
+- Task 2 เสร็จ: lot search/status filter/newest-first แบบ pure function
+- Task 3 เสร็จ: memory experiment repository พร้อม owner guard, create/update, soft delete, restore และ audit before/after
+- ยืนยัน RED ก่อน implementation สำหรับทั้ง validation, query และ repository tests
+- checkpoint test: `npm test` ผ่าน 6 files, 24 tests
+- commits: `6fc963c`, `ce35f8e`, `157fc3e`
+- npm install ยังคงรายงาน dependency audit 10 รายการ (8 moderate, 2 high); ยังไม่ใช้ forced fix
+- ขั้นถัดไป: Task 4 Firestore repository + paired batch writes + rules validation
+
+### Preview regression and checkpoint 2
+
+- Vercel Preview ของ commit `dc15ea5` ล้มที่ TypeScript เพราะ dashboard ยังใช้ legacy fields `lot.day`, `lot.protocol`, และ `lot.startedAtLabel`
+- ทำให้เกิดซ้ำด้วย `npm run build` และยืนยัน root cause ว่า schema migration ของ `ExperimentLot` ไม่ครบ
+- เพิ่ม regression tests ให้ demo seed ใช้ schema ใหม่ และเพิ่ม `lotAgeDays(startedAt)` แทน stored day
+- แก้ dashboard ให้ใช้ `protocolTitle`, `startedAt` และคำนวณ Day จากวันที่
+- regression tests ผ่าน 7 tests, local build ผ่าน และ Vercel Preview commit `eac88ff` สำเร็จ
+- Task 4 เสร็จ: Firestore experiment repository ผ่าน adapter พร้อม paired observation/audit batch contract
+- Task 4 tests ผ่าน 4 tests; ชุดรวมผ่าน 7 files, 30 tests; lint ไม่มี warning; build ผ่าน
+- rules เดิมครอบคลุม nested owner-only subcollections อยู่แล้ว จึงยังไม่เปลี่ยนหรือ deploy rules ใน checkpoint นี้
+- ขั้นถัดไป: shared LabShell และ routes/components สำหรับ Experiment list/create/detail
+
+### Experiment workflow checkpoint 3 — 2026-07-22
+
+- branch: `feature/experiment-observations`; worktree: `.worktrees/experiment-observations`
+- เพิ่ม shared responsive `LabShell` และ navigation จริงไป `/`, `/experiments`, `/experiments/new`
+- เพิ่ม Experiment list พร้อมค้นหา Lot ID/ชื่อพืช, filter status, desktop table และ mobile stacked rows
+- เพิ่ม structured Lot form พร้อม validation, pending/error state และ create ผ่าน demo memory repository หรือ authenticated Firestore repository
+- เพิ่ม detail route `/experiments/[lotId]` พร้อม structured observation form, timeline, edit, soft delete, show deleted, restore และ immutable audit history
+- observation mutations ใช้ repository contract เดิมที่จับคู่ observation + audit event ใน Firestore batch
+- เพิ่ม compatibility normalizer สำหรับ Firestore documents รุ่นเก่าที่มี `day` และ `protocol` เพื่อไม่ให้ production dashboard/page ใหม่แตก
+- TDD: ยืนยัน RED ก่อนสร้าง list/form/observation/timeline/audit components และ legacy migration normalizer
+- automated verification ล่าสุด: 13 files / 38 tests ผ่าน, ESLint ผ่าน, Next production build ผ่าน, routes ครบ `/experiments`, `/experiments/new`, `/experiments/[lotId]`
+- React best-practices review แก้ synchronous effect state reset เป็น keyed form และ asynchronous repository callbacks
+- local browser sandbox ใช้ production server port 3011 เพราะ Windows path ของ isolated worktree ยาวเกินข้อจำกัด Turbopack dev sourcemap; production build/server ไม่พบปัญหานี้
+- browser sandbox ผ่านการโหลดหน้า, demo auth gate, list, create Lot, create observation, edit observation และ responsive overflow checks ที่ 1440×900, 1024×768, 390×844
+- soft-delete browser click เปิด native confirmation สำเร็จ แต่ browser-control channel timeout ระหว่าง dialog handoff; repository soft-delete/restore/audit behavior ยังผ่าน automated tests
+- ขั้นถัดไป: fresh full verification, commit/push branch, รอ Vercel Preview และตรวจ authenticated Firebase workflow บน Preview ก่อน merge
+- commits ของ checkpoint: `f56032a` (list/create) และ `d2071fe` (detail observations + migration)
+- push branch สำเร็จและเปิด Draft PR #2: `https://github.com/pslllanybk147/tissue_experiment/pull/2`
+- Vercel check ของ commit `d2071fe` ผ่าน และ Preview พร้อมใช้งานที่ `https://tissue-experiment-93-git-featu-f89199-pslllanybk-2845s-projects.vercel.app`
+- fresh final verification หลังแก้ migration import: 14 files / 39 tests ผ่าน, ESLint ผ่าน, production build ผ่าน, `git diff --check` ผ่าน
+- ยังไม่ merge production; ต้องตรวจ authenticated Firebase create/edit/delete/restore บน Preview แล้วขออนุมัติผู้ใช้ก่อน merge
+
+### Deferred roadmap — Machine Learning / Image Processing
+
+- งาน Machine Learning และ Image Processing สำหรับวิเคราะห์ชนิดหรือสายพันธุ์พืชถูกบันทึกไว้เป็นโครงการในอนาคต
+- **ห้ามเริ่มพัฒนา Image Processing จนกว่า project เดิมด้าน Protocol, Experiment Lots, Observations, Audit History และ production validation จะเสร็จสมบูรณ์ก่อน**
+- หลัง project เดิมเสร็จ จึงค่อยออกแบบ Plant Profile, licensed image dataset, label review, image similarity และโมเดลจำแนกสายพันธุ์เป็น phase แยก
+- ภาพจาก Google Images ห้ามนำมาใช้เป็น training dataset โดยอัตโนมัติ; ต้องใช้แหล่งที่มี license และ provenance ตรวจสอบได้ เช่น iNaturalist, GBIF, Pl@ntNet หรือ Wikimedia Commons
+
+### Authenticated Preview validation — 2026-07-22
+
+- ผู้ใช้ล็อกอิน Vercel Deployment Protection และ Firebase Google Auth สำเร็จ; Preview แสดง session `FIREBASE`
+- ตรวจอ่าน Firestore owner-scoped data สำเร็จ และสร้าง test lot `QA-20260722` (`Sandbox validation control`) ไว้เป็น validation control
+- ตรวจ create observation, edit observation และ audit `created`/`updated` สำเร็จบน Firestore จริง
+- ตรวจ soft delete สำเร็จ: observation ถูกซ่อนจาก default timeline และ audit แสดง `deleted`
+- ตรวจ show-deleted และ restore สำเร็จ: observation กลับมาใน timeline และ audit แสดง `restored`
+- พบระหว่าง browser retry ว่า delete request ซ้ำสร้าง audit `deleted` ซ้ำได้ เพราะ repository mutation ยังไม่ idempotent
+- เพิ่ม regression tests ทั้ง memory และ Firestore repositories แล้วแก้ repeated delete/restore ให้คืน current state โดยไม่สร้าง audit ซ้ำ
+- verification หลังแก้: 14 test files / 41 tests ผ่าน, ESLint ผ่าน, Next production build ผ่าน และ `git diff --check` ผ่าน
+- responsive Preview ตรวจที่ 1440×900, 1024×768 และ 390×844; ไม่พบ horizontal overflow หรือ Next error overlay
+- หมายเหตุ: test lot `QA-20260722` และ audit เดิมสองรายการจากการค้น defect ยังคงอยู่ใน Firestore เพื่อรักษา audit trail; ระบบยังไม่มี lot delete
+- commit/push idempotency fix สำเร็จที่ `1122c2b`; Vercel Preview check ผ่าน และ smoke test บน deployment ล่าสุดยืนยัน authenticated lot detail, observation timeline, audit history และไม่มี Next error overlay
+- Draft PR #2 พร้อมขออนุมัติ merge เข้า `master`; ยังไม่มีการ merge หรือเปลี่ยน production ใน checkpoint นี้

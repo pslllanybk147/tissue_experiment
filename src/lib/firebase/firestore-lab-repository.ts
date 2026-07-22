@@ -1,6 +1,7 @@
 import { collection, doc, getDoc, getDocs, setDoc, writeBatch } from "firebase/firestore";
 
 import type { ExperimentLot, Protocol, ResearchSource } from "@/lib/domain/models";
+import { normalizeExperimentLot } from "../domain/experiment-migration";
 import type { LabRepository, LabSnapshot } from "@/lib/repositories/lab-repository";
 import { createDemoSnapshot } from "@/lib/repositories/demo-lab-repository";
 import { getFirebaseServices } from "./client";
@@ -16,7 +17,7 @@ export function createFirestoreLabRepository(uid: string): LabRepository {
     if (ownerId !== uid) throw new Error("Owner mismatch");
     const { firestore } = servicesOrThrow();
     const snapshot = await getDocs(collection(firestore, "users", uid, "lots"));
-    return snapshot.docs.map((item) => item.data() as ExperimentLot);
+    return snapshot.docs.map((item) => normalizeExperimentLot(item.data()));
   }
 
   async function getSnapshot(ownerId: string): Promise<LabSnapshot> {
