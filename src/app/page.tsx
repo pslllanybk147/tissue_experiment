@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AuthGate } from "@/components/auth/auth-gate";
 import { useAuth } from "@/components/auth/auth-provider";
@@ -122,7 +123,7 @@ export default function Home() {
         </header>
 
         <div className="content">
-          <section className="page-intro"><div><p className="eyebrow">WEDNESDAY · 22 JULY 2026</p><h1>Good afternoon, Ohm.</h1><p className="intro-copy">Your lab is quiet today. Three lots are active and one step is ready for your review.</p></div><button className="primary-button" onClick={() => setShowNewLot(true)}><Icon name="plus" /> New experiment</button></section>
+          <section className="page-intro"><div><p className="eyebrow">WEDNESDAY · 22 JULY 2026</p><h1>Good afternoon, Ohm.</h1><p className="intro-copy">Your lab is quiet today. Three lots are active and one step is ready for your review.</p></div><Link className="primary-button" href="/experiments/new"><Icon name="plus" /> New experiment</Link></section>
 
           {notice && <div className="toast" role="status"><span className="toast-check"><Icon name="check" /></span>{notice}</div>}
 
@@ -138,7 +139,7 @@ export default function Home() {
           </section>
 
           <section className="section-grid">
-            <div className="section-block lots-block"><div className="section-heading"><div><p className="eyebrow">LIVE WORK</p><h2>Experiment lots</h2></div><button className="quiet-button" onClick={() => setActiveNav("Experiments")}>View all <Icon name="arrow" /></button></div><div className="lot-list">{lots.map((lot) => <button key={lot.id} className={`lot-row ${selectedLot === lot.id ? "lot-row-selected" : ""}`} onClick={() => setSelectedLot(lot.id)}><span className={`lot-status status-${lot.status.toLowerCase().replace(" ", "-")}`} /><span className="lot-id">{lot.id}</span><span className="lot-plant">{lot.plant}</span><span className="lot-stage">{lot.stage}</span><span className="lot-day">D+{lotAgeDays(lot.startedAt)}</span><Badge>{lot.status}</Badge><span className="row-arrow">↗</span></button>)}</div></div>
+            <div className="section-block lots-block"><div className="section-heading"><div><p className="eyebrow">LIVE WORK</p><h2>Experiment lots</h2></div><Link className="quiet-button" href="/experiments">View all <Icon name="arrow" /></Link></div><div className="lot-list">{lots.map((lot) => <button key={lot.id} className={`lot-row ${selectedLot === lot.id ? "lot-row-selected" : ""}`} onClick={() => setSelectedLot(lot.id)}><span className={`lot-status status-${lot.status.toLowerCase().replace(" ", "-")}`} /><span className="lot-id">{lot.id}</span><span className="lot-plant">{lot.plant}</span><span className="lot-stage">{lot.stage}</span><span className="lot-day">D+{lotAgeDays(lot.startedAt)}</span><Badge>{lot.status}</Badge><span className="row-arrow">↗</span></button>)}</div></div>
             <div className="section-block next-block"><div className="section-heading"><div><p className="eyebrow">UP NEXT</p><h2>Protocol steps</h2></div><button className="quiet-button" onClick={() => setActiveNav("Protocols")}>Open <Icon name="arrow" /></button></div><div className="step-list">{protocolSteps.slice(0, 4).map((step, index) => <button key={step.number} className={`step-row ${index === activeStep ? "step-row-active" : ""}`} onClick={() => setActiveStep(index)}><span className={`step-index ${step.state}`} >{step.state === "done" ? <Icon name="check" /> : step.number}</span><span className="step-text"><strong>{step.title}</strong><small>{step.meta}</small></span>{index === activeStep && <span className="step-now">NOW</span>}</button>)}</div></div>
           </section>
 
