@@ -19,6 +19,8 @@ export type ProtocolVersion = {
   id: string; protocolId: string; ownerId: string; version: string; summary: string; changeNote: string;
   steps: ProtocolStep[]; createdBy: string; createdAt: string; publishedAt: string | null;
 };
+export type ProtocolProgressState = "Pending" | "Completed" | "Skipped";
+export type ProtocolStepProgress = { stepId: string; protocolId: string; versionId: string; lotId: string; ownerId: string; state: ProtocolProgressState; note: string; completedBy: string | null; completedAt: string | null; updatedAt: string };
 export type ExperimentStatus = "Healthy" | "Review" | "At risk" | "Contaminated";
 export type LotStatus = ExperimentStatus;
 
