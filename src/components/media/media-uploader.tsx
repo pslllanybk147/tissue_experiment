@@ -33,7 +33,7 @@ export function MediaUploader({ lotId, observationId, onUploaded }: { lotId: str
     setError("");
     setStatus("กำลังขอลายเซ็น…");
     try {
-      const token = await user.getIdToken();
+      const token = await user.getIdToken(true);
       const signedResponse = await fetch("/api/media/sign", { method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify({ lotId, observationId, mimeType: file.type, bytes: file.size }) });
       if (!signedResponse.ok) throw new Error(await readApiError(signedResponse, "ขอลายเซ็นอัปโหลดไม่สำเร็จ"));
       const signed = await signedResponse.json();

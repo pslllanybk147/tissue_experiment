@@ -25,7 +25,7 @@ export async function POST(request: Request) {
       if (details.startsWith("Missing variables:")) {
         return NextResponse.json({ error: `Firebase Admin configuration invalid (${details})` }, { status: 503 });
       }
-      return NextResponse.json({ error: "Invalid authentication" }, { status: 401 });
+      return NextResponse.json({ error: `Invalid authentication (${details})` }, { status: 401 });
     }
 
     phase = "request";
