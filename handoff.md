@@ -1291,3 +1291,23 @@
 - Sandbox check: local browser ยังค้างที่ Firebase session loading เนื่องจากไม่มี Firebase configuration; ได้บันทึก known limitation ไว้ และไม่อ้างว่า authenticated UI ผ่าน sandbox
 - สถานะ: claim draft มีข้อความหลักฐาน, ตำแหน่งอ้างอิง และ consent gate ครบ
 - ขั้นถัดไป: เพิ่ม source detail/edit และลิงก์ review จาก claim กลับไปยัง source metadata
+
+### Source detail, metadata edit และ linked claims — 2026-07-23
+
+- เพิ่ม route `/knowledge/sources/[sourceId]` สำหรับเปิดรายละเอียด source รายตัว
+- เพิ่มหน้าแก้ไข metadata ได้แก่ title, URL, DOI, source type, authors, published date, license และ notes
+- เพิ่ม `updateSource` ใน KnowledgeSourceRepository ทั้ง Memory และ Firestore
+- ป้องกัน source identity เปลี่ยนระหว่างแก้ไข และตรวจ DOI/URL ซ้ำโดยไม่นับ source ตัวเอง
+- เพิ่ม test ยืนยันว่า metadata update คง `id` และ `createdAt` เดิม
+- จาก source registry เพิ่มลิงก์ `ดูรายละเอียด` และลิงก์เปิดต้นฉบับแยกกัน
+- หน้า detail แสดง claims ที่อ้าง source นั้น พร้อม review state, evidence excerpt, evidence location และ evidence state
+- เพิ่มลิงก์จาก claim กลับไปยัง claim review ใน Knowledge Library
+- เพิ่ม missing/error/loading state สำหรับ source detail และรักษา owner repository boundary เดิม
+- Verification:
+  - `npm run firebase:verify`: 65 files / 132 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน และมี route `/knowledge/sources/[sourceId]`
+  - `git diff --check`: ผ่าน
+- Sandbox check: local browser ยังติด Firebase session loading เนื่องจากไม่มี Firebase configuration; ไม่อ้างว่า authenticated/demo UI ผ่าน sandbox และข้อจำกัดนี้ยังคงเป็น known limitation
+- สถานะ: source metadata แก้ไขได้โดยไม่ทำลาย identity และ reviewer เห็นหลักฐานที่เชื่อมกับ source เดียวกันได้
+- ขั้นถัดไป: ทำ claim review deep-link ให้เลือก claim จาก query string ได้จริง และเพิ่ม audit event สำหรับการแก้ source metadata

@@ -23,4 +23,13 @@ describe("knowledge source repository", () => {
     await expect(repository.createSource("owner-1", { title: "Same URL", sourceType: "journal", url: "https://example.com/paper/?utm_source=test", doi: null, authors: "", publishedAt: null, license: null, notes: "" })).rejects.toThrow("Source already registered");
     await expect(repository.createSource("owner-1", { title: "Same DOI", sourceType: "journal", url: "https://other.example/paper", doi: "https://doi.org/10.0000/example", authors: "", publishedAt: null, license: null, notes: "" })).rejects.toThrow("Source already registered");
   });
+
+  it("updates source metadata without changing its identity", async () => {
+    const repository = createMemoryKnowledgeSourceRepository("owner-1");
+    const source = await repository.createSource("owner-1", { title: "Draft paper", sourceType: "journal", url: "https://example.com/draft", doi: null, authors: "Author", publishedAt: null, license: null, notes: "" });
+    const updated = await repository.updateSource("owner-1", source.id, { title: "Reviewed paper", sourceType: source.sourceType, url: source.url, doi: source.doi, authors: source.authors, publishedAt: source.publishedAt, license: source.license, notes: "Added review context" });
+    expect(updated.id).toBe(source.id);
+    expect(updated.title).toBe("Reviewed paper");
+    expect(updated.createdAt).toBe(source.createdAt);
+  });
 });
