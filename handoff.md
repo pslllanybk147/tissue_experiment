@@ -1180,3 +1180,26 @@
   - `git diff --check`: ผ่าน
 - สถานะ: มี knowledge catalog/search foundation แล้ว แต่ยังไม่มี source ingestion, claim review UI, image candidate matching หรือการสร้าง SOP จาก claims
 - ขั้นถัดไป: เพิ่ม source registry และ evidence claim ingestion/review ก่อนเชื่อม automated SOP drafting
+
+### Knowledge source registry and claim review — 2026-07-23
+
+- เพิ่ม `KnowledgeSource` และ `SourceClaim` domain model แยก source metadata ออกจาก claim ที่สกัด/เขียนจาก source
+- Source รองรับ journal, book, database, website และ user note พร้อม URL, DOI, authors, publication date, license และ notes
+- Claim รองรับ taxon, category, statement, evidence state และ review state
+- เพิ่ม memory/Firestore repository แบบ owner-scoped:
+  - `users/{uid}/knowledgeSources/{sourceId}`
+  - `users/{uid}/sourceClaims/{claimId}`
+- เพิ่ม Source Registry UI ใน `/knowledge` สำหรับลงทะเบียน DOI/URL
+- เพิ่ม Claim Review UI สำหรับสร้าง claim แบบ `Pending review` และ approve/reject พร้อม reviewer note
+- ระบบไม่เลื่อน claim เป็น `Verified` โดยอัตโนมัติ และยังไม่มี web crawler/AI extraction ใน checkpoint นี้
+- Sandbox verification:
+  - Source Registry แสดงใน demo mode
+  - Pink Princess แสดงใน taxonomy selector
+  - desktop 1280px และ mobile 390px ไม่มี horizontal overflow
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 61 files / 123 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- สถานะ: ผู้ใช้สามารถเก็บ source และ review claim ได้แล้ว แต่ยังต้องเพิ่ม source discovery จาก Crossref/OpenAlex/PubMed และตัวสร้าง SOP draft
+- ขั้นถัดไป: เพิ่ม source ingestion adapter และ import metadata จาก DOI/URL ก่อนสร้าง claim draft
