@@ -719,3 +719,23 @@
 - Sandbox checkpoint: เปิด dev server ชั่วคราวและตรวจ `/`, `/plants`, `/plants/new`, `/experiments/new` ได้ HTTP 200 ครบ
 - สิ่งที่ยังค้าง: signed upload ตรวจ existence ของ Lot/Observation, Firestore rules tests, Protocol authoring/version compare เต็มรูปแบบ และ visual/keyboard verification บน Vercel Preview
 - image processing/ML ยังไม่เริ่มจนกว่า guided protocol project จะเสร็จตามข้อตกลง
+
+### Upload security validation checkpoint — 2026-07-23
+
+- ปรับ `src/app/api/media/sign/route.ts` ให้ตรวจ target ก่อนออก signed upload:
+  - ต้องมี Firebase Bearer token
+  - ตรวจว่า `users/{uid}/lots/{lotId}/observations/{observationId}` มีอยู่จริง
+  - path ถูก scope ด้วย UID จึงไม่สามารถขอ signature ให้ข้อมูลของผู้ใช้อื่นได้
+  - ถ้าไม่พบ target ตอบ `404 Upload target not found`
+- ลดรายละเอียด error ที่ส่งกลับ client:
+  - invalid token ตอบ `Invalid authentication`
+  - config ขาดตอบข้อความทั่วไป
+  - internal error log อยู่ฝั่ง server เท่านั้น
+- ผลตรวจ:
+  - `npm test`: ผ่าน 37 files / 83 tests
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: ผ่าน Auth + Firestore emulator
+  - Sandbox API request ที่ไม่มี token ตอบ HTTP 401 ตามคาด
+  - Sandbox `/experiments` และ `/plants` ตอบ HTTP 200
+- สิ่งที่ยังค้าง: เพิ่ม integration test ที่จำลอง authenticated token + Firestore target, Firestore rules tests และ visual/keyboard verification บน Vercel Preview
