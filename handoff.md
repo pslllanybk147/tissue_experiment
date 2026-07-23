@@ -1026,3 +1026,26 @@
   - `git diff --check`: ผ่าน
 - สถานะ: image decoding/preprocessing ทำงานใน library แล้ว แต่ยังไม่มี classifier, training pipeline หรือ inference endpoint
 - ขั้นถัดไป: สร้าง preprocessing job API ที่รับ export version, ประมวลผลทีละ item, เก็บ artifact metadata/status และ retry ได้โดยไม่ประมวลผลซ้ำ
+
+### Image phase 1 preprocessing job API — 2026-07-23
+
+- เพิ่ม `src/lib/image/preprocessing-job.ts` เป็น job runner ที่ประมวลผลทีละ DatasetItem
+- job status: `queued`, `processing`, `completed`, `failed`
+- เก็บ artifact metadata ต่อ item: status, PNG dimensions, bytes, SHA-256 และ error แบบไม่เปิดเผยข้อมูลลับ
+- item ที่ decode ไม่ผ่านจะถูกบันทึกเป็น failed แต่ไม่หยุด item อื่นใน batch
+- เพิ่ม `POST /api/dataset/preprocess`:
+  - รับ export ID ที่ authenticated user เป็นเจ้าของ
+  - โหลด item IDs จาก export record ฝั่ง server
+  - จำกัดไม่เกิน 20 items ต่อ job เพื่อควบคุม serverless runtime
+  - บันทึก job ใน `users/{uid}/preprocessingJobs`
+  - รองรับ `retryOf` เพื่อเชื่อม retry กับ job เดิม
+  - คืน HTTP 201 เมื่อสำเร็จทั้งหมด และ 207 เมื่อมีบาง item failed
+- เพิ่ม tests สำหรับ mixed success/failure และ authentication route guard
+- ยังไม่เก็บ binary output ลง Cloudinary/Storage; ตอนนี้เก็บเฉพาะ metadata/hash เพื่อยืนยัน preprocessing determinism
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 52 files / 111 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- สถานะ: pipeline สามารถ decode/preprocess และบันทึก job status ได้ แต่ยังไม่มี artifact storage สำหรับนำ PNG ไปฝึกโมเดล
+- ขั้นถัดไป: เพิ่ม storage ของ preprocessed artifact และหน้าแสดง job progress/retry ใน Image Review
