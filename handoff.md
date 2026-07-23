@@ -1331,3 +1331,22 @@
 - Sandbox check: Firebase emulator ผ่านครบ; authenticated browser sandbox ยังติด session loading เมื่อไม่มี local Firebase configuration จึงยังไม่อ้างว่า UI cloud session ผ่าน
 - สถานะ: reviewer เปิด claim ที่เจาะจงจาก source detail ได้ และแก้ metadata ย้อนตรวจ audit ได้
 - ขั้นถัดไป: เพิ่ม source/claim audit เข้า unified research timeline และเริ่ม source-to-taxon claim summary ใน Knowledge Library
+
+### Unified research activity และ taxon claim summary — 2026-07-23
+
+- เพิ่ม `KnowledgeResearchTimeline` ในหน้า Knowledge Library
+- timeline รวม source registration, source metadata update, claim draft creation และ claim review ใน feed เดียว
+- จำกัด feed ล่าสุด 12 เหตุการณ์และเรียงจากใหม่ไปเก่า พร้อม state label และเวลา
+- Knowledge Library รับ source claims และ sources เพิ่มเติมจาก repository เดิม
+- หน้า taxon แสดงจำนวน claims รวมทั้ง claims ที่อยู่ใน library และ claim drafts/reviews ที่เชื่อมกับ taxon
+- แสดงชื่อ source และ review state ของ source claim ใต้ claim ที่เกี่ยวข้อง
+- แก้จำนวน sources ให้รวม source ที่ถูกอ้างผ่าน source claim เมื่อ taxon record ยังไม่มี sourceIds ครบ
+- ไม่ยกระดับ claim draft เป็น Verified อัตโนมัติ; evidence/review state เดิมยังแสดงตามข้อมูลจริง
+- Verification:
+  - `npm run firebase:verify`: 65 files / 132 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- Sandbox check: Firebase emulator ผ่านครบ; authenticated browser sandbox ยังมี known limitation เรื่อง Firebase session loading เมื่อไม่มี local configuration
+- สถานะ: ผู้ใช้ค้น taxon แล้วเห็น claim summary และ activity ของ source/claim ในหน้าเดียว
+- ขั้นถัดไป: เพิ่มการกรอง timeline ตาม taxon/source และทำ claim review audit แบบ persisted ไม่ใช่เพียง derived activity
