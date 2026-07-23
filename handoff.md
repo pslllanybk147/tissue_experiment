@@ -505,3 +505,76 @@
 - deployment `2tq1y3Q1zfRCidAxzTun81nP3vCy` ยืนยันผลเป็น `Firebase Admin configuration invalid`; Cloudinary endpoint ยังไม่ถูกเรียก
 - root cause boundary: ค่า `FIREBASE_ADMIN_PROJECT_ID`, `FIREBASE_ADMIN_CLIENT_EMAIL` หรือ `FIREBASE_ADMIN_PRIVATE_KEY` ไม่สามารถสร้าง Firebase Admin credential ได้; client Firebase login/Firestore read ยังปกติ
 - ขั้นถัดไปสำหรับผู้ใช้: ตรวจสามค่าเทียบ service-account JSON เดียวกัน โดยไม่ใส่ JSON quotes/comma และ private key ต้องรวม BEGIN/END; redeploy แล้ว retry
+
+### Gemini handoff — 2026-07-23
+
+#### จุดเริ่มต้น
+
+- repository: `https://github.com/pslllanybk147/tissue_experiment.git`
+- local worktree: `C:\Users\HP\Documents\Codex\2026-07-22\referenced-chatgpt-conversation-this-is-untrusted\philodendron-lab\.worktrees\pmn`
+- branch: `feature/protocol-media-navigation`
+- Draft PR: `https://github.com/pslllanybk147/tissue_experiment/pull/3`
+- Vercel Preview alias: `https://tissue-experiment-93-git-featu-3216fc-pslllanybk-2845s-projects.vercel.app`
+- ก่อนเริ่มงานให้เปิด worktree ข้างต้น แล้วตรวจ `git status -sb` และอ่านไฟล์ `handoff.md` ทั้งหมด
+- ห้าม merge เข้า production จนกว่า image upload จะผ่าน, ตรวจ Preview ครบ และผู้ใช้อนุมัติอย่างชัดเจน
+
+#### ระบบที่ทำเสร็จแล้ว
+
+- Next.js + TypeScript frontend รองรับ desktop/mobile และทิศทางการออกแบบแบบ Gridgeist
+- Firebase Google Auth และ Firestore แบบ owner-scoped
+- Protocol list/create/edit/publish/version history พร้อม immutable snapshots
+- Experiment lots, observations, audit history, soft delete/restore และ lot-specific protocol progress
+- dashboard ใช้ข้อมูลจริงจาก repository
+- Cloudinary signed-upload foundation และ Firestore media metadata
+- Research register แบบ read-only พร้อม evidence labels
+- navigation: Overview, Protocols, Experiments และ Research
+- machine learning/image processing ถูกบันทึกเป็นงานอนาคต และต้องเริ่มหลัง project เดิมเสร็จเท่านั้น
+
+#### สถานะการตรวจล่าสุด
+
+- local verification ล่าสุดก่อน handoff: 33 test files / 74 tests ผ่าน
+- ESLint ผ่าน
+- Next production build ผ่าน
+- Firebase Auth + Firestore read บน Preview ใช้งานได้หลังผู้ใช้ Sign in
+- QA lot ที่ใช้ตรวจ: `QA-20260722`
+- observation ที่ใช้ตรวจ: `d168babd-6e12-425f-99ef-430d72003cac`
+- การอัปโหลดทดลองยังไม่สร้างไฟล์ใน Cloudinary เพราะ request หยุดอยู่ที่ Firebase Admin phase ก่อนเรียก Cloudinary
+
+#### จุดติดขัดปัจจุบัน
+
+- `/api/media/sign` ตอบแบบควบคุมได้ว่า `Firebase Admin configuration invalid`
+- Firebase client login และ Firestore read ปกติ จึงเป็นปัญหาเฉพาะ server-side Firebase Admin credentials
+- ตัวแปรที่ต้องตรวจใน Vercel:
+  - `FIREBASE_ADMIN_PROJECT_ID`
+  - `FIREBASE_ADMIN_CLIENT_EMAIL`
+  - `FIREBASE_ADMIN_PRIVATE_KEY`
+- ทั้งสามค่าต้องมาจาก service-account JSON ไฟล์เดียวกัน
+- `FIREBASE_ADMIN_PRIVATE_KEY` ต้องมี `-----BEGIN PRIVATE KEY-----` และ `-----END PRIVATE KEY-----` ครบ
+- ห้ามใส่ JSON quotes, comma ท้ายค่า หรือ prefix `NEXT_PUBLIC_`
+- ห้ามพิมพ์ อ่านกลับ หรือบันทึกค่า secret ลง log, chat, screenshot, source code หรือไฟล์ handoff
+
+#### ขั้นตอนถัดไปสำหรับ Gemini
+
+1. ให้ผู้ใช้แก้ Firebase Admin variables ทั้งสามตัวใน Vercel จาก service-account JSON เดียวกัน หากยังผิดให้สร้าง service-account key ใหม่และแทนที่ทั้งสามค่าพร้อมกัน
+2. Trigger Vercel Preview deployment ใหม่เพื่อรับ environment snapshot ล่าสุด
+3. เปิด Preview alias และให้ผู้ใช้ Sign in with Google เอง
+4. เปิด lot `QA-20260722` แล้วทดสอบ upload ด้วยภาพ JPEG/PNG สังเคราะห์ ห้ามใช้ภาพส่วนตัวของผู้ใช้โดยไม่ได้รับอนุญาต
+5. ผลที่คาดหวัง: media signer สำเร็จ → Cloudinary upload สำเร็จ → Firestore media metadata ถูกบันทึก → รูปแสดงใน observation
+6. ตรวจ soft delete/restore ของรูปและ audit event หลัง upload ผ่าน
+7. รัน verification ใหม่ทั้งหมด:
+   - `npm test`
+   - `npm run lint`
+   - `npm run build`
+   - ตั้ง Java 21 เฉพาะ session แล้วรัน `npm run firebase:verify`
+8. ตรวจ browser sandbox ที่ 390px, 1024px และ 1440px รวม keyboard focus, overflow, loading/error states และ reduced motion
+9. อัปเดต `handoff.md` ทุกครั้งก่อนจบงาน จากนั้น commit และ push branch
+10. รอ Vercel Preview checks ผ่าน แล้วขออนุมัติผู้ใช้ก่อน merge Draft PR #3 เข้า production
+
+#### กติกาการส่งมอบ
+
+- บรรทัดแรกของไฟล์นี้ต้องคงเป็น `ต้องมีการบันทึกทุกครั้งที่งานจบ`
+- เก็บ secrets ใน Vercel Environment Variables เท่านั้น
+- server-only variables ต้องไม่มี `NEXT_PUBLIC_`
+- ใช้ภาพสังเคราะห์สำหรับ QA
+- ห้าม merge production โดยอนุมานจากคำตอบทั่วไป ต้องได้รับคำอนุมัติ merge ที่ชัดเจน
+- หากแก้โค้ด ต้องตรวจ sandbox/emulator อย่างละเอียดก่อนส่งงาน
