@@ -21,7 +21,8 @@ export function KnowledgeSourceRegister({ records, sources, claims, onCreateSour
   const [identifier, setIdentifier] = useState("");
   const [discovering, setDiscovering] = useState(false);
   const [discoveryError, setDiscoveryError] = useState("");
-  const [claim, setClaim] = useState({ sourceId: "", taxonId: records[0]?.taxon.id ?? "", category: "tissue-culture" as SourceClaim["category"], statement: "", evidenceState: "Adapted" as SourceClaim["evidenceState"] });
+  const [claim, setClaim] = useState({ sourceId: "", taxonId: records[0]?.taxon.id ?? "", category: "tissue-culture" as SourceClaim["category"], statement: "", evidenceExcerpt: "", evidenceState: "Adapted" as SourceClaim["evidenceState"] });
+  const [evidenceAuthorized, setEvidenceAuthorized] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -61,9 +62,14 @@ export function KnowledgeSourceRegister({ records, sources, claims, onCreateSour
     event.preventDefault();
     setBusy(true);
     try {
+      if (!evidenceAuthorized) { setDiscoveryError("ยืนยันก่อนว่า excerpt นี้มาจาก source ที่คุณมีสิทธิ์ใช้"); return; }
       await onCreateClaim(claim);
-      setClaim(current => ({ ...current, statement: "" }));
+      setClaim(current => ({ ...current, statement: "", evidenceExcerpt: "" }));
+      setEvidenceAuthorized(false);
       setMessage("บันทึก claim draft แล้ว — รอ review");
+      setDiscoveryError("");
+    } catch (error) {
+      setDiscoveryError(error instanceof Error && error.message === "Evidence excerpt required" ? "ต้องมีข้อความจาก source ก่อนสร้าง claim draft" : "บันทึก claim draft ไม่สำเร็จ");
     } finally {
       setBusy(false);
     }
@@ -90,6 +96,8 @@ export function KnowledgeSourceRegister({ records, sources, claims, onCreateSour
         <label>Taxon<select required value={claim.taxonId} onChange={e => setClaim({ ...claim, taxonId: e.target.value })}>{records.map(item => <option key={item.taxon.id} value={item.taxon.id}>{item.taxon.displayName}</option>)}</select></label>
         <label>หมวดข้อมูล<select value={claim.category} onChange={e => setClaim({ ...claim, category: e.target.value as SourceClaim["category"] })}><option value="tissue-culture">Tissue culture</option><option value="biology">Biology</option><option value="taxonomy">Taxonomy</option><option value="identification">Identification</option><option value="propagation">Propagation</option></select></label>
         <label>ข้อความ claim<textarea required value={claim.statement} onChange={e => setClaim({ ...claim, statement: e.target.value })} placeholder="เขียนเฉพาะข้อความที่แหล่งข้อมูลรองรับ" /></label>
+        <label>ข้อความจาก source ที่อนุญาต<textarea required value={claim.evidenceExcerpt} onChange={e => setClaim({ ...claim, evidenceExcerpt: e.target.value })} placeholder="วาง excerpt หรือสรุปจาก full text ที่คุณมีสิทธิ์ใช้" /></label>
+        <label className="knowledge-check"><input type="checkbox" checked={evidenceAuthorized} onChange={e => setEvidenceAuthorized(e.target.checked)} />ยืนยันว่า excerpt นี้มาจาก source ที่ฉันมีสิทธิ์ใช้</label>
         <label>ระดับหลักฐาน<select value={claim.evidenceState} onChange={e => setClaim({ ...claim, evidenceState: e.target.value as SourceClaim["evidenceState"] })}><option>Verified</option><option>Adapted</option><option>Experimental</option><option>Pending review</option></select></label>
         <button className="primary-button" disabled={busy || !sources.length} type="submit">บันทึก claim draft</button>
       </form>

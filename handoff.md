@@ -1259,3 +1259,19 @@
 - Sandbox check: local browser route ยังติดสถานะ Firebase session loading เพราะไม่มี Firebase configuration ใน environment ของ sandbox; จึงไม่สามารถยืนยัน visual state ผ่าน authenticated/demo UI ได้ในรอบนี้ และบันทึกไว้เป็น known limitation
 - สถานะ: source registry แสดงรายการเดิมและแจ้งเตือนซ้ำก่อน submit แล้ว
 - ขั้นถัดไป: เพิ่ม source detail/metadata edit และเริ่ม workflow สร้าง claim draft จาก full text ที่ผู้ใช้เลือกและอนุญาต
+
+### Authorized evidence excerpt for claim drafts — 2026-07-23
+
+- เพิ่ม `evidenceExcerpt` ใน `SourceClaim` แบบ optional เพื่อรองรับข้อมูลเก่าที่อาจยังไม่มี excerpt
+- Claim ใหม่ต้องมีข้อความจาก source ที่ไม่ว่าง มิฉะนั้น repository จะปฏิเสธด้วย `Evidence excerpt required`
+- หน้า Knowledge เพิ่มช่องวาง excerpt/full-text summary และ checkbox ยืนยันว่าผู้ใช้มีสิทธิ์ใช้ข้อความดังกล่าว
+- ระบบยังไม่ทำ automatic full-text extraction และไม่ส่งข้อมูลไป AI; ผู้ใช้เป็นผู้เลือกและเขียน claim draft เอง
+- Claim ใหม่ยังคงเริ่มที่ `Pending review` และไม่ถูกนำไปแสดงเป็น Verified ก่อน reviewer approve
+- เพิ่ม regression test สำหรับการปฏิเสธ claim ที่ไม่มี evidence excerpt
+- Verification:
+  - `npm run firebase:verify`: 65 files / 131 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+- Sandbox check: local browser ยังติด Firebase session loading เมื่อไม่มี Firebase configuration จึงไม่สามารถยืนยันหน้า authenticated/demo ด้วย browser ได้ในรอบนี้; route compile และ tests ผ่าน และข้อจำกัดถูกบันทึกไว้
+- สถานะ: claim draft มีหลักฐานประกอบและ consent gate แล้ว
+- ขั้นถัดไป: เพิ่ม source detail/edit และจัดเก็บตำแหน่งอ้างอิง เช่น page/section/table ของ excerpt

@@ -25,6 +25,7 @@ export type SourceClaim = {
   taxonId: string;
   category: "taxonomy" | "biology" | "ecology" | "toxicity" | "propagation" | "tissue-culture" | "identification";
   statement: string;
+  evidenceExcerpt?: string;
   evidenceState: EvidenceState;
   reviewState: ClaimReviewState;
   reviewerNote: string;
