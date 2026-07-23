@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useState } from "react";
-import type { ObservationMedia } from "../../../../lib/domain/models";
+import type { ObservationMedia } from "../../lib/domain/models";
 
 function Lightbox({ item, onClose }: { item: ObservationMedia; onClose: () => void }) {
   return (
