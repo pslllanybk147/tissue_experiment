@@ -739,3 +739,18 @@
   - Sandbox API request ที่ไม่มี token ตอบ HTTP 401 ตามคาด
   - Sandbox `/experiments` และ `/plants` ตอบ HTTP 200
 - สิ่งที่ยังค้าง: เพิ่ม integration test ที่จำลอง authenticated token + Firestore target, Firestore rules tests และ visual/keyboard verification บน Vercel Preview
+
+### Firestore rules verification checkpoint — 2026-07-23
+
+- เพิ่ม dev dependency `@firebase/rules-unit-testing`
+- เพิ่ม `src/lib/firebase/firestore-rules.test.ts` ครอบคลุม:
+  - เจ้าของอ่าน/เขียน Lot ของตนเองได้
+  - unauthenticated อ่านข้อมูลไม่ได้
+  - ผู้ใช้อื่นอ่านข้อมูลข้าม account ไม่ได้
+  - เขียน `ownerId` ของผู้ใช้อื่นไม่ได้
+- Test จะ skip เมื่อรันนอก emulator และจะทำงานจริงเมื่อ `FIRESTORE_EMULATOR_HOST` ถูกตั้งโดย `firebase:verify`
+- ผล `npm run firebase:verify`: ผ่าน 38 files / 86 tests
+- ผล `npm run lint`: ผ่าน
+- ผล `npm run build`: ผ่าน
+- Sandbox routes `/`, `/plants`, `/experiments`: HTTP 200 ครบ
+- สิ่งที่ยังค้าง: integration test ของ signed upload ที่ใช้ authenticated token จริง, visual/keyboard verification บน Vercel Preview และ Protocol authoring/version compare แบบเต็ม
