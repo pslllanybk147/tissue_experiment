@@ -1243,3 +1243,19 @@
 - Sandbox check: เปิด local `/knowledge` ได้ แต่ session ใน browser sandbox ค้างที่ Firebase session loading เนื่องจาก local environment ไม่มี Firebase configuration จึงตรวจ visual state ผ่าน browser runtime ไม่จบในรอบนี้; ได้ตรวจ route/build และ component/repository tests แทน ไม่อ้างว่า sandbox flow สำเร็จ
 - สถานะ: source registry กัน DOI/URL ซ้ำแล้ว และ claim ถูกระบุเป็น draft อย่างโปร่งใส
 - ขั้นถัดไป: เพิ่ม source list/duplicate warning ที่เห็นก่อน submit และออกแบบ full-text/claim extraction แบบ user-approved ก่อนเชื่อม AI
+
+### Source list and duplicate warning UI — 2026-07-23
+
+- เพิ่มรายการ `Registered Sources` ในหน้า `/knowledge` แสดงชื่อ source, ประเภท, DOI และลิงก์เปิดแหล่งข้อมูล
+- เพิ่ม client-side duplicate warning ทันทีเมื่อ URL/DOI ที่กรอกซ้ำกับ source เดิม
+- ปุ่มบันทึก source ถูก disable เมื่อพบรายการซ้ำ และยังคงมี repository-side guard เป็นชั้นป้องกันที่สอง
+- ปรับ Source Registry และ Claim form ให้ใช้คำว่า `claim draft` ชัดเจน
+- เพิ่ม responsive CSS สำหรับ source rows และ long Thai/source titles
+- เพิ่ม component regression test ตรวจ source list และ claim draft wording
+- Verification:
+  - `npm run firebase:verify`: 65 files / 130 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+- Sandbox check: local browser route ยังติดสถานะ Firebase session loading เพราะไม่มี Firebase configuration ใน environment ของ sandbox; จึงไม่สามารถยืนยัน visual state ผ่าน authenticated/demo UI ได้ในรอบนี้ และบันทึกไว้เป็น known limitation
+- สถานะ: source registry แสดงรายการเดิมและแจ้งเตือนซ้ำก่อน submit แล้ว
+- ขั้นถัดไป: เพิ่ม source detail/metadata edit และเริ่ม workflow สร้าง claim draft จาก full text ที่ผู้ใช้เลือกและอนุญาต
