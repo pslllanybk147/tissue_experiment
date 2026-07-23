@@ -10,13 +10,30 @@ function cleanEnv(val: string | undefined): string {
   return trimmed;
 }
 
+export function formatPrivateKey(key: string | undefined): string {
+  if (!key) return "";
+  let cleaned = cleanEnv(key);
+  cleaned = cleaned.replace(/\\n/g, "\n");
+
+  const beginMarker = "-----BEGIN PRIVATE KEY-----";
+  const endMarker = "-----END PRIVATE KEY-----";
+
+  if (cleaned.includes(beginMarker) && cleaned.includes(endMarker)) {
+    const startIndex = cleaned.indexOf(beginMarker) + beginMarker.length;
+    const endIndex = cleaned.indexOf(endMarker);
+    const base64Body = cleaned.slice(startIndex, endIndex).replace(/\s+/g, "");
+
+    const lines = base64Body.match(/.{1,64}/g) ?? [base64Body];
+    return `${beginMarker}\n${lines.join("\n")}\n${endMarker}\n`;
+  }
+
+  return cleaned;
+}
+
 export function getAdminAuth() {
   const projectId = cleanEnv(process.env.FIREBASE_ADMIN_PROJECT_ID);
   const clientEmail = cleanEnv(process.env.FIREBASE_ADMIN_CLIENT_EMAIL);
-  let privateKey = cleanEnv(process.env.FIREBASE_ADMIN_PRIVATE_KEY);
-  if (privateKey.includes("\\n")) {
-    privateKey = privateKey.replace(/\\n/g, "\n");
-  }
+  const privateKey = formatPrivateKey(process.env.FIREBASE_ADMIN_PRIVATE_KEY);
 
   if (!projectId || !clientEmail || !privateKey) {
     throw new Error("Firebase Admin is not configured");
@@ -28,4 +45,5 @@ export function getAdminAuth() {
 
   return getAuth(app);
 }
+
 

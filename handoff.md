@@ -582,8 +582,9 @@
 ### Protocol media implementation checkpoint 7 — 2026-07-23
 
 - ผู้ใช้ยืนยันตั้งค่า Firebase Admin variables ใน Vercel เรียบร้อยแล้ว
-- เพิ่ม `cleanEnv()` ใน `src/lib/firebase/admin.ts` เพื่อลบ quotes ส่วนเกินและแปลง newlines อัตโนมัติ ป้องกันข้อผิดพลาดจากการ copy-paste ค่าใน Vercel UI
-- สั่ง push deployment ใหม่เพื่อให้ Vercel บันทึก environment snapshot ชุดล่าสุด
+- เพิ่ม `formatPrivateKey()` ใน `src/lib/firebase/admin.ts` และ `admin.test.ts` เพื่อแปลง RSA Private Key ที่ถูกตัด `\n` หรือรวมเป็นบรรทัดเดียวกลับเป็น PEM format มาตรฐานอัตโนมัติ
+- สั่ง push deployment ใหม่เพื่อให้ Vercel บันทึก environment snapshot และโค้ดตัวแปลงคีย์ชุดล่าสุด
 - ลำดับถัดไป: รอ Vercel Preview build เสร็จสิ้น แล้วทดสอบ Sign-in + อัปโหลดสื่อสังเกตการณ์ที่ Lot `QA-20260722`
+
 
 
