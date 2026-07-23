@@ -1066,3 +1066,25 @@
   - `git diff --check`: ผ่าน
 - สถานะ: pipeline สามารถสร้าง PNG artifact และเก็บ URL/hash สำหรับนำไปตรวจหรือเตรียม dataset ต่อได้ แต่ยังไม่มี classifier, training pipeline, inference endpoint หรือหน้า job progress/retry
 - ขั้นถัดไป: เพิ่มหน้าแสดง preprocessing job progress/retry ใน Dataset Review หรือเริ่มออกแบบ model-ready dataset export จาก artifact ที่ประมวลผลแล้ว
+
+### Image phase 1 preprocessing job progress/retry UI — 2026-07-23
+
+- เพิ่ม `GET /api/dataset/preprocess?limit=20` สำหรับโหลด preprocessing jobs ของผู้ใช้ที่ authenticated เท่านั้น
+- เพิ่ม `src/components/dataset/preprocessing-jobs.tsx` แสดงสถานะ job, progress count, progress bar, จำนวน artifact ที่พร้อม/ล้มเหลว และลิงก์ Cloudinary เมื่อมี `secureUrl`
+- เพิ่มปุ่ม retry สำหรับ job ที่มีรายการล้มเหลว โดยสร้าง export ใหม่และเชื่อม `retryOf` กับ job เดิมเพื่อรักษา audit trail
+- เชื่อมหน้า `Image Review` ให้สร้าง export และเริ่ม preprocessing ได้จากปุ่มเดียว พร้อมโหลดสถานะ jobs ล่าสุด
+- ปรับการดาวน์โหลด manifest ให้ใช้ JSON response จาก export API และยังคงสร้างไฟล์ดาวน์โหลดให้ผู้ใช้
+- เพิ่ม responsive layout สำหรับมือถือ และตรวจไม่ให้เกิด horizontal overflow
+- เพิ่ม route test สำหรับ authentication guard ของ GET jobs
+- Sandbox verification:
+  - demo mode เปิดหน้า Image Review สำเร็จ
+  - desktop 1440px: ไม่มี horizontal overflow
+  - mobile 390px: ไม่มี horizontal overflow
+  - screenshot ตรวจแล้ว empty state และ navigation แสดงผลปกติ
+- สถานะ: ผู้ใช้ authenticated สามารถดู job progress และ retry จาก Image Review ได้ แต่ยังไม่มี background queue จริง; API ปัจจุบันประมวลผลใน request เดียวและจำกัด 20 รายการต่อ job
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 53 files / 113 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- ขั้นถัดไป: เพิ่ม model-ready dataset export ที่ใช้ preprocessed artifact โดยตรง หรือย้าย preprocessing ไป background queue เพื่อไม่ผูกกับ serverless request timeout

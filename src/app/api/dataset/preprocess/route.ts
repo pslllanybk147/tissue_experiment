@@ -8,12 +8,34 @@ import type { DatasetItem } from "../../../../lib/domain/models";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 const MAX_ITEMS = 20;
+const MAX_JOBS = 20;
 
 async function authenticate(request: Request) {
   const header = request.headers.get("authorization");
   if (!header?.startsWith("Bearer ")) throw new Response(JSON.stringify({ error: "Authentication required" }), { status: 401 });
   const { verifyFirebaseToken } = await import("../../../../lib/firebase/token-verifier");
   try { return (await verifyFirebaseToken(header.slice(7))).uid; } catch { throw new Response(JSON.stringify({ error: "Invalid authentication" }), { status: 401 }); }
+}
+
+export async function GET(request: Request) {
+  try {
+    const uid = await authenticate(request);
+    const { getFirestore } = await import("firebase-admin/firestore");
+    const { getAdminAuth } = await import("../../../../lib/firebase/admin");
+    const firestore = getFirestore(getAdminAuth().app);
+    const requestedLimit = Number(new URL(request.url).searchParams.get("limit") || MAX_JOBS);
+    const limit = Number.isFinite(requestedLimit) && requestedLimit > 0 ? Math.min(requestedLimit, MAX_JOBS) : MAX_JOBS;
+    const snapshot = await firestore.collection(`users/${uid}/preprocessingJobs`).get();
+    const jobs = snapshot.docs
+      .map(document => document.data())
+      .sort((left, right) => String(right.updatedAt || "").localeCompare(String(left.updatedAt || "")))
+      .slice(0, limit);
+    return NextResponse.json({ jobs }, { headers: { "Cache-Control": "no-store" } });
+  } catch (error) {
+    if (error instanceof Response) return new NextResponse(error.body, { status: error.status, headers: { "content-type": "application/json" } });
+    console.error("preprocessing job list failure", { errorName: error instanceof Error ? error.name : "UnknownError" });
+    return NextResponse.json({ error: "Preprocessing jobs unavailable" }, { status: 503 });
+  }
 }
 
 export async function POST(request: Request) {
