@@ -613,9 +613,15 @@
 - แก้ไข import path ของ `ObservationMedia` ใน `src/components/media/media-strip.tsx` แก้ไขปัญหา Vercel build type check failure และ push commit `3b832b7` สำเร็จแล้ว
 - ลำดับถัดไป: รอ Vercel Preview build เสร็จสิ้น แล้วทดสอบ Sign-in + อัปโหลดสื่อสังเกตการณ์ และกดขยายภาพที่ Lot `QA-20260722`
 
+### Plant Profile & ML Dataset Preparation phase — 2026-07-23
 
-
-
-
-
-
+- สร้างคลังสายพันธุ์พืช `/plants` (Plant Profile Catalog) รวบรวมข้อมูลสายพันธุ์ Philodendron ด่าง (*Pink Princess*, *White Wizard*, *Ring of Fire*, *Florida Beauty*, *Billietiae Variegata*)
+- เพิ่มข้อมูล License & Provenance Verification Badge (iNaturalist, GBIF, Wikimedia Commons) อิงลิขสิทธิ์ถูกต้อง (CC-BY 4.0 / CC0 / Public Domain)
+- เพิ่มระบบวิเคราะห์คุณลักษณะภาพพืช (`image-analyzer.ts`): คำนวณอัตราความด่างของใบ (Leaf Variegation Ratio %) และการสกัดสีหลัก (Dominant Color Palette)
+- ปรับปรุง Lightbox Modal บน Observation Media ให้แสดงผลการวิเคราะห์ภาพ (Variegation % และ ML Dataset Tag)
+- เพิ่มเมนู `Plants` ใน Navigation Bar ทั้งบน Desktop Sidebar และ Mobile Topbar
+- TDD & Verification:
+  - Unit Tests: ผ่าน 38 test files / 85 tests (100%)
+  - ESLint: ผ่าน 0 errors / 0 warnings
+  - Next Production Build: สร้าง static/dynamic pages สำเร็จสมบูรณ์ (10/10 routes)
+- Merge เข้า `master` ใน commit `2072b73` และ push ขึ้น GitHub เรียบร้อยแล้ว
