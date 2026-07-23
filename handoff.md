@@ -1227,3 +1227,19 @@
   - `git diff --check`: ผ่าน
 - สถานะ: ระบบนำ DOI/URL ที่รองรับมาเติม metadata ได้แล้ว แต่ยังไม่มี full-text extraction, claim draft อัตโนมัติ หรือ source deduplication
 - ขั้นถัดไป: เพิ่ม source deduplication และ claim draft workflow จาก metadata/full text ที่ผู้ใช้อนุญาต
+
+### Source deduplication and claim draft labeling — 2026-07-23
+
+- เพิ่ม `canonicalSourceUrl` เพื่อลบ fragment, tracking parameters กลุ่ม `utm_*`, ปรับตัวพิมพ์ และตัด slash ท้าย URL ก่อนเปรียบเทียบ
+- เพิ่ม `isDuplicateSource` ให้ตรวจ DOI ที่ normalize แล้วก่อนบันทึก และใช้ canonical URL เป็น fallback
+- Memory repository และ Firestore repository ปฏิเสธ source ซ้ำด้วย error `Source already registered` เพื่อป้องกัน registry มีรายการเดิมหลายครั้ง
+- เพิ่ม regression tests สำหรับ URL ซ้ำ, DOI ซ้ำ และ URL ที่มี tracking parameter
+- ปรับข้อความหลังบันทึก claim ให้ระบุว่าเป็น `claim draft` และ `Pending review`; ระบบยังไม่มี automatic full-text/AI extraction และไม่เลื่อน evidence เป็น Verified เอง
+- Verification:
+  - `npm run firebase:verify`: 64 files / 129 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน (มีเพียงคำเตือน line ending จาก Git บน Windows)
+- Sandbox check: เปิด local `/knowledge` ได้ แต่ session ใน browser sandbox ค้างที่ Firebase session loading เนื่องจาก local environment ไม่มี Firebase configuration จึงตรวจ visual state ผ่าน browser runtime ไม่จบในรอบนี้; ได้ตรวจ route/build และ component/repository tests แทน ไม่อ้างว่า sandbox flow สำเร็จ
+- สถานะ: source registry กัน DOI/URL ซ้ำแล้ว และ claim ถูกระบุเป็น draft อย่างโปร่งใส
+- ขั้นถัดไป: เพิ่ม source list/duplicate warning ที่เห็นก่อน submit และออกแบบ full-text/claim extraction แบบ user-approved ก่อนเชื่อม AI
