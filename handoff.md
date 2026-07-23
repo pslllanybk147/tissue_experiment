@@ -782,3 +782,24 @@
   - `npm run build`: ผ่าน
 - หมายเหตุ: emulator แสดง MetadataLookupWarning จาก environment แต่ test suite จบสำเร็จและผล assertions ผ่านทั้งหมด
 - สิ่งที่ยังค้าง: ตรวจ Vercel Preview authenticated จริง, visual/keyboard QA และ Protocol authoring/version compare
+
+### Vercel Preview guided workflow checkpoint — 2026-07-23
+
+- ตรวจ Preview จริงที่ `https://tissue-experiment-93-git-featu-f89199-pslllanybk-2845s-projects.vercel.app`
+- Source ที่ตรวจ: branch `feature/protocol-media-navigation`, commit `4657d78`
+- ใช้ Firebase session ที่ล็อกอินอยู่จริงบน Preview
+- ทดสอบสำเร็จ:
+  1. เปิด `/plants` และเริ่มสร้าง Plant Record
+  2. สร้าง Plant Record ชื่อ `QA Preview Plant 20260723` ชนิดที่คาดว่าเป็น `Philodendron Pink Princess` พร้อม confidence ระดับ Medium
+  3. เปิดหน้า Plant Profile และตรวจข้อมูล baseline, สุขภาพ, วันที่รับต้น และหมายเหตุ
+  4. สร้าง Experiment Lot `QA-PREVIEW-20260723` จาก template `Pink Princess · Nodal culture · Adapted`
+  5. หน้า Lot แสดง Guided Protocol ครบ 13 ขั้น พร้อม objective, materials, instructions, safety/critical controls, expected result, pass/fail criteria และ next action
+  6. กดบันทึกโดยไม่ใส่ note แล้วระบบบล็อกด้วยข้อความ `ขั้นนี้ต้องมี note ก่อนบันทึก`
+  7. ใส่ note + เลือก `Passed` แล้วบันทึกสำเร็จ ระบบแสดง `บันทึกผลแล้ว` และทำเครื่องหมายขั้นที่ 1 เป็น Passed
+- QA data ที่สร้างบน Preview:
+  - Plant ID: `plant-bb0b61a7-71e2-49f8-910a-d384423ecb09`
+  - Lot ID: `QA-PREVIEW-20260723`
+  - ข้อมูลนี้เป็นข้อมูลทดสอบและควร archive/soft-delete ภายหลังตามต้องการ
+- ยังไม่ถือว่าผ่าน: photo upload/delete/restore บน Preview เพราะหน้า Experiment ที่ตรวจไม่มี control สำหรับอัปโหลดรูปแสดงอยู่ใน DOM จึงยังไม่ได้กดทดสอบและไม่สรุปผลเกินหลักฐาน
+- Automated checks ก่อน/ระหว่าง checkpoint: `npm test`, `npm run firebase:verify`, `npm run lint`, `npm run build` ผ่าน
+- ขั้นถัดไปที่เหลือ: ตรวจ responsive/keyboard บน Preview หรือแก้ให้ media upload control ปรากฏใน guided workflow แล้วจึงทดสอบ media end-to-end
