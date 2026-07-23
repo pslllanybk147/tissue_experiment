@@ -1088,3 +1088,20 @@
   - `npm run build`: ผ่าน
   - `git diff --check`: ผ่าน
 - ขั้นถัดไป: เพิ่ม model-ready dataset export ที่ใช้ preprocessed artifact โดยตรง หรือย้าย preprocessing ไป background queue เพื่อไม่ผูกกับ serverless request timeout
+
+### Image phase 1 model-ready dataset export — 2026-07-23
+
+- เพิ่ม `src/lib/domain/model-ready-exporter.ts` สำหรับสร้าง manifest `image-dataset-model-ready-v1`
+- Model-ready manifest จะรวมเฉพาะรายการที่ผ่าน review/label และมี artifact ที่ preprocess สำเร็จครบ พร้อม `artifactUrl`, `artifactPublicId`, `artifactSha256` และ `sourceAssetUrl`
+- ถ้า job ยังไม่ `completed`, artifact ขาด, หรือ item ใน job ไม่ตรงกับรายการ dataset ระบบจะหยุด export ด้วยสถานะ conflict แทนการสร้าง manifest ไม่สมบูรณ์
+- เพิ่ม `POST /api/dataset/model-export` รับ `jobId`, ตรวจ owner scope, สร้างประวัติที่ `users/{uid}/modelExports/{exportId}` และคืน JSON สำหรับดาวน์โหลด
+- เพิ่มปุ่ม `ดาวน์โหลด model-ready manifest` ใน preprocessing job ที่เสร็จสมบูรณ์
+- เพิ่ม unit tests สำหรับ completed artifact และ incomplete job รวมถึง auth guard ของ API
+- Sandbox หลังแก้ยังตรวจได้ว่า Image Review demo mode render ปกติและไม่มี horizontal overflow ที่ 390px/1440px
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 55 files / 116 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- สถานะ: มี manifest ที่ชี้ไปยังภาพ preprocess แล้วและพร้อมส่งต่อเข้า training pipeline แต่ยังไม่มีการ train model หรือ inference endpoint
+- ขั้นถัดไป: เพิ่ม background queue/worker สำหรับ batch ใหญ่ หรือเริ่มสร้าง training dataset connector และ validation report
