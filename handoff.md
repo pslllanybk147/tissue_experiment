@@ -578,3 +578,10 @@
 - ใช้ภาพสังเคราะห์สำหรับ QA
 - ห้าม merge production โดยอนุมานจากคำตอบทั่วไป ต้องได้รับคำอนุมัติ merge ที่ชัดเจน
 - หากแก้โค้ด ต้องตรวจ sandbox/emulator อย่างละเอียดก่อนส่งงาน
+
+### Protocol media implementation checkpoint 7 — 2026-07-23
+
+- ผู้ใช้ยืนยันตั้งค่า Firebase Admin variables ใน Vercel เรียบร้อยแล้ว
+- สั่ง trigger Vercel Preview deployment ใหม่เพื่อให้ Vercel บันทึก environment snapshot ชุดล่าสุดที่มีการตั้งค่า Admin credentials
+- ลำดับถัดไป: รอ Vercel Preview build เสร็จสิ้น แล้วทดสอบ Sign-in + อัปโหลดสื่อสังเกตการณ์ที่ Lot `QA-20260722`
+
