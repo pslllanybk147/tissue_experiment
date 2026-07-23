@@ -21,7 +21,7 @@ export function KnowledgeSourceRegister({ records, sources, claims, onCreateSour
   const [identifier, setIdentifier] = useState("");
   const [discovering, setDiscovering] = useState(false);
   const [discoveryError, setDiscoveryError] = useState("");
-  const [claim, setClaim] = useState({ sourceId: "", taxonId: records[0]?.taxon.id ?? "", category: "tissue-culture" as SourceClaim["category"], statement: "", evidenceExcerpt: "", evidenceState: "Adapted" as SourceClaim["evidenceState"] });
+  const [claim, setClaim] = useState({ sourceId: "", taxonId: records[0]?.taxon.id ?? "", category: "tissue-culture" as SourceClaim["category"], statement: "", evidenceExcerpt: "", evidenceLocation: "", evidenceState: "Adapted" as SourceClaim["evidenceState"] });
   const [evidenceAuthorized, setEvidenceAuthorized] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -64,12 +64,12 @@ export function KnowledgeSourceRegister({ records, sources, claims, onCreateSour
     try {
       if (!evidenceAuthorized) { setDiscoveryError("ยืนยันก่อนว่า excerpt นี้มาจาก source ที่คุณมีสิทธิ์ใช้"); return; }
       await onCreateClaim(claim);
-      setClaim(current => ({ ...current, statement: "", evidenceExcerpt: "" }));
+      setClaim(current => ({ ...current, statement: "", evidenceExcerpt: "", evidenceLocation: "" }));
       setEvidenceAuthorized(false);
       setMessage("บันทึก claim draft แล้ว — รอ review");
       setDiscoveryError("");
     } catch (error) {
-      setDiscoveryError(error instanceof Error && error.message === "Evidence excerpt required" ? "ต้องมีข้อความจาก source ก่อนสร้าง claim draft" : "บันทึก claim draft ไม่สำเร็จ");
+      setDiscoveryError(error instanceof Error && error.message === "Evidence excerpt required" ? "ต้องมีข้อความจาก source ก่อนสร้าง claim draft" : error instanceof Error && error.message === "Evidence location required" ? "ต้องระบุตำแหน่งของหลักฐาน เช่น หน้า, section, ตาราง หรือย่อหน้า" : "บันทึก claim draft ไม่สำเร็จ");
     } finally {
       setBusy(false);
     }
@@ -97,12 +97,13 @@ export function KnowledgeSourceRegister({ records, sources, claims, onCreateSour
         <label>หมวดข้อมูล<select value={claim.category} onChange={e => setClaim({ ...claim, category: e.target.value as SourceClaim["category"] })}><option value="tissue-culture">Tissue culture</option><option value="biology">Biology</option><option value="taxonomy">Taxonomy</option><option value="identification">Identification</option><option value="propagation">Propagation</option></select></label>
         <label>ข้อความ claim<textarea required value={claim.statement} onChange={e => setClaim({ ...claim, statement: e.target.value })} placeholder="เขียนเฉพาะข้อความที่แหล่งข้อมูลรองรับ" /></label>
         <label>ข้อความจาก source ที่อนุญาต<textarea required value={claim.evidenceExcerpt} onChange={e => setClaim({ ...claim, evidenceExcerpt: e.target.value })} placeholder="วาง excerpt หรือสรุปจาก full text ที่คุณมีสิทธิ์ใช้" /></label>
+        <label>ตำแหน่งหลักฐาน<input required value={claim.evidenceLocation} onChange={e => setClaim({ ...claim, evidenceLocation: e.target.value })} placeholder="เช่น หน้า 4, Table 2, Results ย่อหน้า 3 หรือ URL#section" /></label>
         <label className="knowledge-check"><input type="checkbox" checked={evidenceAuthorized} onChange={e => setEvidenceAuthorized(e.target.checked)} />ยืนยันว่า excerpt นี้มาจาก source ที่ฉันมีสิทธิ์ใช้</label>
         <label>ระดับหลักฐาน<select value={claim.evidenceState} onChange={e => setClaim({ ...claim, evidenceState: e.target.value as SourceClaim["evidenceState"] })}><option>Verified</option><option>Adapted</option><option>Experimental</option><option>Pending review</option></select></label>
         <button className="primary-button" disabled={busy || !sources.length} type="submit">บันทึก claim draft</button>
       </form>
     </div>
     <div className="source-registry-list"><div className="knowledge-section-heading"><div><p className="eyebrow">REGISTERED SOURCES</p><h3>แหล่งอ้างอิงในระบบ ({sources.length})</h3></div></div>{!sources.length ? <p className="muted-copy">ยังไม่มี source — เพิ่ม DOI หรือ URL ด้านบน</p> : sources.map(item => <article className="source-row" key={item.id}><div><strong>{item.title}</strong><small>{item.sourceType} · {item.doi ?? "ไม่มี DOI"}</small></div><a href={item.url} target="_blank" rel="noreferrer">เปิด source</a></article>)}</div>
-    <div className="claim-queue"><h3>Claims รอตรวจ</h3>{!claims.length ? <p className="muted-copy">ยังไม่มี claim</p> : claims.map(item => <article className="claim-row" key={item.id}><div><strong>{item.statement}</strong><small>{records.find(record => record.taxon.id === item.taxonId)?.taxon.displayName ?? item.taxonId} · {sources.find(sourceItem => sourceItem.id === item.sourceId)?.title ?? item.sourceId}</small></div><span className={item.reviewState === "Approved" ? "dataset-status approved" : item.reviewState === "Rejected" ? "dataset-status rejected" : "dataset-status pending"}>{item.reviewState}</span>{item.reviewState === "Pending review" && <div className="dataset-actions"><button className="secondary-button" onClick={() => void onReviewClaim(item.id, "Rejected", "ยังไม่ผ่านการตรวจ")} type="button">Reject</button><button className="primary-button" onClick={() => void onReviewClaim(item.id, "Approved", "ตรวจ source แล้ว")} type="button">Approve</button></div>}</article>)}</div>
+    <div className="claim-queue"><h3>Claims รอตรวจ</h3>{!claims.length ? <p className="muted-copy">ยังไม่มี claim</p> : claims.map(item => <article className="claim-row" key={item.id}><div><strong>{item.statement}</strong><small>{records.find(record => record.taxon.id === item.taxonId)?.taxon.displayName ?? item.taxonId} · {sources.find(sourceItem => sourceItem.id === item.sourceId)?.title ?? item.sourceId}</small><small>หลักฐาน: {item.evidenceLocation ?? "ยังไม่ระบุ"}</small></div><span className={item.reviewState === "Approved" ? "dataset-status approved" : item.reviewState === "Rejected" ? "dataset-status rejected" : "dataset-status pending"}>{item.reviewState}</span>{item.reviewState === "Pending review" && <div className="dataset-actions"><button className="secondary-button" onClick={() => void onReviewClaim(item.id, "Rejected", "ยังไม่ผ่านการตรวจ")} type="button">Reject</button><button className="primary-button" onClick={() => void onReviewClaim(item.id, "Approved", "ตรวจ source แล้ว")} type="button">Approve</button></div>}</article>)}</div>
   </section>;
 }

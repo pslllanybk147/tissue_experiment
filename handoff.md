@@ -1275,3 +1275,19 @@
 - Sandbox check: local browser ยังติด Firebase session loading เมื่อไม่มี Firebase configuration จึงไม่สามารถยืนยันหน้า authenticated/demo ด้วย browser ได้ในรอบนี้; route compile และ tests ผ่าน และข้อจำกัดถูกบันทึกไว้
 - สถานะ: claim draft มีหลักฐานประกอบและ consent gate แล้ว
 - ขั้นถัดไป: เพิ่ม source detail/edit และจัดเก็บตำแหน่งอ้างอิง เช่น page/section/table ของ excerpt
+
+### Evidence location for claim review — 2026-07-23
+
+- เพิ่ม `evidenceLocation` ใน `SourceClaim` แบบ optional เพื่อรองรับข้อมูลเก่า
+- Claim ใหม่ต้องระบุตำแหน่งหลักฐาน เช่น `p. 4, Table 2`, `Results ย่อหน้า 3` หรือ `URL#section`
+- เพิ่มช่อง `ตำแหน่งหลักฐาน` ใน Claim draft form
+- แสดงตำแหน่งหลักฐานในรายการ Claims รอตรวจ เพื่อช่วย reviewer ตรวจย้อนกลับ
+- Memory และ Firestore repository ตรวจทั้ง excerpt และ evidence location ก่อนบันทึก
+- เพิ่ม regression coverage สำหรับ claim ที่ไม่มี excerpt และ claim ที่ไม่มี location
+- Verification:
+  - `npm run firebase:verify`: 65 files / 131 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+- Sandbox check: local browser ยังค้างที่ Firebase session loading เนื่องจากไม่มี Firebase configuration; ได้บันทึก known limitation ไว้ และไม่อ้างว่า authenticated UI ผ่าน sandbox
+- สถานะ: claim draft มีข้อความหลักฐาน, ตำแหน่งอ้างอิง และ consent gate ครบ
+- ขั้นถัดไป: เพิ่ม source detail/edit และลิงก์ review จาก claim กลับไปยัง source metadata
