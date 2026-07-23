@@ -702,3 +702,20 @@
 - สิ่งที่ยังค้างจากแผน: unified audit rendering ในหน้า timeline ให้รองรับ media/progress เต็มรูปแบบ, media restore UI, signed upload ตรวจ existence ของ Lot/Observation, Firestore rules tests, Protocol authoring เต็มรูปแบบ และ Vercel Preview verification
 - image processing/ML ยังไม่เริ่มตามข้อตกลงเดิม ต้องปิด guided protocol project ก่อน
 - **ขั้นถัดไปสำหรับ session ใหม่:** ตรวจ `handoff.md` ก่อน แล้วทำ unified audit + media restore จากนั้นรัน sandbox/emulator และอัปเดตบันทึกนี้ทุกครั้งที่งานจบ
+
+### Unified audit + media restore checkpoint — 2026-07-23
+
+- อ่าน handoff ก่อนเริ่มงานตาม workflow
+- ปรับ Experiment detail ให้รวม audit จาก Experiment และ Media repository แล้ว normalize เป็น `AuditEvent` กลางเดียวกัน โดย media แสดงเป็น `media · {mediaId}` ไม่แสดง `created ·` ว่าง
+- รองรับ audit event ของ `protocol-progress` ที่ถูกเขียนจาก Step Run ใน Firestore collection เดียวกันกับ Lot/Observation/Media
+- ปรับ media loading ให้ดูรายการที่ soft-deleted ได้เมื่อเปิด `แสดงรายการที่ลบ`
+- เพิ่มปุ่ม `กู้คืนรูป` ใน `MediaStrip` สำหรับ media ที่ถูกลบ และเชื่อมกับ `mediaRepository.restore()` พร้อม reload audit history
+- การลบรูปยังคง soft delete ไม่ลบ Cloudinary metadata ถาวร
+- ตรวจ automated checks:
+  - `npm test`: ผ่าน 37 files / 83 tests
+  - `npm run lint`: ผ่าน ไม่มี warning/error
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: ผ่าน Auth + Firestore emulator
+- Sandbox checkpoint: เปิด dev server ชั่วคราวและตรวจ `/`, `/plants`, `/plants/new`, `/experiments/new` ได้ HTTP 200 ครบ
+- สิ่งที่ยังค้าง: signed upload ตรวจ existence ของ Lot/Observation, Firestore rules tests, Protocol authoring/version compare เต็มรูปแบบ และ visual/keyboard verification บน Vercel Preview
+- image processing/ML ยังไม่เริ่มจนกว่า guided protocol project จะเสร็จตามข้อตกลง

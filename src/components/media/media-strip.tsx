@@ -52,7 +52,7 @@ function Lightbox({ item, onClose }: { item: ObservationMedia; onClose: () => vo
   );
 }
 
-export function MediaStrip({ items, onDelete }: { items: ObservationMedia[]; onDelete: (id: string) => Promise<void> }) {
+export function MediaStrip({ items, onDelete, onRestore }: { items: ObservationMedia[]; onDelete: (id: string) => Promise<void>; onRestore?: (id: string) => Promise<void> }) {
   const [lightboxItem, setLightboxItem] = useState<ObservationMedia | null>(null);
 
   if (!items.length) return null;
@@ -72,9 +72,7 @@ export function MediaStrip({ items, onDelete }: { items: ObservationMedia[]; onD
               onClick={() => setLightboxItem(item)}
             />
             {item.caption && <figcaption>{item.caption}</figcaption>}
-            <button type="button" onClick={() => void onDelete(item.id)}>
-              ลบรูป
-            </button>
+            {item.deletedAt ? <button type="button" onClick={() => onRestore && void onRestore(item.id)}>กู้คืนรูป</button> : <button type="button" onClick={() => void onDelete(item.id)}>ลบรูป</button>}
           </figure>
         ))}
       </div>
