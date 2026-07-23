@@ -824,3 +824,21 @@
   - Escape/lightbox ยังทดสอบไม่ได้จาก Preview เพราะหน้า Experiment ยังไม่แสดง media upload control และไม่มีรูปให้เปิด lightbox
 - Sandbox/emulator checkpoint รอบนี้: `npm run firebase:verify` ผ่าน 39 files / 88 tests
 - สรุป: ไม่พบ responsive overflow หรือ release-blocking UI error จากสิ่งที่ตรวจได้จริง; งานที่เหลือคือ device matrix ด้วย viewport emulator เฉพาะทาง และ media/lightbox เมื่อ upload control ถูก expose ในหน้า workflow
+
+### Image processing pilot audit — 2026-07-23
+
+- ตรวจ git history และทุก branch ที่มีอยู่ พบ pilot เดิมใน:
+  - branch `feature/plant-profile-ml`
+  - merge commit `2072b73` บน `master`
+  - dataset manifest commit `70654f3` บน `master`
+- pilot ที่มีอยู่ประกอบด้วย:
+  - `src/lib/domain/image-analyzer.ts`: ตรวจ pixel RGB ด้วย threshold เพื่อประมาณสัดส่วนสีด่างและ dominant colors
+  - `src/lib/domain/dataset-exporter.ts`: สร้าง JSON manifest จาก observation media
+  - `src/lib/domain/plant-profile.ts`: seed catalog สายพันธุ์และข้อมูล license/provenance
+  - `/plants` และ PlantCard สำหรับ catalog/dataset preparation
+- ข้อสรุปสำคัญ: ยังไม่มีโมเดล ML ที่ train/inference จากภาพจริง, ไม่มี TensorFlow/PyTorch/ONNX/Transformers dependency และไม่มี image decoding pipeline
+- `estimatedVariegationPercentage` ใน pilot ใช้ hash ของ `media.id` เป็นค่าจำลอง ไม่ได้วิเคราะห์ภาพจริง จึงห้ามนำไปแสดงเป็นผลวิเคราะห์ทางวิทยาศาสตร์หรือใช้สร้าง ground truth
+- `image-analyzer.ts` เป็น heuristic จาก pixel ที่ caller ป้อนให้ ไม่ได้อ่านไฟล์ภาพและไม่สามารถจำแนกชนิด/สายพันธุ์ได้
+- ต้องตรวจ license/provenance ของ seed image และ metadata ก่อนใช้สร้าง training dataset; ห้ามถือคำว่า `CC-BY 4.0 Verified Provenance` ใน exporter เป็นหลักฐานยืนยันแทนเอกสารต้นทาง
+- pilot ไม่ได้อยู่ใน current branch `feature/protocol-media-navigation` โดยตรง และไม่ควร merge ทั้งชุด เพราะ branch pilot มีความต่างจาก guided workflow ปัจจุบันจำนวนมาก
+- แนวทางต่อยอดหลัง guided workflow เสร็จ: แยก image ingestion, provenance/label review, dataset export, baseline classifier และ evaluation เป็น phases ใหม่ โดยเริ่มจากข้อมูลที่ผู้ใช้ยืนยัน label เอง
