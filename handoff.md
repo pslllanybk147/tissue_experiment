@@ -1049,3 +1049,20 @@
   - `git diff --check`: ผ่าน
 - สถานะ: pipeline สามารถ decode/preprocess และบันทึก job status ได้ แต่ยังไม่มี artifact storage สำหรับนำ PNG ไปฝึกโมเดล
 - ขั้นถัดไป: เพิ่ม storage ของ preprocessed artifact และหน้าแสดง job progress/retry ใน Image Review
+
+### Image phase 1 Cloudinary preprocessed artifact storage — 2026-07-23
+
+- เพิ่ม `src/lib/image/cloudinary-preprocessed-uploader.ts` สำหรับอัปโหลด PNG ที่ preprocess แล้วไป Cloudinary ด้วย signed upload ฝั่ง server
+- ใช้ Cloudinary config/signature เดิมของระบบ และไม่ส่ง `CLOUDINARY_API_SECRET` ไป client
+- ใช้ public ID แบบ deterministic `preprocessed-{datasetItemId}` เพื่อให้ retry ของ item เดิมไม่สร้างชื่อ artifact แบบสุ่มซ้ำซ้อน
+- ขยาย artifact ใน preprocessing job ให้เก็บ `publicId` และ `secureUrl` เพิ่มจาก status, dimensions, bytes, SHA-256 และ error
+- ปรับ `POST /api/dataset/preprocess` ให้ preprocess แล้วอัปโหลด artifact ต่อ item ก่อนบันทึกผล job
+- เพิ่ม unit test สำหรับ signed Cloudinary upload โดย mock fetch และตรวจ endpoint, form data และ URL ที่คืนกลับ
+- ถ้า upload รายการใดล้มเหลว รายการนั้นถูกบันทึกเป็น `failed` โดยไม่ทำให้รายการอื่นใน batch หยุดทั้งหมด
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 53 files / 112 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- สถานะ: pipeline สามารถสร้าง PNG artifact และเก็บ URL/hash สำหรับนำไปตรวจหรือเตรียม dataset ต่อได้ แต่ยังไม่มี classifier, training pipeline, inference endpoint หรือหน้า job progress/retry
+- ขั้นถัดไป: เพิ่มหน้าแสดง preprocessing job progress/retry ใน Dataset Review หรือเริ่มออกแบบ model-ready dataset export จาก artifact ที่ประมวลผลแล้ว

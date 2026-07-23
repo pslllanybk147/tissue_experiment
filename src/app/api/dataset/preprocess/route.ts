@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { runPreprocessingJob, type PreprocessingJob } from "../../../../lib/image/preprocessing-job";
 import { preprocessDatasetItem } from "../../../../lib/image/image-preprocessor";
+import { uploadPreprocessedImage } from "../../../../lib/image/cloudinary-preprocessed-uploader";
+import { getCloudinaryConfig } from "../../../../lib/cloudinary/config";
 import type { DatasetItem } from "../../../../lib/domain/models";
 
 export const runtime = "nodejs";
@@ -36,7 +38,12 @@ export async function POST(request: Request) {
     await jobRef.set(queued);
     const processing = { ...queued, status: "processing" as const, updatedAt: new Date().toISOString() };
     await jobRef.set(processing);
-    const completed = await runPreprocessingJob(processing, items, item => preprocessDatasetItem(item));
+    const cloudinary = getCloudinaryConfig();
+    const completed = await runPreprocessingJob(processing, items, async item => {
+      const image = await preprocessDatasetItem(item);
+      const uploaded = await uploadPreprocessedImage({ uid, lotId: item.lotId, observationId: item.observationId, datasetItemId: item.id, image, config: cloudinary });
+      return { ...image, ...uploaded };
+    });
     await jobRef.set(completed);
     return NextResponse.json(completed, { status: completed.status === "completed" ? 201 : 207, headers: { "Cache-Control": "no-store" } });
   } catch (error) {
