@@ -37,6 +37,10 @@ suite("dataset intake integration", () => {
     const first = await request();
     expect(first.status).toBe(201);
     expect(await first.json()).toMatchObject({ created: true, item: { reviewStatus: "Pending review", includedInTraining: false, assetUrl: "https://res.cloudinary.com/demo/image/upload/sample.jpg" } });
+    await testEnv.withSecurityRulesDisabled(async context => {
+      const audit = await context.firestore().collection(`users/${uid}/lots/LOT-1/auditEvents`).get();
+      expect(audit.docs.map(item => item.data())).toEqual(expect.arrayContaining([expect.objectContaining({ entityType: "media", entityId: "MEDIA-1", action: "dataset_queued" })]));
+    });
     const second = await request();
     expect(second.status).toBe(200);
     expect(await second.json()).toMatchObject({ created: false, item: { mediaId: "MEDIA-1" } });

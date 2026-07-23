@@ -925,3 +925,22 @@
   - `git diff --check`: ผ่าน
 - ขอบเขตที่ยังไม่ทำ: automatic image decoding, species classifier, model training/inference และการดึงข้อมูลภาพจาก Google โดยอัตโนมัติ
 - ขั้นถัดไป: เพิ่มรายการ DatasetItem ที่ถูกส่งแล้วใน Observation และ audit event ของ intake เพื่อให้ย้อนดูได้จาก Lot timeline
+
+### Image phase 1 intake audit checkpoint — 2026-07-23
+
+- เพิ่ม action `dataset_queued` ใน `AuditEvent`
+- `/api/dataset/intake` เขียน DatasetItem และ audit event ใน Firestore batch เดียวกัน จึงไม่เกิดรายการ dataset โดยไม่มีประวัติ intake หาก batch สำเร็จ
+- audit event ถูกเก็บใน `users/{uid}/lots/{lotId}/auditEvents` และมีข้อมูลสำคัญเท่านั้น:
+  - `entityType: media`
+  - `entityId: mediaId`
+  - `action: dataset_queued`
+  - `after.datasetItemId`
+  - `after.reviewStatus: Pending review`
+- ปรับ `AuditHistory` ให้แสดงข้อความภาษาไทย `ส่งเข้า Image review` และเปิด before/after ของ event นี้ได้
+- เพิ่ม integration assertion ว่า intake สำเร็จแล้วมี audit event ใน emulator จริง
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 45 files / 100 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- ขั้นถัดไป: แสดงสถานะว่า media รายการใดถูกส่งเข้า review แล้วใน Observation และให้ Lot timeline link ไปยัง Dataset Review item ได้

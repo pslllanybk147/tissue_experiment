@@ -139,7 +139,7 @@ export type AuditEvent = {
   ownerId: string;
   entityType: "lot" | "observation" | "media" | "protocol-progress" | "protocol" | "plant";
   entityId: string;
-  action: "created" | "updated" | "deleted" | "restored" | "completed";
+  action: "created" | "updated" | "deleted" | "restored" | "completed" | "dataset_queued";
   actorId: string;
   occurredAt: string;
   before: Record<string, unknown> | null;

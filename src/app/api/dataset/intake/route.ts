@@ -37,7 +37,12 @@ export async function POST(request: Request) {
     const now = new Date().toISOString();
     const ref = firestore.collection(`users/${uid}/datasetItems`).doc();
     const item = { id: ref.id, ownerId: uid, mediaId: body.mediaId, lotId: body.lotId, observationId: body.observationId, assetUrl: mediaData.secureUrl, provenance: { kind: "user-captured", sourceUrl: null, license: null, attribution: null, provenanceId: `observation:${body.observationId}:media:${body.mediaId}`, status: "Pending review", reviewedBy: null, reviewedAt: null, note: "สร้างจาก Observation media; รอตรวจ provenance" }, label: null, reviewStatus: "Pending review", includedInTraining: false, createdAt: now, updatedAt: now };
-    await ref.set(item);
+    const auditRef = firestore.collection(`${base}/auditEvents`).doc();
+    const audit = { id: auditRef.id, lotId: body.lotId, ownerId: uid, entityType: "media", entityId: body.mediaId, action: "dataset_queued", actorId: uid, occurredAt: now, before: null, after: { datasetItemId: ref.id, reviewStatus: "Pending review" } };
+    const batch = firestore.batch();
+    batch.set(ref, item);
+    batch.set(auditRef, audit);
+    await batch.commit();
     return NextResponse.json({ item, created: true }, { status: 201 });
   } catch (error) {
     console.error("dataset intake failure", { errorName: error instanceof Error ? error.name : "UnknownError" });
