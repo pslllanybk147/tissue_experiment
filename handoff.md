@@ -583,9 +583,11 @@
 
 - ผู้ใช้ยืนยันตั้งค่า Firebase Admin variables ใน Vercel เรียบร้อยแล้ว
 - เพิ่ม `formatPrivateKey()` ใน `src/lib/firebase/admin.ts` และ `admin.test.ts` เพื่อแปลง RSA Private Key ที่ถูกตัด `\n` หรือรวมเป็นบรรทัดเดียวกลับเป็น PEM format มาตรฐานอัตโนมัติ
-- ปรับปรุงการรายงานข้อผิดพลาดใน `/api/media/sign` ให้แสดงสาเหตุข้อผิดพลาดเบื้องต้นแบบปลอดภัย (เช่น Missing variables: ...) เพื่อให้เห็นปัญหาระดับ runtime บน Vercel ได้ชัดเจน
-- สั่ง push deployment ใหม่เพื่อให้ Vercel บันทึก environment snapshot และโค้ดตัวแปลงคีย์ชุดล่าสุด
+- ปรับปรุงการรายงานข้อผิดพลาดใน `/api/media/sign` ให้แสดงสาเหตุข้อผิดพลาดเบื้องต้นแบบปลอดภัย เพื่อให้เห็นปัญหาระดับ runtime บน Vercel ได้ชัดเจน
+- เพิ่ม `serverExternalPackages: ["firebase-admin"]` ใน `next.config.ts` แก้ปัญหา `ERR_REQUIRE_ESM` ระหว่างการ require `jose/jwks-rsa` ใน Vercel Node.js Serverless runtime
+- สั่ง push deployment ใหม่เพื่อให้ Vercel บันทึก environment snapshot และโค้ดตั้งค่า external package ชุดล่าสุด
 - ลำดับถัดไป: รอ Vercel Preview build เสร็จสิ้น แล้วทดสอบ Sign-in + อัปโหลดสื่อสังเกตการณ์ที่ Lot `QA-20260722`
+
 
 
 
