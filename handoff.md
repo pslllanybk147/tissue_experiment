@@ -609,9 +609,10 @@
 - เพิ่ม `formatPrivateKey()` ใน `src/lib/firebase/admin.ts` และ `admin.test.ts` เพื่อแปลง RSA Private Key ที่ถูกตัด `\n` หรือรวมเป็นบรรทัดเดียวกลับเป็น PEM format มาตรฐานอัตโนมัติ
 - ปรับปรุง `verifyFirebaseToken()` ให้ใช้ `jose` Dynamic JWKS (`https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com`) โดยตรง พร้อมรองรับ fallback `NEXT_PUBLIC_FIREBASE_PROJECT_ID` เพื่อตัดปัญหา `ERR_REQUIRE_ESM` ของ `jwks-rsa` บน Vercel
 - ปรับปรุง `MediaUploader` ให้เรียก `user.getIdToken(true)` บังคับรับ fresh ID token ก่อนขอ signature
-- เพิ่มรายละเอียดข้อผิดพลาดใน `Invalid authentication (${details})` เพื่อแสดงสาเหตุของ Token verification failure
-- สั่ง push deployment ใหม่เพื่อให้ Vercel บันทึก environment snapshot และโค้ดระบบ JWKS ชุดล่าสุด
-- ลำดับถัดไป: รอ Vercel Preview build เสร็จสิ้น แล้วทดสอบ Sign-in + อัปโหลดสื่อสังเกตการณ์ที่ Lot `QA-20260722`
+- เพิ่ม Lightbox Modal ใน `MediaStrip` สำหรับคลิกดูภาพสังเกตการณ์แบบขยายเต็มหน้าจอ
+- แก้ไข import path ของ `ObservationMedia` ใน `src/components/media/media-strip.tsx` แก้ไขปัญหา Vercel build type check failure และ push commit `3b832b7` สำเร็จแล้ว
+- ลำดับถัดไป: รอ Vercel Preview build เสร็จสิ้น แล้วทดสอบ Sign-in + อัปโหลดสื่อสังเกตการณ์ และกดขยายภาพที่ Lot `QA-20260722`
+
 
 
 
