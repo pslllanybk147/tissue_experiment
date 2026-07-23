@@ -862,3 +862,22 @@
   - `npm run build`: ผ่าน
 - ยังไม่เชื่อม Firestore/Cloudinary UI และยังไม่มี image decoder, model training หรือ inference
 - ขั้นถัดไป: เชื่อม DatasetRepository กับ Firestore พร้อม owner rules และสร้างหน้า review queue ที่แก้ label/provenance ได้ก่อน export dataset
+
+### Image phase 1 Firestore repository checkpoint — 2026-07-23
+
+- เชื่อม dataset intake foundation เข้ากับ Firestore ผ่าน `src/lib/firebase/firestore-dataset-repository.ts`
+- ใช้ path แบบ owner-scoped: `users/{uid}/datasetItems/{datasetItemId}`
+- เพิ่ม `src/lib/repositories/dataset-repository-factory.ts` ให้เลือก Firestore เมื่อมี authenticated user และใช้ memory repository สำหรับ sandbox/unauthenticated fallback
+- Repository ยังคงบังคับ owner guard, provenance approval ก่อนติด label และไม่เปิด `includedInTraining` จนกว่าจะมี label ที่ผ่าน validation
+- เพิ่ม Firestore emulator rules tests สำหรับ:
+  - เจ้าของอ่าน/เขียน dataset item ของตนเองได้
+  - ผู้ใช้อื่นอ่าน/เขียนข้าม owner ไม่ได้
+  - unauthenticated write ถูกปฏิเสธ
+- ระหว่างทดสอบพบว่า Node test environment เรียก Firebase client โดยตรงไม่ได้ (`Firebase is not configured`) จึงเพิ่ม `DatasetPersistenceAdapter` injection เพื่อทดสอบ repository logic แบบ deterministic; rules ยังคงทดสอบกับ Firestore emulator จริง
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 42 files / 95 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- ขอบเขตที่ยังไม่ทำ: Review Queue UI, Cloudinary-to-dataset ingestion, image decoding, model training และ inference
+- ขั้นถัดไป: สร้าง Review Queue สำหรับตรวจ provenance/label และเชื่อม media ที่ผ่าน validation จาก observation เข้า DatasetItem โดยยังต้อง review ก่อนนำไป train

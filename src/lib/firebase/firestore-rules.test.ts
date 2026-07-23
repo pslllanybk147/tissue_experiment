@@ -31,4 +31,16 @@ suite("Firestore ownership rules", () => {
     const firestore = testEnv.authenticatedContext("owner-a").firestore();
     await assertFails(setDoc(doc(firestore, "users/owner-a/plants/plant-1"), { ownerId: "owner-b", id: "plant-1" }));
   });
+
+  it("allows owner-scoped dataset items and rejects cross-user access", async () => {
+    const owner = testEnv.authenticatedContext("owner-a").firestore();
+    const ref = doc(owner, "users/owner-a/datasetItems/dataset-1");
+    await assertSucceeds(setDoc(ref, { ownerId: "owner-a", id: "dataset-1", reviewStatus: "Pending review", includedInTraining: false }));
+    await assertSucceeds(getDoc(ref));
+    await assertFails(getDoc(doc(testEnv.authenticatedContext("owner-b").firestore(), "users/owner-a/datasetItems/dataset-1")));
+  });
+
+  it("rejects an unauthenticated dataset write", async () => {
+    await assertFails(setDoc(doc(testEnv.unauthenticatedContext().firestore(), "users/owner-a/datasetItems/dataset-2"), { ownerId: "owner-a", id: "dataset-2" }));
+  });
 });
