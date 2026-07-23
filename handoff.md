@@ -395,3 +395,227 @@
 - push `master` สำเร็จ; PR #2 ถูกปิดเป็น `MERGED` และ Vercel Production Deployment ผ่าน
 - production smoke test ที่ `https://tissue-experiment-93.vercel.app/` ผ่าน: โหลดหน้า Firebase auth gate ได้, title ถูกต้อง, ไม่พบ horizontal overflow ที่ viewport เริ่มต้น และไม่มี Next error overlay
 - ผู้ใช้ต้อง Sign in with Google บน production origin แยกจาก Preview ก่อนทดสอบข้อมูล authenticated ในการใช้งานครั้งแรก
+
+### Protocol + navigation + media design — 2026-07-22
+
+- ผู้ใช้ขอทำ dashboard navigation, Protocol workflow และ Cloudinary observation media ให้ครบใน release เดียว
+- ล็อกแนวทางเป็น Next.js/Firebase application เดิม, feature branch เดียว, Preview checkpoints แยกโมดูล และ production merge ครั้งเดียวเมื่อทุกส่วนผ่าน
+- Protocol ใช้ immutable version snapshots; progress เป็นข้อมูลเฉพาะแต่ละ experiment lot
+- Cloudinary ใช้ signed upload จาก server-only credentials; Firestore เก็บ metadata, soft delete และ audit history
+- Research route ใน release นี้เป็น evidence-labelled read-only register; AI review workflow และ image processing ยังไม่อยู่ในขอบเขต
+- design specification: `docs/superpowers/specs/2026-07-22-protocol-media-navigation-design.md`
+- ขั้นถัดไป: ผู้ใช้ตรวจ written spec แล้วจึงสร้าง implementation plan ตาม TDD
+- ผู้ใช้อนุมัติ written spec แล้ว (ข้อความ `jok` ถูกตีความตามบริบทเป็น `ok`)
+- implementation plan: `docs/superpowers/plans/2026-07-22-protocol-media-navigation.md`
+- แผนแบ่ง 10 tasks พร้อม TDD, Firebase emulator, rendered browser sandbox, Vercel Preview และ production merge gate
+- ยังไม่มี production code เปลี่ยนใน checkpoint นี้; ขั้นถัดไปคือเลือกวิธี execution
+
+### Protocol media implementation checkpoint 1 — 2026-07-22
+
+- ผู้ใช้เลือก Inline Execution และ isolated worktree `.worktrees/pmn` บน branch `feature/protocol-media-navigation`
+- baseline ผ่าน 14 files / 41 tests
+- Task 1 เสร็จ: navigation รองรับ Overview, Protocols, Experiments, Research พร้อม `aria-current`; เพิ่ม `/research` แบบ read-only
+- Task 2 เสร็จ: protocol domain, draft validation และ semantic draft versioning
+- Task 3 เสร็จ: memory Protocol repository พร้อม owner guard, immutable published version, idempotent activation และ audit
+- Task 4 ส่วน repository เสร็จ: Firestore Protocol adapter จับคู่ protocol/version/audit ใน mutation เดียว; owner rule เดิมครอบคลุม nested paths
+- ยืนยัน RED ก่อน implementation ทุกส่วน; checkpoint ผ่าน 19 files / 50 tests, ESLint ผ่าน และ Next production build ผ่าน
+- Next build มีเพียง warning เรื่องหลาย lockfiles จาก isolated worktree; ไม่ใช่ application error
+- commits: `0d1d0ef`, `50be398`, `94e27df`, `c067905`
+- ขั้นถัดไป: Protocol list/editor/version history และ lot-specific progress
+
+### Protocol media implementation checkpoint 2 — 2026-07-22
+
+- เพิ่ม `createDraftVersion()` หลังผู้ใช้อนุมัติ เพื่อ clone published snapshot, เพิ่ม minor version และ audit `version_created`
+- Task 5 เสร็จ: routes `/protocols`, `/protocols/new`, `/protocols/[protocolId]`, `/protocols/[protocolId]/edit` พร้อม list, editor, publish และ version history
+- Protocol editor ใช้ปุ่มขึ้น/ลงที่รองรับ keyboard/mobile และสร้างร่างใหม่อัตโนมัติเมื่อแก้ฉบับเผยแพร่แล้ว
+- Task 6 foundation เสร็จ: progress domain, memory repository แบบ idempotent และ ProtocolRunner component
+- checkpoint ผ่าน 24 files / 57 tests, ESLint ผ่าน และ Next build ผ่าน routes ใหม่ทั้งหมด
+- commits: `a366659`, `7601f8b`, `9e34df8`
+- ขั้นถัดไป: Firestore progress repository + lot integration ก่อนเริ่ม Cloudinary
+
+### Protocol media implementation checkpoint 3 — 2026-07-22
+
+- Task 6 เสร็จ: Firestore progress repository, owner guard, paired audit mutation, idempotent completion และ ProtocolRunner บน Lot detail
+- เพิ่ม optional `protocolVersionId` สำหรับ Lot ใหม่; ข้อมูล legacy fallback ไป current version เพื่อไม่ทำให้เอกสารเดิมแตก
+- Task 7 code foundation เสร็จ: Cloudinary config validation, deterministic SHA-1 signature, Firebase Admin token verification และ `POST /api/media/sign`
+- endpoint จำกัด JPEG/PNG/WebP, 10 MB และ owner-scoped Cloudinary folder; secret ไม่มี `NEXT_PUBLIC_` prefix
+- เพิ่ม `firebase-admin` dependency และ `.env.example` สำหรับ server credentials
+- Task 8 foundation: ObservationMedia domain, memory media repository แบบ soft delete/restore idempotent และ MediaStrip
+- verification: 30 files / 66 tests ผ่าน, Next production build ผ่าน; lint เหลือ warning `<img>` แล้วแก้เป็น Next Image ก่อน commit
+- ขั้นถัดไป: Firestore media repository, uploader state machine, observation integration และ Cloudinary sandbox
+
+### Protocol media implementation checkpoint 4 — 2026-07-22
+
+- Task 8 เสร็จในโค้ด: Firestore media repository, paired audit, owner guard, idempotent delete/restore, signed Cloudinary uploader และ Observation integration
+- uploader ขอ Firebase ID token, รับ signed parameters จาก server, upload ตรงไป Cloudinary แล้วจึงบันทึก metadata ใน Firestore
+- Task 9 เสร็จ: แทน dashboard mock เดิมด้วย repository-backed dashboard และ real links ไป Protocols, Experiments, Research
+- verification: 33 files / 71 tests ผ่าน, ESLint ผ่าน และ Next production build ผ่านทุก route รวม `/api/media/sign`
+- Firebase emulator sandbox ถูกบล็อก: local `java` เป็น Java 8 (`1.8.0_471`) แต่ firebase-tools ปัจจุบันต้อง Java 21 ขึ้นไป; ยังไม่มีการติดตั้งหรือเปลี่ยน Java โดยไม่ได้รับอนุญาต
+- ยังไม่ push Preview และยังไม่ merge production
+- ขั้นถัดไป: ขออนุญาตติดตั้ง Java 21 หรือให้ผู้ใช้ติดตั้งเอง จากนั้นรัน emulator + browser sandbox ก่อน Preview
+
+### Protocol media implementation checkpoint 5 — 2026-07-22
+
+- ติดตั้ง Microsoft OpenJDK 21.0.11.10 สำเร็จโดยคง Java 8 เดิมเป็นค่า default ของเครื่อง และกำหนด `JAVA_HOME`/`Path` เฉพาะ session ที่รัน emulator
+- Firebase Auth + Firestore emulator sandbox ผ่าน: 33 test files / 72 tests, 0 failures และ emulator ปิดตัวเรียบร้อยหลังทดสอบ
+- เพิ่ม mobile route navigation ใน shared `LabShell`; ที่ 390×844 แสดง Overview, Protocols, Experiments, Research และซ่อน desktop sidebar
+- ปรับหน้า New Experiment ให้ดึงเฉพาะ Active Protocol และเลือก immutable published version snapshot; Lot ใหม่บันทึก `protocolId`, `protocolTitle` และ `protocolVersionId` พร้อมกัน
+- ข้อมูล Lot รุ่นเก่ายัง fallback ไป current version ได้เพื่อ migration compatibility
+- ล็อก `turbopack.root` เป็น working directory ปัจจุบัน หลัง sandbox พบว่า Next.js เคยอนุมาน root ไป repo หลักเพราะมี lockfile ทั้ง repo และ isolated worktree ทำให้ server ตรวจโค้ดเก่า
+- responsive sandbox แบบ isolated headless Chrome ผ่านที่ 390×844, 1024×768 และ 1440×900: ไม่มี horizontal overflow, mobile/desktop navigation สลับถูก breakpoint, keyboard focus มี visible outline และ reduced-motion context โหลดได้
+- React best-practices review แก้การ sync props เข้า state ผ่าน effect โดย initialize snapshot ตอน form mount หลัง Protocol list โหลดเสร็จ
+- fresh verification ปัจจุบัน: 33 test files / 72 tests ผ่าน, ESLint ผ่าน และ Next production build ผ่าน 10 routes
+- Cloudinary live upload ยังต้องใช้ server credentials จริง 6 ตัวใน Vercel environment ก่อนตรวจ upload บน Preview; secret ห้ามมี `NEXT_PUBLIC_`
+- ยังไม่ push branch, ยังไม่สร้าง Preview checkpoint ใหม่ และยังไม่ merge production
+- ขั้นถัดไป: commit/push branch, รอ Vercel Preview, ตรวจ Firebase authenticated workflow และ Cloudinary credential gate แล้วจึงขออนุมัติ merge
+- commit checkpoint: `a827d76` (`Complete responsive protocol release gate`)
+- push branch `feature/protocol-media-navigation` สำเร็จ และเปิด Draft PR #3: `https://github.com/pslllanybk147/tissue_experiment/pull/3`
+- Vercel และ Vercel Preview Comments checks ของ commit `a827d76` ผ่านทั้งคู่; deployment dashboard id `Fh48AjzwVRYJx3VHRZYiaGUoq5jY`
+- ยังไม่ merge production; Preview authenticated + Cloudinary live upload เป็น release gate ที่เหลือ
+
+### Protocol media implementation checkpoint 6 — 2026-07-23
+
+- ตรวจ Vercel Environment Variables ผ่าน authenticated dashboard โดยอ่านเฉพาะชื่อและ scope ไม่เปิดเผยค่า secret
+- พบเฉพาะ Firebase client variables 6 ตัว (`NEXT_PUBLIC_FIREBASE_*`) ครบสำหรับ Production และ Preview
+- ยังขาด server-only variables 6 ตัว: `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `FIREBASE_ADMIN_PROJECT_ID`, `FIREBASE_ADMIN_CLIENT_EMAIL`, `FIREBASE_ADMIN_PRIVATE_KEY`
+- Preview ล่าสุดของ commit `c07fd9a` อยู่สถานะ Ready; branch alias: `https://tissue-experiment-93-git-featu-3216fc-pslllanybk-2845s-projects.vercel.app`
+- Preview auth gate โหลดถูกต้อง แต่ browser session ของ alias ใหม่นี้ยังไม่ได้ Sign in with Google
+- Cloudinary live upload ยังทดสอบไม่ได้จนกว่าจะเพิ่ม server variables ทั้ง 6 ตัวใน Preview scope แล้ว redeploy; ห้ามใช้ `NEXT_PUBLIC_` กับตัวแปรเหล่านี้
+- ขั้นถัดไปสำหรับผู้ใช้: เพิ่ม variables ทั้ง 6 ตัวใน Vercel, redeploy Preview และ sign in ที่ branch alias จากนั้นแจ้งว่าเรียบร้อยเพื่อให้ตรวจ protocol → lot → observation → image upload แบบ end-to-end
+- ผู้ใช้เพิ่ม server-only variables ทั้ง 6 ตัวแล้ว; ตรวจชื่อและ scope ผ่าน Vercel dashboard พบครบทั้งหมดและใช้ `Production and Preview`
+- ขั้นถัดไป: trigger deployment ใหม่เพื่อให้ environment snapshot มีค่าชุดล่าสุด แล้วตรวจ authenticated sign/upload workflow
+- trigger Preview ใหม่ด้วย commit `cc0de34`; Vercel deployment `2rABjL9SR5pQdjh2PTsnWFgphLf8` ผ่านและรับ environment snapshot ล่าสุดแล้ว
+- branch alias ยังคงเป็น `https://tissue-experiment-93-git-featu-3216fc-pslllanybk-2845s-projects.vercel.app`
+- เปิด Google Sign-in บน Preview แล้ว; ต้องให้ผู้ใช้เลือกบัญชีเองก่อนทดสอบ authenticated `/api/media/sign` และ Cloudinary upload
+- ผู้ใช้ Sign in บน Preview สำเร็จ; Firebase session แสดง `FIREBASE` และอ่าน Experiment/Observation เดิมได้
+- upload screenshot ทดสอบไปยัง Observation ของ `QA-20260722` ล้มเหลวที่ขั้นขอลายเซ็นก่อนส่งไฟล์ไป Cloudinary; UI เดิมซ่อน status จริงด้วยข้อความรวม
+- เพิ่ม `readApiError()` พร้อม regression test เพื่อแสดง safe server error (`Invalid authentication`, `Media service unavailable` หรือ Cloudinary error) โดยไม่เปิดเผย secret
+- verification หลัง diagnostic change: 33 test files / 73 tests ผ่าน, ESLint ผ่าน และ Next production build ผ่าน
+- ขั้นถัดไป: deploy diagnostic change และทำ upload ซ้ำเพื่อระบุ root cause ก่อนแก้ configuration/code
+- deployment `xFZC2Ve5yWLx9Q4XShmBkczFNq6G` ของ diagnostic change ผ่าน แต่ retry ยังได้ fallback แสดงว่า response ไม่ใช่ `{ error: string }`
+- ขยาย diagnostic แบบปลอดภัยให้รองรับ nested Vercel error และแสดงเฉพาะ HTTP status เมื่อ response ไม่ใช่ JSON; ไม่แสดง response body หรือ secret
+- retry บน deployment `EaUE6Ac9qkiUTRuf2v5FqET3N6Qy` ระบุ HTTP 500 จาก `/api/media/sign`; เป็น failure นอก intended 401/400/503 paths
+- เพิ่ม Node runtime + force-dynamic และ outer phase boundary ที่รายงานเฉพาะ `request`/`firebase`/`cloudinary` พร้อม error class ใน server log โดยไม่บันทึก token/key/value
+- verification: 33 test files / 74 tests ผ่าน, ESLint ผ่าน และ Next production build ผ่าน
+- retry หลัง outer boundary ยังเป็น raw HTTP 500 จึงยืนยันว่า failure เกิดก่อนเข้า `POST()` handler ระหว่าง module bootstrap
+- hypothesis แรก: top-level `firebase-admin` import ทำให้ serverless module bootstrap ล้มเหลว; ย้ายเป็น lazy import ภายใน Firebase phase เพื่อให้จับ authentication/config error ได้
+- local verification หลัง lazy import: 33 test files / 74 tests ผ่าน, ESLint ผ่าน และ Next production build ผ่าน
+- deployment `6wUjDSKSGwBQjyh4HjDGcYmsLMTJ` หลัง lazy import เปลี่ยน raw HTTP 500 เป็น controlled `Invalid authentication`; ยืนยันว่า route bootstrap แก้แล้วและ failure อยู่ใน Firebase Admin phase
+- แยก Firebase Admin initialization/config error เป็น 503 `Firebase Admin configuration invalid` และ ID token verification error เป็น 401 `Invalid authentication`
+- deployment `2tq1y3Q1zfRCidAxzTun81nP3vCy` ยืนยันผลเป็น `Firebase Admin configuration invalid`; Cloudinary endpoint ยังไม่ถูกเรียก
+- root cause boundary: ค่า `FIREBASE_ADMIN_PROJECT_ID`, `FIREBASE_ADMIN_CLIENT_EMAIL` หรือ `FIREBASE_ADMIN_PRIVATE_KEY` ไม่สามารถสร้าง Firebase Admin credential ได้; client Firebase login/Firestore read ยังปกติ
+- ขั้นถัดไปสำหรับผู้ใช้: ตรวจสามค่าเทียบ service-account JSON เดียวกัน โดยไม่ใส่ JSON quotes/comma และ private key ต้องรวม BEGIN/END; redeploy แล้ว retry
+
+### Gemini handoff — 2026-07-23
+
+#### จุดเริ่มต้น
+
+- repository: `https://github.com/pslllanybk147/tissue_experiment.git`
+- local worktree: `C:\Users\HP\Documents\Codex\2026-07-22\referenced-chatgpt-conversation-this-is-untrusted\philodendron-lab\.worktrees\pmn`
+- branch: `feature/protocol-media-navigation`
+- Draft PR: `https://github.com/pslllanybk147/tissue_experiment/pull/3`
+- Vercel Preview alias: `https://tissue-experiment-93-git-featu-3216fc-pslllanybk-2845s-projects.vercel.app`
+- ก่อนเริ่มงานให้เปิด worktree ข้างต้น แล้วตรวจ `git status -sb` และอ่านไฟล์ `handoff.md` ทั้งหมด
+- ห้าม merge เข้า production จนกว่า image upload จะผ่าน, ตรวจ Preview ครบ และผู้ใช้อนุมัติอย่างชัดเจน
+
+#### ระบบที่ทำเสร็จแล้ว
+
+- Next.js + TypeScript frontend รองรับ desktop/mobile และทิศทางการออกแบบแบบ Gridgeist
+- Firebase Google Auth และ Firestore แบบ owner-scoped
+- Protocol list/create/edit/publish/version history พร้อม immutable snapshots
+- Experiment lots, observations, audit history, soft delete/restore และ lot-specific protocol progress
+- dashboard ใช้ข้อมูลจริงจาก repository
+- Cloudinary signed-upload foundation และ Firestore media metadata
+- Research register แบบ read-only พร้อม evidence labels
+- navigation: Overview, Protocols, Experiments และ Research
+- machine learning/image processing ถูกบันทึกเป็นงานอนาคต และต้องเริ่มหลัง project เดิมเสร็จเท่านั้น
+
+#### สถานะการตรวจล่าสุด
+
+- local verification ล่าสุดก่อน handoff: 33 test files / 74 tests ผ่าน
+- ESLint ผ่าน
+- Next production build ผ่าน
+- Firebase Auth + Firestore read บน Preview ใช้งานได้หลังผู้ใช้ Sign in
+- QA lot ที่ใช้ตรวจ: `QA-20260722`
+- observation ที่ใช้ตรวจ: `d168babd-6e12-425f-99ef-430d72003cac`
+- การอัปโหลดทดลองยังไม่สร้างไฟล์ใน Cloudinary เพราะ request หยุดอยู่ที่ Firebase Admin phase ก่อนเรียก Cloudinary
+
+#### จุดติดขัดปัจจุบัน
+
+- `/api/media/sign` ตอบแบบควบคุมได้ว่า `Firebase Admin configuration invalid`
+- Firebase client login และ Firestore read ปกติ จึงเป็นปัญหาเฉพาะ server-side Firebase Admin credentials
+- ตัวแปรที่ต้องตรวจใน Vercel:
+  - `FIREBASE_ADMIN_PROJECT_ID`
+  - `FIREBASE_ADMIN_CLIENT_EMAIL`
+  - `FIREBASE_ADMIN_PRIVATE_KEY`
+- ทั้งสามค่าต้องมาจาก service-account JSON ไฟล์เดียวกัน
+- `FIREBASE_ADMIN_PRIVATE_KEY` ต้องมี `-----BEGIN PRIVATE KEY-----` และ `-----END PRIVATE KEY-----` ครบ
+- ห้ามใส่ JSON quotes, comma ท้ายค่า หรือ prefix `NEXT_PUBLIC_`
+- ห้ามพิมพ์ อ่านกลับ หรือบันทึกค่า secret ลง log, chat, screenshot, source code หรือไฟล์ handoff
+
+#### ขั้นตอนถัดไปสำหรับ Gemini
+
+1. ให้ผู้ใช้แก้ Firebase Admin variables ทั้งสามตัวใน Vercel จาก service-account JSON เดียวกัน หากยังผิดให้สร้าง service-account key ใหม่และแทนที่ทั้งสามค่าพร้อมกัน
+2. Trigger Vercel Preview deployment ใหม่เพื่อรับ environment snapshot ล่าสุด
+3. เปิด Preview alias และให้ผู้ใช้ Sign in with Google เอง
+4. เปิด lot `QA-20260722` แล้วทดสอบ upload ด้วยภาพ JPEG/PNG สังเคราะห์ ห้ามใช้ภาพส่วนตัวของผู้ใช้โดยไม่ได้รับอนุญาต
+5. ผลที่คาดหวัง: media signer สำเร็จ → Cloudinary upload สำเร็จ → Firestore media metadata ถูกบันทึก → รูปแสดงใน observation
+6. ตรวจ soft delete/restore ของรูปและ audit event หลัง upload ผ่าน
+7. รัน verification ใหม่ทั้งหมด:
+   - `npm test`
+   - `npm run lint`
+   - `npm run build`
+   - ตั้ง Java 21 เฉพาะ session แล้วรัน `npm run firebase:verify`
+8. ตรวจ browser sandbox ที่ 390px, 1024px และ 1440px รวม keyboard focus, overflow, loading/error states และ reduced motion
+9. อัปเดต `handoff.md` ทุกครั้งก่อนจบงาน จากนั้น commit และ push branch
+10. รอ Vercel Preview checks ผ่าน แล้วขออนุมัติผู้ใช้ก่อน merge Draft PR #3 เข้า production
+
+#### กติกาการส่งมอบ
+
+- บรรทัดแรกของไฟล์นี้ต้องคงเป็น `ต้องมีการบันทึกทุกครั้งที่งานจบ`
+- เก็บ secrets ใน Vercel Environment Variables เท่านั้น
+- server-only variables ต้องไม่มี `NEXT_PUBLIC_`
+- ใช้ภาพสังเคราะห์สำหรับ QA
+- ห้าม merge production โดยอนุมานจากคำตอบทั่วไป ต้องได้รับคำอนุมัติ merge ที่ชัดเจน
+- หากแก้โค้ด ต้องตรวจ sandbox/emulator อย่างละเอียดก่อนส่งงาน
+
+### Media authentication ESM fix — 2026-07-23
+
+- ผู้ใช้ทดสอบอัปโหลดบน Vercel Preview แล้วพบ `ERR_REQUIRE_ESM`: `firebase-admin/auth` โหลด `jwks-rsa` แบบ CommonJS ซึ่งเรียก `jose` v6 ที่เป็น ES module
+- root cause: แม้ `verifyFirebaseToken()` จะใช้ dynamic `import("jose")` แล้ว แต่ยังอยู่ไฟล์ `firebase/admin.ts` เดียวกับ static imports ของ `firebase-admin/app` และ `firebase-admin/auth`; Vercel จึงโหลด dependency chain ที่เสียก่อนเรียก verifier
+- แก้โดยแยก verifier ไป `src/lib/firebase/token-verifier.ts` ซึ่งไม่มี `firebase-admin` import และให้ `/api/media/sign` dynamic import โมดูลใหม่นี้โดยตรง
+- เพิ่ม regression tests สำหรับ project ID precedence และ architecture boundary ที่ห้าม token verifier import `firebase-admin`
+- ยืนยัน RED ก่อนแก้: test ล้มด้วย `Cannot find module './token-verifier'`
+- fresh verification หลังแก้:
+  - 35 test files / 79 tests ผ่าน
+  - ESLint ผ่าน
+  - Next production build ผ่าน
+  - Firebase Auth + Firestore emulator ผ่านด้วย Microsoft OpenJDK 21
+  - ตรวจ build output ของ `/api/media/sign` แล้วไม่พบ reference ถึง `firebase-admin` หรือ `jwks-rsa`
+- fix commit: `307c9df` (`Isolate media token verification from Firebase Admin`)
+- Vercel deployment ของ commit นี้ผ่าน checks ทั้ง Vercel และ Vercel Preview Comments
+- live Preview verification ผ่านบน authenticated session ของ lot `QA-20260722`:
+  - ใช้ภาพสังเคราะห์ `philodendron-lab-upload-check.png`
+  - Firebase token verification ผ่าน
+  - Cloudinary upload ผ่าน
+  - Firestore media metadata ถูกบันทึก
+  - รูปแสดงใน Observation และ UI รายงาน `อัปโหลดสำเร็จ`
+- จุดติดขัด `ERR_REQUIRE_ESM` ของ media upload ปิดแล้ว
+- ขั้นถัดไป: ตรวจ media soft delete/restore + audit และ responsive sandbox รอบสุดท้าย ก่อนขออนุมัติ merge Draft PR #3; image processing ยังเลื่อนไปหลัง project เดิมเสร็จ
+
+### Protocol media implementation checkpoint 7 — 2026-07-23
+
+- ผู้ใช้ยืนยันตั้งค่า Firebase Admin variables ใน Vercel เรียบร้อยแล้ว
+- เพิ่ม `formatPrivateKey()` ใน `src/lib/firebase/admin.ts` และ `admin.test.ts` เพื่อแปลง RSA Private Key ที่ถูกตัด `\n` หรือรวมเป็นบรรทัดเดียวกลับเป็น PEM format มาตรฐานอัตโนมัติ
+- ปรับปรุง `verifyFirebaseToken()` ให้ใช้ `jose` Dynamic JWKS (`https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com`) โดยตรง พร้อมรองรับ fallback `NEXT_PUBLIC_FIREBASE_PROJECT_ID` เพื่อตัดปัญหา `ERR_REQUIRE_ESM` ของ `jwks-rsa` บน Vercel
+- ปรับปรุง `MediaUploader` ให้เรียก `user.getIdToken(true)` บังคับรับ fresh ID token ก่อนขอ signature
+- เพิ่ม Lightbox Modal ใน `MediaStrip` สำหรับคลิกดูภาพสังเกตการณ์แบบขยายเต็มหน้าจอ
+- แก้ไข import path ของ `ObservationMedia` ใน `src/components/media/media-strip.tsx` แก้ไขปัญหา Vercel build type check failure และ push commit `3b832b7` สำเร็จแล้ว
+- ลำดับถัดไป: รอ Vercel Preview build เสร็จสิ้น แล้วทดสอบ Sign-in + อัปโหลดสื่อสังเกตการณ์ และกดขยายภาพที่ Lot `QA-20260722`
+
+
+
+
+
+
+

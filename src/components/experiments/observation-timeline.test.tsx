@@ -13,4 +13,5 @@ describe("ObservationTimeline", () => {
     const html = renderToStaticMarkup(<ObservationTimeline observations={[{ ...item, deletedAt: "2026-07-22" }]} onDelete={async () => undefined} onEdit={() => undefined} onRestore={async () => undefined} />);
     expect(html).toContain("กู้คืน");
   });
+  it("renders observation-specific media controls",()=>{const html=renderToStaticMarkup(<ObservationTimeline observations={[item]} onDelete={async()=>{}} onEdit={()=>{}} onRestore={async()=>{}} renderMedia={observation=><div>media-{observation.id}</div>}/>);expect(html).toContain("media-o1")});
 });

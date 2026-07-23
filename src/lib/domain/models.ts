@@ -1,4 +1,27 @@
 export type EvidenceState = "Verified" | "Adapted" | "Experimental" | "Pending review";
+export type ProtocolStatus = "Draft" | "Active" | "Archived";
+
+export type ProtocolStep = {
+  id: string; order: number; title: string; instruction: string; durationMinutes: number | null;
+  criticalControls: string[]; safetyNotes: string[]; referenceIds: string[]; evidenceState: EvidenceState;
+};
+
+export type ProtocolDraftInput = {
+  title: string; plantScope: string; evidenceState: EvidenceState; summary: string; changeNote: string; steps: ProtocolStep[];
+};
+
+export type ProtocolRecord = {
+  id: string; ownerId: string; title: string; slug: string; plantScope: string; evidenceState: EvidenceState;
+  status: ProtocolStatus; currentVersionId: string; createdAt: string; updatedAt: string; deletedAt: string | null;
+};
+
+export type ProtocolVersion = {
+  id: string; protocolId: string; ownerId: string; version: string; summary: string; changeNote: string;
+  steps: ProtocolStep[]; createdBy: string; createdAt: string; publishedAt: string | null;
+};
+export type ProtocolProgressState = "Pending" | "Completed" | "Skipped";
+export type ProtocolStepProgress = { stepId: string; protocolId: string; versionId: string; lotId: string; ownerId: string; state: ProtocolProgressState; note: string; completedBy: string | null; completedAt: string | null; updatedAt: string };
+export type ObservationMedia={id:string;ownerId:string;lotId:string;observationId:string;cloudinaryPublicId:string;secureUrl:string;width:number;height:number;format:"jpg"|"jpeg"|"png"|"webp";bytes:number;caption:string;capturedAt:string|null;createdBy:string;createdAt:string;updatedAt:string;deletedAt:string|null};
 export type ExperimentStatus = "Healthy" | "Review" | "At risk" | "Contaminated";
 export type LotStatus = ExperimentStatus;
 
@@ -8,6 +31,7 @@ export type ExperimentLot = {
   plant: string;
   protocolId: string;
   protocolTitle: string;
+  protocolVersionId?: string;
   stage: string;
   status: ExperimentStatus;
   startedAt: string;

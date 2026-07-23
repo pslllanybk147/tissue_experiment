@@ -1,0 +1,2 @@
+import { describe,expect,it } from "vitest"; import { getCloudinaryConfig } from "./config";
+describe("Cloudinary config",()=>{it("requires all server values",()=>{expect(()=>getCloudinaryConfig({})).toThrow("Cloudinary is not configured")});it("returns complete config",()=>{expect(getCloudinaryConfig({CLOUDINARY_CLOUD_NAME:"c",CLOUDINARY_API_KEY:"k",CLOUDINARY_API_SECRET:"s"})).toEqual({cloudName:"c",apiKey:"k",apiSecret:"s"})})});

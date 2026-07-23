@@ -1,0 +1,3 @@
+import { renderToStaticMarkup } from "react-dom/server"; import { describe, expect, it } from "vitest";
+import { ProtocolRunner } from "./protocol-runner";
+describe("ProtocolRunner", () => { it("renders steps and completion controls", () => { const html = renderToStaticMarkup(<ProtocolRunner progress={[]} steps={[{ id: "s1", order: 0, title: "Wash", instruction: "Wash explant", durationMinutes: 10, criticalControls: [], safetyNotes: [], referenceIds: [], evidenceState: "Adapted" }]} onComplete={async()=>{}} onReopen={async()=>{}} />); expect(html).toContain("Wash"); expect(html).toContain("เสร็จแล้ว"); }); });
