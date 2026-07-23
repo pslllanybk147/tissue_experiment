@@ -31,5 +31,6 @@ describe("knowledge source repository", () => {
     expect(updated.id).toBe(source.id);
     expect(updated.title).toBe("Reviewed paper");
     expect(updated.createdAt).toBe(source.createdAt);
+    expect((await repository.listSourceAuditEvents("owner-1", source.id)).map(event => event.action)).toEqual(["created", "updated"]);
   });
 });

@@ -1311,3 +1311,23 @@
 - Sandbox check: local browser ยังติด Firebase session loading เนื่องจากไม่มี Firebase configuration; ไม่อ้างว่า authenticated/demo UI ผ่าน sandbox และข้อจำกัดนี้ยังคงเป็น known limitation
 - สถานะ: source metadata แก้ไขได้โดยไม่ทำลาย identity และ reviewer เห็นหลักฐานที่เชื่อมกับ source เดียวกันได้
 - ขั้นถัดไป: ทำ claim review deep-link ให้เลือก claim จาก query string ได้จริง และเพิ่ม audit event สำหรับการแก้ source metadata
+
+### Claim deep-link และ source metadata audit — 2026-07-23
+
+- เพิ่ม deep-link จาก source detail ไปยัง `/knowledge?claim={claimId}`
+- Knowledge Library อ่าน claim id หลัง mount และส่งเข้า Source Registry
+- claim ที่ตรงกับ deep-link จะมี anchor id, highlight และ focus style เพื่อให้ reviewer หาได้ทันที
+- เพิ่ม `KnowledgeSourceAuditEvent` สำหรับ `created` และ `updated`
+- Memory repository เก็บ audit source ตาม source id และ Firestore เก็บใน `knowledgeSources/{sourceId}/auditEvents`
+- `createSource` และ `updateSource` บันทึก before/after snapshot ตามเหตุการณ์
+- Source detail แสดงประวัติ metadata พร้อมเวลาและ before/after แบบ expandable
+- เพิ่ม regression test ว่า source update คง identity และสร้าง audit sequence `created`, `updated`
+- แก้ Next.js build issue จาก `useSearchParams` โดยอ่าน query หลัง mount เพื่อคง static route behavior
+- Verification:
+  - `npm run firebase:verify`: 65 files / 132 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน และมี route `/knowledge/sources/[sourceId]`
+  - `git diff --check`: ผ่าน
+- Sandbox check: Firebase emulator ผ่านครบ; authenticated browser sandbox ยังติด session loading เมื่อไม่มี local Firebase configuration จึงยังไม่อ้างว่า UI cloud session ผ่าน
+- สถานะ: reviewer เปิด claim ที่เจาะจงจาก source detail ได้ และแก้ metadata ย้อนตรวจ audit ได้
+- ขั้นถัดไป: เพิ่ม source/claim audit เข้า unified research timeline และเริ่ม source-to-taxon claim summary ใน Knowledge Library

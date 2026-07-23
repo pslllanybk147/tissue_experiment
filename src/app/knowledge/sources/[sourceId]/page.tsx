@@ -18,14 +18,16 @@ export default function KnowledgeSourceDetailPage() {
   const repository = useMemo(() => getKnowledgeSourceRepository(ownerId, authenticated), [authenticated, ownerId]);
   const [source, setSource] = useState<KnowledgeSource | null>(null);
   const [claims, setClaims] = useState<SourceClaim[]>([]);
+  const [audits, setAudits] = useState<import("@/lib/domain/knowledge-sources").KnowledgeSourceAuditEvent[]>([]);
   const [state, setState] = useState<"loading" | "ready" | "missing" | "error">("loading");
   const reportLoadError = useCallback(() => setState("error"), []);
 
   const load = useCallback(async () => {
-    const [sources, nextClaims] = await Promise.all([repository.listSources(ownerId), repository.listClaims(ownerId)]);
+    const [sources, nextClaims, nextAudits] = await Promise.all([repository.listSources(ownerId), repository.listClaims(ownerId), repository.listSourceAuditEvents(ownerId, sourceId)]);
     const current = sources.find(item => item.id === sourceId) ?? null;
     setSource(current);
     setClaims(nextClaims.filter(item => item.sourceId === sourceId));
+    setAudits(nextAudits);
     setState(current ? "ready" : "missing");
   }, [ownerId, repository, sourceId]);
 
@@ -38,5 +40,5 @@ export default function KnowledgeSourceDetailPage() {
     await load();
   }
 
-  return <AuthGate><LabShell section="Knowledge" sessionLabel={authenticated ? "FIREBASE" : "DEMO"} onSignOut={() => void signOut()}><header className="route-heading"><div><p className="eyebrow">KNOWLEDGE LIBRARY / SOURCE</p><h1>Source detail</h1><p>ตรวจ metadata และย้อนดู claim ที่อ้างอิง source เดียวกัน</p></div></header>{state === "loading" && <p className="route-state" role="status">กำลังโหลด source…</p>}{state === "missing" && <p className="route-state" role="alert">ไม่พบ source นี้ หรือ source ไม่อยู่ในบัญชีของคุณ</p>}{state === "error" && <p className="route-state error" role="alert">โหลด source ไม่สำเร็จ</p>}{state === "ready" && source && <KnowledgeSourceDetail source={source} claims={claims} updateSource={updateSource} />}</LabShell></AuthGate>;
+  return <AuthGate><LabShell section="Knowledge" sessionLabel={authenticated ? "FIREBASE" : "DEMO"} onSignOut={() => void signOut()}><header className="route-heading"><div><p className="eyebrow">KNOWLEDGE LIBRARY / SOURCE</p><h1>Source detail</h1><p>ตรวจ metadata และย้อนดู claim ที่อ้างอิง source เดียวกัน</p></div></header>{state === "loading" && <p className="route-state" role="status">กำลังโหลด source…</p>}{state === "missing" && <p className="route-state" role="alert">ไม่พบ source นี้ หรือ source ไม่อยู่ในบัญชีของคุณ</p>}{state === "error" && <p className="route-state error" role="alert">โหลด source ไม่สำเร็จ</p>}{state === "ready" && source && <KnowledgeSourceDetail source={source} claims={claims} audits={audits} updateSource={updateSource} />}</LabShell></AuthGate>;
 }

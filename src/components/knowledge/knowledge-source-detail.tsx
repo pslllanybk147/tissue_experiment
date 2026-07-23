@@ -2,16 +2,17 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import type { KnowledgeSource, SourceClaim } from "@/lib/domain/knowledge-sources";
+import type { KnowledgeSource, KnowledgeSourceAuditEvent, SourceClaim } from "@/lib/domain/knowledge-sources";
 import type { KnowledgeSourceInput } from "@/lib/repositories/knowledge-source-repository";
 
 type Props = {
   source: KnowledgeSource;
   claims: SourceClaim[];
+  audits: KnowledgeSourceAuditEvent[];
   updateSource: (input: KnowledgeSourceInput) => Promise<void>;
 };
 
-export function KnowledgeSourceDetail({ source, claims, updateSource }: Props) {
+export function KnowledgeSourceDetail({ source, claims, audits, updateSource }: Props) {
   const [form, setForm] = useState<KnowledgeSourceInput>({ title: source.title, sourceType: source.sourceType, url: source.url, doi: source.doi, authors: source.authors, publishedAt: source.publishedAt, license: source.license, notes: source.notes });
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -50,7 +51,7 @@ export function KnowledgeSourceDetail({ source, claims, updateSource }: Props) {
         <label>หมายเหตุ<textarea value={form.notes} onChange={event => setForm({ ...form, notes: event.target.value })} /></label>
         <button className="primary-button" disabled={busy} type="submit">{busy ? "กำลังบันทึก…" : "บันทึก metadata"}</button>
       </form>
-      <aside className="knowledge-source-claims"><p className="eyebrow">LINKED CLAIMS</p><h3>Claims ที่อ้าง source นี้ ({claims.length})</h3>{!claims.length ? <p className="muted-copy">ยังไม่มี claim ที่เชื่อมกับ source นี้</p> : claims.map(claim => <article className="knowledge-source-claim" key={claim.id}><div className="claim-row-heading"><strong>{claim.statement}</strong><span className={claim.reviewState === "Approved" ? "dataset-status approved" : claim.reviewState === "Rejected" ? "dataset-status rejected" : "dataset-status pending"}>{claim.reviewState}</span></div><p>{claim.evidenceExcerpt ?? "ไม่มี excerpt รุ่นเก่า"}</p><small>ตำแหน่ง: {claim.evidenceLocation ?? "ยังไม่ระบุ"} · Evidence: {claim.evidenceState}</small><Link href={`/knowledge?claim=${claim.id}`}>เปิดใน claim review →</Link></article>)}</aside>
+      <aside className="knowledge-source-claims"><p className="eyebrow">LINKED CLAIMS</p><h3>Claims ที่อ้าง source นี้ ({claims.length})</h3>{!claims.length ? <p className="muted-copy">ยังไม่มี claim ที่เชื่อมกับ source นี้</p> : claims.map(claim => <article className="knowledge-source-claim" key={claim.id}><div className="claim-row-heading"><strong>{claim.statement}</strong><span className={claim.reviewState === "Approved" ? "dataset-status approved" : claim.reviewState === "Rejected" ? "dataset-status rejected" : "dataset-status pending"}>{claim.reviewState}</span></div><p>{claim.evidenceExcerpt ?? "ไม่มี excerpt รุ่นเก่า"}</p><small>ตำแหน่ง: {claim.evidenceLocation ?? "ยังไม่ระบุ"} · Evidence: {claim.evidenceState}</small><Link href={`/knowledge?claim=${claim.id}`}>เปิดใน claim review →</Link></article>)}<div className="knowledge-source-audit"><p className="eyebrow">AUDIT HISTORY</p><h3>ประวัติ metadata ({audits.length})</h3>{!audits.length ? <p className="muted-copy">ยังไม่มี audit</p> : audits.slice().reverse().map(event => <article key={event.id}><strong>{event.action === "updated" ? "แก้ไข metadata" : "สร้าง source"}</strong><time dateTime={event.occurredAt}>{new Date(event.occurredAt).toLocaleString("th-TH")}</time>{event.action === "updated" && <details><summary>ดู before / after</summary><pre>{JSON.stringify({ before: event.before, after: event.after }, null, 2)}</pre></details>}</article>)}</div></aside>
     </div>
   </section>;
 }

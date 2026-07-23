@@ -35,3 +35,13 @@ export type SourceClaim = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type KnowledgeSourceAuditEvent = {
+  id: string;
+  ownerId: string;
+  sourceId: string;
+  action: "created" | "updated";
+  occurredAt: string;
+  before: Record<string, unknown> | null;
+  after: Record<string, unknown> | null;
+};
