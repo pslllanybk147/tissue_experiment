@@ -1105,3 +1105,28 @@
   - `git diff --check`: ผ่าน
 - สถานะ: มี manifest ที่ชี้ไปยังภาพ preprocess แล้วและพร้อมส่งต่อเข้า training pipeline แต่ยังไม่มีการ train model หรือ inference endpoint
 - ขั้นถัดไป: เพิ่ม background queue/worker สำหรับ batch ใหญ่ หรือเริ่มสร้าง training dataset connector และ validation report
+
+### Image phase 1 training readiness report — 2026-07-23
+
+- เพิ่ม `src/lib/domain/training-readiness.ts` สำหรับตรวจคุณภาพ model-ready manifest ก่อนส่งเข้า training
+- รายงานตรวจ:
+  - จำนวนภาพรวมและ split counts
+  - จำนวนภาพต่อ class จาก scientific name + cultivar
+  - duplicate artifact SHA-256 ระหว่างรายการ
+  - class ที่ไม่มีตัวอย่างใน train split
+  - train/validation/test split ที่ว่าง
+- เพิ่ม `POST /api/dataset/training-report` ตรวจ owner/job/artifact ก่อนสร้างรายงาน
+- บันทึกประวัติใน `users/{uid}/trainingReports/{reportId}` และดาวน์โหลด JSON จากหน้า Image Review
+- ปุ่มใหม่ใน job ที่ completed: `ตรวจความพร้อมฝึกโมเดล`
+- รายงานที่มี warning จะไม่ถูกแสดงเป็น ready และระบบจะแจ้งจำนวนจุดที่ต้องตรวจ
+- เพิ่ม unit tests สำหรับ class count, split warning และ authentication guard
+- Sandbox verification:
+  - Image Review demo mode render สำเร็จ
+  - desktop และ mobile ไม่มี horizontal overflow
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 57 files / 118 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- สถานะ: ระบบตรวจความพร้อมของ dataset ก่อนฝึกได้แล้ว แต่ยังไม่มี model training, inference หรือ background queue
+- ขั้นถัดไป: เพิ่ม background queue/worker สำหรับ preprocessing batch ใหญ่ หรือเชื่อม external training pipeline หลัง dataset พร้อม
