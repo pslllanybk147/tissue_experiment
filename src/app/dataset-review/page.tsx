@@ -7,6 +7,7 @@ import { LabShell } from "@/components/lab/lab-shell";
 import { ReviewQueue } from "@/components/dataset/review-queue";
 import type { DatasetConfidence, DatasetItem, DatasetReviewStatus } from "@/lib/domain/models";
 import { getDatasetRepository } from "@/lib/repositories/dataset-repository-factory";
+import { getFirebaseServices } from "@/lib/firebase/client";
 
 export default function DatasetReviewPage() {
   const { session, signOut } = useAuth();
@@ -38,5 +39,16 @@ export default function DatasetReviewPage() {
     await load();
   }
 
-  return <AuthGate><LabShell section="Image review" sessionLabel={authenticated ? "FIREBASE" : "DEMO"} onSignOut={() => void signOut()}><header className="route-heading"><div><p className="eyebrow">IMAGE PROCESSING / PHASE 1</p><h1>Image Review</h1><p>ตรวจ provenance และยืนยัน label ก่อนนำภาพไปใช้ฝึกโมเดล</p></div></header>{state === "loading" && <p className="route-state" role="status">กำลังโหลดรายการตรวจ…</p>}{state === "error" && <div className="route-state error" role="alert">โหลด Review Queue ไม่สำเร็จ <button className="quiet-button" onClick={() => void load()} type="button">ลองใหม่</button></div>}{state === "ready" && <ReviewQueue items={items} onReviewProvenance={reviewProvenance} onSetLabel={setLabel} />}</LabShell></AuthGate>;
+  async function exportManifest() {
+    const user = getFirebaseServices()?.auth.currentUser;
+    if (!user) throw new Error("กรุณาเข้าสู่ระบบก่อน export manifest");
+    const token = await user.getIdToken(true);
+    const response = await fetch("/api/dataset/export", { headers: { authorization: `Bearer ${token}` } });
+    if (!response.ok) { const body = await response.json().catch(() => ({})) as { error?: string }; throw new Error(body.error || "Export manifest ไม่สำเร็จ"); }
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a"); anchor.href = url; anchor.download = `philodendron-image-dataset-${new Date().toISOString().slice(0, 10)}.json`; anchor.click(); URL.revokeObjectURL(url);
+  }
+
+  return <AuthGate><LabShell section="Image review" sessionLabel={authenticated ? "FIREBASE" : "DEMO"} onSignOut={() => void signOut()}><header className="route-heading"><div><p className="eyebrow">IMAGE PROCESSING / PHASE 1</p><h1>Image Review</h1><p>ตรวจ provenance และยืนยัน label ก่อนนำภาพไปใช้ฝึกโมเดล</p></div></header>{state === "loading" && <p className="route-state" role="status">กำลังโหลดรายการตรวจ…</p>}{state === "error" && <div className="route-state error" role="alert">โหลด Review Queue ไม่สำเร็จ <button className="quiet-button" onClick={() => void load()} type="button">ลองใหม่</button></div>}{state === "ready" && <ReviewQueue items={items} onReviewProvenance={reviewProvenance} onSetLabel={setLabel} onExport={authenticated ? exportManifest : undefined} />}</LabShell></AuthGate>;
 }

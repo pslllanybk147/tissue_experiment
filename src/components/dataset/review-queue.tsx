@@ -9,6 +9,7 @@ type ReviewQueueProps = {
   items: DatasetItem[];
   onReviewProvenance: (itemId: string, status: DatasetReviewStatus, note: string) => Promise<void>;
   onSetLabel: (itemId: string, input: { scientificName: string; cultivarName: string; confidence: DatasetConfidence; note: string }) => Promise<void>;
+  onExport?: () => Promise<void>;
 };
 
 const statuses: Array<DatasetReviewStatus | "All"> = ["All", "Pending review", "Approved", "Rejected"];
@@ -21,7 +22,7 @@ function formatDate(value: string) {
   return new Intl.DateTimeFormat("th-TH", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
 
-export function ReviewQueue({ items, onReviewProvenance, onSetLabel }: ReviewQueueProps) {
+export function ReviewQueue({ items, onReviewProvenance, onSetLabel, onExport }: ReviewQueueProps) {
   const [filter, setFilter] = useState<(typeof statuses)[number]>("Pending review");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [reviewNote, setReviewNote] = useState("");
@@ -52,7 +53,7 @@ export function ReviewQueue({ items, onReviewProvenance, onSetLabel }: ReviewQue
   }
 
   return <div className="dataset-review" aria-label="Dataset review queue">
-    <section className="dataset-review-summary"><div><p className="eyebrow">IMAGE DATASET / HUMAN REVIEW</p><h2>Review Queue</h2><p>ตรวจที่มาของภาพก่อน แล้วจึงยืนยัน label สำหรับการทดลอง image processing</p></div><div className="dataset-review-count"><strong>{items.filter(item => item.reviewStatus === "Pending review").length}</strong><span>รอตรวจ</span></div></section>
+    <section className="dataset-review-summary"><div><p className="eyebrow">IMAGE DATASET / HUMAN REVIEW</p><h2>Review Queue</h2><p>ตรวจที่มาของภาพก่อน แล้วจึงยืนยัน label สำหรับการทดลอง image processing</p></div><div className="dataset-review-count"><strong>{items.filter(item => item.reviewStatus === "Pending review").length}</strong><span>รอตรวจ</span>{onExport && <button className="secondary-button" disabled={busy} onClick={() => void run(onExport, "ดาวน์โหลด manifest แล้ว")} type="button">Export manifest</button>}</div></section>
     <div className="dataset-review-filters" role="tablist" aria-label="กรองสถานะ">{statuses.map(status => <button aria-selected={filter === status} className={filter === status ? "active" : ""} key={status} onClick={() => setFilter(status)} role="tab" type="button">{status}</button>)}</div>
     {message && <p className="dataset-feedback success" role="status">{message}</p>}{error && <p className="dataset-feedback error" role="alert">{error}</p>}
     {!visibleItems.length ? <div className="dataset-empty"><h3>ยังไม่มีรายการในคิวนี้</h3><p>เมื่อมีรูปจาก Observation ที่ผ่านการตรวจ target แล้ว รายการจะปรากฏที่นี่ก่อนนำไปสร้าง dataset</p></div> : <div className="dataset-review-grid"><div className="dataset-review-list" aria-label="รายการภาพ">{visibleItems.map(item => <button className={`dataset-review-row ${selected?.id === item.id ? "active" : ""}`} key={item.id} onClick={() => selectItem(item)} type="button"><img alt="" src={item.assetUrl} /><span><strong>{item.label?.cultivarName || "ยังไม่ติด label"}</strong><small>{item.lotId} · {item.provenance.kind === "user-captured" ? "ภาพจากผู้ใช้" : "ภาพอ้างอิง"}</small><small>{formatDate(item.createdAt)}</small></span><span className={statusClass(item.reviewStatus)}>{item.reviewStatus}</span></button>)}</div>

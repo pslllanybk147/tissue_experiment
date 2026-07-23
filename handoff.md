@@ -944,3 +944,24 @@
   - `npm run build`: ผ่าน
   - `git diff --check`: ผ่าน
 - ขั้นถัดไป: แสดงสถานะว่า media รายการใดถูกส่งเข้า review แล้วใน Observation และให้ Lot timeline link ไปยัง Dataset Review item ได้
+
+### Image phase 1 dataset export — 2026-07-23
+
+- เพิ่ม `src/lib/domain/dataset-exporter.ts` เพื่อสร้าง manifest schema `image-dataset-v1`
+- exporter รวมเฉพาะรายการที่ผ่านครบทุกเงื่อนไข:
+  - `reviewStatus === Approved`
+  - `provenance.status === Approved`
+  - มี human label
+  - confidence ไม่ใช่ `Unknown`
+  - `includedInTraining === true`
+- manifest เก็บ asset URL, Lot/Observation, scientific name, cultivar, confidence, label source และ provenance metadata โดยไม่เก็บ token หรือ secret
+- เพิ่ม `GET /api/dataset/export` ซึ่งตรวจ Firebase token และอ่านเฉพาะ collection ของ owner ที่ login อยู่
+- เพิ่มปุ่ม `Export manifest` ในหน้า Image Review สำหรับ authenticated user และดาวน์โหลด JSON ใน browser
+- เพิ่ม tests สำหรับ filtering manifest และ unauthenticated export request
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 47 files / 102 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- สถานะ: ระบบพร้อมสร้าง manifest จากข้อมูลที่มนุษย์ review แล้ว แต่ยังไม่มี image decoder, train/validation split, model training หรือ inference
+- ขั้นถัดไป: ทำ dataset version/export history และเตรียม pipeline preprocessing ก่อนเริ่มเลือกโมเดล classifier
