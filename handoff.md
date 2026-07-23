@@ -618,4 +618,54 @@
 
 
 
+### Full-system QA audit — 2026-07-23
 
+- ตรวจ branch `feature/protocol-media-navigation` ที่ commit `0850470`
+- ผล automated checks:
+  - `npm test`: ผ่าน 35 files / 79 tests
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: ผ่าน Auth + Firestore emulator ด้วย Java 21
+  - `npm run lint`: **ไม่ผ่าน** 1 error
+- ตรวจ Vercel Preview แบบ authenticated ที่ 390px, 1024px และ 1440px; ไม่พบ horizontal overflow และ desktop/mobile navigation แสดงถูก breakpoint
+- ตรวจ workflow จริง: Experiment detail, observation timeline, รูป Cloudinary, lightbox, Protocol list/detail และ Create Lot
+
+#### บัคที่พบ — ห้าม merge ก่อนแก้
+
+1. **High — conditional React Hook ใน MediaStrip**
+   - `src/components/media/media-strip.tsx:45-46` return ก่อน `useState`
+   - ESLint: `React Hook "useState" is called conditionally`
+   - เสี่ยงลำดับ Hook เปลี่ยนเมื่อรูปโหลดจาก 0 เป็นมีรูป
+2. **High — Protocol legacy เปิดหน้า detail แล้วว่าง**
+   - Dashboard seed ใช้ schema `Protocol` เดิมใน `users/{uid}/protocols/protocol-nodal-v01`
+   - Protocol repository ใหม่ cast collection เดียวกันเป็น `ProtocolRecord`
+   - Live Preview แสดง `Nodal establishment` ใน list แต่เปิด detail เหลือเพียงลิงก์ย้อนกลับ เพราะไม่มี `currentVersionId`/version snapshot
+   - หน้า detail ไม่มี loading/error fallback เมื่อ record มีอยู่แต่หา current version ไม่เจอ
+
+#### บัค/ช่องว่างระดับกลาง
+
+3. **Medium — Audit history ของ media/progress แสดง entity ว่าง**
+   - observation, media และ progress เขียนลง collection `auditEvents` เดียวกันแต่ใช้ schema ต่างกัน
+   - `AuditHistory` อ่านทุก record เป็น `AuditEvent` และแสดง `event.entityType · event.entityId`
+   - Live Preview แสดง media events เป็น `created ·` โดยไม่มีชนิดและรหัส
+4. **Medium — Lightbox ไม่ผ่าน keyboard/dialog accessibility**
+   - ไม่มี `role="dialog"`, `aria-modal`, focus management หรือ Escape handler
+   - ทดสอบจริงแล้วกด Escape ไม่ปิด lightbox
+   - ปุ่ม `✕` ไม่มี accessible label ที่อธิบายว่า “ปิด”
+5. **Medium — media soft delete ไม่มี restore UI**
+   - repository รองรับ `restore()` และ audit แต่หน้า Experiment โหลดเฉพาะ media ที่ไม่ถูกลบ
+   - ปุ่มลบรูปไม่มี confirmation และเมื่อลบแล้วผู้ใช้กู้คืนจากหน้าเว็บไม่ได้
+6. **Medium — media signing endpoint ไม่ตรวจ lot/observation existence**
+   - authenticated user ขอ signed upload path สำหรับ lot/observation ID ใดก็ได้ใต้ UID ของตน
+   - ไม่มี rate limit; เพิ่มความเสี่ยงใช้ Cloudinary quota โดยไม่สร้าง metadata ที่ถูกต้อง
+7. **Medium — API ส่งรายละเอียด internal authentication error กลับ client**
+   - `/api/media/sign` ตอบ `Invalid authentication (${details})`
+   - เคยทำให้ module path/dependency internals แสดงใน UI; production ควรตอบข้อความทั่วไปและเก็บรายละเอียดเฉพาะ server log
+8. **Medium — production dependency advisories**
+   - `npm audit --omit=dev`: 9 vulnerabilities (7 moderate, 2 high)
+   - เกี่ยวข้องกับ transitive `postcss`, `sharp`, `uuid`; ห้ามใช้ `npm audit fix --force` โดยไม่ประเมินเพราะคำแนะนำปัจจุบันทำให้ downgrade/breaking versions
+
+#### Test coverage gap
+
+- `firebase:verify` เปิด emulator แล้วรัน unit tests แต่ไม่มี `@firebase/rules-unit-testing` หรือ assertions ที่พิสูจน์ Firestore rules ว่าปฏิเสธ cross-user/unauthenticated writes จริง
+- `MediaStrip` test ตรวจเพียง static markup ที่มีรูปอยู่แล้ว จึงไม่จับ transition จาก empty → populated, keyboard lightbox หรือ restore flow
+- ขั้นถัดไป: แก้ตามลำดับ 1 → 2 → 3/4/5 → security/dependencies แล้วรัน full sandbox/emulator และ Vercel Preview ใหม่ก่อน merge PR #3
