@@ -803,3 +803,24 @@
 - ยังไม่ถือว่าผ่าน: photo upload/delete/restore บน Preview เพราะหน้า Experiment ที่ตรวจไม่มี control สำหรับอัปโหลดรูปแสดงอยู่ใน DOM จึงยังไม่ได้กดทดสอบและไม่สรุปผลเกินหลักฐาน
 - Automated checks ก่อน/ระหว่าง checkpoint: `npm test`, `npm run firebase:verify`, `npm run lint`, `npm run build` ผ่าน
 - ขั้นถัดไปที่เหลือ: ตรวจ responsive/keyboard บน Preview หรือแก้ให้ media upload control ปรากฏใน guided workflow แล้วจึงทดสอบ media end-to-end
+
+### Responsive and keyboard QA checkpoint — 2026-07-23
+
+- ตรวจ Preview จริงที่ `https://tissue-experiment-93-git-featu-f89199-pslllanybk-2845s-projects.vercel.app`
+- Desktop viewport ที่ browser เปิดให้ตรวจจริง: `1280 × 720` (อยู่ในช่วง desktop ของ acceptance target 1440px)
+- ผล desktop:
+  - `document.documentElement.scrollWidth === clientWidth` ไม่พบ horizontal overflow
+  - sidebar, topbar, dashboard cards, tables และ Thai labels แสดงผลโดยไม่ล้นขอบ
+  - หน้า dashboard มี interactive controls และ links ครบในลำดับ DOM ที่ใช้งานด้วย keyboard ได้
+  - ปุ่ม navigation สามารถรับ focus ได้ และปุ่ม/ลิงก์มีชื่อที่อ่านได้จาก accessibility tree
+- ตรวจจาก CSS production ที่ deploy แล้ว:
+  - tablet breakpoint ที่ `1024px` และ `1100px` สำหรับ grid/sidebar/layout
+  - mobile breakpoint ที่ `700px` และ `720px` สำหรับ mobile nav, single-column forms, guided runner และ observation form
+  - media strip ใช้ horizontal scrolling เฉพาะแถบรูป ไม่ขยายความกว้างของหน้า
+  - `prefers-reduced-motion: reduce` ลด transition/animation และปิด smooth scroll
+- ข้อจำกัดการตรวจรอบนี้:
+  - in-app Preview ที่เชื่อมอยู่ไม่มีตัวควบคุมเปลี่ยน viewport เป็น `390px`, `1024px`, `1440px` โดยตรง จึงยืนยันการ render จริงได้ที่ 1280px และยืนยัน breakpoint จาก CSS ที่ build/deploy แล้ว แต่ยังไม่อ้างว่าเป็น full device matrix
+  - การกด Tab ผ่าน browser adapter ไม่เปลี่ยน active element อย่างเสถียร จึงตรวจ focusability และชื่อ accessibility ได้ แต่ยังไม่สรุป keyboard traversal แบบ end-to-end ว่าผ่านทั้งหมด
+  - Escape/lightbox ยังทดสอบไม่ได้จาก Preview เพราะหน้า Experiment ยังไม่แสดง media upload control และไม่มีรูปให้เปิด lightbox
+- Sandbox/emulator checkpoint รอบนี้: `npm run firebase:verify` ผ่าน 39 files / 88 tests
+- สรุป: ไม่พบ responsive overflow หรือ release-blocking UI error จากสิ่งที่ตรวจได้จริง; งานที่เหลือคือ device matrix ด้วย viewport emulator เฉพาะทาง และ media/lightbox เมื่อ upload control ถูก expose ในหน้า workflow
