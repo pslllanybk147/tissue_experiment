@@ -754,3 +754,14 @@
 - ผล `npm run build`: ผ่าน
 - Sandbox routes `/`, `/plants`, `/experiments`: HTTP 200 ครบ
 - สิ่งที่ยังค้าง: integration test ของ signed upload ที่ใช้ authenticated token จริง, visual/keyboard verification บน Vercel Preview และ Protocol authoring/version compare แบบเต็ม
+
+### Full verification checkpoint — 2026-07-23
+
+- ผู้ใช้ขอให้ทดสอบระบบทั้งหมด
+- ผล `npm test`: 37 files passed, 1 rules suite skipped นอก emulator; รวม 83 passed / 3 skipped
+- ผล `npm run lint`: ผ่าน
+- ผล `npm run build`: ผ่าน
+- ผล `npm run firebase:verify`: ผ่าน 38 files / 86 tests โดย rules suite ทำงานจริงบน Auth + Firestore emulator
+- Sandbox API upload request ที่ไม่มี token: HTTP 401
+- Sandbox routes ที่ตรวจ: `/`, `/plants`, `/plants/new`, `/experiments`, `/experiments/new` ตอบ HTTP 200 ครบ
+- ไม่พบ release-blocking error จาก automated checks รอบนี้
