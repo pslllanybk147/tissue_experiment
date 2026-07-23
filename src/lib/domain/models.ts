@@ -163,3 +163,45 @@ export type ResearchSource = {
   evidence: EvidenceState;
   note: string;
 };
+
+export type DatasetReviewStatus = "Pending review" | "Approved" | "Rejected";
+export type DatasetProvenanceKind = "user-captured" | "licensed-reference";
+export type DatasetLabelSource = "owner" | "expert" | "imported";
+export type DatasetConfidence = "Unknown" | "Low" | "Medium" | "High";
+
+export type DatasetProvenance = {
+  kind: DatasetProvenanceKind;
+  sourceUrl: string | null;
+  license: string | null;
+  attribution: string | null;
+  provenanceId: string;
+  status: DatasetReviewStatus;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  note: string;
+};
+
+export type DatasetLabel = {
+  scientificName: string;
+  cultivarName: string;
+  confidence: DatasetConfidence;
+  source: DatasetLabelSource;
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  note: string;
+};
+
+export type DatasetItem = {
+  id: string;
+  ownerId: string;
+  mediaId: string;
+  lotId: string;
+  observationId: string;
+  assetUrl: string;
+  provenance: DatasetProvenance;
+  label: DatasetLabel | null;
+  reviewStatus: DatasetReviewStatus;
+  includedInTraining: boolean;
+  createdAt: string;
+  updatedAt: string;
+};

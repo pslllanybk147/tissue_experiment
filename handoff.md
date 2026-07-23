@@ -842,3 +842,23 @@
 - ต้องตรวจ license/provenance ของ seed image และ metadata ก่อนใช้สร้าง training dataset; ห้ามถือคำว่า `CC-BY 4.0 Verified Provenance` ใน exporter เป็นหลักฐานยืนยันแทนเอกสารต้นทาง
 - pilot ไม่ได้อยู่ใน current branch `feature/protocol-media-navigation` โดยตรง และไม่ควร merge ทั้งชุด เพราะ branch pilot มีความต่างจาก guided workflow ปัจจุบันจำนวนมาก
 - แนวทางต่อยอดหลัง guided workflow เสร็จ: แยก image ingestion, provenance/label review, dataset export, baseline classifier และ evaluation เป็น phases ใหม่ โดยเริ่มจากข้อมูลที่ผู้ใช้ยืนยัน label เอง
+
+### Image phase 1 foundation — 2026-07-23
+
+- เริ่ม phase ใหม่ด้วย dataset intake foundation โดยยังไม่ทำ automatic species prediction
+- เพิ่ม domain types ใน `src/lib/domain/models.ts` สำหรับ `DatasetItem`, `DatasetProvenance`, `DatasetLabel`, review status และ confidence
+- เพิ่ม `src/lib/domain/dataset-intake.ts` สำหรับ validation:
+  - media/lot/observation/asset ต้องมีตัวตน
+  - licensed reference ต้องมี source URL
+  - provenance ที่ Approved ต้องมี license
+  - label ที่ใช้เป็น training truth ห้ามมี confidence เป็น Unknown
+- เพิ่ม `src/lib/repositories/dataset-repository.ts` และ `memory-dataset-repository.ts` เป็น repository contract สำหรับ sandbox
+- กติกาสำคัญ: สร้าง item เป็น `Pending review`, ต้อง approve provenance ก่อนบันทึก human label และจึงค่อย `includedInTraining: true`
+- เพิ่ม tests ครอบคลุม provenance validation, Unknown label, cross-owner access และ approval gate
+- Verification:
+  - targeted tests: 2 files / 4 tests ผ่าน
+  - `npm run firebase:verify`: 41 files / 92 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+- ยังไม่เชื่อม Firestore/Cloudinary UI และยังไม่มี image decoder, model training หรือ inference
+- ขั้นถัดไป: เชื่อม DatasetRepository กับ Firestore พร้อม owner rules และสร้างหน้า review queue ที่แก้ label/provenance ได้ก่อน export dataset
