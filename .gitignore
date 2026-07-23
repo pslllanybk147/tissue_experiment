@@ -46,3 +46,7 @@ sandbox-server*.log
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# firebase / credentials
+*-adminsdk-*.json
+
