@@ -1,11 +1,22 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ObservationMedia } from "../../lib/domain/models";
 
 function Lightbox({ item, onClose }: { item: ObservationMedia; onClose: () => void }) {
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    closeRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
   return (
-    <div className="lightbox-overlay" onClick={onClose} style={{
+    <div className="lightbox-overlay" role="dialog" aria-modal="true" aria-label="ขยายภาพ observation" onClick={onClose} style={{
       position: "fixed",
       inset: 0,
       backgroundColor: "rgba(0,0,0,0.8)",
@@ -15,7 +26,7 @@ function Lightbox({ item, onClose }: { item: ObservationMedia; onClose: () => vo
       zIndex: 1000
     }}>
       <div className="lightbox-content" onClick={e => e.stopPropagation()} style={{ position: "relative" }}>
-        <button className="lightbox-close" onClick={onClose} style={{
+        <button ref={closeRef} aria-label="ปิดภาพขยาย" className="lightbox-close" onClick={onClose} style={{
           position: "absolute",
           top: 8,
           right: 8,
@@ -42,8 +53,9 @@ function Lightbox({ item, onClose }: { item: ObservationMedia; onClose: () => vo
 }
 
 export function MediaStrip({ items, onDelete }: { items: ObservationMedia[]; onDelete: (id: string) => Promise<void> }) {
-  if (!items.length) return null;
   const [lightboxItem, setLightboxItem] = useState<ObservationMedia | null>(null);
+
+  if (!items.length) return null;
 
   return (
     <>

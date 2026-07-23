@@ -4,6 +4,75 @@ export type ProtocolStatus = "Draft" | "Active" | "Archived";
 export type ProtocolStep = {
   id: string; order: number; title: string; instruction: string; durationMinutes: number | null;
   criticalControls: string[]; safetyNotes: string[]; referenceIds: string[]; evidenceState: EvidenceState;
+  objective?: string;
+  whyItMatters?: string;
+  prerequisites?: string[];
+  materials?: string[];
+  measurements?: StepMeasurement[];
+  expectedResult?: string;
+  passCriteria?: string[];
+  failCriteria?: string[];
+  nextActionOnPass?: string;
+  nextActionOnFail?: string;
+  requiredEvidence?: Array<"note" | "photo" | "measurement">;
+  allowPhoto?: boolean;
+  allowNote?: boolean;
+};
+
+export type MeasurementUnit = "mL" | "g" | "mg/L" | "%" | "min" | "°C" | "pH" | "count";
+export type StepMeasurement = { id: string; label: string; unit: MeasurementUnit; required?: boolean; min?: number; max?: number };
+export type GuidedStepStatus = "Pending" | "Passed" | "Needs review" | "Failed";
+
+export type PlantRecord = {
+  id: string;
+  ownerId: string;
+  sellerName: string;
+  suspectedSpecies: string;
+  identificationConfidence: "Unknown" | "Low" | "Medium" | "High";
+  source: string;
+  receivedAt: string;
+  health: ExperimentStatus;
+  notes: string;
+  baselineMediaIds: string[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ProtocolTemplate = {
+  id: string;
+  title: string;
+  plantScope: string;
+  method: "shoot-tip" | "nodal" | "generic";
+  evidenceState: EvidenceState;
+  description: string;
+  protocolId?: string;
+};
+
+export type ProtocolStepRun = {
+  id: string;
+  ownerId: string;
+  lotId: string;
+  protocolId: string;
+  versionId: string;
+  stepId: string;
+  status: GuidedStepStatus;
+  note: string;
+  measurements: Record<string, number | null>;
+  mediaIds: string[];
+  observedAt: string;
+  updatedAt: string;
+};
+
+export type UnifiedAuditEvent = {
+  id: string;
+  ownerId: string;
+  lotId: string;
+  entityType: "lot" | "observation" | "media" | "protocol-progress" | "protocol" | "plant";
+  entityId: string;
+  action: string;
+  occurredAt: string;
+  before?: Record<string, unknown> | null;
+  after?: Record<string, unknown> | null;
 };
 
 export type ProtocolDraftInput = {
@@ -37,6 +106,9 @@ export type ExperimentLot = {
   startedAt: string;
   createdAt: string;
   updatedAt: string;
+  plantId?: string;
+  templateId?: string;
+  method?: "shoot-tip" | "nodal" | "generic";
 };
 
 export type CreateLotInput = Omit<ExperimentLot, "ownerId" | "createdAt" | "updatedAt">;

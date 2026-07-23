@@ -3,6 +3,7 @@ import type { ProtocolRecord, ProtocolVersion } from "../domain/models";
 import { nextDraftVersion } from "../domain/protocol-versioning";
 import type { ProtocolAuditEvent, ProtocolRepository } from "../repositories/protocol-repository";
 import { getFirebaseServices } from "./client";
+import { stepsForTemplate } from "../domain/protocol-templates";
 
 export type ProtocolMutation = { protocol: ProtocolRecord; version: ProtocolVersion; audit: ProtocolAuditEvent };
 export interface ProtocolPersistenceAdapter {
@@ -16,9 +17,16 @@ function firebaseAdapter(firestore: Firestore, uid: string): ProtocolPersistence
   const protocolRef = (id: string) => doc(firestore, "users", uid, "protocols", id);
   const versionRef = (id: string, versionId: string) => doc(firestore, "users", uid, "protocols", id, "versions", versionId);
   const auditRef = (id: string, eventId: string) => doc(firestore, "users", uid, "protocols", id, "audit", eventId);
+  const migrateLegacy = async (id: string, data: Record<string, unknown>): Promise<ProtocolRecord> => {
+    const timestamp = new Date().toISOString(); const versionId = `version-migrated-${id}`;
+    const protocol: ProtocolRecord = { id, ownerId: uid, title: typeof data.title === "string" ? data.title : "Migrated protocol", slug: id, plantScope: "Philodendron ไม่ยืนยันชนิด", evidenceState: "Experimental", status: "Active", currentVersionId: versionId, createdAt: timestamp, updatedAt: timestamp, deletedAt: null };
+    const version: ProtocolVersion = { id: versionId, protocolId: id, ownerId: uid, version: typeof data.version === "string" ? data.version : "0.1.0", summary: "เวอร์ชันที่ย้ายจาก schema เดิม กรุณาตรวจและแก้ก่อนใช้จริง", changeNote: "Legacy schema migration", steps: stepsForTemplate("template-generic-philodendron"), createdBy: uid, createdAt: timestamp, publishedAt: timestamp };
+    const batch = writeBatch(firestore); batch.set(protocolRef(id), protocol); batch.set(versionRef(id, versionId), version); await batch.commit(); return protocol;
+  };
+  const normalize = async (id: string, data: Record<string, unknown>): Promise<ProtocolRecord> => typeof data.currentVersionId === "string" ? data as unknown as ProtocolRecord : migrateLegacy(id, data);
   return {
-    async listProtocols() { return (await getDocs(collection(firestore, "users", uid, "protocols"))).docs.map(item => item.data() as ProtocolRecord); },
-    async getProtocol(id) { const snap = await getDoc(protocolRef(id)); return snap.exists() ? snap.data() as ProtocolRecord : null; },
+    async listProtocols() { const docs = (await getDocs(collection(firestore, "users", uid, "protocols"))).docs; return Promise.all(docs.map(item => normalize(item.id, item.data()))); },
+    async getProtocol(id) { const snap = await getDoc(protocolRef(id)); return snap.exists() ? normalize(id, snap.data()) : null; },
     async listVersions(id) { return (await getDocs(collection(firestore, "users", uid, "protocols", id, "versions"))).docs.map(item => item.data() as ProtocolVersion); },
     async commitMutation(mutation) { const batch = writeBatch(firestore); batch.set(protocolRef(mutation.protocol.id), mutation.protocol); batch.set(versionRef(mutation.protocol.id, mutation.version.id), mutation.version); batch.set(auditRef(mutation.protocol.id, mutation.audit.id), mutation.audit); await batch.commit(); },
     async listAuditEvents(id) { return (await getDocs(collection(firestore, "users", uid, "protocols", id, "audit"))).docs.map(item => item.data() as ProtocolAuditEvent); },

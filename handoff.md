@@ -669,3 +669,36 @@
 - `firebase:verify` เปิด emulator แล้วรัน unit tests แต่ไม่มี `@firebase/rules-unit-testing` หรือ assertions ที่พิสูจน์ Firestore rules ว่าปฏิเสธ cross-user/unauthenticated writes จริง
 - `MediaStrip` test ตรวจเพียง static markup ที่มีรูปอยู่แล้ว จึงไม่จับ transition จาก empty → populated, keyboard lightbox หรือ restore flow
 - ขั้นถัดไป: แก้ตามลำดับ 1 → 2 → 3/4/5 → security/dependencies แล้วรัน full sandbox/emulator และ Vercel Preview ใหม่ก่อน merge PR #3
+
+### Guided Protocol Workflow implementation checkpoint — 2026-07-23
+
+- เริ่ม implementation ตามแผน Guided Protocol Workflow โดยยึดเส้นทางมือใหม่: Plant Record → Experiment Lot → template copy → guided runner → step evidence
+- เพิ่ม domain model ใน `src/lib/domain/models.ts` สำหรับ `PlantRecord`, `ProtocolTemplate`, `ProtocolStepRun`, `UnifiedAuditEvent`, `StepMeasurement` และสถานะ `Passed / Needs review / Failed`
+- เพิ่ม template content 3 ชุดใน `src/lib/domain/protocol-templates.ts`:
+  - Pink Princess · Nodal culture
+  - Violin variegated · Nodal culture
+  - Generic Philodendron · Safe start
+  - มี 13 ขั้นตั้งแต่ baseline จนติดตามความคงตัวของลายด่าง และแสดง `Verified / Adapted / Experimental` แยกชัดเจน
+- เพิ่ม Plant Record repository ทั้ง memory/demo และ Firestore พร้อมหน้า:
+  - `/plants`
+  - `/plants/new`
+  - `/plants/[plantId]`
+- เพิ่ม guided runner ใน Experiment detail:
+  - แสดงรายการขั้นตอนและ progress
+  - แสดง objective, เหตุผล, วัสดุ, วิธีทำ, safety, critical controls, expected result และ pass/fail criteria
+  - บันทึกสถานะ, measurement, note และ next action
+  - รองรับ layout มือถือแบบเรียงแนวตั้ง
+- เพิ่ม Step Run repository แบบ memory และ Firestore ใต้ `users/{uid}/lots/{lotId}/protocolStepRuns`; เมื่อบันทึกจะสร้าง audit event ประเภท `protocol-progress`
+- ปรับ `/experiments/new` ให้เลือก guided template และสร้าง Protocol สำเนาสำหรับ Lot โดยไม่แก้ template ต้นฉบับ รวม `plantId/templateId/method` ใน Lot
+- แก้ conditional Hook ใน `MediaStrip` และเพิ่ม Escape/focus/accessible dialog ให้ lightbox
+- เพิ่ม legacy protocol migration ใน Firestore protocol repository: record ที่ไม่มี `currentVersionId` จะถูกแปลงเป็น `ProtocolRecord` พร้อม `ProtocolVersion` generic และไม่ทำให้หน้า detail ว่าง
+- เพิ่ม automated tests สำหรับ template evidence, Plant ownership และ Step Run upsert
+- ผลตรวจล่าสุด:
+  - `npm test`: ผ่าน 37 files / 82 tests
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน และพบ routes `/plants`, `/plants/new`, `/plants/[plantId]`
+  - `npm run firebase:verify`: ผ่าน โดยเปิด Auth + Firestore emulator และรัน tests ครบ
+- Sandbox checkpoint: เปิด Next production-like dev server ชั่วคราวและตรวจ HTTP routes `/`, `/plants`, `/plants/new`, `/experiments/new` ได้ 200 ครบ; Firebase Auth + Firestore emulator verification ผ่าน; ยังต้องตรวจ visual ผ่าน browser/Preview หลัง push
+- สิ่งที่ยังค้างจากแผน: unified audit rendering ในหน้า timeline ให้รองรับ media/progress เต็มรูปแบบ, media restore UI, signed upload ตรวจ existence ของ Lot/Observation, Firestore rules tests, Protocol authoring เต็มรูปแบบ และ Vercel Preview verification
+- image processing/ML ยังไม่เริ่มตามข้อตกลงเดิม ต้องปิด guided protocol project ก่อน
+- **ขั้นถัดไปสำหรับ session ใหม่:** ตรวจ `handoff.md` ก่อน แล้วทำ unified audit + media restore จากนั้นรัน sandbox/emulator และอัปเดตบันทึกนี้ทุกครั้งที่งานจบ

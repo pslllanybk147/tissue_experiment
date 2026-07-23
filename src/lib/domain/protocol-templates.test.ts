@@ -1,0 +1,15 @@
+import { describe, expect, it } from "vitest";
+import { protocolTemplates, stepsForTemplate } from "./protocol-templates";
+
+describe("guided protocol templates", () => {
+  it("contains a beginner path for each supported scope", () => {
+    expect(protocolTemplates).toHaveLength(3);
+    expect(stepsForTemplate("template-generic-philodendron")).toHaveLength(13);
+    expect(stepsForTemplate("template-generic-philodendron")[0]).toMatchObject({ title: "รับต้นไม้และบันทึก baseline", objective: expect.any(String), passCriteria: expect.any(Array) });
+  });
+
+  it("marks direct Pink Princess evidence without upgrading the fallback", () => {
+    expect(stepsForTemplate("template-pink-princess-nodal")[8].evidenceState).toBe("Verified");
+    expect(stepsForTemplate("template-violin-nodal")[8].evidenceState).toBe("Experimental");
+  });
+});
