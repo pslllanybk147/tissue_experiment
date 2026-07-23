@@ -1003,3 +1003,26 @@
   - `git diff --check`: ผ่าน
 - สถานะ: preprocessing contract พร้อม แต่ยังไม่มีการดาวน์โหลด/ถอดรหัส/resize ภาพจริง และยังไม่มี model training/inference
 - ขั้นถัดไป: เพิ่ม image decoder แบบ server-side หรือ worker ที่ทำตาม contract และสร้าง output artifact ที่ตรวจสอบซ้ำได้
+
+### Image phase 1 server-side image decoder — 2026-07-23
+
+- เพิ่ม direct dependency `sharp` สำหรับ server-side image decoding และ transformation
+- เพิ่ม `src/lib/image/image-preprocessor.ts`:
+  - ตรวจ metadata ก่อน download
+  - อนุญาตเฉพาะ HTTPS Cloudinary URL เพื่อหลีกเลี่ยง arbitrary host/SSRF ใน worker นี้
+  - decode ภาพด้วย Sharp และอ่าน EXIF orientation
+  - resize เป็น 224×224 แบบ contain โดยเติมพื้นหลังสีขาว
+  - encode output เป็น PNG
+  - คืน output buffer, dimensions, bytes และ SHA-256 artifact hash
+- เพิ่ม tests ที่ใช้ภาพ generated ใน memory ไม่เรียก external network:
+  - decode/resize สำเร็จ
+  - block host ที่ไม่อนุญาตก่อน fetch
+  - fetch และ preprocess Cloudinary URL แบบ mocked
+- ยังไม่ได้สร้าง API ที่เก็บ output artifact หรือ batch worker บน Cloudinary/Cloud Tasks; module นี้เป็น deterministic preprocessing building block ก่อน
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 50 files / 109 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- สถานะ: image decoding/preprocessing ทำงานใน library แล้ว แต่ยังไม่มี classifier, training pipeline หรือ inference endpoint
+- ขั้นถัดไป: สร้าง preprocessing job API ที่รับ export version, ประมวลผลทีละ item, เก็บ artifact metadata/status และ retry ได้โดยไม่ประมวลผลซ้ำ
