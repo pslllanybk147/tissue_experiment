@@ -35,15 +35,25 @@ export function getAdminAuth() {
   const clientEmail = cleanEnv(process.env.FIREBASE_ADMIN_CLIENT_EMAIL);
   const privateKey = formatPrivateKey(process.env.FIREBASE_ADMIN_PRIVATE_KEY);
 
-  if (!projectId || !clientEmail || !privateKey) {
-    throw new Error("Firebase Admin is not configured");
+  const missing: string[] = [];
+  if (!projectId) missing.push("FIREBASE_ADMIN_PROJECT_ID");
+  if (!clientEmail) missing.push("FIREBASE_ADMIN_CLIENT_EMAIL");
+  if (!privateKey) missing.push("FIREBASE_ADMIN_PRIVATE_KEY");
+
+  if (missing.length > 0) {
+    throw new Error(`Missing variables: ${missing.join(", ")}`);
   }
 
-  const app = getApps()[0] ?? initializeApp({
-    credential: cert({ projectId, clientEmail, privateKey })
-  });
-
-  return getAuth(app);
+  try {
+    const app = getApps()[0] ?? initializeApp({
+      credential: cert({ projectId, clientEmail, privateKey })
+    });
+    return getAuth(app);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Credential parsing failed";
+    throw new Error(`Initialization failed: ${msg}`);
+  }
 }
+
 
 

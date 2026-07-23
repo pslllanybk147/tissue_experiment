@@ -20,8 +20,9 @@ export async function POST(request: Request) {
     try {
       const { getAdminAuth } = await import("../../../../lib/firebase/admin");
       adminAuth = getAdminAuth();
-    } catch {
-      return NextResponse.json({ error: "Firebase Admin configuration invalid" }, { status: 503 });
+    } catch (adminErr) {
+      const details = adminErr instanceof Error ? adminErr.message : "invalid";
+      return NextResponse.json({ error: `Firebase Admin configuration invalid (${details})` }, { status: 503 });
     }
     try {
       uid = (await adminAuth.verifyIdToken(header.slice(7))).uid;
