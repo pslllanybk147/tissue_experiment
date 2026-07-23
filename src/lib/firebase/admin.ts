@@ -35,6 +35,11 @@ export function getAdminAuth() {
   const clientEmail = cleanEnv(process.env.FIREBASE_ADMIN_CLIENT_EMAIL);
   const privateKey = formatPrivateKey(process.env.FIREBASE_ADMIN_PRIVATE_KEY);
 
+  if (process.env.FIREBASE_AUTH_EMULATOR_HOST) {
+    const app = getApps()[0] ?? initializeApp({ projectId: projectId || "demo-philodendron-lab" });
+    return getAuth(app);
+  }
+
   const missing: string[] = [];
   if (!projectId) missing.push("FIREBASE_ADMIN_PROJECT_ID");
   if (!clientEmail) missing.push("FIREBASE_ADMIN_CLIENT_EMAIL");

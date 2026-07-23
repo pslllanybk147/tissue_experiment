@@ -765,3 +765,20 @@
 - Sandbox API upload request ที่ไม่มี token: HTTP 401
 - Sandbox routes ที่ตรวจ: `/`, `/plants`, `/plants/new`, `/experiments`, `/experiments/new` ตอบ HTTP 200 ครบ
 - ไม่พบ release-blocking error จาก automated checks รอบนี้
+
+### Signed upload integration test checkpoint — 2026-07-23
+
+- ทำตามคำขอข้อ 1 โดยเพิ่ม `src/app/api/media/sign/route.integration.test.ts`
+- Integration test ใช้ Firebase Auth emulator สร้าง user จริงและขอ Firebase ID token จริง
+- ใช้ Firestore rules test environment สร้าง Lot และ Observation จริงของ user นั้น
+- ยิง `POST /api/media/sign` เข้า route จริง ไม่ได้เรียกเฉพาะฟังก์ชัน signature
+- กรณี target ถูกต้อง: ได้ HTTP 200 พร้อม Cloudinary folder ที่ scope ด้วย UID/Lot/Observation
+- กรณี Observation ปลอม: ได้ HTTP 404 `Upload target not found`
+- เพิ่ม emulator token verification path แยกออกจาก production JWKS path เพื่อให้ทดสอบ token จริงใน emulator โดยไม่ดึง `firebase-admin` เข้า production verifier path
+- ผลตรวจ:
+  - `npm run firebase:verify`: ผ่าน 39 files / 88 tests รวม integration test 2 กรณี
+  - `npm test`: ผ่าน 37 files / 83 tests และ skip เฉพาะ emulator-only suites
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+- หมายเหตุ: emulator แสดง MetadataLookupWarning จาก environment แต่ test suite จบสำเร็จและผล assertions ผ่านทั้งหมด
+- สิ่งที่ยังค้าง: ตรวจ Vercel Preview authenticated จริง, visual/keyboard QA และ Protocol authoring/version compare

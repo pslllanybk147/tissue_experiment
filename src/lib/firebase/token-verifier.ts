@@ -25,6 +25,11 @@ export async function verifyFirebaseToken(idToken: string): Promise<{ uid: strin
     throw new Error("Missing FIREBASE_ADMIN_PROJECT_ID or NEXT_PUBLIC_FIREBASE_PROJECT_ID");
   }
 
+  if (process.env.FIREBASE_AUTH_EMULATOR_HOST) {
+    const { verifyEmulatorToken } = await import("./emulator-token-verifier");
+    return verifyEmulatorToken(idToken, projectId);
+  }
+
   const { createRemoteJWKSet, jwtVerify } = await import("jose");
   jwksClient ??= createRemoteJWKSet(
     new URL("https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"),
