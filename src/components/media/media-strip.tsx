@@ -52,7 +52,17 @@ function Lightbox({ item, onClose }: { item: ObservationMedia; onClose: () => vo
   );
 }
 
-export function MediaStrip({ items, onDelete, onRestore }: { items: ObservationMedia[]; onDelete: (id: string) => Promise<void>; onRestore?: (id: string) => Promise<void> }) {
+function DatasetIntakeAction({ item, onAdd }: { item: ObservationMedia; onAdd: (item: ObservationMedia) => Promise<void> }) {
+  const [state, setState] = useState<"idle" | "busy" | "success" | "error">("idle");
+  const [error, setError] = useState("");
+  async function submit() {
+    setState("busy"); setError("");
+    try { await onAdd(item); setState("success"); } catch (cause) { setState("error"); setError(cause instanceof Error ? cause.message : "ส่งรูปไม่สำเร็จ"); }
+  }
+  return <><button disabled={state === "busy" || state === "success"} type="button" onClick={() => void submit()}>{state === "busy" ? "กำลังส่ง…" : state === "success" ? "ส่งแล้ว · รอตรวจ" : "ส่งเข้า Image review"}</button>{state === "error" && <small className="field-error" role="alert">{error}</small>}</>;
+}
+
+export function MediaStrip({ items, onDelete, onRestore, onAddToDataset }: { items: ObservationMedia[]; onDelete: (id: string) => Promise<void>; onRestore?: (id: string) => Promise<void>; onAddToDataset?: (item: ObservationMedia) => Promise<void> }) {
   const [lightboxItem, setLightboxItem] = useState<ObservationMedia | null>(null);
 
   if (!items.length) return null;
@@ -72,7 +82,7 @@ export function MediaStrip({ items, onDelete, onRestore }: { items: ObservationM
               onClick={() => setLightboxItem(item)}
             />
             {item.caption && <figcaption>{item.caption}</figcaption>}
-            {item.deletedAt ? <button type="button" onClick={() => onRestore && void onRestore(item.id)}>กู้คืนรูป</button> : <button type="button" onClick={() => void onDelete(item.id)}>ลบรูป</button>}
+            {item.deletedAt ? <button type="button" onClick={() => onRestore && void onRestore(item.id)}>กู้คืนรูป</button> : <>{onAddToDataset && <DatasetIntakeAction item={item} onAdd={onAddToDataset} />}<button type="button" onClick={() => void onDelete(item.id)}>ลบรูป</button></>}
           </figure>
         ))}
       </div>

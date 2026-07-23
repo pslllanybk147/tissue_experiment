@@ -903,3 +903,25 @@
   - `git diff --check`: ผ่าน
 - ขอบเขตที่ยังไม่ทำ: automatic ingestion จาก Cloudinary media, image decoding, model training/inference และการสร้าง DatasetItem จากหน้า Observation โดยตรง
 - ขั้นถัดไป: เพิ่ม action สร้าง DatasetItem จาก media ที่เลือกใน Observation แล้วเปิดเข้า Review Queue โดยตรวจ lot/observation ฝั่ง server ก่อนสร้างรายการ
+
+### Image phase 1 Observation media intake — 2026-07-23
+
+- เพิ่ม `POST /api/dataset/intake` สำหรับส่ง media จาก Observation เข้า Dataset Review Queue
+- route รับเฉพาะ `lotId`, `observationId`, `mediaId` และตรวจ Firebase token ก่อนทำงาน
+- ฝั่ง server ดึง Lot, Observation และ Media จาก path ของ user เอง ไม่รับ `assetUrl` จาก client
+- ปฏิเสธกรณี target ไม่พบ, owner/lot/observation ไม่ตรง หรือ media ถูก soft-delete
+- สร้าง DatasetItem เป็น `Pending review` และ `includedInTraining: false`
+- ทำให้ idempotent: ส่ง media เดิมซ้ำจะคืนรายการเดิม ไม่สร้าง DatasetItem ซ้ำ
+- เพิ่มปุ่ม `ส่งเข้า Image review` ใน media ของ Observation พร้อมสถานะกำลังส่ง, ส่งแล้ว และ error ที่อ่านได้
+- เพิ่ม tests:
+  - unauthenticated/malformed request
+  - integration สร้าง item จาก media จริงใน emulator
+  - duplicate intake ไม่สร้างซ้ำ
+  - media ที่อ้างจาก Observation อื่นถูกปฏิเสธ
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 45 files / 100 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- ขอบเขตที่ยังไม่ทำ: automatic image decoding, species classifier, model training/inference และการดึงข้อมูลภาพจาก Google โดยอัตโนมัติ
+- ขั้นถัดไป: เพิ่มรายการ DatasetItem ที่ถูกส่งแล้วใน Observation และ audit event ของ intake เพื่อให้ย้อนดูได้จาก Lot timeline

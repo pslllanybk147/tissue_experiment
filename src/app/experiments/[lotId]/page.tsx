@@ -65,6 +65,13 @@ export default function ExperimentDetailPage() {
   async function remove(id: string) { if (!window.confirm("ซ่อน observation นี้จาก timeline? สามารถกู้คืนได้ภายหลัง")) return; await repository.softDeleteObservation(ownerId, lotId, id); await load(); }
   async function restore(id: string) { await repository.restoreObservation(ownerId, lotId, id); await load(); }
   async function saveMedia(item:ObservationMedia){await mediaRepository.save(ownerId,item);setMedia(current=>({...current,[item.observationId]:[...(current[item.observationId]??[]),item]}));}
+  async function addToDataset(item: ObservationMedia) {
+    const user = (await import("@/lib/firebase/client")).getFirebaseServices()?.auth.currentUser;
+    if (!user) throw new Error("กรุณาเข้าสู่ระบบก่อนส่งรูปเข้า Image review");
+    const token = await user.getIdToken(true);
+    const response = await fetch("/api/dataset/intake", { method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify({ lotId, observationId: item.observationId, mediaId: item.id }) });
+    if (!response.ok) { const body = await response.json().catch(() => ({})) as { error?: string }; throw new Error(body.error || "ส่งรูปเข้า Image review ไม่สำเร็จ"); }
+  }
   async function deleteMedia(observationId:string,mediaId:string){await mediaRepository.softDelete(ownerId,lotId,observationId,mediaId);setMedia(current=>({...current,[observationId]:(current[observationId]??[]).filter(item=>item.id!==mediaId)}));}
   async function restoreMedia(observationId:string,mediaId:string){await mediaRepository.restore(ownerId,lotId,observationId,mediaId);setMedia(current=>({...current,[observationId]:(current[observationId]??[]).map(item=>item.id===mediaId?{...item,deletedAt:null}:item)})); await load();}
   async function saveStepRun(input: Omit<ProtocolStepRun, "id" | "ownerId" | "updatedAt">) { await stepRunRepository.save(ownerId, input); setStepRuns(await stepRunRepository.list(ownerId, lotId)); }
@@ -79,7 +86,7 @@ export default function ExperimentDetailPage() {
       <div className="lot-detail-grid">
         <section className="lot-work-column">{protocolVersion && <section className="experiment-surface protocol-lot-runner"><div className="timeline-heading"><div><p className="eyebrow">PROTOCOL PROGRESS</p><h2>{lot.protocolTitle}</h2><p className="muted-copy">ทำตามทีละขั้น บันทึกผลจริง แล้วระบบจะเก็บหลักฐานไว้กับ Lot นี้</p></div><Link href={`/protocols/${lot.protocolId}`}>เปิด Protocol</Link></div><GuidedProtocolRunner lotId={lotId} protocolId={lot.protocolId} versionId={protocolVersion.id} steps={protocolVersion.steps} runs={stepRuns} onSave={saveStepRun} /></section>}<ObservationForm defaultStage={lot.stage} editing={editing} key={editing?.id ?? "new"} onCancel={() => setEditing(null)} onSubmit={save} />
           <div className="timeline-heading"><div><p className="eyebrow">OBSERVATION TIMELINE</p><h2>บันทึกผล</h2></div><label><input checked={showDeleted} onChange={(e) => setShowDeleted(e.target.checked)} type="checkbox" /> แสดงรายการที่ลบ</label></div>
-          <ObservationTimeline observations={observations} onDelete={remove} onEdit={setEditing} onRestore={restore} renderMedia={item=><div className="observation-media"><MediaStrip items={media[item.id]??[]} onDelete={id=>deleteMedia(item.id,id)} onRestore={id=>restoreMedia(item.id,id)} />{!item.deletedAt&&<MediaUploader lotId={lotId} observationId={item.id} onUploaded={saveMedia}/>}</div>} />
+          <ObservationTimeline observations={observations} onDelete={remove} onEdit={setEditing} onRestore={restore} renderMedia={item=><div className="observation-media"><MediaStrip items={media[item.id]??[]} onDelete={id=>deleteMedia(item.id,id)} onRestore={id=>restoreMedia(item.id,id)} onAddToDataset={addToDataset} />{!item.deletedAt&&<MediaUploader lotId={lotId} observationId={item.id} onUploaded={saveMedia}/>}</div>} />
         </section>
         <aside className="lot-audit-column"><p className="eyebrow">AUDIT HISTORY</p><h2>ประวัติการเปลี่ยนแปลง</h2><AuditHistory events={audits} /></aside>
       </div>
