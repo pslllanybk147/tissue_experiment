@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     phase = "firebase";
     let uid: string;
     try {
-      const { verifyFirebaseToken } = await import("../../../../lib/firebase/admin");
+      const { verifyFirebaseToken } = await import("../../../../lib/firebase/token-verifier");
       const verified = await verifyFirebaseToken(header.slice(7));
       uid = verified.uid;
     } catch (adminErr) {

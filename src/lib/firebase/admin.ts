@@ -54,36 +54,3 @@ export function getAdminAuth() {
     throw new Error(`Initialization failed: ${msg}`);
   }
 }
-
-let jwksClient: any = null;
-
-export async function verifyFirebaseToken(idToken: string): Promise<{ uid: string }> {
-  const projectId = cleanEnv(process.env.FIREBASE_ADMIN_PROJECT_ID) || cleanEnv(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
-
-  if (!projectId) {
-    throw new Error("Missing FIREBASE_ADMIN_PROJECT_ID or NEXT_PUBLIC_FIREBASE_PROJECT_ID");
-  }
-
-  const { jwtVerify, createRemoteJWKSet } = await import("jose");
-
-  if (!jwksClient) {
-    jwksClient = createRemoteJWKSet(
-      new URL("https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com")
-    );
-  }
-
-  try {
-    const { payload } = await jwtVerify(idToken, jwksClient, {
-      issuer: `https://securetoken.google.com/${projectId}`,
-      audience: projectId,
-    });
-
-    if (typeof payload.sub === "string" && payload.sub) {
-      return { uid: payload.sub };
-    }
-    throw new Error("Invalid token subject (sub claim missing)");
-  } catch (joseErr) {
-    const msg = joseErr instanceof Error ? joseErr.message : String(joseErr);
-    throw new Error(`JWT verification failed (project ${projectId}): ${msg}`);
-  }
-}
