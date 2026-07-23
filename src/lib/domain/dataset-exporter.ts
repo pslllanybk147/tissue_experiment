@@ -1,4 +1,5 @@
 import type { DatasetItem, DatasetLabel, DatasetProvenance } from "./models";
+import { IMAGE_PREPROCESSING_CONTRACT, validatePreprocessingMetadata } from "./dataset-preprocessing";
 
 export type DatasetSplit = "train" | "validation" | "test";
 
@@ -17,6 +18,10 @@ export type DatasetManifestEntry = {
   sourceUrl: string | null;
   license: string | null;
   split: DatasetSplit;
+  width: number;
+  height: number;
+  format: NonNullable<DatasetItem["format"]>;
+  bytes: number;
 };
 
 export type DatasetManifest = {
@@ -25,6 +30,7 @@ export type DatasetManifest = {
   itemCount: number;
   items: DatasetManifestEntry[];
   splitCounts: Record<DatasetSplit, number>;
+  preprocessing: typeof IMAGE_PREPROCESSING_CONTRACT;
 };
 
 export type DatasetExportRecord = {
@@ -47,7 +53,8 @@ function isExportable(item: DatasetItem): item is ExportableDatasetItem {
     && item.label !== null
     && item.label.confidence !== "Unknown"
     && Boolean(item.label.scientificName.trim())
-    && Boolean(item.label.cultivarName.trim());
+    && Boolean(item.label.cultivarName.trim())
+    && validatePreprocessingMetadata(item).ready;
 }
 
 export function buildDatasetManifest(items: DatasetItem[], generatedAt = new Date().toISOString()): DatasetManifest {
@@ -69,10 +76,14 @@ export function buildDatasetManifest(items: DatasetItem[], generatedAt = new Dat
     sourceUrl: item.provenance.sourceUrl,
     license: item.provenance.license,
     split: groups.get(item.lotId) as DatasetSplit,
+    width: item.width as number,
+    height: item.height as number,
+    format: item.format as NonNullable<DatasetItem["format"]>,
+    bytes: item.bytes as number,
   }));
   const splitCounts: Record<DatasetSplit, number> = { train: 0, validation: 0, test: 0 };
   for (const entry of entries) splitCounts[entry.split] += 1;
-  return { schemaVersion: "image-dataset-v1", generatedAt, itemCount: entries.length, items: entries, splitCounts };
+  return { schemaVersion: "image-dataset-v1", generatedAt, itemCount: entries.length, items: entries, splitCounts, preprocessing: IMAGE_PREPROCESSING_CONTRACT };
 }
 
 function splitForGroup(group: string): DatasetSplit {

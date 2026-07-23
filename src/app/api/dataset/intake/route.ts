@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     const mediaRef = firestore.doc(`${base}/observations/${body.observationId}/media/${body.mediaId}`);
     const [lot, observation, media] = await Promise.all([lotRef.get(), observationRef.get(), mediaRef.get()]);
     if (!lot.exists || !observation.exists || !media.exists) return NextResponse.json({ error: "Media target not found" }, { status: 404 });
-    const mediaData = media.data() as { ownerId?: string; lotId?: string; observationId?: string; secureUrl?: string; deletedAt?: string | null };
+    const mediaData = media.data() as { ownerId?: string; lotId?: string; observationId?: string; secureUrl?: string; width?: number; height?: number; format?: "jpg" | "jpeg" | "png" | "webp"; bytes?: number; deletedAt?: string | null };
     if (mediaData.ownerId !== uid || mediaData.lotId !== body.lotId || mediaData.observationId !== body.observationId || !mediaData.secureUrl) return NextResponse.json({ error: "Media target not found" }, { status: 404 });
     if (mediaData.deletedAt) return NextResponse.json({ error: "Deleted media cannot enter review" }, { status: 409 });
 
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     if (!existing.empty) return NextResponse.json({ item: existing.docs[0].data(), created: false });
     const now = new Date().toISOString();
     const ref = firestore.collection(`users/${uid}/datasetItems`).doc();
-    const item = { id: ref.id, ownerId: uid, mediaId: body.mediaId, lotId: body.lotId, observationId: body.observationId, assetUrl: mediaData.secureUrl, provenance: { kind: "user-captured", sourceUrl: null, license: null, attribution: null, provenanceId: `observation:${body.observationId}:media:${body.mediaId}`, status: "Pending review", reviewedBy: null, reviewedAt: null, note: "สร้างจาก Observation media; รอตรวจ provenance" }, label: null, reviewStatus: "Pending review", includedInTraining: false, createdAt: now, updatedAt: now };
+    const item = { id: ref.id, ownerId: uid, mediaId: body.mediaId, lotId: body.lotId, observationId: body.observationId, assetUrl: mediaData.secureUrl, width: mediaData.width, height: mediaData.height, format: mediaData.format, bytes: mediaData.bytes, provenance: { kind: "user-captured", sourceUrl: null, license: null, attribution: null, provenanceId: `observation:${body.observationId}:media:${body.mediaId}`, status: "Pending review", reviewedBy: null, reviewedAt: null, note: "สร้างจาก Observation media; รอตรวจ provenance" }, label: null, reviewStatus: "Pending review", includedInTraining: false, createdAt: now, updatedAt: now };
     const auditRef = firestore.collection(`${base}/auditEvents`).doc();
     const audit = { id: auditRef.id, lotId: body.lotId, ownerId: uid, entityType: "media", entityId: body.mediaId, action: "dataset_queued", actorId: uid, occurredAt: now, before: null, after: { datasetItemId: ref.id, reviewStatus: "Pending review" } };
     const batch = firestore.batch();

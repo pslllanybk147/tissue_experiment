@@ -198,6 +198,10 @@ export type DatasetItem = {
   lotId: string;
   observationId: string;
   assetUrl: string;
+  width?: number;
+  height?: number;
+  format?: "jpg" | "jpeg" | "png" | "webp";
+  bytes?: number;
   provenance: DatasetProvenance;
   label: DatasetLabel | null;
   reviewStatus: DatasetReviewStatus;

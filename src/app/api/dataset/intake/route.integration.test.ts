@@ -25,7 +25,7 @@ suite("dataset intake integration", () => {
       const firestore = context.firestore();
       await firestore.doc(`users/${uid}/lots/LOT-1`).set({ ownerId: uid, id: "LOT-1" });
       await firestore.doc(`users/${uid}/lots/LOT-1/observations/OBS-1`).set({ ownerId: uid, lotId: "LOT-1", id: "OBS-1" });
-      await firestore.doc(`users/${uid}/lots/LOT-1/observations/OBS-1/media/MEDIA-1`).set({ ownerId: uid, lotId: "LOT-1", observationId: "OBS-1", secureUrl: "https://res.cloudinary.com/demo/image/upload/sample.jpg", deletedAt: null });
+      await firestore.doc(`users/${uid}/lots/LOT-1/observations/OBS-1/media/MEDIA-1`).set({ ownerId: uid, lotId: "LOT-1", observationId: "OBS-1", secureUrl: "https://res.cloudinary.com/demo/image/upload/sample.jpg", width: 1200, height: 900, format: "jpg", bytes: 200000, deletedAt: null });
     });
     token = await getIdToken(user.user, true);
   });

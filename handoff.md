@@ -981,3 +981,25 @@
   - `git diff --check`: ผ่าน
 - สถานะ: มี dataset manifest ที่ version ได้และแยกข้อมูลแบบป้องกัน leakage ระดับ Lot แล้ว แต่ยังไม่ได้ดาวน์โหลด/ถอดรหัสรูปเพื่อ preprocessing และยังไม่มี model training/inference
 - ขั้นถัดไป: สร้าง preprocessing contract สำหรับ image dimensions, color normalization, orientation และ validation ก่อนเชื่อม image decoder จริง
+
+### Image phase 1 preprocessing contract — 2026-07-23
+
+- เพิ่ม `src/lib/domain/dataset-preprocessing.ts`
+- ล็อก contract `image-preprocess-v1`:
+  - target `224 × 224`
+  - resize แบบ `contain`
+  - color space `sRGB`
+  - หมุนตาม EXIF ด้วย `exif-rotate`
+  - normalize ค่า pixel เป็น `0..1`
+  - รองรับ jpg/jpeg/png/webp ไม่เกิน 10 MB
+- DatasetItem จาก media intake เก็บ width, height, format และ bytes จาก Firestore media metadata
+- Exporter จะไม่รวมรายการที่ผ่าน review แต่ metadata ภาพไม่พร้อมสำหรับ preprocessing
+- Manifest มีส่วน `preprocessing` เพื่อให้ขั้นตอนถัดไปใช้ contract เดียวกัน
+- เพิ่ม unit tests สำหรับ metadata ที่ถูกต้องและ metadata ที่ไม่ปลอดภัย
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 49 files / 106 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- สถานะ: preprocessing contract พร้อม แต่ยังไม่มีการดาวน์โหลด/ถอดรหัส/resize ภาพจริง และยังไม่มี model training/inference
+- ขั้นถัดไป: เพิ่ม image decoder แบบ server-side หรือ worker ที่ทำตาม contract และสร้าง output artifact ที่ตรวจสอบซ้ำได้

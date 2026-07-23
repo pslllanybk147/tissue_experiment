@@ -3,7 +3,7 @@ import type { DatasetItem } from "./models";
 import { buildDatasetManifest } from "./dataset-exporter";
 
 const base: DatasetItem = {
-  id: "dataset-1", ownerId: "owner-1", mediaId: "media-1", lotId: "LOT-1", observationId: "OBS-1", assetUrl: "https://example.com/leaf.jpg",
+  id: "dataset-1", ownerId: "owner-1", mediaId: "media-1", lotId: "LOT-1", observationId: "OBS-1", assetUrl: "https://example.com/leaf.jpg", width: 1200, height: 900, format: "jpg", bytes: 200_000,
   provenance: { kind: "user-captured", sourceUrl: null, license: null, attribution: null, provenanceId: "capture-1", status: "Approved", reviewedBy: "reviewer-1", reviewedAt: "2026-07-23T00:00:00.000Z", note: "ตรวจแล้ว" },
   label: { scientificName: "Philodendron erubescens", cultivarName: "Pink Princess", confidence: "High", source: "expert", reviewedBy: "reviewer-1", reviewedAt: "2026-07-23T00:00:00.000Z", note: "ตรวจลักษณะใบและก้าน" },
   reviewStatus: "Approved", includedInTraining: true, createdAt: "2026-07-23T00:00:00.000Z", updatedAt: "2026-07-23T00:00:00.000Z",
