@@ -592,7 +592,16 @@
   - Next production build ผ่าน
   - Firebase Auth + Firestore emulator ผ่านด้วย Microsoft OpenJDK 21
   - ตรวจ build output ของ `/api/media/sign` แล้วไม่พบ reference ถึง `firebase-admin` หรือ `jwks-rsa`
-- ขั้นถัดไป: commit/push, รอ Vercel Preview ใหม่, ให้ผู้ใช้ login แล้ว retry upload ด้วยภาพสังเคราะห์; ถ้า signer ผ่านจึงตรวจ Cloudinary upload, Firestore media metadata, soft delete/restore และ audit
+- fix commit: `307c9df` (`Isolate media token verification from Firebase Admin`)
+- Vercel deployment ของ commit นี้ผ่าน checks ทั้ง Vercel และ Vercel Preview Comments
+- live Preview verification ผ่านบน authenticated session ของ lot `QA-20260722`:
+  - ใช้ภาพสังเคราะห์ `philodendron-lab-upload-check.png`
+  - Firebase token verification ผ่าน
+  - Cloudinary upload ผ่าน
+  - Firestore media metadata ถูกบันทึก
+  - รูปแสดงใน Observation และ UI รายงาน `อัปโหลดสำเร็จ`
+- จุดติดขัด `ERR_REQUIRE_ESM` ของ media upload ปิดแล้ว
+- ขั้นถัดไป: ตรวจ media soft delete/restore + audit และ responsive sandbox รอบสุดท้าย ก่อนขออนุมัติ merge Draft PR #3; image processing ยังเลื่อนไปหลัง project เดิมเสร็จ
 
 ### Protocol media implementation checkpoint 7 — 2026-07-23
 
@@ -603,7 +612,6 @@
 - เพิ่มรายละเอียดข้อผิดพลาดใน `Invalid authentication (${details})` เพื่อแสดงสาเหตุของ Token verification failure
 - สั่ง push deployment ใหม่เพื่อให้ Vercel บันทึก environment snapshot และโค้ดระบบ JWKS ชุดล่าสุด
 - ลำดับถัดไป: รอ Vercel Preview build เสร็จสิ้น แล้วทดสอบ Sign-in + อัปโหลดสื่อสังเกตการณ์ที่ Lot `QA-20260722`
-
 
 
 
