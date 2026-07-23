@@ -1203,3 +1203,27 @@
   - `git diff --check`: ผ่าน
 - สถานะ: ผู้ใช้สามารถเก็บ source และ review claim ได้แล้ว แต่ยังต้องเพิ่ม source discovery จาก Crossref/OpenAlex/PubMed และตัวสร้าง SOP draft
 - ขั้นถัดไป: เพิ่ม source ingestion adapter และ import metadata จาก DOI/URL ก่อนสร้าง claim draft
+
+### Source discovery adapter — 2026-07-23
+
+- เพิ่ม identifier utilities สำหรับ normalize DOI และอ่าน PubMed/OpenAlex work ID จาก URL
+- เพิ่ม `POST /api/knowledge/source-discovery` แบบ authenticated server-side lookup
+- รองรับ provider ในรอบนี้:
+  - Crossref จาก DOI หรือ doi.org URL
+  - PubMed จาก PubMed URL
+  - OpenAlex จาก OpenAlex work URL
+- API คืนเฉพาะ metadata draft: provider, title, URL, DOI, authors, publication date และ source type
+- จำกัด input ให้เป็น DOI/PubMed/OpenAlex identifier เพื่อป้องกัน arbitrary URL fetch/SSRF
+- เพิ่มปุ่ม `ดึง metadata` ใน Source Registry เพื่อเติมฟอร์มให้ผู้ใช้ตรวจ ก่อนกดบันทึก source
+- metadata ที่ดึงได้ยังไม่สร้าง claim และยังไม่เป็น Verified อัตโนมัติ
+- เพิ่ม tests สำหรับ identifier parsing และ authentication guard
+- Sandbox verification:
+  - ปุ่ม Source discovery แสดงใน Knowledge Library
+  - desktop 1280px และ mobile 390px ไม่มี horizontal overflow
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 63 files / 126 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- สถานะ: ระบบนำ DOI/URL ที่รองรับมาเติม metadata ได้แล้ว แต่ยังไม่มี full-text extraction, claim draft อัตโนมัติ หรือ source deduplication
+- ขั้นถัดไป: เพิ่ม source deduplication และ claim draft workflow จาก metadata/full text ที่ผู้ใช้อนุญาต

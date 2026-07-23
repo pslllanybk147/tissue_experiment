@@ -8,8 +8,10 @@ import { KnowledgeSourceRegister } from "@/components/knowledge/knowledge-source
 import { LabShell } from "@/components/lab/lab-shell";
 import type { KnowledgeLibraryRecord } from "@/lib/domain/knowledge-library";
 import type { KnowledgeSource, SourceClaim } from "@/lib/domain/knowledge-sources";
+import type { DiscoveredSourceMetadata } from "@/lib/domain/source-discovery";
 import { getKnowledgeLibraryRepository } from "@/lib/repositories/knowledge-library-repository-factory";
 import { getKnowledgeSourceRepository } from "@/lib/repositories/knowledge-source-repository-factory";
+import { getFirebaseServices } from "@/lib/firebase/client";
 
 export default function KnowledgePage() {
   const { session, signOut } = useAuth();
@@ -26,5 +28,6 @@ export default function KnowledgePage() {
   async function createSource(input: Omit<KnowledgeSource, "id" | "ownerId" | "createdAt" | "updatedAt">) { await sourceRepository.createSource(ownerId, input); await refreshSources(); }
   async function createClaim(input: Omit<SourceClaim, "id" | "ownerId" | "createdAt" | "updatedAt" | "reviewState" | "reviewerNote" | "reviewedBy" | "reviewedAt">) { await sourceRepository.createClaim(ownerId, input); await refreshSources(); }
   async function reviewClaim(id: string, reviewState: "Approved" | "Rejected", note: string) { await sourceRepository.reviewClaim(ownerId, id, reviewState, note); await refreshSources(); }
-  return <AuthGate><LabShell section="Knowledge" sessionLabel={authenticated ? "FIREBASE" : "DEMO"} onSignOut={() => void signOut()}><header className="route-heading"><div><p className="eyebrow">PLANT KNOWLEDGE LIBRARY</p><h1>Knowledge Library</h1><p>ค้น taxonomy, evidence และ tissue-culture playbook จากชนิดพืชที่ยืนยันแล้ว</p></div></header>{state === "loading" && <p className="route-state" role="status">กำลังโหลด taxonomy…</p>}{state === "error" && <p className="route-state error" role="alert">โหลด Knowledge Library ไม่สำเร็จ</p>}{state === "ready" && <><KnowledgeLibrary records={records} /><KnowledgeSourceRegister records={records} sources={sources} claims={claims} onCreateSource={createSource} onCreateClaim={createClaim} onReviewClaim={reviewClaim} /></>}</LabShell></AuthGate>;
+  async function discoverSource(identifier: string): Promise<DiscoveredSourceMetadata> { const user = getFirebaseServices()?.auth.currentUser; if (!user) throw new Error("ต้องเข้าสู่ระบบก่อนดึง metadata"); const token = await user.getIdToken(); const response = await fetch("/api/knowledge/source-discovery", { method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify({ identifier }) }); const body = await response.json().catch(() => ({})) as DiscoveredSourceMetadata & { error?: string }; if (!response.ok) throw new Error(body.error || "ดึง metadata ไม่สำเร็จ"); return body; }
+  return <AuthGate><LabShell section="Knowledge" sessionLabel={authenticated ? "FIREBASE" : "DEMO"} onSignOut={() => void signOut()}><header className="route-heading"><div><p className="eyebrow">PLANT KNOWLEDGE LIBRARY</p><h1>Knowledge Library</h1><p>ค้น taxonomy, evidence และ tissue-culture playbook จากชนิดพืชที่ยืนยันแล้ว</p></div></header>{state === "loading" && <p className="route-state" role="status">กำลังโหลด taxonomy…</p>}{state === "error" && <p className="route-state error" role="alert">โหลด Knowledge Library ไม่สำเร็จ</p>}{state === "ready" && <><KnowledgeLibrary records={records} /><KnowledgeSourceRegister records={records} sources={sources} claims={claims} onCreateSource={createSource} onCreateClaim={createClaim} onReviewClaim={reviewClaim} onDiscover={discoverSource} /></>}</LabShell></AuthGate>;
 }
