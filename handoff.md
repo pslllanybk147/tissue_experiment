@@ -1130,3 +1130,29 @@
   - `git diff --check`: ผ่าน
 - สถานะ: ระบบตรวจความพร้อมของ dataset ก่อนฝึกได้แล้ว แต่ยังไม่มี model training, inference หรือ background queue
 - ขั้นถัดไป: เพิ่ม background queue/worker สำหรับ preprocessing batch ใหญ่ หรือเชื่อม external training pipeline หลัง dataset พร้อม
+
+### Knowledge library foundation — 2026-07-23
+
+- ล็อก product direction ใหม่: Philodendron Lab จะเป็นห้องสมุดความรู้พืช + taxonomy catalog + evidence library + tissue-culture playbook ไม่ใช่เฉพาะเครื่องมือบันทึกการทดลอง
+- เริ่ม schema ให้รองรับพืชทุกวงศ์ แต่ seed ข้อมูลตั้งต้นเฉพาะ Araceae/Philodendron
+- เพิ่ม `src/lib/domain/knowledge-library.ts`:
+  - `TaxonRecord` แยก family, genus, species, cultivar, hybrid และ trade-name
+  - `KnowledgeClaim` แยกหมวด taxonomy, biology, ecology, toxicity, propagation, tissue-culture และ identification
+  - `TissueCulturePlaybook` ผูกชนิดพืชกับวิธีทดลองและ protocol version
+  - `KnowledgeLibraryRecord` เป็น aggregate สำหรับหน้า knowledge detail ในอนาคต
+- seed catalog ปัจจุบันมี Araceae, Philodendron, P. erubescens, Pink Princess, P. bipennifolium และ Violin variegated โดยยังติด `Pending review` และยังไม่เติม claim ทางชีววิทยาโดยไม่มี source
+- เพิ่มตัวค้น taxon จาก scientific name, display name, synonym และ common name
+- ล็อก workflow ระยะยาว:
+  - image processing เสนอ candidate
+  - ผู้ใช้ยืนยันชนิด
+  - ระบบค้น source จาก Crossref/OpenAlex/PubMed และ URL/DOI ที่ผู้ใช้เพิ่ม
+  - สกัด claims พร้อม reference/evidence state
+  - สร้าง SOP draft และให้ผู้ใช้ review/approve
+  - ต้นที่ 2/3 ชนิดเดียวกันใช้ SOP version เดิม แต่สร้าง Plant/Lot และ snapshot แยก
+- ยังไม่มี automated source discovery, knowledge UI หรือ image classifier จริงใน checkpoint นี้
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 58 files / 120 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- ขั้นถัดไป: สร้าง Firestore repository และหน้า Knowledge Library สำหรับค้น taxonomy ก่อนเชื่อม source ingestion
