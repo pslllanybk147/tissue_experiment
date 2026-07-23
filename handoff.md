@@ -1156,3 +1156,27 @@
   - `npm run build`: ผ่าน
   - `git diff --check`: ผ่าน
 - ขั้นถัดไป: สร้าง Firestore repository และหน้า Knowledge Library สำหรับค้น taxonomy ก่อนเชื่อม source ingestion
+
+### Knowledge Library MVP — 2026-07-23
+
+- เพิ่ม `KnowledgeLibraryRepository` พร้อม memory repository และ Firestore repository แบบ owner-scoped
+- Firestore path สำหรับ catalog คือ `users/{uid}/knowledgeTaxa/{taxonId}` และถ้ายังไม่มีข้อมูลจะใช้ starter taxonomy ที่ติด `Pending review` เป็น fallback แบบอ่านอย่างเดียว
+- เพิ่มหน้า `/knowledge` และ navigation item `Knowledge`
+- หน้า Knowledge Library รองรับ:
+  - ค้น scientific name, display name, synonym และ common/trade name
+  - แสดง hierarchy parent, rank, source count และ evidence state
+  - แสดง biology claims และ tissue-culture playbooks เมื่อมีข้อมูลที่ review แล้ว
+  - แสดง empty state และข้อความชัดเจนเมื่อยังไม่มี source/claim/playbook
+- เพิ่ม responsive layout สำหรับ desktop/mobile และไม่แสดงข้อมูลชีววิทยาที่ไม่มี source เป็นข้อเท็จจริง
+- เพิ่ม tests สำหรับ repository owner scope และ Knowledge Library rendering
+- Sandbox verification:
+  - `/knowledge` demo mode โหลด taxonomy ได้และพบ Pink Princess
+  - desktop: viewport 1280px, ไม่มี horizontal overflow
+  - mobile: viewport 390px, ไม่มี horizontal overflow
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 60 files / 122 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- สถานะ: มี knowledge catalog/search foundation แล้ว แต่ยังไม่มี source ingestion, claim review UI, image candidate matching หรือการสร้าง SOP จาก claims
+- ขั้นถัดไป: เพิ่ม source registry และ evidence claim ingestion/review ก่อนเชื่อม automated SOP drafting
