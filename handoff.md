@@ -881,3 +881,25 @@
   - `git diff --check`: ผ่าน
 - ขอบเขตที่ยังไม่ทำ: Review Queue UI, Cloudinary-to-dataset ingestion, image decoding, model training และ inference
 - ขั้นถัดไป: สร้าง Review Queue สำหรับตรวจ provenance/label และเชื่อม media ที่ผ่าน validation จาก observation เข้า DatasetItem โดยยังต้อง review ก่อนนำไป train
+
+### Image phase 1 Review Queue UI — 2026-07-23
+
+- เพิ่ม route `/dataset-review` สำหรับ workflow ตรวจภาพก่อนนำไปใช้กับ image processing
+- เพิ่ม `src/components/dataset/review-queue.tsx`:
+  - กรอง `All`, `Pending review`, `Approved`, `Rejected`
+  - แสดงภาพ, Lot ID, Observation ID, provenance, source URL และ license
+  - Approve/Reject provenance โดยบังคับ review note เมื่อ approve
+  - ฟอร์มยืนยัน scientific name, cultivar, confidence และเหตุผลของ label
+  - ปุ่มบันทึก label ถูกล็อกจนกว่า provenance จะ Approved
+  - แสดงสถานะว่า item ยังไม่รวม training หรือพร้อมเป็น training candidate
+- เพิ่มเมนู `Image review` ใน desktop sidebar และ mobile navigation
+- หน้าใช้ `getDatasetRepository()` เดิม จึงใช้ Firestore เมื่อ login และ memory repository ใน demo mode
+- เพิ่ม static rendering test สำหรับ review queue และตรวจว่ารายการ Pending ยังบันทึก label ไม่ได้
+- แก้ signed-upload integration test timeout จาก 5 เป็น 15 วินาที เพราะ Auth/Firestore emulator ใช้เวลาสร้าง user เกินค่าเดิมใน sandbox; ไม่ได้เปลี่ยนพฤติกรรม production route
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 43 files / 96 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- ขอบเขตที่ยังไม่ทำ: automatic ingestion จาก Cloudinary media, image decoding, model training/inference และการสร้าง DatasetItem จากหน้า Observation โดยตรง
+- ขั้นถัดไป: เพิ่ม action สร้าง DatasetItem จาก media ที่เลือกใน Observation แล้วเปิดเข้า Review Queue โดยตรวจ lot/observation ฝั่ง server ก่อนสร้างรายการ

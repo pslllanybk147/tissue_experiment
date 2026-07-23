@@ -38,7 +38,7 @@ suite("media signing integration", () => {
     const response = await POST(new Request("http://localhost/api/media/sign", { method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify({ lotId: "LOT-1", observationId: "OBS-1", mimeType: "image/jpeg", bytes: 10 }) }));
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ cloudName: "demo-cloud", apiKey: "demo-key", folder: `users/${uid}/lots/LOT-1/observations/OBS-1` });
-  });
+  }, 15000);
 
   it("rejects an upload target that does not exist", async () => {
     const response = await POST(new Request("http://localhost/api/media/sign", { method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify({ lotId: "LOT-1", observationId: "OBS-NOT-REAL", mimeType: "image/jpeg", bytes: 10 }) }));
