@@ -55,5 +55,43 @@ export function getAdminAuth() {
   }
 }
 
+let jwksClient: any = null;
 
+export async function verifyFirebaseToken(idToken: string): Promise<{ uid: string }> {
+  const projectId = cleanEnv(process.env.FIREBASE_ADMIN_PROJECT_ID);
 
+  try {
+    const adminAuth = getAdminAuth();
+    const decoded = await adminAuth.verifyIdToken(idToken);
+    return { uid: decoded.uid };
+  } catch (adminErr: any) {
+    const adminMsg = adminErr instanceof Error ? adminErr.message : String(adminErr);
+    if (adminMsg.startsWith("Missing variables:")) {
+      throw adminErr;
+    }
+
+    try {
+      if (!projectId) {
+        throw new Error("Missing FIREBASE_ADMIN_PROJECT_ID");
+      }
+      const { jwtVerify, createRemoteJWKSet } = await import("jose");
+      if (!jwksClient) {
+        jwksClient = createRemoteJWKSet(
+          new URL("https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com")
+        );
+      }
+      const { payload } = await jwtVerify(idToken, jwksClient, {
+        issuer: `https://securetoken.google.com/${projectId}`,
+        audience: projectId,
+      });
+
+      if (typeof payload.sub === "string" && payload.sub) {
+        return { uid: payload.sub };
+      }
+    } catch {
+      // Ignore fallback error and rethrow original admin error below
+    }
+
+    throw adminErr;
+  }
+}

@@ -16,17 +16,15 @@ export async function POST(request: Request) {
 
     phase = "firebase";
     let uid: string;
-    let adminAuth: ReturnType<(typeof import("../../../../lib/firebase/admin"))["getAdminAuth"]>;
     try {
-      const { getAdminAuth } = await import("../../../../lib/firebase/admin");
-      adminAuth = getAdminAuth();
+      const { verifyFirebaseToken } = await import("../../../../lib/firebase/admin");
+      const verified = await verifyFirebaseToken(header.slice(7));
+      uid = verified.uid;
     } catch (adminErr) {
       const details = adminErr instanceof Error ? adminErr.message : "invalid";
-      return NextResponse.json({ error: `Firebase Admin configuration invalid (${details})` }, { status: 503 });
-    }
-    try {
-      uid = (await adminAuth.verifyIdToken(header.slice(7))).uid;
-    } catch {
+      if (details.startsWith("Missing variables:")) {
+        return NextResponse.json({ error: `Firebase Admin configuration invalid (${details})` }, { status: 503 });
+      }
       return NextResponse.json({ error: "Invalid authentication" }, { status: 401 });
     }
 
