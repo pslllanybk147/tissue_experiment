@@ -965,3 +965,19 @@
   - `git diff --check`: ผ่าน
 - สถานะ: ระบบพร้อมสร้าง manifest จากข้อมูลที่มนุษย์ review แล้ว แต่ยังไม่มี image decoder, train/validation split, model training หรือ inference
 - ขั้นถัดไป: ทำ dataset version/export history และเตรียม pipeline preprocessing ก่อนเริ่มเลือกโมเดล classifier
+
+### Image phase 1 dataset versioning checkpoint — 2026-07-23
+
+- เพิ่ม `train`, `validation`, `test` split ใน manifest
+- ใช้ `lot-hash-v1` deterministic strategy โดยจัดภาพจาก Lot เดียวกันให้อยู่ split เดียวกัน เพื่อลด data leakage ระหว่างภาพของการทดลองเดียวกัน
+- เพิ่ม `splitCounts` ใน manifest
+- เปลี่ยน Export manifest จาก GET เป็น POST เพื่อบันทึก export history ใน `users/{uid}/datasetExports/{exportId}` ก่อนคืนไฟล์ให้ผู้ใช้
+- Export record เก็บ schema version, generatedAt, item IDs, split counts และ strategy โดยไม่คัดลอกข้อมูลลับหรือ token
+- เพิ่ม integration test ตรวจว่า POST export สร้าง history record ใน Firestore emulator จริง
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 48 files / 104 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- สถานะ: มี dataset manifest ที่ version ได้และแยกข้อมูลแบบป้องกัน leakage ระดับ Lot แล้ว แต่ยังไม่ได้ดาวน์โหลด/ถอดรหัสรูปเพื่อ preprocessing และยังไม่มี model training/inference
+- ขั้นถัดไป: สร้าง preprocessing contract สำหรับ image dimensions, color normalization, orientation และ validation ก่อนเชื่อม image decoder จริง

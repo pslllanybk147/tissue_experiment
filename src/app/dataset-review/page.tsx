@@ -43,7 +43,7 @@ export default function DatasetReviewPage() {
     const user = getFirebaseServices()?.auth.currentUser;
     if (!user) throw new Error("กรุณาเข้าสู่ระบบก่อน export manifest");
     const token = await user.getIdToken(true);
-    const response = await fetch("/api/dataset/export", { headers: { authorization: `Bearer ${token}` } });
+    const response = await fetch("/api/dataset/export", { method: "POST", headers: { authorization: `Bearer ${token}` } });
     if (!response.ok) { const body = await response.json().catch(() => ({})) as { error?: string }; throw new Error(body.error || "Export manifest ไม่สำเร็จ"); }
     const blob = await response.blob();
     const url = URL.createObjectURL(blob);
