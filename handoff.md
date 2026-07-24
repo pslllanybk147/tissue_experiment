@@ -1531,3 +1531,14 @@
   - `npm run lint`: ผ่าน
   - `git diff --check`: ผ่าน มีเฉพาะคำเตือน line ending Windows
 - สถานะ: คู่มือที่ผู้ใช้อ่านและขั้นที่ผู้ใช้ทำใน Lot ใช้ข้อมูลชุดเดียวกันแล้ว; authenticated end-to-end ยังเป็นขั้นตรวจถัดไป
+
+### Sandbox ทดสอบสร้าง Lot และ Guided Runner — 2026-07-24
+
+- เปิด `/experiments/new` ใน Demo mode ที่ viewport 390 px
+- กรอก Lot ID `PPP-SANDBOX-001`, ชื่อพืช Pink Princess และเลือก `template-pink-princess-nodal`
+- สร้าง Lot สำเร็จและถูกนำไป `/experiments/PPP-SANDBOX-001`
+- ตรวจพบ Runner แสดงครบ 18 ขั้น ตั้งแต่ baseline ถึง closeout
+- บันทึก step 1 ด้วย note และสถานะ Passed สำเร็จ; รายการเปลี่ยนเป็น `Passed`
+- กดถัดไปสำเร็จและ Runner แสดง step 2 พร้อม form note/status ใหม่
+- ตรวจ page overflow ที่ 390 px: `scrollWidth` เท่ากับ viewport
+- สถานะ: Demo workflow สร้าง Lot → บันทึกผล → ไปขั้นถัดไปทำงานจริง; ต้องทำซ้ำด้วย authenticated Firebase และข้อมูล Plant Record จริงเมื่อ environment พร้อม
