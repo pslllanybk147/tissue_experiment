@@ -13,8 +13,8 @@ async function authenticate(request: Request) {
 
 async function getManifest(uid: string) {
   const { getFirestore } = await import("firebase-admin/firestore");
-  const { getAdminAuth } = await import("../../../../lib/firebase/admin");
-  const firestore = getFirestore(getAdminAuth().app);
+  const { getAdminApp } = await import("../../../../lib/firebase/admin");
+  const firestore = getFirestore(getAdminApp());
   const snapshot = await firestore.collection(`users/${uid}/datasetItems`).get();
   return { firestore, manifest: buildDatasetManifest(snapshot.docs.map(item => item.data() as Parameters<typeof buildDatasetManifest>[0][number])) };
 }

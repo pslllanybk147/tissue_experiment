@@ -37,4 +37,10 @@ describe("Firestore protocol repository", () => {
     expect(draft.version).toBe("0.2.0"); expect(draft.publishedAt).toBeNull();
     expect(mutations.at(-1)?.audit.action).toBe("version_created");
   });
+
+  it("persists source and claim links in an edited draft", async () => {
+    const { repository } = harness(); const created = await repository.createDraft("owner-1", input);
+    const saved = await repository.saveDraftVersion("owner-1", created.id, created.currentVersionId, { ...input, sourceIds: ["source-1"], claimIds: ["claim-1"] });
+    expect(saved.sourceIds).toEqual(["source-1"]); expect(saved.claimIds).toEqual(["claim-1"]);
+  });
 });

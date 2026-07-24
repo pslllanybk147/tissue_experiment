@@ -21,8 +21,8 @@ export async function GET(request: Request) {
   try {
     const uid = await authenticate(request);
     const { getFirestore } = await import("firebase-admin/firestore");
-    const { getAdminAuth } = await import("../../../../lib/firebase/admin");
-    const firestore = getFirestore(getAdminAuth().app);
+    const { getAdminApp } = await import("../../../../lib/firebase/admin");
+    const firestore = getFirestore(getAdminApp());
     const requestedLimit = Number(new URL(request.url).searchParams.get("limit") || MAX_JOBS);
     const limit = Number.isFinite(requestedLimit) && requestedLimit > 0 ? Math.min(requestedLimit, MAX_JOBS) : MAX_JOBS;
     const snapshot = await firestore.collection(`users/${uid}/preprocessingJobs`).get();
@@ -44,8 +44,8 @@ export async function POST(request: Request) {
     const body = await request.json() as { exportId?: unknown; retryOf?: unknown };
     if (typeof body.exportId !== "string" || !body.exportId || body.exportId.length > 160) return NextResponse.json({ error: "Invalid exportId" }, { status: 400 });
     const { getFirestore } = await import("firebase-admin/firestore");
-    const { getAdminAuth } = await import("../../../../lib/firebase/admin");
-    const firestore = getFirestore(getAdminAuth().app);
+    const { getAdminApp } = await import("../../../../lib/firebase/admin");
+    const firestore = getFirestore(getAdminApp());
     const exportSnapshot = await firestore.doc(`users/${uid}/datasetExports/${body.exportId}`).get();
     if (!exportSnapshot.exists) return NextResponse.json({ error: "Export not found" }, { status: 404 });
     const exportRecord = exportSnapshot.data() as { ownerId?: string; itemIds?: unknown };

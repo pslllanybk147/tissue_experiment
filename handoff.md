@@ -1409,3 +1409,297 @@
 - แก้ dependency workspace ที่ขาดโดยรัน `npm install --no-audit --no-fund`; package manifest และ lockfile มี `@firebase/rules-unit-testing` อยู่แล้ว
 - Known limitation เดิมยังคงอยู่: browser sandbox ที่ไม่มี Firebase configuration อาจค้างที่ session loading; emulator verification ผ่านครบแล้ว
 - สถานะ: merge พร้อม commit ใน `master`; ยังไม่ได้ push production ตามตัวเลือก merge local
+
+### Philodendron Knowledge Base และ Detailed Manual — 2026-07-24
+
+- เพิ่ม domain knowledge รุ่นแรกสำหรับ Philodendron โดยแยก Araceae → Philodendron → species → cultivar/trade-name
+- เพิ่ม taxonomy snapshot จาก Kew POWO/WCVP: 151 accepted genera ใน Araceae และ 629 accepted Philodendron species ณ วันที่ 2026-07-24; จำนวนเป็น snapshot ไม่ใช่จำนวน cultivar/trade-name ถาวร
+- เพิ่ม source register สำหรับ Kew POWO, Pink Princess tissue-culture papers ปี 2023/2025 และ Violin evidence gap
+- เพิ่ม monograph 4 หมวดสำหรับ Pink Princess และ Violin: Taxonomy, Biology, Identification, Tissue culture
+- เพิ่ม guided tissue-culture manual 18 ขั้น ครอบคลุมการรับต้น, กักต้น, เลือกข้อ, ตำแหน่งตัด, ตู้/อุปกรณ์, อาหาร, ฟอก, ลงอาหาร, contamination, multiplication, rooting, acclimatization, ลายด่าง, troubleshooting, evidence review, export และปิด Lot
+- Pink Princess ระบุผลจากงานตรงพันธุ์เป็น `Verified` เฉพาะ claim ที่มี source; workflow รวมยังเป็น `Adapted` และต้อง validate กับห้องทดลองจริง
+- Violin variegated ถูกเก็บเป็น trade-name ใต้ `Philodendron bipennifolium` และ protocol ทั้งหมดเริ่มที่ `Experimental`/`Adapted` เนื่องจากยังไม่มีหลักฐานตรงพันธุ์ในฐานข้อมูล
+- เพิ่ม route `/knowledge/taxa/[taxonId]` สำหรับอ่าน monograph และปุ่มเริ่ม Plant Record พร้อม prefill แบบไม่ยกระดับความมั่นใจอัตโนมัติ
+- Knowledge Library เชื่อมลิงก์ไปยัง taxon detail และยังคง source/claim/audit workflow เดิม
+- เพิ่ม Markdown handoff/manual ใน `docs/philodendron/`
+- Verification:
+  - `npm test -- --run`: 68 files / 139 tests ผ่าน, 4 integration suites skip เมื่อไม่ได้เปิด emulator
+  - `npm run firebase:verify`: 72 files / 149 tests ผ่านด้วย Auth + Firestore emulator
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน และมี route `/knowledge/taxa/[taxonId]`
+  - `git diff --check`: ผ่าน; มีเฉพาะคำเตือน line ending ของ Windows
+  - HTTP sandbox: `/`, `/knowledge`, Pink Princess taxon detail และ Violin taxon detail ตอบ HTTP 200
+- Browser CLI `agent-browser` ไม่มีใน environment นี้ จึงตรวจ route ผ่าน local HTTP/server response แทน และไม่อ้างว่า visual browser automation ผ่าน
+- เพิ่ม `scripts/import-philodendron-wcvp.mjs` และ generated catalog จาก WCVP v15 ที่กรอง accepted Philodendron species ได้ 628 records; เก็บ source/version แยกจาก POWO page snapshot ที่แสดง 629
+- สถานะ: คู่มือและหน้าออนไลน์รุ่นแรกพร้อมตรวจ review; taxonomy catalog รุ่นแรกมี accepted species records จาก WCVP v15 แล้ว แต่ monograph ละเอียดยังมีเฉพาะ Pink Princess และ Violin
+- ขั้นถัดไป: ตรวจความต่าง 628/629 กับ WCVP/POWO รอบถัดไป แล้วค่อยเพิ่ม monograph ชนิดอื่นตามหลักฐาน
+
+### ติดตั้ง agent-browser CLI — 2026-07-24
+
+- ติดตั้ง `agent-browser` แบบ global เวอร์ชัน `0.33.0`
+- ตรวจคำสั่งด้วย `agent-browser --version` สำเร็จ
+- เปิด local dev server ที่ `http://127.0.0.1:3000/knowledge` ด้วย agent-browser สำเร็จ
+- ตรวจ URL ปัจจุบันและสร้าง screenshot ที่ `C:\Users\HP\Documents\Codex\2026-07-22\knowledge-browser-check.png`
+- Visual check พบหน้า Firebase setup gate ตามที่ออกแบบไว้ เมื่อ local environment ยังไม่มี Firebase configuration; ไม่ใช่ runtime crash
+- ขั้นต่อไป: ใช้ agent-browser ตรวจ responsive, keyboard, focus, long Thai text และ taxon detail หลังเติม environment หรือใช้ emulator configuration
+
+### Agent-browser UI verification และแก้ contrast — 2026-07-24
+
+- ตรวจ `/knowledge` ด้วย `agent-browser` ที่ viewport 390, 1024 และ 1440 px; สร้าง screenshot สำหรับแต่ละขนาด
+- เปิด demo mode แล้วตรวจ Knowledge Library จาก accessibility snapshot พบรายการ Philodendron และ evidence labels แสดงผลจริง
+- เปิด Taxon Detail ของ Pink Princess สำเร็จที่ `/knowledge/taxa/cultivar-pink-princess`
+- ตรวจ keyboard focus ด้วยการกด Tab และตรวจ `document.activeElement`; focus เคลื่อนไปยัง link/button ได้
+- ตรวจ reduced-motion และ horizontal overflow ที่ 390 px; `scrollWidth` เท่ากับ viewport width
+- axe audit รอบแรกพบ color-contrast violation ใน mobile navigation, sign-out, breadcrumb และ eyebrow
+- ปรับ `--muted` และ `--faint` ใน `src/app/globals.css` ให้ผ่าน WCAG AA; audit รอบสองไม่พบ violation เหลือเพียง incomplete จาก gradient ของ Firebase setup gate
+- Verification หลังแก้:
+  - `npm run lint`: ผ่าน
+  - `npm test -- --run`: 68 files / 140 tests ผ่าน, 4 suites skip โดยไม่เปิด emulator
+  - `npm run build`: ผ่าน และมี route Taxon Detail
+  - `npm run firebase:verify`: 72 files / 150 tests ผ่านด้วย Auth + Firestore emulator
+- สถานะ: UI verification รุ่นนี้ผ่านและแก้ accessibility contrast แล้ว; ยังต้องทดสอบ authenticated Firebase flow เมื่อ environment จริงพร้อม
+
+### ตรวจ Violin และเส้นทางเริ่ม Plant Record — 2026-07-24
+
+- เปิด Knowledge Library ใน demo mode และเลือก `Violin variegated` สำเร็จ
+- เปิด Taxon Detail ที่ `/knowledge/taxa/trade-name-violin-variegated` สำเร็จ
+- ตรวจพบชื่อแสดงเป็น `Philodendron bipennifolium ‘Violin’ variegated` และ evidence state เป็น Experimental ตามข้อกำหนด
+- ตรวจว่าคู่มือมี 4 หมวดและ 18 ขั้นเหมือน Pink Princess แต่ไม่ยกระดับหลักฐานของ Violin เป็น Verified
+- กด `เริ่ม Plant Record` สำเร็จ และระบบนำไป `/plants/new?taxon=trade-name-violin-variegated`
+- ตรวจ prefill สำเร็จ: suspected species เป็น `Violin variegated` และ confidence เป็น `Low`
+- สถานะ: เส้นทางค้นหา → taxon detail → Plant Record ใช้งานได้ใน demo mode; authenticated Firebase flow ยังรอ environment จริง
+
+### เพิ่มตารางสูตรอาหารใน Monograph — 2026-07-24
+
+- เพิ่ม `MediaRecipe` ใน domain model สำหรับ Establishment, Multiplication และ Rooting
+- แต่ละสูตรมี evidence state, source IDs, pH เป้าหมาย, note และ batch volumes 100/250/500/1,000 mL
+- แสดงส่วนประกอบ MS, sucrose, agar และฮอร์โมนเป็นค่าต่อลิตร พร้อมคำนวณปริมาณตาม batch ในหน้าเว็บ
+- ระบุชัดว่าปริมาณฮอร์โมนต้องใช้ stock solution และค่าตารางเป็นจุดตั้งต้น ไม่ใช่การรับรองทุกห้องทดลอง
+- Pink Princess: ตารางเต็มเป็น Adapted; claim BAP 1.0 mg/L และ IBA 3.0 mg/L ยังคง Verified เฉพาะตามงานวิจัยที่อ้าง
+- Violin: ตารางทั้งหมดคงสถานะ Experimental/Adapted เนื่องจากยังไม่มี protocol ตรงพันธุ์
+- ตรวจ agent-browser ที่ 390 px แล้วพบตารางอ่านได้ผ่าน horizontal table wrapper และไม่มี page overflow
+- Verification:
+  - targeted domain/component tests: 6 passed
+  - `npm run lint`: ผ่าน
+  - `npm test -- --run`: 68 files / 140 tests ผ่าน
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: 72 files / 150 tests ผ่าน
+
+### เพิ่มคู่มือตำแหน่งตัดและการฟอก — 2026-07-24
+
+- เพิ่ม `ExplantGuide` แยกตาม Pink Princess และ Violin variegated
+- คู่มือแสดงเป้าหมาย explant, แผนผังตำแหน่งตัด, ขนาดก่อนฟอก/หลังฟอก และข้อควรเลือกบนต้นแม่
+- Pink Princess: แนะนำเก็บยอด+ข้อ/ตาข้าง; ขนาดก่อนฟอกประมาณ 40–60 mm และหลังฟอกประมาณ 20–30 mm
+- Violin: แนะนำเก็บยอด/ข้อที่มีตาข้างชัด; ขนาดก่อนฟอกประมาณ 40–60 mm และหลังฟอกประมาณ 15–25 mm
+- เพิ่มตาราง trial ฟอกแบบ `Experimental` พร้อม active chlorine, เวลา และจำนวนรอบล้าง; ไม่มีค่าชุดใดถูกแสดงเป็น Verified
+- เพิ่ม safety notes เรื่อง active chlorine, การห้ามผสมสาร และการล้างด้วยน้ำปลอดเชื้อ
+- Agent-browser ตรวจหน้า Pink Princess ที่ 390 px พบ overflow จากตารางฟอก (`scrollWidth 595`) แล้วแก้ด้วย `min-width: 0` และ table wrapper; ตรวจซ้ำเหลือ `scrollWidth 390`
+- Verification หลังแก้:
+  - targeted tests: 6 passed
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: 72 files / 150 tests ผ่าน
+- สถานะ: คู่มือมีรายละเอียดตำแหน่งตัดและ trial ฟอกสำหรับทั้งสองต้นแล้ว แต่ค่าฟอกยังเป็น Experimental/Adapted ต้อง validate กับต้นจริงและผลิตภัณฑ์ที่ใช้จริง
+
+### เชื่อม Taxon/Plant Record ไป Experiment Lot — 2026-07-24
+
+- ปรับหน้า `/experiments/new` ให้โหลด Plant Record เมื่อเข้าด้วย `?plantId=`
+- ส่งชื่อพืชจาก Plant Record เข้า Lot Form และแสดงข้อความแนะนำสำหรับผู้เริ่มต้น
+- แนะนำ template อัตโนมัติจากชื่อที่บันทึก: Pink Princess, Violin หรือ Generic Philodendron fallback
+- ปรับตัวเลือก `คู่มือเริ่มต้น` ให้เป็น controlled select และแสดง evidence state ของ template
+- ยังให้ผู้ใช้เปลี่ยน template เองได้ก่อนสร้าง Lot
+- Sandbox agent-browser ตรวจ `/experiments/new` ที่ 390px สำเร็จ และไม่พบ page overflow
+- เพิ่ม test การ prefill Plant Record + recommended template
+- Verification:
+  - `npm test -- --run`: 68 files / 141 tests ผ่าน, 4 suites skip
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: 72 files / 151 tests ผ่าน
+  - `npm run lint`: ผ่าน
+- สถานะ: เส้นทางเริ่มจาก Plant Record ไปเลือกคู่มือและสร้าง Lot ชัดขึ้น; การโหลดข้อมูล Plant Record จริงต้องทดสอบอีกครั้งใน authenticated Firebase environment
+
+### เชื่อม Monograph เข้ากับ Guided Runner — 2026-07-24
+
+- Pink Princess และ Violin template เปลี่ยนจากชุดขั้นมาตรฐาน 13 ขั้นเป็นขั้นจาก monograph โดยตรง 18 ขั้น
+- แต่ละ step ใน Runner ได้ title, instruction, materials, critical controls, safety, measurement, pass/fail criteria, evidence state และ source references จากคู่มือเดียวกัน
+- Generic Philodendron ยังคง fallback 13 ขั้นเพื่อรองรับชนิดที่ยังไม่มี monograph
+- Violin ทุกขั้นไม่ถูกยกระดับเป็น Verified; Pink Princess มี source references ตามหลักฐานที่มี แต่ workflow เต็มยังรักษาสถานะ Adapted
+- แก้ TypeScript measurement unit mapping ให้ใช้ `MeasurementUnit` ของ domain กลาง
+- Verification:
+  - `npm test -- --run`: 68 files / 141 tests ผ่าน
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: 72 files / 151 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `git diff --check`: ผ่าน มีเฉพาะคำเตือน line ending Windows
+- สถานะ: คู่มือที่ผู้ใช้อ่านและขั้นที่ผู้ใช้ทำใน Lot ใช้ข้อมูลชุดเดียวกันแล้ว; authenticated end-to-end ยังเป็นขั้นตรวจถัดไป
+
+### Sandbox ทดสอบสร้าง Lot และ Guided Runner — 2026-07-24
+
+- เปิด `/experiments/new` ใน Demo mode ที่ viewport 390 px
+- กรอก Lot ID `PPP-SANDBOX-001`, ชื่อพืช Pink Princess และเลือก `template-pink-princess-nodal`
+- สร้าง Lot สำเร็จและถูกนำไป `/experiments/PPP-SANDBOX-001`
+- ตรวจพบ Runner แสดงครบ 18 ขั้น ตั้งแต่ baseline ถึง closeout
+- บันทึก step 1 ด้วย note และสถานะ Passed สำเร็จ; รายการเปลี่ยนเป็น `Passed`
+- กดถัดไปสำเร็จและ Runner แสดง step 2 พร้อม form note/status ใหม่
+- ตรวจ page overflow ที่ 390 px: `scrollWidth` เท่ากับ viewport
+- สถานะ: Demo workflow สร้าง Lot → บันทึกผล → ไปขั้นถัดไปทำงานจริง; ต้องทำซ้ำด้วย authenticated Firebase และข้อมูล Plant Record จริงเมื่อ environment พร้อม
+
+### Sandbox ทดสอบ Violin และ Needs review — 2026-07-24
+
+- เปิด `/experiments/new` ใน Demo mode และสร้าง Lot `VIO-SANDBOX-001`
+- เลือก `Violin variegated · Nodal culture · Experimental` สำเร็จ
+- Runner แสดงครบ 18 ขั้น และยังไม่พบ step ใดถูกแสดงเป็น Verified
+- เลือก step 4 `เลือกยอด/ข้อ/ตาข้าง` แล้วบันทึก note พร้อมสถานะ `Needs review`
+- รายการ step เปลี่ยนเป็น `Needs review` สำเร็จ โดยไม่บังคับให้ผู้ใช้กดผ่านเมื่อหลักฐานยังไม่พอ
+- สถานะ: Violin workflow รองรับผลที่ยังไม่ชัดเจนตาม evidence policy; authenticated Firebase flow ยังรอตรวจด้วยบัญชีจริง
+
+### เพิ่มหลักฐานภาพประจำ Guided Protocol step — 2026-07-24
+
+- เพิ่ม `evidenceObservationId` ใน `ProtocolStepRun` เพื่อผูกหลักฐานภาพกับขั้นตอนที่ถูกบันทึกจริง
+- เมื่อบันทึก step ครั้งแรก ระบบสร้าง observation container ภายในสำหรับภาพหลักฐานโดยอัตโนมัติ และติด `kind: protocol-step-evidence` เพื่อไม่ให้ปนกับ Observation Timeline หลัก
+- Guided Runner แสดง `MediaUploader` และ `MediaStrip` หลังมีการบันทึกผลขั้นนั้นแล้ว โดยยังใช้ `/api/media/sign` และ Cloudinary security flow เดิม
+- ระบบยังคงบังคับ required note/measurement ก่อนบันทึก และไม่เปิดช่อง upload ก่อนมี Lot/observation target ที่ถูกต้อง
+- เพิ่ม unit test สำหรับการแสดง photo evidence controls และเพิ่ม optional observation metadata สำหรับการซ่อน system evidence container
+- Sandbox ตรวจด้วย `agent-browser` ที่ `/experiments/PHOTO-SANDBOX-001` ใน Demo mode:
+  - สร้าง Pink Princess Lot สำเร็จ
+  - Runner แสดง 18 ขั้น
+  - ก่อนบันทึก step มีข้อความให้บันทึกผลก่อนจึงอัปโหลดรูปได้
+  - หลังบันทึก step 1 สถานะ Passed แล้ว ปุ่มเลือกไฟล์/คำอธิบายภาพ/เพิ่มรูปแสดงครบ
+  - viewport 390 px ไม่มี horizontal overflow (`scrollWidth=390`, `viewport=390`)
+- Verification:
+  - targeted tests: 2 files / 3 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+- ข้อจำกัดที่ยังเหลือ: การอัปโหลดไฟล์จริงต้องตรวจด้วย authenticated Firebase + Cloudinary environment เพราะ Demo mode ไม่มี Firebase user token
+
+### ปรับการแก้ไขหลักฐานภาพใน Runner — 2026-07-24
+
+- แก้การบันทึก step เดิมให้คง `evidenceObservationId` เดิม ป้องกันการสร้าง observation container ซ้ำเมื่อแก้ผลขั้นตอน
+- เพิ่มการลบแบบ soft delete และกู้คืนรูปจากส่วนหลักฐานภาพใน Guided Runner โดยตรง
+- ใช้ repository เดิมและ owner/lot/observation validation เดิม ไม่เปิด target upload ใหม่ที่ข้าม security boundary
+- Verification หลังแก้:
+  - `npm test -- --run`: 69 files ผ่าน, 4 skipped; 142 passed, 10 skipped
+  - `npm run firebase:verify`: 73 files / 152 tests ผ่านบน Auth + Firestore emulator
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน มีเฉพาะคำเตือน line ending Windows
+- สถานะ: Guided Protocol มี workflow หลักฐานครบ note + measurement + photo พร้อม soft delete/restore; ยังต้องใช้ Firebase/Cloudinary production credentials เพื่อทดสอบ binary upload จริงก่อนเปิดใช้ production
+
+### เพิ่ม completion gate ใน Guided Runner — 2026-07-24
+
+- ปุ่ม `ถัดไป` ถูก disable จนกว่าจะบันทึกผลขั้นปัจจุบันแล้ว
+- แสดงคำแนะนำภาษาไทยชัดเจนว่าให้บันทึกผลก่อนจึงไปต่อได้
+- เพิ่ม regression test สำหรับ gate และคง photo-evidence test ไว้
+- Sandbox ผ่านที่ `/experiments/GATE-SANDBOX-001` ใน Demo mode viewport 390 px:
+  - ก่อนบันทึก: `ถัดไป` disabled
+  - หลังบันทึก note + Passed: `ถัดไป` enabled
+  - หลังบันทึก: controls รูปภาพและ `เพิ่มรูป` แสดงครบ
+- Verification:
+  - targeted Runner tests: 2 ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+- สถานะ: Guided workflow ไม่อนุญาตให้ข้ามขั้นโดยไม่ยืนยันผล; binary upload production ยังต้องตรวจด้วย credentials จริง
+
+### ปรับคำแนะนำตามผลจริง — 2026-07-24
+
+- เปลี่ยน completion gate ให้ไปขั้นถัดไปได้เฉพาะเมื่อสถานะปัจจุบันเป็น `Passed`
+- `Needs review` จะแสดงคำแนะนำให้ตรวจเพิ่ม/แก้ไขก่อน และปุ่ม `ถัดไป` ยังคง disabled
+- `Failed` จะแสดงคำแนะนำให้ทำตาม `nextActionOnFail` และบันทึกผลใหม่ก่อน
+- เพิ่ม regression test สำหรับสถานะ `Needs review`
+- Sandbox สร้าง `STATUS-SANDBOX-001` และบันทึก step เป็น `Needs review` สำเร็จ; step list แสดงสถานะถูกต้องและ `ถัดไป` disabled
+- Verification:
+  - targeted Runner tests: 3 ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+- สถานะ: Runner นำทางตามผลจริงแล้ว ไม่ให้มือใหม่ข้ามผลที่ยังไม่ผ่านการยืนยัน
+
+### แก้ Vercel signed-upload 503 จาก firebase-admin ESM — 2026-07-24
+
+- Root cause จาก Vercel Runtime Logs: `firebase-admin/auth` รุ่นที่ติดตั้งโหลด `jwks-rsa` แบบ CommonJS ซึ่งพยายาม `require()` package `jose` แบบ ESM ทำให้ route `/api/media/sign` ล้มด้วย `ERR_REQUIRE_ESM`
+- แยกการสร้าง Firebase Admin App ออกจากการโหลด Firebase Admin Auth โดยเพิ่ม `getAdminApp()` ใน `src/lib/firebase/admin.ts`
+- เปลี่ยน API routes ที่ใช้ Firestore ให้เรียก `getAdminApp()` โดยตรง และไม่โหลด `firebase-admin/auth` ในเส้นทาง server เหล่านั้น
+- ไม่ลด security boundary: route ยังตรวจ Firebase ID token และตรวจ Lot/Observation ownership ก่อนสร้าง signed upload
+- Verification:
+  - targeted media/admin tests: ผ่าน; integration tests ที่ไม่เปิด emulatorถูก skip ตามเงื่อนไข
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: 73 files / 154 tests ผ่าน
+  - local sandbox route ที่ 390px: ไม่มี horizontal overflow
+- ขั้นถัดไป: commit และ push fix นี้ แล้วทดสอบ Preview upload จริงอีกครั้ง; ไม่ต้องเปลี่ยน private key หาก Runtime Log ยืนยัน ESM error นี้
+
+### แก้ตำแหน่งกู้คืนรูปของ Guided Step — 2026-07-24
+
+- แก้ปัญหารูปที่ soft-delete แล้วหายจาก state จนไม่เห็นปุ่ม `กู้คืนรูป`
+- โหลด media ของ observation รวมรายการ deleted ไว้ใน state เสมอ
+- Observation Timeline ยังคงกรองรายการ deleted ตาม checkbox เดิม
+- Guided Step evidence แสดงรายการ deleted พร้อมปุ่ม `กู้คืนรูป` ในส่วน `หลักฐานภาพของขั้นนี้` โดยตรง
+- เพิ่ม test ยืนยันว่า `MediaStrip` แสดง restore action สำหรับ media ที่มี `deletedAt`
+- Verification:
+  - `npm run firebase:verify`: 73 files / 155 tests ผ่าน
+  - targeted media tests: 3 ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- สถานะ: ลบและกู้คืนรูปได้จากจุดเดียวกันทั้ง Observation media และ Guided Step evidence
+
+### เพิ่ม Plant Profile → Experiment Lots summary — 2026-07-24
+
+- Plant Profile โหลด Plant Record และ Experiment Lots ที่มี `plantId` ตรงกันจาก repository เดียวกับหน้า Experiment
+- แสดง progress แบบ `ผ่าน/บันทึกแล้ว`, status, stage, วันที่แก้ไขล่าสุด และลิงก์เปิด Lot
+- ถ้ายังไม่มี Lot จะแสดง empty state พร้อมปุ่มเริ่ม Lot แรก
+- เพิ่ม component test สำหรับ lot progress summary
+- Sandbox `agent-browser` ที่ `/plants`, viewport 390 px:
+  - AuthGate → Demo mode ทำงาน
+  - Plant empty state แสดงถูกต้องเมื่อยังไม่มี Plant Record
+  - ไม่มี horizontal overflow (`scrollWidth=390`, `viewport=390`)
+- Verification:
+  - `npm run firebase:verify`: 74 files / 156 tests ผ่าน
+  - targeted Plant Profile test: ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+- สถานะ: Plant Profile พร้อมเป็นศูนย์กลางเชื่อมต้นไม้กับ Lot; ข้อมูล Lot จะแสดงเมื่อ Plant Record นั้นถูกใช้สร้าง Lot จริง
+
+### เชื่อม Plant Record กับ Taxon Knowledge — 2026-07-24
+
+- เพิ่ม `taxonId` ใน `PlantRecord` เพื่อเก็บความสัมพันธ์กับรายการ Taxon จริง ไม่อาศัยชื่อพืชแบบข้อความอย่างเดียว
+- การเริ่มสร้าง Plant Record จากหน้า Taxon เช่น Pink Princess จะบันทึกทั้ง `taxonId`, ชื่อที่คาดว่าเป็น และระดับความมั่นใจ
+- หน้า Plant Profile แสดง Taxon ที่เชื่อมอยู่ ลิงก์กลับไป Taxon Detail และ evidence state ของรายการนั้น
+- หน้า Start New Plant แสดงลิงก์ `เปิดข้อมูลชนิดพืช` เมื่อมี Taxon prefill เพื่อให้มือใหม่ย้อนกลับไปอ่าน Biology, Identification และ Tissue Culture ก่อนเริ่ม Lot
+- อัปเดต domain test ให้ยืนยันว่า prefill คืน `taxonId` และไม่ทำให้ template ต้นฉบับถูกแก้
+- Verification:
+  - targeted knowledge/repository tests: 2 files / 7 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: 74 files / 156 tests ผ่าน
+  - sandbox `agent-browser` ที่ `/plants/new?taxon=cultivar-pink-princess`: Demo mode, Taxon link และ Pink Princess prefill แสดงถูกต้อง; viewport 390 px ไม่มี horizontal overflow
+- สถานะ: Plant Record เชื่อมกลับ Knowledge Base ได้แล้ว; ขั้นต่อไปคือทำ Taxon Detail ให้เริ่ม Plant Record/Lot ด้วย context เดียวกันครบทั้ง flow และเพิ่ม migration ตรวจข้อมูลเก่า
+
+### ส่ง Taxon context ต่อถึง Experiment Lot — 2026-07-24
+
+- เพิ่ม `taxonId` ใน `ExperimentLot` เพื่อไม่ให้ Lot สูญเสียความสัมพันธ์กับ Taxon เมื่อชื่อพืชถูกแก้ภายหลัง
+- เพิ่ม `templateIdForTaxon()` ให้การเลือกคู่มืออิง Taxon ID เป็นหลัก: Pink Princess → nodal template, Violin → nodal template, อื่น ๆ → Generic fallback
+- หน้า Experiment New รับ `taxon`, `plant` และ `plantId` จาก context ได้ ทำให้เปิด flow ต่อจาก Taxon/Plant ได้แม้ demo mode มีการ reload หน้า
+- Lot Form แสดงข้อความว่าเชื่อม Taxon Knowledge แล้ว และส่งความสัมพันธ์ไปพร้อมข้อมูล Lot
+- Migration ของ legacy Experiment Lot รักษา `plantId`, `taxonId`, `templateId` และ `method` เมื่อข้อมูลเดิมมีฟิลด์เหล่านี้
+- Verification:
+  - `npm run firebase:verify`: 74 files / 158 tests ผ่าน
+  - targeted template/migration/Lot Form tests: 3 files / 8 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+  - sandbox ที่ 390 px: Taxon Detail แสดงคู่มือ 18 ขั้นและปุ่มเริ่ม Plant Record; Experiment New จาก context แสดง Pink Princess template และ Taxon guidance; ไม่มี horizontal overflow
+- สถานะ: Taxon → Plant Record → Experiment Lot มี context ต่อเนื่องใน domain และ UI แล้ว; ขั้นถัดไปคือทำ Taxon Detail/Plant Profile แสดง protocol ที่เลือกและความคืบหน้าของ Lot แบบรวมศูนย์
+
+### รวม protocol progress และยกระดับ Protocol Authoring — 2026-07-24
+
+- Plant Profile แสดง protocol title, protocol version, template/method, evidence state, จำนวนขั้นที่ผ่าน และวันที่แก้ไขล่าสุดของทุก Lot
+- ปุ่มสร้าง Lot ใหม่จาก Plant Profile รักษา `plantId` และไม่หลุดออกจาก context ของต้นนั้น
+- Protocol Detail เพิ่ม `คัดลอกเป็น Draft` โดยสร้าง Protocol ใหม่จาก version ที่เลือก ไม่แก้ต้นฉบับ
+- Protocol Editor เพิ่มการแก้ `Source IDs`, `Claim IDs` และ `Reference IDs` รายขั้น พร้อมเก็บกลับทั้ง Memory และ Firestore repository
+- Published version ยังคง immutable; การแก้จากหน้า Edit จะสร้าง draft version ใหม่ตามกลไกเดิม
+- Version history เพิ่ม compare summary ระหว่างสอง version ล่าสุด พร้อมจำนวน step ที่เปลี่ยน source และ claim
+- Monograph เพิ่มลิงก์ source จริงระดับ claim และ Reference Register พร้อม source type/access date
+- Verification:
+  - targeted authoring/summary/monograph tests: 6 files / 14 tests ผ่านรวมกับ regression ที่เกี่ยวข้อง
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+- สถานะ: ข้อมูลจาก Taxon, Plant Profile, Protocol และ Lot ถูกอ่านต่อเนื่องมากขึ้น; ก่อนส่ง production ต้องรัน full emulator suite และตรวจ Preview/UI ทุก breakpoint

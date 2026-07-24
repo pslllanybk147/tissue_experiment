@@ -20,8 +20,8 @@ export async function POST(request: Request) {
     if (!validId(body.lotId) || !validId(body.observationId) || !validId(body.mediaId)) return NextResponse.json({ error: "Invalid media target" }, { status: 400 });
 
     const { getFirestore } = await import("firebase-admin/firestore");
-    const { getAdminAuth } = await import("../../../../lib/firebase/admin");
-    const firestore = getFirestore(getAdminAuth().app);
+    const { getAdminApp } = await import("../../../../lib/firebase/admin");
+    const firestore = getFirestore(getAdminApp());
     const base = `users/${uid}/lots/${body.lotId}`;
     const lotRef = firestore.doc(base);
     const observationRef = firestore.doc(`${base}/observations/${body.observationId}`);

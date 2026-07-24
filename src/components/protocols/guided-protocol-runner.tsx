@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { GuidedStepStatus, ProtocolStep, ProtocolStepRun } from "@/lib/domain/models";
+import type { GuidedStepStatus, ObservationMedia, ProtocolStep, ProtocolStepRun } from "@/lib/domain/models";
+import { MediaStrip } from "../media/media-strip";
+import { MediaUploader } from "../media/media-uploader";
 
 type Props = {
   lotId: string;
@@ -10,16 +12,21 @@ type Props = {
   steps: ProtocolStep[];
   runs: ProtocolStepRun[];
   onSave: (run: Omit<ProtocolStepRun, "id" | "ownerId" | "updatedAt">) => Promise<void>;
+  mediaByStep?: Record<string, ObservationMedia[]>;
+  onMediaUploaded?: (media: ObservationMedia) => Promise<void>;
+  onMediaDelete?: (observationId: string, mediaId: string) => Promise<void>;
+  onMediaRestore?: (observationId: string, mediaId: string) => Promise<void>;
 };
 
 const statuses: GuidedStepStatus[] = ["Passed", "Needs review", "Failed"];
 
-export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs, onSave }: Props) {
+export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs, onSave, mediaByStep = {}, onMediaUploaded, onMediaDelete, onMediaRestore }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const step = steps[activeIndex];
   const run = useMemo(() => runs.find((item) => item.stepId === step?.id), [runs, step]);
+  const canProceed = run?.status === "Passed";
   const [status, setStatus] = useState<GuidedStepStatus>(run?.status ?? "Pending");
   const [note, setNote] = useState(run?.note ?? "");
   const [measurements, setMeasurements] = useState<Record<string, number | null>>(run?.measurements ?? {});
@@ -38,7 +45,7 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
     if (required.includes("measurement") && missingMeasurement) { setMessage("กรุณากรอกค่าที่วัดให้ครบ"); return; }
     setSaving(true); setMessage("");
     try {
-      await onSave({ lotId, protocolId, versionId, stepId: step.id, status, note, measurements, mediaIds: run?.mediaIds ?? [], observedAt: new Date().toISOString() });
+      await onSave({ lotId, protocolId, versionId, stepId: step.id, status, note, measurements, mediaIds: run?.mediaIds ?? [], evidenceObservationId: run?.evidenceObservationId, observedAt: new Date().toISOString() });
       setMessage("บันทึกผลแล้ว");
     } catch (error) { setMessage(error instanceof Error ? error.message : "บันทึกผลไม่สำเร็จ"); }
     finally { setSaving(false); }
@@ -61,10 +68,12 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
       <div className="guided-criteria"><GuideList title="ผ่านเมื่อ" items={step.passCriteria} /><GuideList title="ไม่ผ่านเมื่อ" items={step.failCriteria} /></div>
       {(step.measurements?.length ?? 0) > 0 && <div className="guided-measurements"><h4>ค่าที่ต้องวัด</h4>{step.measurements?.map((item) => <label className="form-field" key={item.id}><span>{item.label} ({item.unit}){item.required ? " *" : ""}</span><input min={item.min} max={item.max} onChange={(event) => setMeasurements((current) => ({ ...current, [item.id]: event.target.value === "" ? null : Number(event.target.value) }))} type="number" value={measurements[item.id] ?? ""} /></label>)}</div>}
       <label className="form-field guided-note"><span>บันทึก note {step.requiredEvidence?.includes("note") ? "*" : ""}</span><textarea onChange={(event) => setNote(event.target.value)} rows={4} value={note} placeholder="เขียนสิ่งที่พบจริง เช่น สี เนื้อเยื่อ กลิ่น หรือปัญหา" /></label>
+      {step.allowPhoto && <div className="guided-photo-evidence"><h4>หลักฐานภาพของขั้นนี้</h4>{run?.evidenceObservationId && onMediaUploaded ? <><MediaStrip items={mediaByStep[step.id] ?? []} onDelete={async (mediaId) => { if (onMediaDelete) await onMediaDelete(run.evidenceObservationId!, mediaId); }} onRestore={async (mediaId) => { if (onMediaRestore) await onMediaRestore(run.evidenceObservationId!, mediaId); }} /><MediaUploader lotId={lotId} observationId={run.evidenceObservationId} onUploaded={onMediaUploaded} /></> : <p className="muted-copy">กด “บันทึกผลขั้นนี้” ก่อน แล้วระบบจะเปิดพื้นที่อัปโหลดภาพของขั้นนี้</p>}</div>}
       <div className="guided-status"><span>ผลลัพธ์</span>{statuses.map((item) => <label key={item}><input checked={status === item} onChange={() => setStatus(item)} name={`status-${step.id}`} type="radio" /> {item}</label>)}</div>
       {message && <p className="form-alert" role="status">{message}</p>}
       <div className="guided-next"><p><strong>ถ้าผ่าน:</strong> {step.nextActionOnPass}</p><p><strong>ถ้าไม่ผ่าน:</strong> {step.nextActionOnFail}</p></div>
-      <div className="form-actions"><button className="quiet-button" disabled={activeIndex === 0} onClick={() => select(activeIndex - 1)} type="button">ก่อนหน้า</button><button className="primary-button" disabled={saving} onClick={() => void save()} type="button">{saving ? "กำลังบันทึก…" : "บันทึกผลขั้นนี้"}</button><button className="quiet-button" disabled={activeIndex === steps.length - 1} onClick={() => select(activeIndex + 1)} type="button">ถัดไป</button></div>
+      <div className="form-actions"><button className="quiet-button" disabled={activeIndex === 0} onClick={() => select(activeIndex - 1)} type="button">ก่อนหน้า</button><button className="primary-button" disabled={saving} onClick={() => void save()} type="button">{saving ? "กำลังบันทึก…" : "บันทึกผลขั้นนี้"}</button><button aria-describedby={!canProceed ? `next-step-help-${step.id}` : undefined} className="quiet-button" disabled={activeIndex === steps.length - 1 || !canProceed} onClick={() => select(activeIndex + 1)} type="button">ถัดไป</button></div>
+      {!canProceed && activeIndex < steps.length - 1 && <p className="muted-copy" id={`next-step-help-${step.id}`}>{run?.status === "Failed" ? "ขั้นนี้ไม่ผ่าน ให้ทำตามคำแนะนำการแก้ไขแล้วบันทึกผลใหม่ก่อน" : run?.status === "Needs review" ? "ขั้นนี้ต้องตรวจเพิ่มหรือแก้ไขก่อน จึงจะไปขั้นถัดไปได้" : "บันทึกผลขั้นนี้ก่อน จึงจะไปขั้นถัดไปได้"}</p>}
     </section>
   </div>;
 }

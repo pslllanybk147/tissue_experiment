@@ -1,4 +1,5 @@
 import type { EvidenceState } from "./models";
+import { philodendronTaxa } from "./philodendron-knowledge";
 
 export type TaxonRank = "family" | "genus" | "species" | "cultivar" | "hybrid" | "trade-name";
 
@@ -45,14 +46,7 @@ export type KnowledgeLibraryRecord = {
   playbooks: TissueCulturePlaybook[];
 };
 
-export const starterTaxa: TaxonRecord[] = [
-  { id: "family-araceae", scientificName: "Araceae", displayName: "Araceae", rank: "family", parentId: null, synonyms: [], commonNames: ["วงศ์บอน"], confidence: "High", evidenceState: "Pending review", sourceIds: [], createdAt: "", updatedAt: "" },
-  { id: "genus-philodendron", scientificName: "Philodendron", displayName: "Philodendron", rank: "genus", parentId: "family-araceae", synonyms: [], commonNames: [], confidence: "High", evidenceState: "Pending review", sourceIds: [], createdAt: "", updatedAt: "" },
-  { id: "species-philodendron-erubescens", scientificName: "Philodendron erubescens", displayName: "Philodendron erubescens", rank: "species", parentId: "genus-philodendron", synonyms: [], commonNames: [], confidence: "Medium", evidenceState: "Pending review", sourceIds: [], createdAt: "", updatedAt: "" },
-  { id: "cultivar-pink-princess", scientificName: "Philodendron erubescens", displayName: "Pink Princess", rank: "cultivar", parentId: "species-philodendron-erubescens", synonyms: [], commonNames: ["PPP"], confidence: "Medium", evidenceState: "Pending review", sourceIds: [], createdAt: "", updatedAt: "" },
-  { id: "species-philodendron-bipennifolium", scientificName: "Philodendron bipennifolium", displayName: "Philodendron bipennifolium", rank: "species", parentId: "genus-philodendron", synonyms: [], commonNames: [], confidence: "Medium", evidenceState: "Pending review", sourceIds: [], createdAt: "", updatedAt: "" },
-  { id: "trade-name-violin-variegated", scientificName: "Philodendron bipennifolium", displayName: "Violin variegated", rank: "trade-name", parentId: "species-philodendron-bipennifolium", synonyms: ["Violin"], commonNames: [], confidence: "Low", evidenceState: "Pending review", sourceIds: [], createdAt: "", updatedAt: "" },
-];
+export const starterTaxa: TaxonRecord[] = philodendronTaxa;
 
 export function findTaxonByName(records: TaxonRecord[], value: string): TaxonRecord | null {
   const query = value.trim().toLowerCase();

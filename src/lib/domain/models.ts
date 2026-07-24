@@ -28,6 +28,7 @@ export type PlantRecord = {
   ownerId: string;
   sellerName: string;
   suspectedSpecies: string;
+  taxonId?: string;
   identificationConfidence: "Unknown" | "Low" | "Medium" | "High";
   source: string;
   receivedAt: string;
@@ -59,6 +60,7 @@ export type ProtocolStepRun = {
   note: string;
   measurements: Record<string, number | null>;
   mediaIds: string[];
+  evidenceObservationId?: string;
   observedAt: string;
   updatedAt: string;
 };
@@ -107,6 +109,7 @@ export type ExperimentLot = {
   createdAt: string;
   updatedAt: string;
   plantId?: string;
+  taxonId?: string;
   templateId?: string;
   method?: "shoot-tip" | "nodal" | "generic";
 };
@@ -121,6 +124,8 @@ export type ObservationInput = {
   shootCount: number | null;
   rootCount: number | null;
   contaminationCount: number | null;
+  kind?: "manual" | "protocol-step-evidence";
+  protocolStepId?: string;
 };
 
 export type Observation = ObservationInput & {
@@ -131,6 +136,8 @@ export type Observation = ObservationInput & {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
+  kind?: "manual" | "protocol-step-evidence";
+  protocolStepId?: string;
 };
 
 export type AuditEvent = {

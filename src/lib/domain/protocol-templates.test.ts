@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { protocolTemplates, stepsForTemplate } from "./protocol-templates";
+import { protocolTemplates, stepsForTemplate, templateIdForTaxon } from "./protocol-templates";
 
 describe("guided protocol templates", () => {
   it("contains a beginner path for each supported scope", () => {
@@ -9,7 +9,15 @@ describe("guided protocol templates", () => {
   });
 
   it("marks direct Pink Princess evidence without upgrading the fallback", () => {
-    expect(stepsForTemplate("template-pink-princess-nodal")[8].evidenceState).toBe("Verified");
-    expect(stepsForTemplate("template-violin-nodal")[8].evidenceState).toBe("Experimental");
+    expect(stepsForTemplate("template-pink-princess-nodal")).toHaveLength(18);
+    expect(stepsForTemplate("template-pink-princess-nodal").some((step) => step.referenceIds.includes("source-pp-2023"))).toBe(true);
+    expect(stepsForTemplate("template-violin-nodal")).toHaveLength(18);
+    expect(stepsForTemplate("template-violin-nodal").every((step) => step.evidenceState !== "Verified")).toBe(true);
+  });
+
+  it("selects a stable template from a Taxon relation", () => {
+    expect(templateIdForTaxon("cultivar-pink-princess")).toBe("template-pink-princess-nodal");
+    expect(templateIdForTaxon("trade-name-violin-variegated")).toBe("template-violin-nodal");
+    expect(templateIdForTaxon("unknown-taxon")).toBe("template-generic-philodendron");
   });
 });

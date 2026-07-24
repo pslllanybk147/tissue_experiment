@@ -20,8 +20,8 @@ export async function POST(request: Request) {
     const body = await request.json() as { jobId?: unknown };
     if (typeof body.jobId !== "string" || !body.jobId || body.jobId.length > 160) return NextResponse.json({ error: "Invalid jobId" }, { status: 400 });
     const { getFirestore } = await import("firebase-admin/firestore");
-    const { getAdminAuth } = await import("../../../../lib/firebase/admin");
-    const firestore = getFirestore(getAdminAuth().app);
+    const { getAdminApp } = await import("../../../../lib/firebase/admin");
+    const firestore = getFirestore(getAdminApp());
     const jobSnapshot = await firestore.doc(`users/${uid}/preprocessingJobs/${body.jobId}`).get();
     if (!jobSnapshot.exists) return NextResponse.json({ error: "Preprocessing job not found" }, { status: 404 });
     const job = jobSnapshot.data() as PreprocessingJob;

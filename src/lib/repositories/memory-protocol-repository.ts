@@ -265,7 +265,7 @@ export function createMemoryProtocolRepository(uid: string): ProtocolRepository 
       guard(ownerId); const protocol = protocols.get(protocolId); const items = versions.get(protocolId) ?? []; const current = items.find(v => v.id === versionId);
       if (!protocol || !current) throw new Error("Protocol not found");
       if (current.publishedAt) throw new Error("Published versions are immutable");
-      const updated = { ...current, summary: input.summary, changeNote: input.changeNote, steps: clone(input.steps) }; versions.set(protocolId, items.map(v => v.id === versionId ? updated : v)); event(protocolId, "updated", current, updated); return clone(updated);
+      const updated = { ...current, summary: input.summary, changeNote: input.changeNote, steps: clone(input.steps), claimIds: clone(input.claimIds), sourceIds: clone(input.sourceIds) }; versions.set(protocolId, items.map(v => v.id === versionId ? updated : v)); event(protocolId, "updated", current, updated); return clone(updated);
     },
     async createDraftVersion(ownerId, protocolId, sourceVersionId, changeNote) {
       guard(ownerId); const protocol = protocols.get(protocolId); const items = versions.get(protocolId) ?? []; const source = items.find(v => v.id === sourceVersionId);

@@ -11,7 +11,8 @@ import { LabShell } from "@/components/lab/lab-shell";
 import type { CreateLotInput } from "@/lib/domain/models";
 import { getExperimentRepository } from "@/lib/repositories/experiment-repository-factory";
 import { getProtocolRepository } from "@/lib/repositories/protocol-repository-factory";
-import { protocolTemplates, stepsForTemplate } from "@/lib/domain/protocol-templates";
+import { getPlantRepository } from "@/lib/repositories/plant-repository-factory";
+import { protocolTemplates, stepsForTemplate, templateIdForTaxon } from "@/lib/domain/protocol-templates";
 
 export default function NewExperimentPage() {
   const router = useRouter();
@@ -19,9 +20,14 @@ export default function NewExperimentPage() {
   const ownerId = session.user?.uid ?? "demo-owner";
   const repository = useMemo(() => getExperimentRepository(ownerId, session.status === "authenticated"), [ownerId, session.status]);
   const protocolRepository = useMemo(() => getProtocolRepository(ownerId, session.status === "authenticated"), [ownerId, session.status]);
+  const plantRepository = useMemo(() => getPlantRepository(ownerId, session.status === "authenticated"), [ownerId, session.status]);
   const [protocolOptions, setProtocolOptions] = useState<ProtocolOption[]>([]);
-  const [initialPlantId, setInitialPlantId] = useState<string | undefined>();
+  const [initialPlantId] = useState<string | undefined>(() => typeof window === "undefined" ? undefined : new URLSearchParams(window.location.search).get("plantId") ?? undefined);
+  const [initialPlantName, setInitialPlantName] = useState<string | undefined>(() => typeof window === "undefined" ? undefined : new URLSearchParams(window.location.search).get("plant") ?? undefined);
+  const [initialTaxonId, setInitialTaxonId] = useState<string | undefined>(() => typeof window === "undefined" ? undefined : new URLSearchParams(window.location.search).get("taxon") ?? undefined);
+  const [initialTemplateId, setInitialTemplateId] = useState<string | undefined>(() => typeof window === "undefined" ? undefined : templateIdForTaxon(new URLSearchParams(window.location.search).get("taxon") ?? undefined));
   const [protocolsLoaded, setProtocolsLoaded] = useState(false);
+  const [plantLoaded, setPlantLoaded] = useState(() => !initialPlantId);
   useEffect(() => {
     let active = true;
     protocolRepository.list(ownerId).then(async (records) => {
@@ -36,7 +42,17 @@ export default function NewExperimentPage() {
     }).catch(() => { if (active) { setProtocolOptions([]); setProtocolsLoaded(true); } });
     return () => { active = false; };
   }, [ownerId, protocolRepository]);
-  useEffect(() => { const plantId = new URLSearchParams(window.location.search).get("plantId"); if (plantId) window.setTimeout(() => setInitialPlantId(plantId), 0); }, []);
+  useEffect(() => {
+    if (!initialPlantId) return;
+    plantRepository.get(ownerId, initialPlantId).then((plant) => {
+      if (plant) {
+        setInitialPlantName(plant.suspectedSpecies || undefined);
+        setInitialTaxonId(plant.taxonId);
+        setInitialTemplateId(plant.taxonId ? templateIdForTaxon(plant.taxonId) : plant.suspectedSpecies.toLowerCase().includes("pink") ? "template-pink-princess-nodal" : plant.suspectedSpecies.toLowerCase().includes("violin") ? "template-violin-nodal" : "template-generic-philodendron");
+      }
+      setPlantLoaded(true);
+    }).catch(() => setPlantLoaded(true));
+  }, [initialPlantId, ownerId, plantRepository]);
   async function createLot(input: CreateLotInput) {
     let nextInput = input;
     if (input.templateId) {
@@ -54,6 +70,6 @@ export default function NewExperimentPage() {
 
   return <AuthGate><LabShell onSignOut={() => void signOut()} section="Experiments" sessionLabel={session.status === "authenticated" ? "FIREBASE" : "DEMO"}>
     <Link className="route-back" href="/experiments">← กลับไป Experiment Lots</Link>
-    {protocolsLoaded ? <LotForm onSubmit={createLot} protocolOptions={protocolOptions} templates={protocolTemplates} initialPlantId={initialPlantId} /> : <p className="route-loading" role="status">กำลังโหลด Protocol…</p>}
+    {protocolsLoaded && plantLoaded ? <LotForm onSubmit={createLot} protocolOptions={protocolOptions} templates={protocolTemplates} initialPlantId={initialPlantId} initialPlantName={initialPlantName} initialTaxonId={initialTaxonId} initialTemplateId={initialTemplateId} /> : <p className="route-loading" role="status">กำลังเตรียม Plant Record และ Protocol…</p>}
   </LabShell></AuthGate>;
 }
