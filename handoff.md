@@ -1739,3 +1739,16 @@
 - production keyboard check: หลัง focus locator ที่ตรวจได้ กด Tab แล้ว focus อยู่บนลิงก์จริง (`A`, `/experiments`) ไม่ใช่ body
 - local sandbox responsive matrix ที่ 390/1024/1440 px ผ่าน ไม่มี horizontal overflow; production authenticated flow ผ่านที่ deployment ล่าสุด
 - สถานะ: ข้อ 1–6 ของ guided workflow project ผ่านหลักฐานแล้ว; เริ่ม Image Processing phase ต่อจาก reviewed dataset/preprocessing pipeline ได้
+
+### เริ่ม Image Processing phase หลัง project หลักผ่าน — 2026-07-24
+
+- เริ่มจาก pipeline ที่มีอยู่ใน `master` โดยไม่อ้างว่าเป็นโมเดลจำแนกชนิดพืชแล้ว:
+  - Observation media → Dataset Review Queue
+  - provenance/label review และ owner-scoped Firestore repository
+  - dataset manifest พร้อม train/validation/test split ระดับ Lot
+  - server-side `sharp` preprocessing เป็น PNG 224×224 พร้อม orientation, sRGB, hash และ Cloudinary artifact
+  - preprocessing job status/retry, model-ready export และ training-readiness report
+- `image-analyzer.ts` เดิมยังเป็น heuristic สำหรับสี/ลายด่าง ไม่ใช่ species classifier และห้ามแสดงผลเป็น `Verified`
+- กติกาของ phase นี้ยังคงเดิม: ภาพจากผู้ใช้ต้องผ่าน provenance/label review ก่อนรวมเป็น training data; image processing เสนอ candidate เท่านั้น ผู้ใช้ต้องยืนยันชนิด
+- ยังไม่สร้าง automatic species prediction, model training หรือ inference endpoint เพราะยังไม่มี dataset ที่ผ่านการ review จำนวนเพียงพอสำหรับประเมินความแม่นยำ
+- สถานะ: Image Processing เริ่มต้นอย่างเป็นทางการด้วย data/preprocessing foundation แล้ว; milestone ถัดไปคือ baseline candidate model และ evaluation report หลังมีภาพที่ผู้ใช้ยืนยัน label
