@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { ProtocolDraftInput } from "../domain/models";
 import { createMemoryProtocolRepository } from "./memory-protocol-repository";
+import type { KnowledgeSource, SourceClaim } from "../domain/knowledge-sources";
 
 const input: ProtocolDraftInput = {
   title: "Nodal establishment", plantScope: "Philodendron", evidenceState: "Adapted",
@@ -8,6 +9,15 @@ const input: ProtocolDraftInput = {
 };
 
 describe("memory protocol repository", () => {
+  it("creates a Draft protocol from an Approved claim without publishing it", async () => {
+    const repository = createMemoryProtocolRepository("owner-1");
+    const source: KnowledgeSource = { id: "source-1", ownerId: "owner-1", title: "Paper", sourceType: "journal", url: "https://example.com", doi: null, authors: "", publishedAt: null, license: null, notes: "", createdAt: "", updatedAt: "" };
+    const claim: SourceClaim = { id: "claim-1", ownerId: "owner-1", sourceId: source.id, taxonId: "cultivar-pink-princess", category: "tissue-culture", statement: "Use nodal culture.", evidenceExcerpt: "Excerpt", evidenceLocation: "p. 4", evidenceState: "Verified", reviewState: "Approved", reviewerNote: "checked", reviewedBy: "owner-1", reviewedAt: "2026-07-24", createdAt: "2026-07-24", updatedAt: "2026-07-24" };
+    const draft = await repository.createDraftFromClaim("owner-1", claim, source);
+    const loaded = await repository.get("owner-1", draft.id);
+    expect(draft.status).toBe("Draft");
+    expect(loaded?.versions[0]).toMatchObject({ publishedAt: null, claimIds: ["claim-1"], sourceIds: ["source-1"] });
+  });
   it("creates and activates an immutable version with audit events", async () => {
     const repository = createMemoryProtocolRepository("owner-1");
     const created = await repository.createDraft("owner-1", input);

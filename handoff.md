@@ -1369,3 +1369,27 @@
 - Sandbox check: Firebase emulator ผ่านครบ; authenticated browser sandbox ยังมี known limitation เรื่อง Firebase session loading เมื่อไม่มี local configuration
 - สถานะ: reviewer กรอง activity ตามแหล่งอ้างอิง/ชนิดพืช และตรวจประวัติ claim review แบบถาวรได้
 - ขั้นถัดไป: เพิ่ม audit viewer แบบเจาะ source/taxon และเชื่อม claim ที่ Approved เข้า playbook/protocol โดยไม่ข้าม evidence gate
+
+### Audit viewer และ Approved claim → playbook draft gate — 2026-07-24
+
+- เพิ่ม domain gate `canCreatePlaybookDraft` ตรวจ source, `Approved` review state, evidence excerpt และ evidence location
+- เพิ่ม `createPlaybookDraftInput` เพื่อสร้าง seed ที่คง evidence state และ reference ไปยัง claim/source
+- เพิ่ม `createDraftFromClaim` ใน Memory และ Firestore protocol repository
+- Draft ที่สร้างจาก claim มี status `Draft`, version ยัง `publishedAt: null` และบันทึก claim/source references
+- เพิ่ม protocol audit action `created_from_claim`
+- เพิ่ม `KnowledgeAuditViewer` แยกจาก timeline สำหรับกรอง Source/Taxon และดู before/after
+- เพิ่มปุ่ม `สร้าง playbook draft` เฉพาะ claim ที่ `Approved`; claim อื่นไม่แสดงปุ่ม
+- เชื่อม action ไปยัง protocol detail ของ draft ใหม่ โดยไม่ publish อัตโนมัติ
+- เพิ่ม test-first coverage:
+  - Approved claim gate ผ่าน/ไม่ผ่าน
+  - Memory/Firestore draft creation และ unpublished state
+  - audit viewer rendering
+  - Approved-only UI action
+- Verification:
+  - `npm run firebase:verify`: 67 files / 137 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- Sandbox/emulator: Firebase Auth/Firestore emulator ผ่านครบ; browser authenticated sandbox ยังมี known limitation เรื่อง Firebase session loading เมื่อไม่มี local configuration
+- สถานะ: evidence ที่ Approved แล้วสามารถเริ่ม playbook draft ได้อย่างมี traceability และ audit viewer แยกกรองได้
+- ขั้นถัดไป: เพิ่ม protocol detail แสดง claim/source provenance และเพิ่ม explicit gate ก่อน publish playbook draft

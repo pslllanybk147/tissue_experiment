@@ -76,7 +76,7 @@ export type UnifiedAuditEvent = {
 };
 
 export type ProtocolDraftInput = {
-  title: string; plantScope: string; evidenceState: EvidenceState; summary: string; changeNote: string; steps: ProtocolStep[];
+  title: string; plantScope: string; evidenceState: EvidenceState; summary: string; changeNote: string; steps: ProtocolStep[]; claimIds?: string[]; sourceIds?: string[];
 };
 
 export type ProtocolRecord = {
@@ -85,7 +85,7 @@ export type ProtocolRecord = {
 };
 
 export type ProtocolVersion = {
-  id: string; protocolId: string; ownerId: string; version: string; summary: string; changeNote: string;
+  id: string; protocolId: string; ownerId: string; version: string; summary: string; changeNote: string; claimIds?: string[]; sourceIds?: string[];
   steps: ProtocolStep[]; createdBy: string; createdAt: string; publishedAt: string | null;
 };
 export type ProtocolProgressState = "Pending" | "Completed" | "Skipped";
