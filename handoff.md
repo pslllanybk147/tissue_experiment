@@ -613,15 +613,799 @@
 - แก้ไข import path ของ `ObservationMedia` ใน `src/components/media/media-strip.tsx` แก้ไขปัญหา Vercel build type check failure และ push commit `3b832b7` สำเร็จแล้ว
 - ลำดับถัดไป: รอ Vercel Preview build เสร็จสิ้น แล้วทดสอบ Sign-in + อัปโหลดสื่อสังเกตการณ์ และกดขยายภาพที่ Lot `QA-20260722`
 
-### Plant Profile & ML Dataset Preparation phase — 2026-07-23
 
-- สร้างคลังสายพันธุ์พืช `/plants` (Plant Profile Catalog) รวบรวมข้อมูลสายพันธุ์ Philodendron ด่าง (*Pink Princess*, *White Wizard*, *Ring of Fire*, *Florida Beauty*, *Billietiae Variegata*)
-- เพิ่มข้อมูล License & Provenance Verification Badge (iNaturalist, GBIF, Wikimedia Commons) อิงลิขสิทธิ์ถูกต้อง (CC-BY 4.0 / CC0 / Public Domain)
-- เพิ่มระบบวิเคราะห์คุณลักษณะภาพพืช (`image-analyzer.ts`): คำนวณอัตราความด่างของใบ (Leaf Variegation Ratio %) และการสกัดสีหลัก (Dominant Color Palette)
-- ปรับปรุง Lightbox Modal บน Observation Media ให้แสดงผลการวิเคราะห์ภาพ (Variegation % และ ML Dataset Tag)
-- เพิ่มเมนู `Plants` ใน Navigation Bar ทั้งบน Desktop Sidebar และ Mobile Topbar
-- TDD & Verification:
-  - Unit Tests: ผ่าน 38 test files / 85 tests (100%)
-  - ESLint: ผ่าน 0 errors / 0 warnings
-  - Next Production Build: สร้าง static/dynamic pages สำเร็จสมบูรณ์ (10/10 routes)
-- Merge เข้า `master` ใน commit `2072b73` และ push ขึ้น GitHub เรียบร้อยแล้ว
+
+
+
+
+### Full-system QA audit — 2026-07-23
+
+- ตรวจ branch `feature/protocol-media-navigation` ที่ commit `0850470`
+- ผล automated checks:
+  - `npm test`: ผ่าน 35 files / 79 tests
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: ผ่าน Auth + Firestore emulator ด้วย Java 21
+  - `npm run lint`: **ไม่ผ่าน** 1 error
+- ตรวจ Vercel Preview แบบ authenticated ที่ 390px, 1024px และ 1440px; ไม่พบ horizontal overflow และ desktop/mobile navigation แสดงถูก breakpoint
+- ตรวจ workflow จริง: Experiment detail, observation timeline, รูป Cloudinary, lightbox, Protocol list/detail และ Create Lot
+
+#### บัคที่พบ — ห้าม merge ก่อนแก้
+
+1. **High — conditional React Hook ใน MediaStrip**
+   - `src/components/media/media-strip.tsx:45-46` return ก่อน `useState`
+   - ESLint: `React Hook "useState" is called conditionally`
+   - เสี่ยงลำดับ Hook เปลี่ยนเมื่อรูปโหลดจาก 0 เป็นมีรูป
+2. **High — Protocol legacy เปิดหน้า detail แล้วว่าง**
+   - Dashboard seed ใช้ schema `Protocol` เดิมใน `users/{uid}/protocols/protocol-nodal-v01`
+   - Protocol repository ใหม่ cast collection เดียวกันเป็น `ProtocolRecord`
+   - Live Preview แสดง `Nodal establishment` ใน list แต่เปิด detail เหลือเพียงลิงก์ย้อนกลับ เพราะไม่มี `currentVersionId`/version snapshot
+   - หน้า detail ไม่มี loading/error fallback เมื่อ record มีอยู่แต่หา current version ไม่เจอ
+
+#### บัค/ช่องว่างระดับกลาง
+
+3. **Medium — Audit history ของ media/progress แสดง entity ว่าง**
+   - observation, media และ progress เขียนลง collection `auditEvents` เดียวกันแต่ใช้ schema ต่างกัน
+   - `AuditHistory` อ่านทุก record เป็น `AuditEvent` และแสดง `event.entityType · event.entityId`
+   - Live Preview แสดง media events เป็น `created ·` โดยไม่มีชนิดและรหัส
+4. **Medium — Lightbox ไม่ผ่าน keyboard/dialog accessibility**
+   - ไม่มี `role="dialog"`, `aria-modal`, focus management หรือ Escape handler
+   - ทดสอบจริงแล้วกด Escape ไม่ปิด lightbox
+   - ปุ่ม `✕` ไม่มี accessible label ที่อธิบายว่า “ปิด”
+5. **Medium — media soft delete ไม่มี restore UI**
+   - repository รองรับ `restore()` และ audit แต่หน้า Experiment โหลดเฉพาะ media ที่ไม่ถูกลบ
+   - ปุ่มลบรูปไม่มี confirmation และเมื่อลบแล้วผู้ใช้กู้คืนจากหน้าเว็บไม่ได้
+6. **Medium — media signing endpoint ไม่ตรวจ lot/observation existence**
+   - authenticated user ขอ signed upload path สำหรับ lot/observation ID ใดก็ได้ใต้ UID ของตน
+   - ไม่มี rate limit; เพิ่มความเสี่ยงใช้ Cloudinary quota โดยไม่สร้าง metadata ที่ถูกต้อง
+7. **Medium — API ส่งรายละเอียด internal authentication error กลับ client**
+   - `/api/media/sign` ตอบ `Invalid authentication (${details})`
+   - เคยทำให้ module path/dependency internals แสดงใน UI; production ควรตอบข้อความทั่วไปและเก็บรายละเอียดเฉพาะ server log
+8. **Medium — production dependency advisories**
+   - `npm audit --omit=dev`: 9 vulnerabilities (7 moderate, 2 high)
+   - เกี่ยวข้องกับ transitive `postcss`, `sharp`, `uuid`; ห้ามใช้ `npm audit fix --force` โดยไม่ประเมินเพราะคำแนะนำปัจจุบันทำให้ downgrade/breaking versions
+
+#### Test coverage gap
+
+- `firebase:verify` เปิด emulator แล้วรัน unit tests แต่ไม่มี `@firebase/rules-unit-testing` หรือ assertions ที่พิสูจน์ Firestore rules ว่าปฏิเสธ cross-user/unauthenticated writes จริง
+- `MediaStrip` test ตรวจเพียง static markup ที่มีรูปอยู่แล้ว จึงไม่จับ transition จาก empty → populated, keyboard lightbox หรือ restore flow
+- ขั้นถัดไป: แก้ตามลำดับ 1 → 2 → 3/4/5 → security/dependencies แล้วรัน full sandbox/emulator และ Vercel Preview ใหม่ก่อน merge PR #3
+
+### Guided Protocol Workflow implementation checkpoint — 2026-07-23
+
+- เริ่ม implementation ตามแผน Guided Protocol Workflow โดยยึดเส้นทางมือใหม่: Plant Record → Experiment Lot → template copy → guided runner → step evidence
+- เพิ่ม domain model ใน `src/lib/domain/models.ts` สำหรับ `PlantRecord`, `ProtocolTemplate`, `ProtocolStepRun`, `UnifiedAuditEvent`, `StepMeasurement` และสถานะ `Passed / Needs review / Failed`
+- เพิ่ม template content 3 ชุดใน `src/lib/domain/protocol-templates.ts`:
+  - Pink Princess · Nodal culture
+  - Violin variegated · Nodal culture
+  - Generic Philodendron · Safe start
+  - มี 13 ขั้นตั้งแต่ baseline จนติดตามความคงตัวของลายด่าง และแสดง `Verified / Adapted / Experimental` แยกชัดเจน
+- เพิ่ม Plant Record repository ทั้ง memory/demo และ Firestore พร้อมหน้า:
+  - `/plants`
+  - `/plants/new`
+  - `/plants/[plantId]`
+- เพิ่ม guided runner ใน Experiment detail:
+  - แสดงรายการขั้นตอนและ progress
+  - แสดง objective, เหตุผล, วัสดุ, วิธีทำ, safety, critical controls, expected result และ pass/fail criteria
+  - บันทึกสถานะ, measurement, note และ next action
+  - รองรับ layout มือถือแบบเรียงแนวตั้ง
+- เพิ่ม Step Run repository แบบ memory และ Firestore ใต้ `users/{uid}/lots/{lotId}/protocolStepRuns`; เมื่อบันทึกจะสร้าง audit event ประเภท `protocol-progress`
+- ปรับ `/experiments/new` ให้เลือก guided template และสร้าง Protocol สำเนาสำหรับ Lot โดยไม่แก้ template ต้นฉบับ รวม `plantId/templateId/method` ใน Lot
+- แก้ conditional Hook ใน `MediaStrip` และเพิ่ม Escape/focus/accessible dialog ให้ lightbox
+- เพิ่ม legacy protocol migration ใน Firestore protocol repository: record ที่ไม่มี `currentVersionId` จะถูกแปลงเป็น `ProtocolRecord` พร้อม `ProtocolVersion` generic และไม่ทำให้หน้า detail ว่าง
+- เพิ่ม automated tests สำหรับ template evidence, Plant ownership และ Step Run upsert
+- ผลตรวจล่าสุด:
+  - `npm test`: ผ่าน 37 files / 82 tests
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน และพบ routes `/plants`, `/plants/new`, `/plants/[plantId]`
+  - `npm run firebase:verify`: ผ่าน โดยเปิด Auth + Firestore emulator และรัน tests ครบ
+- Sandbox checkpoint: เปิด Next production-like dev server ชั่วคราวและตรวจ HTTP routes `/`, `/plants`, `/plants/new`, `/experiments/new` ได้ 200 ครบ; Firebase Auth + Firestore emulator verification ผ่าน; ยังต้องตรวจ visual ผ่าน browser/Preview หลัง push
+- สิ่งที่ยังค้างจากแผน: unified audit rendering ในหน้า timeline ให้รองรับ media/progress เต็มรูปแบบ, media restore UI, signed upload ตรวจ existence ของ Lot/Observation, Firestore rules tests, Protocol authoring เต็มรูปแบบ และ Vercel Preview verification
+- image processing/ML ยังไม่เริ่มตามข้อตกลงเดิม ต้องปิด guided protocol project ก่อน
+- **ขั้นถัดไปสำหรับ session ใหม่:** ตรวจ `handoff.md` ก่อน แล้วทำ unified audit + media restore จากนั้นรัน sandbox/emulator และอัปเดตบันทึกนี้ทุกครั้งที่งานจบ
+
+### Unified audit + media restore checkpoint — 2026-07-23
+
+- อ่าน handoff ก่อนเริ่มงานตาม workflow
+- ปรับ Experiment detail ให้รวม audit จาก Experiment และ Media repository แล้ว normalize เป็น `AuditEvent` กลางเดียวกัน โดย media แสดงเป็น `media · {mediaId}` ไม่แสดง `created ·` ว่าง
+- รองรับ audit event ของ `protocol-progress` ที่ถูกเขียนจาก Step Run ใน Firestore collection เดียวกันกับ Lot/Observation/Media
+- ปรับ media loading ให้ดูรายการที่ soft-deleted ได้เมื่อเปิด `แสดงรายการที่ลบ`
+- เพิ่มปุ่ม `กู้คืนรูป` ใน `MediaStrip` สำหรับ media ที่ถูกลบ และเชื่อมกับ `mediaRepository.restore()` พร้อม reload audit history
+- การลบรูปยังคง soft delete ไม่ลบ Cloudinary metadata ถาวร
+- ตรวจ automated checks:
+  - `npm test`: ผ่าน 37 files / 83 tests
+  - `npm run lint`: ผ่าน ไม่มี warning/error
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: ผ่าน Auth + Firestore emulator
+- Sandbox checkpoint: เปิด dev server ชั่วคราวและตรวจ `/`, `/plants`, `/plants/new`, `/experiments/new` ได้ HTTP 200 ครบ
+- สิ่งที่ยังค้าง: signed upload ตรวจ existence ของ Lot/Observation, Firestore rules tests, Protocol authoring/version compare เต็มรูปแบบ และ visual/keyboard verification บน Vercel Preview
+- image processing/ML ยังไม่เริ่มจนกว่า guided protocol project จะเสร็จตามข้อตกลง
+
+### Upload security validation checkpoint — 2026-07-23
+
+- ปรับ `src/app/api/media/sign/route.ts` ให้ตรวจ target ก่อนออก signed upload:
+  - ต้องมี Firebase Bearer token
+  - ตรวจว่า `users/{uid}/lots/{lotId}/observations/{observationId}` มีอยู่จริง
+  - path ถูก scope ด้วย UID จึงไม่สามารถขอ signature ให้ข้อมูลของผู้ใช้อื่นได้
+  - ถ้าไม่พบ target ตอบ `404 Upload target not found`
+- ลดรายละเอียด error ที่ส่งกลับ client:
+  - invalid token ตอบ `Invalid authentication`
+  - config ขาดตอบข้อความทั่วไป
+  - internal error log อยู่ฝั่ง server เท่านั้น
+- ผลตรวจ:
+  - `npm test`: ผ่าน 37 files / 83 tests
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: ผ่าน Auth + Firestore emulator
+  - Sandbox API request ที่ไม่มี token ตอบ HTTP 401 ตามคาด
+  - Sandbox `/experiments` และ `/plants` ตอบ HTTP 200
+- สิ่งที่ยังค้าง: เพิ่ม integration test ที่จำลอง authenticated token + Firestore target, Firestore rules tests และ visual/keyboard verification บน Vercel Preview
+
+### Firestore rules verification checkpoint — 2026-07-23
+
+- เพิ่ม dev dependency `@firebase/rules-unit-testing`
+- เพิ่ม `src/lib/firebase/firestore-rules.test.ts` ครอบคลุม:
+  - เจ้าของอ่าน/เขียน Lot ของตนเองได้
+  - unauthenticated อ่านข้อมูลไม่ได้
+  - ผู้ใช้อื่นอ่านข้อมูลข้าม account ไม่ได้
+  - เขียน `ownerId` ของผู้ใช้อื่นไม่ได้
+- Test จะ skip เมื่อรันนอก emulator และจะทำงานจริงเมื่อ `FIRESTORE_EMULATOR_HOST` ถูกตั้งโดย `firebase:verify`
+- ผล `npm run firebase:verify`: ผ่าน 38 files / 86 tests
+- ผล `npm run lint`: ผ่าน
+- ผล `npm run build`: ผ่าน
+- Sandbox routes `/`, `/plants`, `/experiments`: HTTP 200 ครบ
+- สิ่งที่ยังค้าง: integration test ของ signed upload ที่ใช้ authenticated token จริง, visual/keyboard verification บน Vercel Preview และ Protocol authoring/version compare แบบเต็ม
+
+### Full verification checkpoint — 2026-07-23
+
+- ผู้ใช้ขอให้ทดสอบระบบทั้งหมด
+- ผล `npm test`: 37 files passed, 1 rules suite skipped นอก emulator; รวม 83 passed / 3 skipped
+- ผล `npm run lint`: ผ่าน
+- ผล `npm run build`: ผ่าน
+- ผล `npm run firebase:verify`: ผ่าน 38 files / 86 tests โดย rules suite ทำงานจริงบน Auth + Firestore emulator
+- Sandbox API upload request ที่ไม่มี token: HTTP 401
+- Sandbox routes ที่ตรวจ: `/`, `/plants`, `/plants/new`, `/experiments`, `/experiments/new` ตอบ HTTP 200 ครบ
+- ไม่พบ release-blocking error จาก automated checks รอบนี้
+
+### Signed upload integration test checkpoint — 2026-07-23
+
+- ทำตามคำขอข้อ 1 โดยเพิ่ม `src/app/api/media/sign/route.integration.test.ts`
+- Integration test ใช้ Firebase Auth emulator สร้าง user จริงและขอ Firebase ID token จริง
+- ใช้ Firestore rules test environment สร้าง Lot และ Observation จริงของ user นั้น
+- ยิง `POST /api/media/sign` เข้า route จริง ไม่ได้เรียกเฉพาะฟังก์ชัน signature
+- กรณี target ถูกต้อง: ได้ HTTP 200 พร้อม Cloudinary folder ที่ scope ด้วย UID/Lot/Observation
+- กรณี Observation ปลอม: ได้ HTTP 404 `Upload target not found`
+- เพิ่ม emulator token verification path แยกออกจาก production JWKS path เพื่อให้ทดสอบ token จริงใน emulator โดยไม่ดึง `firebase-admin` เข้า production verifier path
+- ผลตรวจ:
+  - `npm run firebase:verify`: ผ่าน 39 files / 88 tests รวม integration test 2 กรณี
+  - `npm test`: ผ่าน 37 files / 83 tests และ skip เฉพาะ emulator-only suites
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+- หมายเหตุ: emulator แสดง MetadataLookupWarning จาก environment แต่ test suite จบสำเร็จและผล assertions ผ่านทั้งหมด
+- สิ่งที่ยังค้าง: ตรวจ Vercel Preview authenticated จริง, visual/keyboard QA และ Protocol authoring/version compare
+
+### Vercel Preview guided workflow checkpoint — 2026-07-23
+
+- ตรวจ Preview จริงที่ `https://tissue-experiment-93-git-featu-f89199-pslllanybk-2845s-projects.vercel.app`
+- Source ที่ตรวจ: branch `feature/protocol-media-navigation`, commit `4657d78`
+- ใช้ Firebase session ที่ล็อกอินอยู่จริงบน Preview
+- ทดสอบสำเร็จ:
+  1. เปิด `/plants` และเริ่มสร้าง Plant Record
+  2. สร้าง Plant Record ชื่อ `QA Preview Plant 20260723` ชนิดที่คาดว่าเป็น `Philodendron Pink Princess` พร้อม confidence ระดับ Medium
+  3. เปิดหน้า Plant Profile และตรวจข้อมูล baseline, สุขภาพ, วันที่รับต้น และหมายเหตุ
+  4. สร้าง Experiment Lot `QA-PREVIEW-20260723` จาก template `Pink Princess · Nodal culture · Adapted`
+  5. หน้า Lot แสดง Guided Protocol ครบ 13 ขั้น พร้อม objective, materials, instructions, safety/critical controls, expected result, pass/fail criteria และ next action
+  6. กดบันทึกโดยไม่ใส่ note แล้วระบบบล็อกด้วยข้อความ `ขั้นนี้ต้องมี note ก่อนบันทึก`
+  7. ใส่ note + เลือก `Passed` แล้วบันทึกสำเร็จ ระบบแสดง `บันทึกผลแล้ว` และทำเครื่องหมายขั้นที่ 1 เป็น Passed
+- QA data ที่สร้างบน Preview:
+  - Plant ID: `plant-bb0b61a7-71e2-49f8-910a-d384423ecb09`
+  - Lot ID: `QA-PREVIEW-20260723`
+  - ข้อมูลนี้เป็นข้อมูลทดสอบและควร archive/soft-delete ภายหลังตามต้องการ
+- ยังไม่ถือว่าผ่าน: photo upload/delete/restore บน Preview เพราะหน้า Experiment ที่ตรวจไม่มี control สำหรับอัปโหลดรูปแสดงอยู่ใน DOM จึงยังไม่ได้กดทดสอบและไม่สรุปผลเกินหลักฐาน
+- Automated checks ก่อน/ระหว่าง checkpoint: `npm test`, `npm run firebase:verify`, `npm run lint`, `npm run build` ผ่าน
+- ขั้นถัดไปที่เหลือ: ตรวจ responsive/keyboard บน Preview หรือแก้ให้ media upload control ปรากฏใน guided workflow แล้วจึงทดสอบ media end-to-end
+
+### Responsive and keyboard QA checkpoint — 2026-07-23
+
+- ตรวจ Preview จริงที่ `https://tissue-experiment-93-git-featu-f89199-pslllanybk-2845s-projects.vercel.app`
+- Desktop viewport ที่ browser เปิดให้ตรวจจริง: `1280 × 720` (อยู่ในช่วง desktop ของ acceptance target 1440px)
+- ผล desktop:
+  - `document.documentElement.scrollWidth === clientWidth` ไม่พบ horizontal overflow
+  - sidebar, topbar, dashboard cards, tables และ Thai labels แสดงผลโดยไม่ล้นขอบ
+  - หน้า dashboard มี interactive controls และ links ครบในลำดับ DOM ที่ใช้งานด้วย keyboard ได้
+  - ปุ่ม navigation สามารถรับ focus ได้ และปุ่ม/ลิงก์มีชื่อที่อ่านได้จาก accessibility tree
+- ตรวจจาก CSS production ที่ deploy แล้ว:
+  - tablet breakpoint ที่ `1024px` และ `1100px` สำหรับ grid/sidebar/layout
+  - mobile breakpoint ที่ `700px` และ `720px` สำหรับ mobile nav, single-column forms, guided runner และ observation form
+  - media strip ใช้ horizontal scrolling เฉพาะแถบรูป ไม่ขยายความกว้างของหน้า
+  - `prefers-reduced-motion: reduce` ลด transition/animation และปิด smooth scroll
+- ข้อจำกัดการตรวจรอบนี้:
+  - in-app Preview ที่เชื่อมอยู่ไม่มีตัวควบคุมเปลี่ยน viewport เป็น `390px`, `1024px`, `1440px` โดยตรง จึงยืนยันการ render จริงได้ที่ 1280px และยืนยัน breakpoint จาก CSS ที่ build/deploy แล้ว แต่ยังไม่อ้างว่าเป็น full device matrix
+  - การกด Tab ผ่าน browser adapter ไม่เปลี่ยน active element อย่างเสถียร จึงตรวจ focusability และชื่อ accessibility ได้ แต่ยังไม่สรุป keyboard traversal แบบ end-to-end ว่าผ่านทั้งหมด
+  - Escape/lightbox ยังทดสอบไม่ได้จาก Preview เพราะหน้า Experiment ยังไม่แสดง media upload control และไม่มีรูปให้เปิด lightbox
+- Sandbox/emulator checkpoint รอบนี้: `npm run firebase:verify` ผ่าน 39 files / 88 tests
+- สรุป: ไม่พบ responsive overflow หรือ release-blocking UI error จากสิ่งที่ตรวจได้จริง; งานที่เหลือคือ device matrix ด้วย viewport emulator เฉพาะทาง และ media/lightbox เมื่อ upload control ถูก expose ในหน้า workflow
+
+### Image processing pilot audit — 2026-07-23
+
+- ตรวจ git history และทุก branch ที่มีอยู่ พบ pilot เดิมใน:
+  - branch `feature/plant-profile-ml`
+  - merge commit `2072b73` บน `master`
+  - dataset manifest commit `70654f3` บน `master`
+- pilot ที่มีอยู่ประกอบด้วย:
+  - `src/lib/domain/image-analyzer.ts`: ตรวจ pixel RGB ด้วย threshold เพื่อประมาณสัดส่วนสีด่างและ dominant colors
+  - `src/lib/domain/dataset-exporter.ts`: สร้าง JSON manifest จาก observation media
+  - `src/lib/domain/plant-profile.ts`: seed catalog สายพันธุ์และข้อมูล license/provenance
+  - `/plants` และ PlantCard สำหรับ catalog/dataset preparation
+- ข้อสรุปสำคัญ: ยังไม่มีโมเดล ML ที่ train/inference จากภาพจริง, ไม่มี TensorFlow/PyTorch/ONNX/Transformers dependency และไม่มี image decoding pipeline
+- `estimatedVariegationPercentage` ใน pilot ใช้ hash ของ `media.id` เป็นค่าจำลอง ไม่ได้วิเคราะห์ภาพจริง จึงห้ามนำไปแสดงเป็นผลวิเคราะห์ทางวิทยาศาสตร์หรือใช้สร้าง ground truth
+- `image-analyzer.ts` เป็น heuristic จาก pixel ที่ caller ป้อนให้ ไม่ได้อ่านไฟล์ภาพและไม่สามารถจำแนกชนิด/สายพันธุ์ได้
+- ต้องตรวจ license/provenance ของ seed image และ metadata ก่อนใช้สร้าง training dataset; ห้ามถือคำว่า `CC-BY 4.0 Verified Provenance` ใน exporter เป็นหลักฐานยืนยันแทนเอกสารต้นทาง
+- pilot ไม่ได้อยู่ใน current branch `feature/protocol-media-navigation` โดยตรง และไม่ควร merge ทั้งชุด เพราะ branch pilot มีความต่างจาก guided workflow ปัจจุบันจำนวนมาก
+- แนวทางต่อยอดหลัง guided workflow เสร็จ: แยก image ingestion, provenance/label review, dataset export, baseline classifier และ evaluation เป็น phases ใหม่ โดยเริ่มจากข้อมูลที่ผู้ใช้ยืนยัน label เอง
+
+### Image phase 1 foundation — 2026-07-23
+
+- เริ่ม phase ใหม่ด้วย dataset intake foundation โดยยังไม่ทำ automatic species prediction
+- เพิ่ม domain types ใน `src/lib/domain/models.ts` สำหรับ `DatasetItem`, `DatasetProvenance`, `DatasetLabel`, review status และ confidence
+- เพิ่ม `src/lib/domain/dataset-intake.ts` สำหรับ validation:
+  - media/lot/observation/asset ต้องมีตัวตน
+  - licensed reference ต้องมี source URL
+  - provenance ที่ Approved ต้องมี license
+  - label ที่ใช้เป็น training truth ห้ามมี confidence เป็น Unknown
+- เพิ่ม `src/lib/repositories/dataset-repository.ts` และ `memory-dataset-repository.ts` เป็น repository contract สำหรับ sandbox
+- กติกาสำคัญ: สร้าง item เป็น `Pending review`, ต้อง approve provenance ก่อนบันทึก human label และจึงค่อย `includedInTraining: true`
+- เพิ่ม tests ครอบคลุม provenance validation, Unknown label, cross-owner access และ approval gate
+- Verification:
+  - targeted tests: 2 files / 4 tests ผ่าน
+  - `npm run firebase:verify`: 41 files / 92 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+- ยังไม่เชื่อม Firestore/Cloudinary UI และยังไม่มี image decoder, model training หรือ inference
+- ขั้นถัดไป: เชื่อม DatasetRepository กับ Firestore พร้อม owner rules และสร้างหน้า review queue ที่แก้ label/provenance ได้ก่อน export dataset
+
+### Image phase 1 Firestore repository checkpoint — 2026-07-23
+
+- เชื่อม dataset intake foundation เข้ากับ Firestore ผ่าน `src/lib/firebase/firestore-dataset-repository.ts`
+- ใช้ path แบบ owner-scoped: `users/{uid}/datasetItems/{datasetItemId}`
+- เพิ่ม `src/lib/repositories/dataset-repository-factory.ts` ให้เลือก Firestore เมื่อมี authenticated user และใช้ memory repository สำหรับ sandbox/unauthenticated fallback
+- Repository ยังคงบังคับ owner guard, provenance approval ก่อนติด label และไม่เปิด `includedInTraining` จนกว่าจะมี label ที่ผ่าน validation
+- เพิ่ม Firestore emulator rules tests สำหรับ:
+  - เจ้าของอ่าน/เขียน dataset item ของตนเองได้
+  - ผู้ใช้อื่นอ่าน/เขียนข้าม owner ไม่ได้
+  - unauthenticated write ถูกปฏิเสธ
+- ระหว่างทดสอบพบว่า Node test environment เรียก Firebase client โดยตรงไม่ได้ (`Firebase is not configured`) จึงเพิ่ม `DatasetPersistenceAdapter` injection เพื่อทดสอบ repository logic แบบ deterministic; rules ยังคงทดสอบกับ Firestore emulator จริง
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 42 files / 95 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- ขอบเขตที่ยังไม่ทำ: Review Queue UI, Cloudinary-to-dataset ingestion, image decoding, model training และ inference
+- ขั้นถัดไป: สร้าง Review Queue สำหรับตรวจ provenance/label และเชื่อม media ที่ผ่าน validation จาก observation เข้า DatasetItem โดยยังต้อง review ก่อนนำไป train
+
+### Image phase 1 Review Queue UI — 2026-07-23
+
+- เพิ่ม route `/dataset-review` สำหรับ workflow ตรวจภาพก่อนนำไปใช้กับ image processing
+- เพิ่ม `src/components/dataset/review-queue.tsx`:
+  - กรอง `All`, `Pending review`, `Approved`, `Rejected`
+  - แสดงภาพ, Lot ID, Observation ID, provenance, source URL และ license
+  - Approve/Reject provenance โดยบังคับ review note เมื่อ approve
+  - ฟอร์มยืนยัน scientific name, cultivar, confidence และเหตุผลของ label
+  - ปุ่มบันทึก label ถูกล็อกจนกว่า provenance จะ Approved
+  - แสดงสถานะว่า item ยังไม่รวม training หรือพร้อมเป็น training candidate
+- เพิ่มเมนู `Image review` ใน desktop sidebar และ mobile navigation
+- หน้าใช้ `getDatasetRepository()` เดิม จึงใช้ Firestore เมื่อ login และ memory repository ใน demo mode
+- เพิ่ม static rendering test สำหรับ review queue และตรวจว่ารายการ Pending ยังบันทึก label ไม่ได้
+- แก้ signed-upload integration test timeout จาก 5 เป็น 15 วินาที เพราะ Auth/Firestore emulator ใช้เวลาสร้าง user เกินค่าเดิมใน sandbox; ไม่ได้เปลี่ยนพฤติกรรม production route
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 43 files / 96 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- ขอบเขตที่ยังไม่ทำ: automatic ingestion จาก Cloudinary media, image decoding, model training/inference และการสร้าง DatasetItem จากหน้า Observation โดยตรง
+- ขั้นถัดไป: เพิ่ม action สร้าง DatasetItem จาก media ที่เลือกใน Observation แล้วเปิดเข้า Review Queue โดยตรวจ lot/observation ฝั่ง server ก่อนสร้างรายการ
+
+### Image phase 1 Observation media intake — 2026-07-23
+
+- เพิ่ม `POST /api/dataset/intake` สำหรับส่ง media จาก Observation เข้า Dataset Review Queue
+- route รับเฉพาะ `lotId`, `observationId`, `mediaId` และตรวจ Firebase token ก่อนทำงาน
+- ฝั่ง server ดึง Lot, Observation และ Media จาก path ของ user เอง ไม่รับ `assetUrl` จาก client
+- ปฏิเสธกรณี target ไม่พบ, owner/lot/observation ไม่ตรง หรือ media ถูก soft-delete
+- สร้าง DatasetItem เป็น `Pending review` และ `includedInTraining: false`
+- ทำให้ idempotent: ส่ง media เดิมซ้ำจะคืนรายการเดิม ไม่สร้าง DatasetItem ซ้ำ
+- เพิ่มปุ่ม `ส่งเข้า Image review` ใน media ของ Observation พร้อมสถานะกำลังส่ง, ส่งแล้ว และ error ที่อ่านได้
+- เพิ่ม tests:
+  - unauthenticated/malformed request
+  - integration สร้าง item จาก media จริงใน emulator
+  - duplicate intake ไม่สร้างซ้ำ
+  - media ที่อ้างจาก Observation อื่นถูกปฏิเสธ
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 45 files / 100 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- ขอบเขตที่ยังไม่ทำ: automatic image decoding, species classifier, model training/inference และการดึงข้อมูลภาพจาก Google โดยอัตโนมัติ
+- ขั้นถัดไป: เพิ่มรายการ DatasetItem ที่ถูกส่งแล้วใน Observation และ audit event ของ intake เพื่อให้ย้อนดูได้จาก Lot timeline
+
+### Image phase 1 intake audit checkpoint — 2026-07-23
+
+- เพิ่ม action `dataset_queued` ใน `AuditEvent`
+- `/api/dataset/intake` เขียน DatasetItem และ audit event ใน Firestore batch เดียวกัน จึงไม่เกิดรายการ dataset โดยไม่มีประวัติ intake หาก batch สำเร็จ
+- audit event ถูกเก็บใน `users/{uid}/lots/{lotId}/auditEvents` และมีข้อมูลสำคัญเท่านั้น:
+  - `entityType: media`
+  - `entityId: mediaId`
+  - `action: dataset_queued`
+  - `after.datasetItemId`
+  - `after.reviewStatus: Pending review`
+- ปรับ `AuditHistory` ให้แสดงข้อความภาษาไทย `ส่งเข้า Image review` และเปิด before/after ของ event นี้ได้
+- เพิ่ม integration assertion ว่า intake สำเร็จแล้วมี audit event ใน emulator จริง
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 45 files / 100 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- ขั้นถัดไป: แสดงสถานะว่า media รายการใดถูกส่งเข้า review แล้วใน Observation และให้ Lot timeline link ไปยัง Dataset Review item ได้
+
+### Image phase 1 dataset export — 2026-07-23
+
+- เพิ่ม `src/lib/domain/dataset-exporter.ts` เพื่อสร้าง manifest schema `image-dataset-v1`
+- exporter รวมเฉพาะรายการที่ผ่านครบทุกเงื่อนไข:
+  - `reviewStatus === Approved`
+  - `provenance.status === Approved`
+  - มี human label
+  - confidence ไม่ใช่ `Unknown`
+  - `includedInTraining === true`
+- manifest เก็บ asset URL, Lot/Observation, scientific name, cultivar, confidence, label source และ provenance metadata โดยไม่เก็บ token หรือ secret
+- เพิ่ม `GET /api/dataset/export` ซึ่งตรวจ Firebase token และอ่านเฉพาะ collection ของ owner ที่ login อยู่
+- เพิ่มปุ่ม `Export manifest` ในหน้า Image Review สำหรับ authenticated user และดาวน์โหลด JSON ใน browser
+- เพิ่ม tests สำหรับ filtering manifest และ unauthenticated export request
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 47 files / 102 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- สถานะ: ระบบพร้อมสร้าง manifest จากข้อมูลที่มนุษย์ review แล้ว แต่ยังไม่มี image decoder, train/validation split, model training หรือ inference
+- ขั้นถัดไป: ทำ dataset version/export history และเตรียม pipeline preprocessing ก่อนเริ่มเลือกโมเดล classifier
+
+### Image phase 1 dataset versioning checkpoint — 2026-07-23
+
+- เพิ่ม `train`, `validation`, `test` split ใน manifest
+- ใช้ `lot-hash-v1` deterministic strategy โดยจัดภาพจาก Lot เดียวกันให้อยู่ split เดียวกัน เพื่อลด data leakage ระหว่างภาพของการทดลองเดียวกัน
+- เพิ่ม `splitCounts` ใน manifest
+- เปลี่ยน Export manifest จาก GET เป็น POST เพื่อบันทึก export history ใน `users/{uid}/datasetExports/{exportId}` ก่อนคืนไฟล์ให้ผู้ใช้
+- Export record เก็บ schema version, generatedAt, item IDs, split counts และ strategy โดยไม่คัดลอกข้อมูลลับหรือ token
+- เพิ่ม integration test ตรวจว่า POST export สร้าง history record ใน Firestore emulator จริง
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 48 files / 104 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- สถานะ: มี dataset manifest ที่ version ได้และแยกข้อมูลแบบป้องกัน leakage ระดับ Lot แล้ว แต่ยังไม่ได้ดาวน์โหลด/ถอดรหัสรูปเพื่อ preprocessing และยังไม่มี model training/inference
+- ขั้นถัดไป: สร้าง preprocessing contract สำหรับ image dimensions, color normalization, orientation และ validation ก่อนเชื่อม image decoder จริง
+
+### Image phase 1 preprocessing contract — 2026-07-23
+
+- เพิ่ม `src/lib/domain/dataset-preprocessing.ts`
+- ล็อก contract `image-preprocess-v1`:
+  - target `224 × 224`
+  - resize แบบ `contain`
+  - color space `sRGB`
+  - หมุนตาม EXIF ด้วย `exif-rotate`
+  - normalize ค่า pixel เป็น `0..1`
+  - รองรับ jpg/jpeg/png/webp ไม่เกิน 10 MB
+- DatasetItem จาก media intake เก็บ width, height, format และ bytes จาก Firestore media metadata
+- Exporter จะไม่รวมรายการที่ผ่าน review แต่ metadata ภาพไม่พร้อมสำหรับ preprocessing
+- Manifest มีส่วน `preprocessing` เพื่อให้ขั้นตอนถัดไปใช้ contract เดียวกัน
+- เพิ่ม unit tests สำหรับ metadata ที่ถูกต้องและ metadata ที่ไม่ปลอดภัย
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 49 files / 106 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- สถานะ: preprocessing contract พร้อม แต่ยังไม่มีการดาวน์โหลด/ถอดรหัส/resize ภาพจริง และยังไม่มี model training/inference
+- ขั้นถัดไป: เพิ่ม image decoder แบบ server-side หรือ worker ที่ทำตาม contract และสร้าง output artifact ที่ตรวจสอบซ้ำได้
+
+### Image phase 1 server-side image decoder — 2026-07-23
+
+- เพิ่ม direct dependency `sharp` สำหรับ server-side image decoding และ transformation
+- เพิ่ม `src/lib/image/image-preprocessor.ts`:
+  - ตรวจ metadata ก่อน download
+  - อนุญาตเฉพาะ HTTPS Cloudinary URL เพื่อหลีกเลี่ยง arbitrary host/SSRF ใน worker นี้
+  - decode ภาพด้วย Sharp และอ่าน EXIF orientation
+  - resize เป็น 224×224 แบบ contain โดยเติมพื้นหลังสีขาว
+  - encode output เป็น PNG
+  - คืน output buffer, dimensions, bytes และ SHA-256 artifact hash
+- เพิ่ม tests ที่ใช้ภาพ generated ใน memory ไม่เรียก external network:
+  - decode/resize สำเร็จ
+  - block host ที่ไม่อนุญาตก่อน fetch
+  - fetch และ preprocess Cloudinary URL แบบ mocked
+- ยังไม่ได้สร้าง API ที่เก็บ output artifact หรือ batch worker บน Cloudinary/Cloud Tasks; module นี้เป็น deterministic preprocessing building block ก่อน
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 50 files / 109 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- สถานะ: image decoding/preprocessing ทำงานใน library แล้ว แต่ยังไม่มี classifier, training pipeline หรือ inference endpoint
+- ขั้นถัดไป: สร้าง preprocessing job API ที่รับ export version, ประมวลผลทีละ item, เก็บ artifact metadata/status และ retry ได้โดยไม่ประมวลผลซ้ำ
+
+### Image phase 1 preprocessing job API — 2026-07-23
+
+- เพิ่ม `src/lib/image/preprocessing-job.ts` เป็น job runner ที่ประมวลผลทีละ DatasetItem
+- job status: `queued`, `processing`, `completed`, `failed`
+- เก็บ artifact metadata ต่อ item: status, PNG dimensions, bytes, SHA-256 และ error แบบไม่เปิดเผยข้อมูลลับ
+- item ที่ decode ไม่ผ่านจะถูกบันทึกเป็น failed แต่ไม่หยุด item อื่นใน batch
+- เพิ่ม `POST /api/dataset/preprocess`:
+  - รับ export ID ที่ authenticated user เป็นเจ้าของ
+  - โหลด item IDs จาก export record ฝั่ง server
+  - จำกัดไม่เกิน 20 items ต่อ job เพื่อควบคุม serverless runtime
+  - บันทึก job ใน `users/{uid}/preprocessingJobs`
+  - รองรับ `retryOf` เพื่อเชื่อม retry กับ job เดิม
+  - คืน HTTP 201 เมื่อสำเร็จทั้งหมด และ 207 เมื่อมีบาง item failed
+- เพิ่ม tests สำหรับ mixed success/failure และ authentication route guard
+- ยังไม่เก็บ binary output ลง Cloudinary/Storage; ตอนนี้เก็บเฉพาะ metadata/hash เพื่อยืนยัน preprocessing determinism
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 52 files / 111 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- สถานะ: pipeline สามารถ decode/preprocess และบันทึก job status ได้ แต่ยังไม่มี artifact storage สำหรับนำ PNG ไปฝึกโมเดล
+- ขั้นถัดไป: เพิ่ม storage ของ preprocessed artifact และหน้าแสดง job progress/retry ใน Image Review
+
+### Image phase 1 Cloudinary preprocessed artifact storage — 2026-07-23
+
+- เพิ่ม `src/lib/image/cloudinary-preprocessed-uploader.ts` สำหรับอัปโหลด PNG ที่ preprocess แล้วไป Cloudinary ด้วย signed upload ฝั่ง server
+- ใช้ Cloudinary config/signature เดิมของระบบ และไม่ส่ง `CLOUDINARY_API_SECRET` ไป client
+- ใช้ public ID แบบ deterministic `preprocessed-{datasetItemId}` เพื่อให้ retry ของ item เดิมไม่สร้างชื่อ artifact แบบสุ่มซ้ำซ้อน
+- ขยาย artifact ใน preprocessing job ให้เก็บ `publicId` และ `secureUrl` เพิ่มจาก status, dimensions, bytes, SHA-256 และ error
+- ปรับ `POST /api/dataset/preprocess` ให้ preprocess แล้วอัปโหลด artifact ต่อ item ก่อนบันทึกผล job
+- เพิ่ม unit test สำหรับ signed Cloudinary upload โดย mock fetch และตรวจ endpoint, form data และ URL ที่คืนกลับ
+- ถ้า upload รายการใดล้มเหลว รายการนั้นถูกบันทึกเป็น `failed` โดยไม่ทำให้รายการอื่นใน batch หยุดทั้งหมด
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 53 files / 112 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- สถานะ: pipeline สามารถสร้าง PNG artifact และเก็บ URL/hash สำหรับนำไปตรวจหรือเตรียม dataset ต่อได้ แต่ยังไม่มี classifier, training pipeline, inference endpoint หรือหน้า job progress/retry
+- ขั้นถัดไป: เพิ่มหน้าแสดง preprocessing job progress/retry ใน Dataset Review หรือเริ่มออกแบบ model-ready dataset export จาก artifact ที่ประมวลผลแล้ว
+
+### Image phase 1 preprocessing job progress/retry UI — 2026-07-23
+
+- เพิ่ม `GET /api/dataset/preprocess?limit=20` สำหรับโหลด preprocessing jobs ของผู้ใช้ที่ authenticated เท่านั้น
+- เพิ่ม `src/components/dataset/preprocessing-jobs.tsx` แสดงสถานะ job, progress count, progress bar, จำนวน artifact ที่พร้อม/ล้มเหลว และลิงก์ Cloudinary เมื่อมี `secureUrl`
+- เพิ่มปุ่ม retry สำหรับ job ที่มีรายการล้มเหลว โดยสร้าง export ใหม่และเชื่อม `retryOf` กับ job เดิมเพื่อรักษา audit trail
+- เชื่อมหน้า `Image Review` ให้สร้าง export และเริ่ม preprocessing ได้จากปุ่มเดียว พร้อมโหลดสถานะ jobs ล่าสุด
+- ปรับการดาวน์โหลด manifest ให้ใช้ JSON response จาก export API และยังคงสร้างไฟล์ดาวน์โหลดให้ผู้ใช้
+- เพิ่ม responsive layout สำหรับมือถือ และตรวจไม่ให้เกิด horizontal overflow
+- เพิ่ม route test สำหรับ authentication guard ของ GET jobs
+- Sandbox verification:
+  - demo mode เปิดหน้า Image Review สำเร็จ
+  - desktop 1440px: ไม่มี horizontal overflow
+  - mobile 390px: ไม่มี horizontal overflow
+  - screenshot ตรวจแล้ว empty state และ navigation แสดงผลปกติ
+- สถานะ: ผู้ใช้ authenticated สามารถดู job progress และ retry จาก Image Review ได้ แต่ยังไม่มี background queue จริง; API ปัจจุบันประมวลผลใน request เดียวและจำกัด 20 รายการต่อ job
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 53 files / 113 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- ขั้นถัดไป: เพิ่ม model-ready dataset export ที่ใช้ preprocessed artifact โดยตรง หรือย้าย preprocessing ไป background queue เพื่อไม่ผูกกับ serverless request timeout
+
+### Image phase 1 model-ready dataset export — 2026-07-23
+
+- เพิ่ม `src/lib/domain/model-ready-exporter.ts` สำหรับสร้าง manifest `image-dataset-model-ready-v1`
+- Model-ready manifest จะรวมเฉพาะรายการที่ผ่าน review/label และมี artifact ที่ preprocess สำเร็จครบ พร้อม `artifactUrl`, `artifactPublicId`, `artifactSha256` และ `sourceAssetUrl`
+- ถ้า job ยังไม่ `completed`, artifact ขาด, หรือ item ใน job ไม่ตรงกับรายการ dataset ระบบจะหยุด export ด้วยสถานะ conflict แทนการสร้าง manifest ไม่สมบูรณ์
+- เพิ่ม `POST /api/dataset/model-export` รับ `jobId`, ตรวจ owner scope, สร้างประวัติที่ `users/{uid}/modelExports/{exportId}` และคืน JSON สำหรับดาวน์โหลด
+- เพิ่มปุ่ม `ดาวน์โหลด model-ready manifest` ใน preprocessing job ที่เสร็จสมบูรณ์
+- เพิ่ม unit tests สำหรับ completed artifact และ incomplete job รวมถึง auth guard ของ API
+- Sandbox หลังแก้ยังตรวจได้ว่า Image Review demo mode render ปกติและไม่มี horizontal overflow ที่ 390px/1440px
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 55 files / 116 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- สถานะ: มี manifest ที่ชี้ไปยังภาพ preprocess แล้วและพร้อมส่งต่อเข้า training pipeline แต่ยังไม่มีการ train model หรือ inference endpoint
+- ขั้นถัดไป: เพิ่ม background queue/worker สำหรับ batch ใหญ่ หรือเริ่มสร้าง training dataset connector และ validation report
+
+### Image phase 1 training readiness report — 2026-07-23
+
+- เพิ่ม `src/lib/domain/training-readiness.ts` สำหรับตรวจคุณภาพ model-ready manifest ก่อนส่งเข้า training
+- รายงานตรวจ:
+  - จำนวนภาพรวมและ split counts
+  - จำนวนภาพต่อ class จาก scientific name + cultivar
+  - duplicate artifact SHA-256 ระหว่างรายการ
+  - class ที่ไม่มีตัวอย่างใน train split
+  - train/validation/test split ที่ว่าง
+- เพิ่ม `POST /api/dataset/training-report` ตรวจ owner/job/artifact ก่อนสร้างรายงาน
+- บันทึกประวัติใน `users/{uid}/trainingReports/{reportId}` และดาวน์โหลด JSON จากหน้า Image Review
+- ปุ่มใหม่ใน job ที่ completed: `ตรวจความพร้อมฝึกโมเดล`
+- รายงานที่มี warning จะไม่ถูกแสดงเป็น ready และระบบจะแจ้งจำนวนจุดที่ต้องตรวจ
+- เพิ่ม unit tests สำหรับ class count, split warning และ authentication guard
+- Sandbox verification:
+  - Image Review demo mode render สำเร็จ
+  - desktop และ mobile ไม่มี horizontal overflow
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 57 files / 118 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- สถานะ: ระบบตรวจความพร้อมของ dataset ก่อนฝึกได้แล้ว แต่ยังไม่มี model training, inference หรือ background queue
+- ขั้นถัดไป: เพิ่ม background queue/worker สำหรับ preprocessing batch ใหญ่ หรือเชื่อม external training pipeline หลัง dataset พร้อม
+
+### Knowledge library foundation — 2026-07-23
+
+- ล็อก product direction ใหม่: Philodendron Lab จะเป็นห้องสมุดความรู้พืช + taxonomy catalog + evidence library + tissue-culture playbook ไม่ใช่เฉพาะเครื่องมือบันทึกการทดลอง
+- เริ่ม schema ให้รองรับพืชทุกวงศ์ แต่ seed ข้อมูลตั้งต้นเฉพาะ Araceae/Philodendron
+- เพิ่ม `src/lib/domain/knowledge-library.ts`:
+  - `TaxonRecord` แยก family, genus, species, cultivar, hybrid และ trade-name
+  - `KnowledgeClaim` แยกหมวด taxonomy, biology, ecology, toxicity, propagation, tissue-culture และ identification
+  - `TissueCulturePlaybook` ผูกชนิดพืชกับวิธีทดลองและ protocol version
+  - `KnowledgeLibraryRecord` เป็น aggregate สำหรับหน้า knowledge detail ในอนาคต
+- seed catalog ปัจจุบันมี Araceae, Philodendron, P. erubescens, Pink Princess, P. bipennifolium และ Violin variegated โดยยังติด `Pending review` และยังไม่เติม claim ทางชีววิทยาโดยไม่มี source
+- เพิ่มตัวค้น taxon จาก scientific name, display name, synonym และ common name
+- ล็อก workflow ระยะยาว:
+  - image processing เสนอ candidate
+  - ผู้ใช้ยืนยันชนิด
+  - ระบบค้น source จาก Crossref/OpenAlex/PubMed และ URL/DOI ที่ผู้ใช้เพิ่ม
+  - สกัด claims พร้อม reference/evidence state
+  - สร้าง SOP draft และให้ผู้ใช้ review/approve
+  - ต้นที่ 2/3 ชนิดเดียวกันใช้ SOP version เดิม แต่สร้าง Plant/Lot และ snapshot แยก
+- ยังไม่มี automated source discovery, knowledge UI หรือ image classifier จริงใน checkpoint นี้
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 58 files / 120 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- ขั้นถัดไป: สร้าง Firestore repository และหน้า Knowledge Library สำหรับค้น taxonomy ก่อนเชื่อม source ingestion
+
+### Knowledge Library MVP — 2026-07-23
+
+- เพิ่ม `KnowledgeLibraryRepository` พร้อม memory repository และ Firestore repository แบบ owner-scoped
+- Firestore path สำหรับ catalog คือ `users/{uid}/knowledgeTaxa/{taxonId}` และถ้ายังไม่มีข้อมูลจะใช้ starter taxonomy ที่ติด `Pending review` เป็น fallback แบบอ่านอย่างเดียว
+- เพิ่มหน้า `/knowledge` และ navigation item `Knowledge`
+- หน้า Knowledge Library รองรับ:
+  - ค้น scientific name, display name, synonym และ common/trade name
+  - แสดง hierarchy parent, rank, source count และ evidence state
+  - แสดง biology claims และ tissue-culture playbooks เมื่อมีข้อมูลที่ review แล้ว
+  - แสดง empty state และข้อความชัดเจนเมื่อยังไม่มี source/claim/playbook
+- เพิ่ม responsive layout สำหรับ desktop/mobile และไม่แสดงข้อมูลชีววิทยาที่ไม่มี source เป็นข้อเท็จจริง
+- เพิ่ม tests สำหรับ repository owner scope และ Knowledge Library rendering
+- Sandbox verification:
+  - `/knowledge` demo mode โหลด taxonomy ได้และพบ Pink Princess
+  - desktop: viewport 1280px, ไม่มี horizontal overflow
+  - mobile: viewport 390px, ไม่มี horizontal overflow
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 60 files / 122 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- สถานะ: มี knowledge catalog/search foundation แล้ว แต่ยังไม่มี source ingestion, claim review UI, image candidate matching หรือการสร้าง SOP จาก claims
+- ขั้นถัดไป: เพิ่ม source registry และ evidence claim ingestion/review ก่อนเชื่อม automated SOP drafting
+
+### Knowledge source registry and claim review — 2026-07-23
+
+- เพิ่ม `KnowledgeSource` และ `SourceClaim` domain model แยก source metadata ออกจาก claim ที่สกัด/เขียนจาก source
+- Source รองรับ journal, book, database, website และ user note พร้อม URL, DOI, authors, publication date, license และ notes
+- Claim รองรับ taxon, category, statement, evidence state และ review state
+- เพิ่ม memory/Firestore repository แบบ owner-scoped:
+  - `users/{uid}/knowledgeSources/{sourceId}`
+  - `users/{uid}/sourceClaims/{claimId}`
+- เพิ่ม Source Registry UI ใน `/knowledge` สำหรับลงทะเบียน DOI/URL
+- เพิ่ม Claim Review UI สำหรับสร้าง claim แบบ `Pending review` และ approve/reject พร้อม reviewer note
+- ระบบไม่เลื่อน claim เป็น `Verified` โดยอัตโนมัติ และยังไม่มี web crawler/AI extraction ใน checkpoint นี้
+- Sandbox verification:
+  - Source Registry แสดงใน demo mode
+  - Pink Princess แสดงใน taxonomy selector
+  - desktop 1280px และ mobile 390px ไม่มี horizontal overflow
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 61 files / 123 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- สถานะ: ผู้ใช้สามารถเก็บ source และ review claim ได้แล้ว แต่ยังต้องเพิ่ม source discovery จาก Crossref/OpenAlex/PubMed และตัวสร้าง SOP draft
+- ขั้นถัดไป: เพิ่ม source ingestion adapter และ import metadata จาก DOI/URL ก่อนสร้าง claim draft
+
+### Source discovery adapter — 2026-07-23
+
+- เพิ่ม identifier utilities สำหรับ normalize DOI และอ่าน PubMed/OpenAlex work ID จาก URL
+- เพิ่ม `POST /api/knowledge/source-discovery` แบบ authenticated server-side lookup
+- รองรับ provider ในรอบนี้:
+  - Crossref จาก DOI หรือ doi.org URL
+  - PubMed จาก PubMed URL
+  - OpenAlex จาก OpenAlex work URL
+- API คืนเฉพาะ metadata draft: provider, title, URL, DOI, authors, publication date และ source type
+- จำกัด input ให้เป็น DOI/PubMed/OpenAlex identifier เพื่อป้องกัน arbitrary URL fetch/SSRF
+- เพิ่มปุ่ม `ดึง metadata` ใน Source Registry เพื่อเติมฟอร์มให้ผู้ใช้ตรวจ ก่อนกดบันทึก source
+- metadata ที่ดึงได้ยังไม่สร้าง claim และยังไม่เป็น Verified อัตโนมัติ
+- เพิ่ม tests สำหรับ identifier parsing และ authentication guard
+- Sandbox verification:
+  - ปุ่ม Source discovery แสดงใน Knowledge Library
+  - desktop 1280px และ mobile 390px ไม่มี horizontal overflow
+- Verification หลังแก้:
+  - `npm run firebase:verify`: 63 files / 126 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- สถานะ: ระบบนำ DOI/URL ที่รองรับมาเติม metadata ได้แล้ว แต่ยังไม่มี full-text extraction, claim draft อัตโนมัติ หรือ source deduplication
+- ขั้นถัดไป: เพิ่ม source deduplication และ claim draft workflow จาก metadata/full text ที่ผู้ใช้อนุญาต
+
+### Source deduplication and claim draft labeling — 2026-07-23
+
+- เพิ่ม `canonicalSourceUrl` เพื่อลบ fragment, tracking parameters กลุ่ม `utm_*`, ปรับตัวพิมพ์ และตัด slash ท้าย URL ก่อนเปรียบเทียบ
+- เพิ่ม `isDuplicateSource` ให้ตรวจ DOI ที่ normalize แล้วก่อนบันทึก และใช้ canonical URL เป็น fallback
+- Memory repository และ Firestore repository ปฏิเสธ source ซ้ำด้วย error `Source already registered` เพื่อป้องกัน registry มีรายการเดิมหลายครั้ง
+- เพิ่ม regression tests สำหรับ URL ซ้ำ, DOI ซ้ำ และ URL ที่มี tracking parameter
+- ปรับข้อความหลังบันทึก claim ให้ระบุว่าเป็น `claim draft` และ `Pending review`; ระบบยังไม่มี automatic full-text/AI extraction และไม่เลื่อน evidence เป็น Verified เอง
+- Verification:
+  - `npm run firebase:verify`: 64 files / 129 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน (มีเพียงคำเตือน line ending จาก Git บน Windows)
+- Sandbox check: เปิด local `/knowledge` ได้ แต่ session ใน browser sandbox ค้างที่ Firebase session loading เนื่องจาก local environment ไม่มี Firebase configuration จึงตรวจ visual state ผ่าน browser runtime ไม่จบในรอบนี้; ได้ตรวจ route/build และ component/repository tests แทน ไม่อ้างว่า sandbox flow สำเร็จ
+- สถานะ: source registry กัน DOI/URL ซ้ำแล้ว และ claim ถูกระบุเป็น draft อย่างโปร่งใส
+- ขั้นถัดไป: เพิ่ม source list/duplicate warning ที่เห็นก่อน submit และออกแบบ full-text/claim extraction แบบ user-approved ก่อนเชื่อม AI
+
+### Source list and duplicate warning UI — 2026-07-23
+
+- เพิ่มรายการ `Registered Sources` ในหน้า `/knowledge` แสดงชื่อ source, ประเภท, DOI และลิงก์เปิดแหล่งข้อมูล
+- เพิ่ม client-side duplicate warning ทันทีเมื่อ URL/DOI ที่กรอกซ้ำกับ source เดิม
+- ปุ่มบันทึก source ถูก disable เมื่อพบรายการซ้ำ และยังคงมี repository-side guard เป็นชั้นป้องกันที่สอง
+- ปรับ Source Registry และ Claim form ให้ใช้คำว่า `claim draft` ชัดเจน
+- เพิ่ม responsive CSS สำหรับ source rows และ long Thai/source titles
+- เพิ่ม component regression test ตรวจ source list และ claim draft wording
+- Verification:
+  - `npm run firebase:verify`: 65 files / 130 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+- Sandbox check: local browser route ยังติดสถานะ Firebase session loading เพราะไม่มี Firebase configuration ใน environment ของ sandbox; จึงไม่สามารถยืนยัน visual state ผ่าน authenticated/demo UI ได้ในรอบนี้ และบันทึกไว้เป็น known limitation
+- สถานะ: source registry แสดงรายการเดิมและแจ้งเตือนซ้ำก่อน submit แล้ว
+- ขั้นถัดไป: เพิ่ม source detail/metadata edit และเริ่ม workflow สร้าง claim draft จาก full text ที่ผู้ใช้เลือกและอนุญาต
+
+### Authorized evidence excerpt for claim drafts — 2026-07-23
+
+- เพิ่ม `evidenceExcerpt` ใน `SourceClaim` แบบ optional เพื่อรองรับข้อมูลเก่าที่อาจยังไม่มี excerpt
+- Claim ใหม่ต้องมีข้อความจาก source ที่ไม่ว่าง มิฉะนั้น repository จะปฏิเสธด้วย `Evidence excerpt required`
+- หน้า Knowledge เพิ่มช่องวาง excerpt/full-text summary และ checkbox ยืนยันว่าผู้ใช้มีสิทธิ์ใช้ข้อความดังกล่าว
+- ระบบยังไม่ทำ automatic full-text extraction และไม่ส่งข้อมูลไป AI; ผู้ใช้เป็นผู้เลือกและเขียน claim draft เอง
+- Claim ใหม่ยังคงเริ่มที่ `Pending review` และไม่ถูกนำไปแสดงเป็น Verified ก่อน reviewer approve
+- เพิ่ม regression test สำหรับการปฏิเสธ claim ที่ไม่มี evidence excerpt
+- Verification:
+  - `npm run firebase:verify`: 65 files / 131 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+- Sandbox check: local browser ยังติด Firebase session loading เมื่อไม่มี Firebase configuration จึงไม่สามารถยืนยันหน้า authenticated/demo ด้วย browser ได้ในรอบนี้; route compile และ tests ผ่าน และข้อจำกัดถูกบันทึกไว้
+- สถานะ: claim draft มีหลักฐานประกอบและ consent gate แล้ว
+- ขั้นถัดไป: เพิ่ม source detail/edit และจัดเก็บตำแหน่งอ้างอิง เช่น page/section/table ของ excerpt
+
+### Evidence location for claim review — 2026-07-23
+
+- เพิ่ม `evidenceLocation` ใน `SourceClaim` แบบ optional เพื่อรองรับข้อมูลเก่า
+- Claim ใหม่ต้องระบุตำแหน่งหลักฐาน เช่น `p. 4, Table 2`, `Results ย่อหน้า 3` หรือ `URL#section`
+- เพิ่มช่อง `ตำแหน่งหลักฐาน` ใน Claim draft form
+- แสดงตำแหน่งหลักฐานในรายการ Claims รอตรวจ เพื่อช่วย reviewer ตรวจย้อนกลับ
+- Memory และ Firestore repository ตรวจทั้ง excerpt และ evidence location ก่อนบันทึก
+- เพิ่ม regression coverage สำหรับ claim ที่ไม่มี excerpt และ claim ที่ไม่มี location
+- Verification:
+  - `npm run firebase:verify`: 65 files / 131 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+- Sandbox check: local browser ยังค้างที่ Firebase session loading เนื่องจากไม่มี Firebase configuration; ได้บันทึก known limitation ไว้ และไม่อ้างว่า authenticated UI ผ่าน sandbox
+- สถานะ: claim draft มีข้อความหลักฐาน, ตำแหน่งอ้างอิง และ consent gate ครบ
+- ขั้นถัดไป: เพิ่ม source detail/edit และลิงก์ review จาก claim กลับไปยัง source metadata
+
+### Source detail, metadata edit และ linked claims — 2026-07-23
+
+- เพิ่ม route `/knowledge/sources/[sourceId]` สำหรับเปิดรายละเอียด source รายตัว
+- เพิ่มหน้าแก้ไข metadata ได้แก่ title, URL, DOI, source type, authors, published date, license และ notes
+- เพิ่ม `updateSource` ใน KnowledgeSourceRepository ทั้ง Memory และ Firestore
+- ป้องกัน source identity เปลี่ยนระหว่างแก้ไข และตรวจ DOI/URL ซ้ำโดยไม่นับ source ตัวเอง
+- เพิ่ม test ยืนยันว่า metadata update คง `id` และ `createdAt` เดิม
+- จาก source registry เพิ่มลิงก์ `ดูรายละเอียด` และลิงก์เปิดต้นฉบับแยกกัน
+- หน้า detail แสดง claims ที่อ้าง source นั้น พร้อม review state, evidence excerpt, evidence location และ evidence state
+- เพิ่มลิงก์จาก claim กลับไปยัง claim review ใน Knowledge Library
+- เพิ่ม missing/error/loading state สำหรับ source detail และรักษา owner repository boundary เดิม
+- Verification:
+  - `npm run firebase:verify`: 65 files / 132 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน และมี route `/knowledge/sources/[sourceId]`
+  - `git diff --check`: ผ่าน
+- Sandbox check: local browser ยังติด Firebase session loading เนื่องจากไม่มี Firebase configuration; ไม่อ้างว่า authenticated/demo UI ผ่าน sandbox และข้อจำกัดนี้ยังคงเป็น known limitation
+- สถานะ: source metadata แก้ไขได้โดยไม่ทำลาย identity และ reviewer เห็นหลักฐานที่เชื่อมกับ source เดียวกันได้
+- ขั้นถัดไป: ทำ claim review deep-link ให้เลือก claim จาก query string ได้จริง และเพิ่ม audit event สำหรับการแก้ source metadata
+
+### Claim deep-link และ source metadata audit — 2026-07-23
+
+- เพิ่ม deep-link จาก source detail ไปยัง `/knowledge?claim={claimId}`
+- Knowledge Library อ่าน claim id หลัง mount และส่งเข้า Source Registry
+- claim ที่ตรงกับ deep-link จะมี anchor id, highlight และ focus style เพื่อให้ reviewer หาได้ทันที
+- เพิ่ม `KnowledgeSourceAuditEvent` สำหรับ `created` และ `updated`
+- Memory repository เก็บ audit source ตาม source id และ Firestore เก็บใน `knowledgeSources/{sourceId}/auditEvents`
+- `createSource` และ `updateSource` บันทึก before/after snapshot ตามเหตุการณ์
+- Source detail แสดงประวัติ metadata พร้อมเวลาและ before/after แบบ expandable
+- เพิ่ม regression test ว่า source update คง identity และสร้าง audit sequence `created`, `updated`
+- แก้ Next.js build issue จาก `useSearchParams` โดยอ่าน query หลัง mount เพื่อคง static route behavior
+- Verification:
+  - `npm run firebase:verify`: 65 files / 132 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน และมี route `/knowledge/sources/[sourceId]`
+  - `git diff --check`: ผ่าน
+- Sandbox check: Firebase emulator ผ่านครบ; authenticated browser sandbox ยังติด session loading เมื่อไม่มี local Firebase configuration จึงยังไม่อ้างว่า UI cloud session ผ่าน
+- สถานะ: reviewer เปิด claim ที่เจาะจงจาก source detail ได้ และแก้ metadata ย้อนตรวจ audit ได้
+- ขั้นถัดไป: เพิ่ม source/claim audit เข้า unified research timeline และเริ่ม source-to-taxon claim summary ใน Knowledge Library
+
+### Unified research activity และ taxon claim summary — 2026-07-23
+
+- เพิ่ม `KnowledgeResearchTimeline` ในหน้า Knowledge Library
+- timeline รวม source registration, source metadata update, claim draft creation และ claim review ใน feed เดียว
+- จำกัด feed ล่าสุด 12 เหตุการณ์และเรียงจากใหม่ไปเก่า พร้อม state label และเวลา
+- Knowledge Library รับ source claims และ sources เพิ่มเติมจาก repository เดิม
+- หน้า taxon แสดงจำนวน claims รวมทั้ง claims ที่อยู่ใน library และ claim drafts/reviews ที่เชื่อมกับ taxon
+- แสดงชื่อ source และ review state ของ source claim ใต้ claim ที่เกี่ยวข้อง
+- แก้จำนวน sources ให้รวม source ที่ถูกอ้างผ่าน source claim เมื่อ taxon record ยังไม่มี sourceIds ครบ
+- ไม่ยกระดับ claim draft เป็น Verified อัตโนมัติ; evidence/review state เดิมยังแสดงตามข้อมูลจริง
+- Verification:
+  - `npm run firebase:verify`: 65 files / 132 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- Sandbox check: Firebase emulator ผ่านครบ; authenticated browser sandbox ยังมี known limitation เรื่อง Firebase session loading เมื่อไม่มี local configuration
+- สถานะ: ผู้ใช้ค้น taxon แล้วเห็น claim summary และ activity ของ source/claim ในหน้าเดียว
+- ขั้นถัดไป: เพิ่มการกรอง timeline ตาม taxon/source และทำ claim review audit แบบ persisted ไม่ใช่เพียง derived activity
+
+### Timeline filters และ persisted claim review audit — 2026-07-24
+
+- เพิ่มตัวกรอง activity timeline ตาม `Source` และ `Taxon`
+- Timeline ใช้ claim audit ที่โหลดจาก repository เพื่อแสดงเหตุการณ์สร้าง claim และ review claim แบบ persisted
+- เพิ่ม `SourceClaimAuditEvent` พร้อม action `created` และ `reviewed`
+- Memory repository เก็บ claim audit ต่อ claim และ Firestore เก็บใน `sourceClaims/{claimId}/auditEvents`
+- การสร้างและ review claim บันทึก before/after snapshot พร้อม sourceId และ taxonId
+- หน้า Knowledge โหลด audit ของ claims ทั้งหมดและส่งเข้า timeline
+- เพิ่ม test ยืนยัน claim audit sequence `created`, `reviewed`
+- Legacy claims ที่ยังไม่มี audit collection ยังคงอ่านได้ และจะแสดงเฉพาะ activity ที่มีจริง
+- Verification:
+  - `npm run firebase:verify`: 65 files / 132 tests ผ่าน
+  - `npm run lint`: ผ่านแบบไม่มี warning
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- Sandbox check: Firebase emulator ผ่านครบ; authenticated browser sandbox ยังมี known limitation เรื่อง Firebase session loading เมื่อไม่มี local configuration
+- สถานะ: reviewer กรอง activity ตามแหล่งอ้างอิง/ชนิดพืช และตรวจประวัติ claim review แบบถาวรได้
+- ขั้นถัดไป: เพิ่ม audit viewer แบบเจาะ source/taxon และเชื่อม claim ที่ Approved เข้า playbook/protocol โดยไม่ข้าม evidence gate
+
+### Audit viewer และ Approved claim → playbook draft gate — 2026-07-24
+
+- เพิ่ม domain gate `canCreatePlaybookDraft` ตรวจ source, `Approved` review state, evidence excerpt และ evidence location
+- เพิ่ม `createPlaybookDraftInput` เพื่อสร้าง seed ที่คง evidence state และ reference ไปยัง claim/source
+- เพิ่ม `createDraftFromClaim` ใน Memory และ Firestore protocol repository
+- Draft ที่สร้างจาก claim มี status `Draft`, version ยัง `publishedAt: null` และบันทึก claim/source references
+- เพิ่ม protocol audit action `created_from_claim`
+- เพิ่ม `KnowledgeAuditViewer` แยกจาก timeline สำหรับกรอง Source/Taxon และดู before/after
+- เพิ่มปุ่ม `สร้าง playbook draft` เฉพาะ claim ที่ `Approved`; claim อื่นไม่แสดงปุ่ม
+- เชื่อม action ไปยัง protocol detail ของ draft ใหม่ โดยไม่ publish อัตโนมัติ
+- เพิ่ม test-first coverage:
+  - Approved claim gate ผ่าน/ไม่ผ่าน
+  - Memory/Firestore draft creation และ unpublished state
+  - audit viewer rendering
+  - Approved-only UI action
+- Verification:
+  - `npm run firebase:verify`: 67 files / 137 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- Sandbox/emulator: Firebase Auth/Firestore emulator ผ่านครบ; browser authenticated sandbox ยังมี known limitation เรื่อง Firebase session loading เมื่อไม่มี local configuration
+- สถานะ: evidence ที่ Approved แล้วสามารถเริ่ม playbook draft ได้อย่างมี traceability และ audit viewer แยกกรองได้
+- ขั้นถัดไป: เพิ่ม protocol detail แสดง claim/source provenance และเพิ่ม explicit gate ก่อน publish playbook draft
+
+### Merge feature/protocol-media-navigation เข้า master — 2026-07-24
+
+- ผู้ใช้เลือก merge งานกลับเข้า `master` แบบ local merge
+- แก้ merge conflicts ใน `handoff.md`, Plant navigation, `MediaStrip` และ dataset exporter โดยคงทั้ง legacy exporter และ dataset manifest ใหม่ไว้ร่วมกัน
+- คง Plant Record workflow สำหรับผู้เริ่มต้นที่ `/plants` และเมนู `Knowledge` / `Image review` ใน app shell
+- คง lightbox ที่รองรับ `Escape`, focus และ soft-delete/restore รวมถึง dataset intake action
+- Verification หลัง merge:
+  - `npm test -- --run`: 66 test files ผ่าน, 4 integration suites ถูก skip เมื่อไม่ได้เปิด emulator; 134 tests ผ่าน
+  - `npm run firebase:verify`: 70 test files / 144 tests ผ่านครบด้วย Auth + Firestore emulator
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- แก้ dependency workspace ที่ขาดโดยรัน `npm install --no-audit --no-fund`; package manifest และ lockfile มี `@firebase/rules-unit-testing` อยู่แล้ว
+- Known limitation เดิมยังคงอยู่: browser sandbox ที่ไม่มี Firebase configuration อาจค้างที่ session loading; emulator verification ผ่านครบแล้ว
+- สถานะ: merge พร้อม commit ใน `master`; ยังไม่ได้ push production ตามตัวเลือก merge local

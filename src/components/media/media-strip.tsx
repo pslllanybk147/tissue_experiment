@@ -1,98 +1,70 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ObservationMedia } from "../../lib/domain/models";
 
 function Lightbox({ item, onClose }: { item: ObservationMedia; onClose: () => void }) {
-  // Deterministic mock variegation ratio based on media ID string hash for demonstration
-  const estimatedVariegation = Math.min(
-    95,
-    Math.max(15, (item.id.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) % 65) + 20)
-  );
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    closeRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
 
   return (
-    <div className="lightbox-overlay" onClick={onClose} style={{
+    <div className="lightbox-overlay" role="dialog" aria-modal="true" aria-label="ขยายภาพ observation" onClick={onClose} style={{
       position: "fixed",
       inset: 0,
-      backgroundColor: "rgba(0,0,0,0.85)",
+      backgroundColor: "rgba(0,0,0,0.8)",
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
-      zIndex: 1000,
-      padding: 16
+      zIndex: 1000
     }}>
-      <div className="lightbox-content" onClick={e => e.stopPropagation()} style={{
-        position: "relative",
-        background: "#161b22",
-        border: "1px solid rgba(255,255,255,0.15)",
-        borderRadius: 12,
-        padding: 16,
-        maxWidth: "92vw",
-        maxHeight: "92vh",
-        overflowY: "auto",
-        boxShadow: "0 20px 40px rgba(0,0,0,0.6)"
-      }}>
-        <button className="lightbox-close" onClick={onClose} style={{
+      <div className="lightbox-content" onClick={e => e.stopPropagation()} style={{ position: "relative" }}>
+        <button ref={closeRef} aria-label="ปิดภาพขยาย" className="lightbox-close" onClick={onClose} style={{
           position: "absolute",
-          top: 12,
-          right: 16,
+          top: 8,
+          right: 8,
           background: "transparent",
           border: "none",
           color: "white",
           fontSize: "1.5rem",
           cursor: "pointer"
         }}>✕</button>
-
-        <div style={{ textAlign: "center" }}>
-          <Image
-            src={item.secureUrl}
-            alt={item.caption || "ภาพ observation"}
-            width={item.width}
-            height={item.height}
-            unoptimized
-            style={{ maxWidth: "100%", maxHeight: "65vh", objectFit: "contain", borderRadius: 8 }}
-          />
-        </div>
-
-        <div style={{ marginTop: 16, color: "white" }}>
-          {item.caption && <figcaption style={{ fontSize: "1.1rem", fontWeight: 600 }}>{item.caption}</figcaption>}
-
-          <div style={{
-            marginTop: 12,
-            display: "flex",
-            flexWrap: "wrap",
-            gap: 12,
-            alignItems: "center",
-            padding: 12,
-            borderRadius: 8,
-            background: "rgba(255,255,255,0.05)",
-            fontSize: "0.85rem"
-          }}>
-            <div>
-              <span style={{ opacity: 0.7 }}>🧬 Est. Leaf Variegation: </span>
-              <strong style={{ color: "#a3e635" }}>{estimatedVariegation}%</strong>
-            </div>
-
-            <div>
-              <span style={{ opacity: 0.7 }}>📏 Dimensions: </span>
-              <strong>{item.width} × {item.height} px</strong>
-            </div>
-
-            <div>
-              <span style={{ opacity: 0.7 }}>🏷️ ML Dataset Tag: </span>
-              <span className="badge" style={{ background: "rgba(163,230,53,0.2)", color: "#a3e635" }}>
-                Verified License Ready
-              </span>
-            </div>
-          </div>
-        </div>
+        <Image
+          src={item.secureUrl}
+          alt={item.caption || "ภาพ observation"}
+          width={item.width}
+          height={item.height}
+          unoptimized
+          style={{ maxWidth: "90vw", maxHeight: "90vh" }}
+        />
+        {item.caption && (
+          <figcaption style={{ color: "white", marginTop: 8 }}>{item.caption}</figcaption>
+        )}
       </div>
     </div>
   );
 }
 
-export function MediaStrip({ items, onDelete }: { items: ObservationMedia[]; onDelete: (id: string) => Promise<void> }) {
+function DatasetIntakeAction({ item, onAdd }: { item: ObservationMedia; onAdd: (item: ObservationMedia) => Promise<void> }) {
+  const [state, setState] = useState<"idle" | "busy" | "success" | "error">("idle");
+  const [error, setError] = useState("");
+  async function submit() {
+    setState("busy"); setError("");
+    try { await onAdd(item); setState("success"); } catch (cause) { setState("error"); setError(cause instanceof Error ? cause.message : "ส่งรูปไม่สำเร็จ"); }
+  }
+  return <><button disabled={state === "busy" || state === "success"} type="button" onClick={() => void submit()}>{state === "busy" ? "กำลังส่ง…" : state === "success" ? "ส่งแล้ว · รอตรวจ" : "ส่งเข้า Image review"}</button>{state === "error" && <small className="field-error" role="alert">{error}</small>}</>;
+}
+
+export function MediaStrip({ items, onDelete, onRestore, onAddToDataset }: { items: ObservationMedia[]; onDelete: (id: string) => Promise<void>; onRestore?: (id: string) => Promise<void>; onAddToDataset?: (item: ObservationMedia) => Promise<void> }) {
   const [lightboxItem, setLightboxItem] = useState<ObservationMedia | null>(null);
+
   if (!items.length) return null;
 
   return (
@@ -110,9 +82,7 @@ export function MediaStrip({ items, onDelete }: { items: ObservationMedia[]; onD
               onClick={() => setLightboxItem(item)}
             />
             {item.caption && <figcaption>{item.caption}</figcaption>}
-            <button type="button" onClick={() => void onDelete(item.id)}>
-              ลบรูป
-            </button>
+            {item.deletedAt ? <button type="button" onClick={() => onRestore && void onRestore(item.id)}>กู้คืนรูป</button> : <>{onAddToDataset && <DatasetIntakeAction item={item} onAdd={onAddToDataset} />}<button type="button" onClick={() => void onDelete(item.id)}>ลบรูป</button></>}
           </figure>
         ))}
       </div>

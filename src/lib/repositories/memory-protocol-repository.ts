@@ -1,4 +1,6 @@
 import type { ProtocolRecord, ProtocolVersion } from "../domain/models";
+import type { KnowledgeSource, SourceClaim } from "../domain/knowledge-sources";
+import { createPlaybookDraftInput } from "../domain/approved-claim-gate";
 import { nextDraftVersion } from "../domain/protocol-versioning";
 import type { ProtocolAuditEvent, ProtocolRepository } from "./protocol-repository";
 
@@ -252,6 +254,12 @@ export function createMemoryProtocolRepository(uid: string): ProtocolRepository 
       const protocol: ProtocolRecord = { id, ownerId, title: input.title, slug: slugify(input.title), plantScope: input.plantScope, evidenceState: input.evidenceState, status: "Draft", currentVersionId: versionId, createdAt: now, updatedAt: now, deletedAt: null };
       const version: ProtocolVersion = { id: versionId, protocolId: id, ownerId, version: "0.1.0", summary: input.summary, changeNote: input.changeNote, steps: clone(input.steps), createdBy: ownerId, createdAt: now, publishedAt: null };
       protocols.set(id, protocol); versions.set(id, [version]); event(id, "created", null, protocol); return clone(protocol);
+    },
+    async createDraftFromClaim(ownerId, claim: SourceClaim, source: KnowledgeSource) {
+      guard(ownerId); const input = createPlaybookDraftInput(claim, source); const now = new Date().toISOString(); const id = `protocol-${crypto.randomUUID()}`; const versionId = `version-${crypto.randomUUID()}`;
+      const protocol: ProtocolRecord = { id, ownerId, title: input.title, slug: slugify(input.title), plantScope: input.plantScope, evidenceState: input.evidenceState, status: "Draft", currentVersionId: versionId, createdAt: now, updatedAt: now, deletedAt: null };
+      const version: ProtocolVersion = { id: versionId, protocolId: id, ownerId, version: "0.1.0", summary: input.summary, changeNote: input.changeNote, steps: [], claimIds: input.claimIds, sourceIds: input.sourceIds, createdBy: ownerId, createdAt: now, publishedAt: null };
+      protocols.set(id, protocol); versions.set(id, [version]); event(id, "created_from_claim", null, { protocol, version }); return clone(protocol);
     },
     async saveDraftVersion(ownerId, protocolId, versionId, input) {
       guard(ownerId); const protocol = protocols.get(protocolId); const items = versions.get(protocolId) ?? []; const current = items.find(v => v.id === versionId);

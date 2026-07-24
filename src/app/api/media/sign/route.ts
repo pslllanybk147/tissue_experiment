@@ -22,10 +22,11 @@ export async function POST(request: Request) {
       uid = verified.uid;
     } catch (adminErr) {
       const details = adminErr instanceof Error ? adminErr.message : "invalid";
+      console.error("media-sign authentication failure", { details });
       if (details.startsWith("Missing variables:")) {
-        return NextResponse.json({ error: `Firebase Admin configuration invalid (${details})` }, { status: 503 });
+        return NextResponse.json({ error: "Firebase authentication service is not configured" }, { status: 503 });
       }
-      return NextResponse.json({ error: `Invalid authentication (${details})` }, { status: 401 });
+      return NextResponse.json({ error: "Invalid authentication" }, { status: 401 });
     }
 
     phase = "request";
@@ -37,6 +38,19 @@ export async function POST(request: Request) {
     }
     if (!body.lotId || !body.observationId || !body.mimeType || !allowed.has(body.mimeType) || !Number.isFinite(body.bytes) || body.bytes! < 0 || body.bytes! > 10_000_000) return NextResponse.json({ error: "Invalid image" }, { status: 400 });
 
+    phase = "target";
+    try {
+      const { getFirestore } = await import("firebase-admin/firestore");
+      const { getAdminAuth } = await import("../../../../lib/firebase/admin");
+      const auth = getAdminAuth();
+      const firestore = getFirestore(auth.app);
+      const observation = await firestore.doc(`users/${uid}/lots/${body.lotId}/observations/${body.observationId}`).get();
+      if (!observation.exists) return NextResponse.json({ error: "Upload target not found" }, { status: 404 });
+    } catch (targetError) {
+      console.error("media-sign target validation failure", { targetError: targetError instanceof Error ? targetError.message : "unknown" });
+      return NextResponse.json({ error: "Upload target validation unavailable" }, { status: 503 });
+    }
+
     phase = "cloudinary";
     try {
       const config = getCloudinaryConfig();
@@ -47,6 +61,6 @@ export async function POST(request: Request) {
     }
   } catch (error) {
     console.error("media-sign unexpected failure", { phase, errorName: error instanceof Error ? error.name : "UnknownError" });
-    return NextResponse.json({ error: `Media signing failed during ${phase}` }, { status: 500 });
+    return NextResponse.json({ error: "Media signing failed" }, { status: 500 });
   }
 }

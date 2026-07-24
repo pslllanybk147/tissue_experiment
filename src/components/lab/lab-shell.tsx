@@ -10,7 +10,7 @@ type LabShellProps = {
   onSignOut: () => void;
 };
 
-export type LabSection = "Overview" | "Protocols" | "Experiments" | "Plants" | "Research";
+export type LabSection = "Overview" | "Plants" | "Protocols" | "Experiments" | "Research" | "Knowledge" | "Image review";
 
 const destinations: { label: LabSection; href: string }[] = [
   { label: "Overview", href: "/" },
@@ -18,6 +18,8 @@ const destinations: { label: LabSection; href: string }[] = [
   { label: "Experiments", href: "/experiments" },
   { label: "Plants", href: "/plants" },
   { label: "Research", href: "/research" },
+  { label: "Knowledge", href: "/knowledge" },
+  { label: "Image review", href: "/dataset-review" },
 ];
 
 export function LabShell({ children, section, sessionLabel, onSignOut }: LabShellProps) {
