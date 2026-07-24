@@ -1500,3 +1500,19 @@
   - `npm run build`: ผ่าน
   - `npm run firebase:verify`: 72 files / 150 tests ผ่าน
 - สถานะ: คู่มือมีรายละเอียดตำแหน่งตัดและ trial ฟอกสำหรับทั้งสองต้นแล้ว แต่ค่าฟอกยังเป็น Experimental/Adapted ต้อง validate กับต้นจริงและผลิตภัณฑ์ที่ใช้จริง
+
+### เชื่อม Taxon/Plant Record ไป Experiment Lot — 2026-07-24
+
+- ปรับหน้า `/experiments/new` ให้โหลด Plant Record เมื่อเข้าด้วย `?plantId=`
+- ส่งชื่อพืชจาก Plant Record เข้า Lot Form และแสดงข้อความแนะนำสำหรับผู้เริ่มต้น
+- แนะนำ template อัตโนมัติจากชื่อที่บันทึก: Pink Princess, Violin หรือ Generic Philodendron fallback
+- ปรับตัวเลือก `คู่มือเริ่มต้น` ให้เป็น controlled select และแสดง evidence state ของ template
+- ยังให้ผู้ใช้เปลี่ยน template เองได้ก่อนสร้าง Lot
+- Sandbox agent-browser ตรวจ `/experiments/new` ที่ 390px สำเร็จ และไม่พบ page overflow
+- เพิ่ม test การ prefill Plant Record + recommended template
+- Verification:
+  - `npm test -- --run`: 68 files / 141 tests ผ่าน, 4 suites skip
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: 72 files / 151 tests ผ่าน
+  - `npm run lint`: ผ่าน
+- สถานะ: เส้นทางเริ่มจาก Plant Record ไปเลือกคู่มือและสร้าง Lot ชัดขึ้น; การโหลดข้อมูล Plant Record จริงต้องทดสอบอีกครั้งใน authenticated Firebase environment

@@ -19,4 +19,11 @@ describe("LotForm", () => {
     expect(html).toContain("Sterile start · v1.0.0");
     expect(html).toContain('name="protocolVersion"');
   });
+
+  it("prefills the plant and recommended template when starting from a Plant Record", () => {
+    const html = renderToStaticMarkup(<LotForm onSubmit={async () => undefined} initialPlantId="plant-1" initialPlantName="Violin variegated" initialTemplateId="template-violin-nodal" templates={[{ id: "template-violin-nodal", title: "Violin variegated · Nodal culture", plantScope: "Philodendron bipennifolium", method: "nodal", evidenceState: "Experimental", description: "ทดลอง", protocolId: "protocol-violin" }]} />);
+    expect(html).toContain('value="Violin variegated"');
+    expect(html).toContain('value="template-violin-nodal"');
+    expect(html).toContain("จะแนะนำขั้นตอน");
+  });
 });
