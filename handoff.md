@@ -1484,3 +1484,19 @@
   - `npm test -- --run`: 68 files / 140 tests ผ่าน
   - `npm run build`: ผ่าน
   - `npm run firebase:verify`: 72 files / 150 tests ผ่าน
+
+### เพิ่มคู่มือตำแหน่งตัดและการฟอก — 2026-07-24
+
+- เพิ่ม `ExplantGuide` แยกตาม Pink Princess และ Violin variegated
+- คู่มือแสดงเป้าหมาย explant, แผนผังตำแหน่งตัด, ขนาดก่อนฟอก/หลังฟอก และข้อควรเลือกบนต้นแม่
+- Pink Princess: แนะนำเก็บยอด+ข้อ/ตาข้าง; ขนาดก่อนฟอกประมาณ 40–60 mm และหลังฟอกประมาณ 20–30 mm
+- Violin: แนะนำเก็บยอด/ข้อที่มีตาข้างชัด; ขนาดก่อนฟอกประมาณ 40–60 mm และหลังฟอกประมาณ 15–25 mm
+- เพิ่มตาราง trial ฟอกแบบ `Experimental` พร้อม active chlorine, เวลา และจำนวนรอบล้าง; ไม่มีค่าชุดใดถูกแสดงเป็น Verified
+- เพิ่ม safety notes เรื่อง active chlorine, การห้ามผสมสาร และการล้างด้วยน้ำปลอดเชื้อ
+- Agent-browser ตรวจหน้า Pink Princess ที่ 390 px พบ overflow จากตารางฟอก (`scrollWidth 595`) แล้วแก้ด้วย `min-width: 0` และ table wrapper; ตรวจซ้ำเหลือ `scrollWidth 390`
+- Verification หลังแก้:
+  - targeted tests: 6 passed
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: 72 files / 150 tests ผ่าน
+- สถานะ: คู่มือมีรายละเอียดตำแหน่งตัดและ trial ฟอกสำหรับทั้งสองต้นแล้ว แต่ค่าฟอกยังเป็น Experimental/Adapted ต้อง validate กับต้นจริงและผลิตภัณฑ์ที่ใช้จริง

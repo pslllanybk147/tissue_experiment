@@ -13,5 +13,8 @@ describe("Philodendron monograph", () => {
     expect(html).toContain("ตัดและเตรียม explant");
     expect(html).toContain("ฟอกฆ่าเชื้อผิว explant");
     expect(html).toContain("MS + BAP 1.0 mg/L");
+    expect(html).toContain("ตำแหน่งตัดและการฟอก");
+    expect(html).toContain("100 mL");
+    expect(html).toContain("active chlorine");
   });
 });
