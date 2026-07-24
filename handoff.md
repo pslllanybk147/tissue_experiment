@@ -1720,3 +1720,22 @@
 - deployment alias ถูก Vercel Deployment Protection ให้ sign in ก่อน จึงไม่ใช้ alias เป็นหลักฐาน UI โดยตรง; production domain แสดง Firebase Auth Gate ถูกต้องเมื่อยังไม่ได้ login
 - การตรวจ authenticated Preview ที่เคยทำสำเร็จยืนยันการบันทึก step และการโหลด media บน Preview เดิมแล้ว แต่ต้องตรวจซ้ำกับ deployment ที่มาจาก `master` ก่อนปิด milestone production
 - สถานะ: โค้ด, automated verification และ production deployment พร้อม; งานค้างสุดท้ายคือ authenticated flow บน deployment ล่าสุด และ UI keyboard/focus รอบ production ก่อนเริ่ม Image Processing
+
+### Authenticated production flow ผ่าน — 2026-07-24
+
+- Vercel dashboard ยืนยัน deployment จาก `master` commit `5af2dfd` เป็น `Production · Ready` (alias: `tissue-experiment-93-8o45dotzh-pslllanybk-2845s-projects.vercel.app`)
+- เปิด production domain และกด `Sign in with Google` สำเร็จ; Firebase session แสดง `FIREBASE`
+- เปิด Lot `QA-PREVIEW-20260723` บน production และตรวจ Guided Protocol จริง:
+  - step baseline แสดง `Passed`
+  - กด `บันทึกผลขั้นนี้` แล้วได้สถานะ `บันทึกผลแล้ว`
+  - พื้นที่หลักฐานภาพเปิดหลังบันทึก step
+- signed upload ผ่านจริง:
+  - เลือกไฟล์ทดสอบ
+  - เพิ่มคำอธิบายภาพ
+  - อัปโหลด Cloudinary สำเร็จและภาพ render ใน figure
+  - ลบแบบ soft delete แล้วปุ่มเปลี่ยนเป็น `กู้คืนรูป`
+  - กู้คืนสำเร็จและปุ่มกลับเป็น `ลบรูป`
+  - audit history ยังแสดง event ของ media
+- production keyboard check: หลัง focus locator ที่ตรวจได้ กด Tab แล้ว focus อยู่บนลิงก์จริง (`A`, `/experiments`) ไม่ใช่ body
+- local sandbox responsive matrix ที่ 390/1024/1440 px ผ่าน ไม่มี horizontal overflow; production authenticated flow ผ่านที่ deployment ล่าสุด
+- สถานะ: ข้อ 1–6 ของ guided workflow project ผ่านหลักฐานแล้ว; เริ่ม Image Processing phase ต่อจาก reviewed dataset/preprocessing pipeline ได้
