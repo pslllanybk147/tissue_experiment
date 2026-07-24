@@ -1625,3 +1625,18 @@
   - `npm run firebase:verify`: 73 files / 154 tests ผ่าน
   - local sandbox route ที่ 390px: ไม่มี horizontal overflow
 - ขั้นถัดไป: commit และ push fix นี้ แล้วทดสอบ Preview upload จริงอีกครั้ง; ไม่ต้องเปลี่ยน private key หาก Runtime Log ยืนยัน ESM error นี้
+
+### แก้ตำแหน่งกู้คืนรูปของ Guided Step — 2026-07-24
+
+- แก้ปัญหารูปที่ soft-delete แล้วหายจาก state จนไม่เห็นปุ่ม `กู้คืนรูป`
+- โหลด media ของ observation รวมรายการ deleted ไว้ใน state เสมอ
+- Observation Timeline ยังคงกรองรายการ deleted ตาม checkbox เดิม
+- Guided Step evidence แสดงรายการ deleted พร้อมปุ่ม `กู้คืนรูป` ในส่วน `หลักฐานภาพของขั้นนี้` โดยตรง
+- เพิ่ม test ยืนยันว่า `MediaStrip` แสดง restore action สำหรับ media ที่มี `deletedAt`
+- Verification:
+  - `npm run firebase:verify`: 73 files / 155 tests ผ่าน
+  - targeted media tests: 3 ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- สถานะ: ลบและกู้คืนรูปได้จากจุดเดียวกันทั้ง Observation media และ Guided Step evidence
