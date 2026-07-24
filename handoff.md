@@ -1761,3 +1761,11 @@
 - เพิ่ม test สำหรับการเจือจาง 1 mg/mL → 0.1 mg/mL และกรณีปริมาตร 5 µL ที่เล็กเกินไป
 - เพิ่มคำแนะนำในหน้า Philodendron Monograph: ติดฉลาก working stock, ตรวจช่วงเครื่องมือ, ห้ามเติมน้ำเพิ่มโดยไม่คำนวณใหม่ และไม่แทนที่คำแนะนำของผู้ผลิตสาร
 - สถานะ: เสร็จระดับคู่มือและตัวคำนวณ domain; ต้องใช้ค่าความเข้มข้น stock ตามฉลากจริงของผู้ใช้ก่อนนำไปผสม
+
+### แก้ Firestore undefined field ตอนสร้าง Experiment Lot — 2026-07-24
+
+- สาเหตุ: หน้า `experiments/new` สร้าง draft protocol จาก template โดยไม่ได้ส่ง `claimIds` และ `sourceIds`; repository เดิมใส่คีย์ทั้งสองเป็น `undefined` ลงใน ProtocolVersion
+- Firestore ไม่อนุญาตให้เขียน field ที่มีค่า `undefined` จึงเกิด `Function WriteBatch.set() called with invalid data` ที่ path `protocols/{protocolId}/versions/{versionId}`
+- แก้ repository ให้ normalize ค่า optional arrays เป็น `[]` ตอน `createDraft` และ `saveDraftVersion`
+- เพิ่ม regression test เพื่อป้องกันการส่ง `undefined` ลง version document อีก
+- สถานะ: แก้ที่ต้นเหตุแล้ว; ต้องตรวจ production flow สร้าง Lot หลัง Vercel deploy ใหม่

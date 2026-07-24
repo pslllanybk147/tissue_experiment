@@ -21,6 +21,8 @@ function harness() {
 describe("Firestore protocol repository", () => {
   it("pairs protocol, version and audit in one mutation", async () => {
     const { repository, mutations } = harness(); const created = await repository.createDraft("owner-1", input);
+    expect(mutations[0].version.claimIds).toEqual([]);
+    expect(mutations[0].version.sourceIds).toEqual([]);
     await repository.activateVersion("owner-1", created.id, created.currentVersionId);
     expect(mutations.map(item => item.audit.action)).toEqual(["created", "activated"]);
     expect(mutations[1].version.publishedAt).not.toBeNull();
