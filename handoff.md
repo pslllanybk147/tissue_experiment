@@ -1433,3 +1433,12 @@
 - เพิ่ม `scripts/import-philodendron-wcvp.mjs` และ generated catalog จาก WCVP v15 ที่กรอง accepted Philodendron species ได้ 628 records; เก็บ source/version แยกจาก POWO page snapshot ที่แสดง 629
 - สถานะ: คู่มือและหน้าออนไลน์รุ่นแรกพร้อมตรวจ review; taxonomy catalog รุ่นแรกมี accepted species records จาก WCVP v15 แล้ว แต่ monograph ละเอียดยังมีเฉพาะ Pink Princess และ Violin
 - ขั้นถัดไป: ตรวจความต่าง 628/629 กับ WCVP/POWO รอบถัดไป แล้วค่อยเพิ่ม monograph ชนิดอื่นตามหลักฐาน
+
+### ติดตั้ง agent-browser CLI — 2026-07-24
+
+- ติดตั้ง `agent-browser` แบบ global เวอร์ชัน `0.33.0`
+- ตรวจคำสั่งด้วย `agent-browser --version` สำเร็จ
+- เปิด local dev server ที่ `http://127.0.0.1:3000/knowledge` ด้วย agent-browser สำเร็จ
+- ตรวจ URL ปัจจุบันและสร้าง screenshot ที่ `C:\Users\HP\Documents\Codex\2026-07-22\knowledge-browser-check.png`
+- Visual check พบหน้า Firebase setup gate ตามที่ออกแบบไว้ เมื่อ local environment ยังไม่มี Firebase configuration; ไม่ใช่ runtime crash
+- ขั้นต่อไป: ใช้ agent-browser ตรวจ responsive, keyboard, focus, long Thai text และ taxon detail หลังเติม environment หรือใช้ emulator configuration
