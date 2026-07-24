@@ -1,5 +1,4 @@
 import { cert, getApps, initializeApp } from "firebase-admin/app";
-import { getAuth } from "firebase-admin/auth";
 
 function cleanEnv(val: string | undefined): string {
   if (!val) return "";
@@ -30,14 +29,14 @@ export function formatPrivateKey(key: string | undefined): string {
   return cleaned;
 }
 
-export function getAdminAuth() {
+export function getAdminApp() {
   const projectId = cleanEnv(process.env.FIREBASE_ADMIN_PROJECT_ID);
   const clientEmail = cleanEnv(process.env.FIREBASE_ADMIN_CLIENT_EMAIL);
   const privateKey = formatPrivateKey(process.env.FIREBASE_ADMIN_PRIVATE_KEY);
 
   if (process.env.FIREBASE_AUTH_EMULATOR_HOST) {
     const app = getApps()[0] ?? initializeApp({ projectId: projectId || "demo-philodendron-lab" });
-    return getAuth(app);
+    return app;
   }
 
   const missing: string[] = [];
@@ -50,10 +49,9 @@ export function getAdminAuth() {
   }
 
   try {
-    const app = getApps()[0] ?? initializeApp({
+    return getApps()[0] ?? initializeApp({
       credential: cert({ projectId, clientEmail, privateKey })
     });
-    return getAuth(app);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Credential parsing failed";
     throw new Error(`Initialization failed: ${msg}`);

@@ -41,9 +41,8 @@ export async function POST(request: Request) {
     phase = "target";
     try {
       const { getFirestore } = await import("firebase-admin/firestore");
-      const { getAdminAuth } = await import("../../../../lib/firebase/admin");
-      const auth = getAdminAuth();
-      const firestore = getFirestore(auth.app);
+      const { getAdminApp } = await import("../../../../lib/firebase/admin");
+      const firestore = getFirestore(getAdminApp());
       const observation = await firestore.doc(`users/${uid}/lots/${body.lotId}/observations/${body.observationId}`).get();
       if (!observation.exists) return NextResponse.json({ error: "Upload target not found" }, { status: 404 });
     } catch (targetError) {

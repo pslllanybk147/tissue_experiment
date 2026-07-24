@@ -1611,3 +1611,17 @@
   - `npm run lint`: ผ่าน
   - `npm run build`: ผ่าน
 - สถานะ: Runner นำทางตามผลจริงแล้ว ไม่ให้มือใหม่ข้ามผลที่ยังไม่ผ่านการยืนยัน
+
+### แก้ Vercel signed-upload 503 จาก firebase-admin ESM — 2026-07-24
+
+- Root cause จาก Vercel Runtime Logs: `firebase-admin/auth` รุ่นที่ติดตั้งโหลด `jwks-rsa` แบบ CommonJS ซึ่งพยายาม `require()` package `jose` แบบ ESM ทำให้ route `/api/media/sign` ล้มด้วย `ERR_REQUIRE_ESM`
+- แยกการสร้าง Firebase Admin App ออกจากการโหลด Firebase Admin Auth โดยเพิ่ม `getAdminApp()` ใน `src/lib/firebase/admin.ts`
+- เปลี่ยน API routes ที่ใช้ Firestore ให้เรียก `getAdminApp()` โดยตรง และไม่โหลด `firebase-admin/auth` ในเส้นทาง server เหล่านั้น
+- ไม่ลด security boundary: route ยังตรวจ Firebase ID token และตรวจ Lot/Observation ownership ก่อนสร้าง signed upload
+- Verification:
+  - targeted media/admin tests: ผ่าน; integration tests ที่ไม่เปิด emulatorถูก skip ตามเงื่อนไข
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: 73 files / 154 tests ผ่าน
+  - local sandbox route ที่ 390px: ไม่มี horizontal overflow
+- ขั้นถัดไป: commit และ push fix นี้ แล้วทดสอบ Preview upload จริงอีกครั้ง; ไม่ต้องเปลี่ยน private key หาก Runtime Log ยืนยัน ESM error นี้
