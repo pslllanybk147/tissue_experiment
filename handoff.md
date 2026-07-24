@@ -1409,3 +1409,27 @@
 - แก้ dependency workspace ที่ขาดโดยรัน `npm install --no-audit --no-fund`; package manifest และ lockfile มี `@firebase/rules-unit-testing` อยู่แล้ว
 - Known limitation เดิมยังคงอยู่: browser sandbox ที่ไม่มี Firebase configuration อาจค้างที่ session loading; emulator verification ผ่านครบแล้ว
 - สถานะ: merge พร้อม commit ใน `master`; ยังไม่ได้ push production ตามตัวเลือก merge local
+
+### Philodendron Knowledge Base และ Detailed Manual — 2026-07-24
+
+- เพิ่ม domain knowledge รุ่นแรกสำหรับ Philodendron โดยแยก Araceae → Philodendron → species → cultivar/trade-name
+- เพิ่ม taxonomy snapshot จาก Kew POWO/WCVP: 151 accepted genera ใน Araceae และ 629 accepted Philodendron species ณ วันที่ 2026-07-24; จำนวนเป็น snapshot ไม่ใช่จำนวน cultivar/trade-name ถาวร
+- เพิ่ม source register สำหรับ Kew POWO, Pink Princess tissue-culture papers ปี 2023/2025 และ Violin evidence gap
+- เพิ่ม monograph 4 หมวดสำหรับ Pink Princess และ Violin: Taxonomy, Biology, Identification, Tissue culture
+- เพิ่ม guided tissue-culture manual 18 ขั้น ครอบคลุมการรับต้น, กักต้น, เลือกข้อ, ตำแหน่งตัด, ตู้/อุปกรณ์, อาหาร, ฟอก, ลงอาหาร, contamination, multiplication, rooting, acclimatization, ลายด่าง, troubleshooting, evidence review, export และปิด Lot
+- Pink Princess ระบุผลจากงานตรงพันธุ์เป็น `Verified` เฉพาะ claim ที่มี source; workflow รวมยังเป็น `Adapted` และต้อง validate กับห้องทดลองจริง
+- Violin variegated ถูกเก็บเป็น trade-name ใต้ `Philodendron bipennifolium` และ protocol ทั้งหมดเริ่มที่ `Experimental`/`Adapted` เนื่องจากยังไม่มีหลักฐานตรงพันธุ์ในฐานข้อมูล
+- เพิ่ม route `/knowledge/taxa/[taxonId]` สำหรับอ่าน monograph และปุ่มเริ่ม Plant Record พร้อม prefill แบบไม่ยกระดับความมั่นใจอัตโนมัติ
+- Knowledge Library เชื่อมลิงก์ไปยัง taxon detail และยังคง source/claim/audit workflow เดิม
+- เพิ่ม Markdown handoff/manual ใน `docs/philodendron/`
+- Verification:
+  - `npm test -- --run`: 68 files / 139 tests ผ่าน, 4 integration suites skip เมื่อไม่ได้เปิด emulator
+  - `npm run firebase:verify`: 72 files / 149 tests ผ่านด้วย Auth + Firestore emulator
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน และมี route `/knowledge/taxa/[taxonId]`
+  - `git diff --check`: ผ่าน; มีเฉพาะคำเตือน line ending ของ Windows
+  - HTTP sandbox: `/`, `/knowledge`, Pink Princess taxon detail และ Violin taxon detail ตอบ HTTP 200
+- Browser CLI `agent-browser` ไม่มีใน environment นี้ จึงตรวจ route ผ่าน local HTTP/server response แทน และไม่อ้างว่า visual browser automation ผ่าน
+- เพิ่ม `scripts/import-philodendron-wcvp.mjs` และ generated catalog จาก WCVP v15 ที่กรอง accepted Philodendron species ได้ 628 records; เก็บ source/version แยกจาก POWO page snapshot ที่แสดง 629
+- สถานะ: คู่มือและหน้าออนไลน์รุ่นแรกพร้อมตรวจ review; taxonomy catalog รุ่นแรกมี accepted species records จาก WCVP v15 แล้ว แต่ monograph ละเอียดยังมีเฉพาะ Pink Princess และ Violin
+- ขั้นถัดไป: ตรวจความต่าง 628/629 กับ WCVP/POWO รอบถัดไป แล้วค่อยเพิ่ม monograph ชนิดอื่นตามหลักฐาน
