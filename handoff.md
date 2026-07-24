@@ -1703,3 +1703,19 @@
   - `npm run lint`: ผ่าน
   - `npm run build`: ผ่าน
 - สถานะ: ข้อมูลจาก Taxon, Plant Profile, Protocol และ Lot ถูกอ่านต่อเนื่องมากขึ้น; ก่อนส่ง production ต้องรัน full emulator suite และตรวจ Preview/UI ทุก breakpoint
+
+### Final verification รอบล่าสุด — 2026-07-24
+
+- branch หลักของ repository คือ `master` และ merge งาน knowledge/protocol authoring แล้วที่ commit `439cc2a`
+- `origin/master` ตรงกับ local `master` หลัง push สำเร็จ
+- `npm run firebase:verify`: Firebase Auth/Firestore emulator ทำงาน และผ่าน 74 test files / 161 tests
+- `npm run lint`: ผ่าน
+- `npm run build`: ผ่านด้วย Next.js 16.2.11 และ TypeScript ตรวจผ่าน
+- sandbox local ตรวจ Taxon Detail และ Protocol Detail ที่ 390, 1024 และ 1440 px:
+  - ไม่มี horizontal overflow
+  - ข้อความไทยยาวและ evidence/reference section แสดงได้
+  - Protocol Detail แสดง `คัดลอกเป็น Draft`, `แก้ไข`, ขั้นตอน และสถานะ evidence
+  - keyboard Tab เปลี่ยน focus ได้ แต่ใน local dev มี Next.js Dev Tools portal เป็นจุดรับ focus แรก ต้องตรวจซ้ำใน Preview production โดยปิด dev tools
+- production domain `https://tissue-experiment-93.vercel.app` ตอบ HTTP 200 และ route knowledge ตอบได้ แต่การตรวจครั้งนี้อยู่ในสถานะ unauthenticated จึงยืนยันได้เฉพาะ Auth Gate/route availability ยังไม่ใช่หลักฐานของ authenticated Firebase flow ล่าสุด
+- การตรวจ authenticated Preview ที่เคยทำสำเร็จยืนยันการบันทึก step และการโหลด media บน Preview เดิมแล้ว แต่ต้องตรวจซ้ำกับ deployment ที่มาจาก `master` ก่อนปิด milestone production
+- สถานะ: โค้ดและ automated verification พร้อม; งานค้างสุดท้ายคือ authenticated production Preview flow, UI keyboard/focus รอบ production และจึงเริ่ม Image Processing
