@@ -1752,3 +1752,12 @@
 - กติกาของ phase นี้ยังคงเดิม: ภาพจากผู้ใช้ต้องผ่าน provenance/label review ก่อนรวมเป็น training data; image processing เสนอ candidate เท่านั้น ผู้ใช้ต้องยืนยันชนิด
 - ยังไม่สร้าง automatic species prediction, model training หรือ inference endpoint เพราะยังไม่มี dataset ที่ผ่านการ review จำนวนเพียงพอสำหรับประเมินความแม่นยำ
 - สถานะ: Image Processing เริ่มต้นอย่างเป็นทางการด้วย data/preprocessing foundation แล้ว; milestone ถัดไปคือ baseline candidate model และ evaluation report หลังมีภาพที่ผู้ใช้ยืนยัน label
+
+### เพิ่มคู่มือเจือจาง stock solution สำหรับ batch เล็ก — 2026-07-24
+
+- เพิ่ม `calculateIntermediateStockDilution` ใน `src/lib/domain/medium-calculations.ts` สำหรับคำนวณตาม `C1V1 = C2V2`
+- รองรับการคำนวณ source stock, diluent, working stock และปริมาตรที่ต้องเติมในอาหาร batch สุดท้าย
+- เพิ่มคำเตือนเมื่อปริมาตรที่ต้องดูดต่ำกว่าเกณฑ์ micropipette ที่กำหนด
+- เพิ่ม test สำหรับการเจือจาง 1 mg/mL → 0.1 mg/mL และกรณีปริมาตร 5 µL ที่เล็กเกินไป
+- เพิ่มคำแนะนำในหน้า Philodendron Monograph: ติดฉลาก working stock, ตรวจช่วงเครื่องมือ, ห้ามเติมน้ำเพิ่มโดยไม่คำนวณใหม่ และไม่แทนที่คำแนะนำของผู้ผลิตสาร
+- สถานะ: เสร็จระดับคู่มือและตัวคำนวณ domain; ต้องใช้ค่าความเข้มข้น stock ตามฉลากจริงของผู้ใช้ก่อนนำไปผสม

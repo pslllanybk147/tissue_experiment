@@ -32,6 +32,18 @@ export function PhilodendronMonograph({ monograph }: { monograph: Monograph }) {
           <p className="muted-copy">{recipe.note} ปรับ pH ก่อนทำให้วุ้นแข็ง และบันทึก batch ID ทุกครั้ง</p>
         </article>)}
       </div>
+      <section className="experiment-surface medium-dilution-guide" aria-labelledby="medium-dilution-title">
+        <div className="knowledge-detail-heading"><div><p className="eyebrow">SMALL-VOLUME STOCK GUIDE</p><h3 id="medium-dilution-title">เมื่อปริมาตรฮอร์โมนน้อยเกินกว่าจะตวง</h3></div><span>สูตร C1V1 = C2V2</span></div>
+        <p>ถ้าปริมาตร stock ที่ต้องเติมต่ำกว่าเกณฑ์ที่เครื่องมือของคุณตวงได้ ให้ทำ <strong>working stock</strong> ที่เจือจางกว่า แล้วจึงเติม working stock ลงในอาหาร ห้ามเติมน้ำเพิ่มลงในอาหารโดยไม่คำนวณใหม่</p>
+        <ol>
+          <li>ตรวจความเข้มข้นของ source stock จากฉลาก เช่น 1 mg/mL</li>
+          <li>เลือกความเข้มข้น working stock ที่ตวงได้สะดวก เช่น 0.1 mg/mL</li>
+          <li>ทำ working stock ตามสูตร <code>C1V1 = C2V2</code> แล้วติดฉลากชื่อสาร ความเข้มข้น วันที่ และผู้เตรียม</li>
+          <li>คำนวณปริมาตร working stock ที่ต้องเติมใน batch สุดท้าย และบันทึกลง batch record</li>
+        </ol>
+        <div className="form-alert"><strong>ตัวอย่าง:</strong> source stock 1 mg/mL ต้องการทำ working stock 0.1 mg/mL ปริมาตร 10 mL → ใช้ source stock 1 mL + ตัวทำละลายที่เหมาะสม 9 mL. หากต้องการ BAP 0.5 mg/L ในอาหาร 100 mL → เติม working stock 0.5 mL (500 µL)</div>
+        <p className="muted-copy">ถ้าต้องการปริมาตรเล็กกว่านี้ ให้เพิ่มปริมาตร batch หรือทำ working stock ที่เจือจางกว่า โดยต้องตรวจสอบช่วงการตวงของ micropipette ก่อนทุกครั้ง ห้ามใช้สูตรนี้แทนคำแนะนำการละลายหรือความปลอดภัยของผู้ผลิตสาร</p>
+      </section>
       <section className="explant-guide" aria-labelledby="explant-guide-title">
         <div className="knowledge-detail-heading"><div><p className="eyebrow">CUT & STERILIZATION GUIDE</p><h3 id="explant-guide-title">ตำแหน่งตัดและการฟอก</h3><p>{monograph.tissueCulture.explantGuide.target}</p></div><span className={evidenceClass(monograph.tissueCulture.explantGuide.evidenceState)}>{monograph.tissueCulture.explantGuide.evidenceState}</span></div>
         <div className="explant-guide-grid"><div><h4>ภาพจำลองตำแหน่งตัด</h4><ol className="cut-diagram">{monograph.tissueCulture.explantGuide.cutDiagram.map((line) => <li key={line}>{line}</li>)}</ol><h4>ขนาดชิ้นพืช</h4><p><strong>ก่อนฟอก:</strong> {monograph.tissueCulture.explantGuide.preSterilizationSize}</p><p><strong>หลังฟอก:</strong> {monograph.tissueCulture.explantGuide.finalExplantSize}</p><h4>ข้อควรจำ</h4><ul>{monograph.tissueCulture.explantGuide.selectionNotes.map((note) => <li key={note}>{note}</li>)}</ul></div><div><h4>ชุดทดลองฟอก</h4><div className="sterilization-table-wrap"><table className="sterilization-table"><thead><tr><th>ชุด</th><th>Active chlorine</th><th>เวลา</th><th>ล้าง</th><th>สถานะ</th></tr></thead><tbody>{monograph.tissueCulture.explantGuide.sterilizationTrials.map((trial) => <tr key={trial.id}><th>{trial.id}</th><td>{trial.activeChlorinePercent}%</td><td>{trial.exposureMinutes} min</td><td>{trial.sterileRinses} รอบ</td><td><span className={evidenceClass(trial.evidenceState)}>{trial.evidenceState}</span><small>{trial.note}</small></td></tr>)}</tbody></table></div><ul>{monograph.tissueCulture.explantGuide.safetyNotes.map((note) => <li key={note}>{note}</li>)}</ul></div></div>
