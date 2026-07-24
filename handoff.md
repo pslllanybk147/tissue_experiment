@@ -1640,3 +1640,20 @@
   - `npm run build`: ผ่าน
   - `git diff --check`: ผ่าน
 - สถานะ: ลบและกู้คืนรูปได้จากจุดเดียวกันทั้ง Observation media และ Guided Step evidence
+
+### เพิ่ม Plant Profile → Experiment Lots summary — 2026-07-24
+
+- Plant Profile โหลด Plant Record และ Experiment Lots ที่มี `plantId` ตรงกันจาก repository เดียวกับหน้า Experiment
+- แสดง progress แบบ `ผ่าน/บันทึกแล้ว`, status, stage, วันที่แก้ไขล่าสุด และลิงก์เปิด Lot
+- ถ้ายังไม่มี Lot จะแสดง empty state พร้อมปุ่มเริ่ม Lot แรก
+- เพิ่ม component test สำหรับ lot progress summary
+- Sandbox `agent-browser` ที่ `/plants`, viewport 390 px:
+  - AuthGate → Demo mode ทำงาน
+  - Plant empty state แสดงถูกต้องเมื่อยังไม่มี Plant Record
+  - ไม่มี horizontal overflow (`scrollWidth=390`, `viewport=390`)
+- Verification:
+  - `npm run firebase:verify`: 74 files / 156 tests ผ่าน
+  - targeted Plant Profile test: ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+- สถานะ: Plant Profile พร้อมเป็นศูนย์กลางเชื่อมต้นไม้กับ Lot; ข้อมูล Lot จะแสดงเมื่อ Plant Record นั้นถูกใช้สร้าง Lot จริง
