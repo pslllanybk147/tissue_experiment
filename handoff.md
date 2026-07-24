@@ -1442,3 +1442,19 @@
 - ตรวจ URL ปัจจุบันและสร้าง screenshot ที่ `C:\Users\HP\Documents\Codex\2026-07-22\knowledge-browser-check.png`
 - Visual check พบหน้า Firebase setup gate ตามที่ออกแบบไว้ เมื่อ local environment ยังไม่มี Firebase configuration; ไม่ใช่ runtime crash
 - ขั้นต่อไป: ใช้ agent-browser ตรวจ responsive, keyboard, focus, long Thai text และ taxon detail หลังเติม environment หรือใช้ emulator configuration
+
+### Agent-browser UI verification และแก้ contrast — 2026-07-24
+
+- ตรวจ `/knowledge` ด้วย `agent-browser` ที่ viewport 390, 1024 และ 1440 px; สร้าง screenshot สำหรับแต่ละขนาด
+- เปิด demo mode แล้วตรวจ Knowledge Library จาก accessibility snapshot พบรายการ Philodendron และ evidence labels แสดงผลจริง
+- เปิด Taxon Detail ของ Pink Princess สำเร็จที่ `/knowledge/taxa/cultivar-pink-princess`
+- ตรวจ keyboard focus ด้วยการกด Tab และตรวจ `document.activeElement`; focus เคลื่อนไปยัง link/button ได้
+- ตรวจ reduced-motion และ horizontal overflow ที่ 390 px; `scrollWidth` เท่ากับ viewport width
+- axe audit รอบแรกพบ color-contrast violation ใน mobile navigation, sign-out, breadcrumb และ eyebrow
+- ปรับ `--muted` และ `--faint` ใน `src/app/globals.css` ให้ผ่าน WCAG AA; audit รอบสองไม่พบ violation เหลือเพียง incomplete จาก gradient ของ Firebase setup gate
+- Verification หลังแก้:
+  - `npm run lint`: ผ่าน
+  - `npm test -- --run`: 68 files / 140 tests ผ่าน, 4 suites skip โดยไม่เปิด emulator
+  - `npm run build`: ผ่าน และมี route Taxon Detail
+  - `npm run firebase:verify`: 72 files / 150 tests ผ่านด้วย Auth + Firestore emulator
+- สถานะ: UI verification รุ่นนี้ผ่านและแก้ accessibility contrast แล้ว; ยังต้องทดสอบ authenticated Firebase flow เมื่อ environment จริงพร้อม

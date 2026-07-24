@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-:root { --ink: #171717; --muted: #737373; --faint: #a3a3a3; --line: #e7e5e4; --surface: #fff; --canvas: #f7f7f5; --blue: #1d4ed8; --blue-soft: #eff6ff; --green: #17834b; --green-soft: #ecfdf3; --orange: #b45309; --orange-soft: #fff7ed; --red: #b42318; --red-soft: #fff1f0; --purple: #7c3aed; }
+:root { --ink: #171717; --muted: #666666; --faint: #6b6b6b; --line: #e7e5e4; --surface: #fff; --canvas: #f7f7f5; --blue: #1d4ed8; --blue-soft: #eff6ff; --green: #17834b; --green-soft: #ecfdf3; --orange: #b45309; --orange-soft: #fff7ed; --red: #b42318; --red-soft: #fff1f0; --purple: #7c3aed; }
 * { box-sizing: border-box; }
 html { background: var(--canvas); }
 body { margin: 0; background: var(--canvas); color: var(--ink); font-family: var(--font-geist-sans), Tahoma, "Noto Sans Thai", "Leelawadee UI", Arial, sans-serif; }
