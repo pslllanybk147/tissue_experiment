@@ -1,4 +1,5 @@
-import type { ProtocolStep, ProtocolTemplate } from "./models";
+import type { MeasurementUnit, ProtocolStep, ProtocolTemplate } from "./models";
+import { monographForTaxon } from "./philodendron-knowledge";
 
 const step = (value: Omit<ProtocolStep, "id" | "order">, order: number): ProtocolStep => ({
   ...value,
@@ -28,7 +29,39 @@ export const protocolTemplates: ProtocolTemplate[] = [
   { id: "template-generic-philodendron", title: "Generic Philodendron · Safe start", plantScope: "Philodendron ไม่ยืนยันชนิด", method: "generic", evidenceState: "Adapted", description: "เส้นทาง fallback สำหรับต้นที่ยังยืนยันชนิดไม่ได้", protocolId: "protocol-generic-philodendron" },
 ];
 
+function detailedStepsForTaxon(taxonId: string): ProtocolStep[] {
+  const monograph = monographForTaxon(taxonId);
+  if (!monograph) return [];
+  const allowedUnits = new Set(["mL", "g", "mg/L", "%", "min", "°C", "pH", "count"]);
+  return monograph.tissueCulture.steps.map((step) => ({
+    id: `guided-${step.id}`,
+    order: step.order - 1,
+    title: step.title,
+    instruction: step.instructions.join(" "),
+    durationMinutes: null,
+    criticalControls: step.criticalControls,
+    safetyNotes: step.safetyNotes,
+    referenceIds: step.sourceIds,
+    evidenceState: step.evidenceState,
+    objective: step.objective,
+    whyItMatters: step.objective,
+    prerequisites: [],
+    materials: step.materials,
+    measurements: step.measurements?.filter((measurement) => allowedUnits.has(measurement.unit)).map((measurement, index) => ({ id: `measurement-${step.id}-${index + 1}`, label: measurement.label, unit: measurement.unit as MeasurementUnit, required: measurement.required })),
+    expectedResult: step.expectedResult,
+    passCriteria: step.passCriteria,
+    failCriteria: step.failCriteria,
+    nextActionOnPass: "ยืนยันผลแล้วไปขั้นถัดไป",
+    nextActionOnFail: "หยุด บันทึกปัญหา และเลือกการแก้ไขจากคู่มือ",
+    requiredEvidence: ["note"],
+    allowPhoto: true,
+    allowNote: true,
+  }));
+}
+
 export function stepsForTemplate(templateId: string): ProtocolStep[] {
+  if (templateId === "template-pink-princess-nodal") return detailedStepsForTaxon("cultivar-pink-princess");
+  if (templateId === "template-violin-nodal") return detailedStepsForTaxon("trade-name-violin-variegated");
   return standardSteps.map((item, index) => {
     const copy = structuredClone(item);
     if (templateId === "template-pink-princess-nodal" && index === 8) copy.evidenceState = "Verified";

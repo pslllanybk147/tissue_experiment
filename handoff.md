@@ -1516,3 +1516,18 @@
   - `npm run firebase:verify`: 72 files / 151 tests ผ่าน
   - `npm run lint`: ผ่าน
 - สถานะ: เส้นทางเริ่มจาก Plant Record ไปเลือกคู่มือและสร้าง Lot ชัดขึ้น; การโหลดข้อมูล Plant Record จริงต้องทดสอบอีกครั้งใน authenticated Firebase environment
+
+### เชื่อม Monograph เข้ากับ Guided Runner — 2026-07-24
+
+- Pink Princess และ Violin template เปลี่ยนจากชุดขั้นมาตรฐาน 13 ขั้นเป็นขั้นจาก monograph โดยตรง 18 ขั้น
+- แต่ละ step ใน Runner ได้ title, instruction, materials, critical controls, safety, measurement, pass/fail criteria, evidence state และ source references จากคู่มือเดียวกัน
+- Generic Philodendron ยังคง fallback 13 ขั้นเพื่อรองรับชนิดที่ยังไม่มี monograph
+- Violin ทุกขั้นไม่ถูกยกระดับเป็น Verified; Pink Princess มี source references ตามหลักฐานที่มี แต่ workflow เต็มยังรักษาสถานะ Adapted
+- แก้ TypeScript measurement unit mapping ให้ใช้ `MeasurementUnit` ของ domain กลาง
+- Verification:
+  - `npm test -- --run`: 68 files / 141 tests ผ่าน
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: 72 files / 151 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `git diff --check`: ผ่าน มีเฉพาะคำเตือน line ending Windows
+- สถานะ: คู่มือที่ผู้ใช้อ่านและขั้นที่ผู้ใช้ทำใน Lot ใช้ข้อมูลชุดเดียวกันแล้ว; authenticated end-to-end ยังเป็นขั้นตรวจถัดไป

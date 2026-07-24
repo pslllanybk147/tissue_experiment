@@ -9,7 +9,9 @@ describe("guided protocol templates", () => {
   });
 
   it("marks direct Pink Princess evidence without upgrading the fallback", () => {
-    expect(stepsForTemplate("template-pink-princess-nodal")[8].evidenceState).toBe("Verified");
-    expect(stepsForTemplate("template-violin-nodal")[8].evidenceState).toBe("Experimental");
+    expect(stepsForTemplate("template-pink-princess-nodal")).toHaveLength(18);
+    expect(stepsForTemplate("template-pink-princess-nodal").some((step) => step.referenceIds.includes("source-pp-2023"))).toBe(true);
+    expect(stepsForTemplate("template-violin-nodal")).toHaveLength(18);
+    expect(stepsForTemplate("template-violin-nodal").every((step) => step.evidenceState !== "Verified")).toBe(true);
   });
 });
