@@ -1542,3 +1542,12 @@
 - กดถัดไปสำเร็จและ Runner แสดง step 2 พร้อม form note/status ใหม่
 - ตรวจ page overflow ที่ 390 px: `scrollWidth` เท่ากับ viewport
 - สถานะ: Demo workflow สร้าง Lot → บันทึกผล → ไปขั้นถัดไปทำงานจริง; ต้องทำซ้ำด้วย authenticated Firebase และข้อมูล Plant Record จริงเมื่อ environment พร้อม
+
+### Sandbox ทดสอบ Violin และ Needs review — 2026-07-24
+
+- เปิด `/experiments/new` ใน Demo mode และสร้าง Lot `VIO-SANDBOX-001`
+- เลือก `Violin variegated · Nodal culture · Experimental` สำเร็จ
+- Runner แสดงครบ 18 ขั้น และยังไม่พบ step ใดถูกแสดงเป็น Verified
+- เลือก step 4 `เลือกยอด/ข้อ/ตาข้าง` แล้วบันทึก note พร้อมสถานะ `Needs review`
+- รายการ step เปลี่ยนเป็น `Needs review` สำเร็จ โดยไม่บังคับให้ผู้ใช้กดผ่านเมื่อหลักฐานยังไม่พอ
+- สถานะ: Violin workflow รองรับผลที่ยังไม่ชัดเจนตาม evidence policy; authenticated Firebase flow ยังรอตรวจด้วยบัญชีจริง
