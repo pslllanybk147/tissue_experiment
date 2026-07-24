@@ -45,3 +45,15 @@ export type KnowledgeSourceAuditEvent = {
   before: Record<string, unknown> | null;
   after: Record<string, unknown> | null;
 };
+
+export type SourceClaimAuditEvent = {
+  id: string;
+  ownerId: string;
+  claimId: string;
+  sourceId: string;
+  taxonId: string;
+  action: "created" | "reviewed";
+  occurredAt: string;
+  before: Record<string, unknown> | null;
+  after: Record<string, unknown> | null;
+};

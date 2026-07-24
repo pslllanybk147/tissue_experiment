@@ -1350,3 +1350,22 @@
 - Sandbox check: Firebase emulator ผ่านครบ; authenticated browser sandbox ยังมี known limitation เรื่อง Firebase session loading เมื่อไม่มี local configuration
 - สถานะ: ผู้ใช้ค้น taxon แล้วเห็น claim summary และ activity ของ source/claim ในหน้าเดียว
 - ขั้นถัดไป: เพิ่มการกรอง timeline ตาม taxon/source และทำ claim review audit แบบ persisted ไม่ใช่เพียง derived activity
+
+### Timeline filters และ persisted claim review audit — 2026-07-24
+
+- เพิ่มตัวกรอง activity timeline ตาม `Source` และ `Taxon`
+- Timeline ใช้ claim audit ที่โหลดจาก repository เพื่อแสดงเหตุการณ์สร้าง claim และ review claim แบบ persisted
+- เพิ่ม `SourceClaimAuditEvent` พร้อม action `created` และ `reviewed`
+- Memory repository เก็บ claim audit ต่อ claim และ Firestore เก็บใน `sourceClaims/{claimId}/auditEvents`
+- การสร้างและ review claim บันทึก before/after snapshot พร้อม sourceId และ taxonId
+- หน้า Knowledge โหลด audit ของ claims ทั้งหมดและส่งเข้า timeline
+- เพิ่ม test ยืนยัน claim audit sequence `created`, `reviewed`
+- Legacy claims ที่ยังไม่มี audit collection ยังคงอ่านได้ และจะแสดงเฉพาะ activity ที่มีจริง
+- Verification:
+  - `npm run firebase:verify`: 65 files / 132 tests ผ่าน
+  - `npm run lint`: ผ่านแบบไม่มี warning
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+- Sandbox check: Firebase emulator ผ่านครบ; authenticated browser sandbox ยังมี known limitation เรื่อง Firebase session loading เมื่อไม่มี local configuration
+- สถานะ: reviewer กรอง activity ตามแหล่งอ้างอิง/ชนิดพืช และตรวจประวัติ claim review แบบถาวรได้
+- ขั้นถัดไป: เพิ่ม audit viewer แบบเจาะ source/taxon และเชื่อม claim ที่ Approved เข้า playbook/protocol โดยไม่ข้าม evidence gate

@@ -8,6 +8,7 @@ describe("knowledge source repository", () => {
     const claim = await repository.createClaim("owner-1", { sourceId: source.id, taxonId: "cultivar-pink-princess", category: "tissue-culture", statement: "Example claim", evidenceExcerpt: "Supporting excerpt", evidenceLocation: "p. 4, Table 2", evidenceState: "Adapted" });
     expect(claim.reviewState).toBe("Pending review");
     expect((await repository.reviewClaim("owner-1", claim.id, "Approved", "checked")).reviewedBy).toBe("owner-1");
+    expect((await repository.listClaimAuditEvents("owner-1", claim.id)).map(event => event.action)).toEqual(["created", "reviewed"]);
   });
 
   it("requires an evidence excerpt for a claim draft", async () => {
