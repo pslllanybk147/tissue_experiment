@@ -1598,3 +1598,16 @@
   - `npm run lint`: ผ่าน
   - `npm run build`: ผ่าน
 - สถานะ: Guided workflow ไม่อนุญาตให้ข้ามขั้นโดยไม่ยืนยันผล; binary upload production ยังต้องตรวจด้วย credentials จริง
+
+### ปรับคำแนะนำตามผลจริง — 2026-07-24
+
+- เปลี่ยน completion gate ให้ไปขั้นถัดไปได้เฉพาะเมื่อสถานะปัจจุบันเป็น `Passed`
+- `Needs review` จะแสดงคำแนะนำให้ตรวจเพิ่ม/แก้ไขก่อน และปุ่ม `ถัดไป` ยังคง disabled
+- `Failed` จะแสดงคำแนะนำให้ทำตาม `nextActionOnFail` และบันทึกผลใหม่ก่อน
+- เพิ่ม regression test สำหรับสถานะ `Needs review`
+- Sandbox สร้าง `STATUS-SANDBOX-001` และบันทึก step เป็น `Needs review` สำเร็จ; step list แสดงสถานะถูกต้องและ `ถัดไป` disabled
+- Verification:
+  - targeted Runner tests: 3 ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+- สถานะ: Runner นำทางตามผลจริงแล้ว ไม่ให้มือใหม่ข้ามผลที่ยังไม่ผ่านการยืนยัน

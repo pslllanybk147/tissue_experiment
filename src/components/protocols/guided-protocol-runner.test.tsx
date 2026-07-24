@@ -25,6 +25,12 @@ describe("GuidedProtocolRunner photo evidence", () => {
     expect(html).toMatch(/disabled=""[^>]*>ถัดไป/);
   });
 
+  it("does not recommend the next step for Needs review", () => {
+    const html = renderToStaticMarkup(<GuidedProtocolRunner lotId="LOT-1" protocolId="P-1" versionId="V-1" steps={[step, { ...step, id: "step-2", title: "ขั้นถัดไป" }]} runs={[{ id: "run-1", ownerId: "owner-1", lotId: "LOT-1", protocolId: "P-1", versionId: "V-1", stepId: "step-1", status: "Needs review", note: "ยังไม่ชัดเจน", measurements: {}, mediaIds: [], observedAt: "2026-07-24T00:00:00.000Z", updatedAt: "2026-07-24T00:00:00.000Z" }]} onSave={vi.fn(async () => undefined)} />);
+    expect(html).toContain("ขั้นนี้ต้องตรวจเพิ่มหรือแก้ไขก่อน");
+    expect(html).toMatch(/disabled=""[^>]*>ถัดไป/);
+  });
+
   it("shows photo evidence controls after the step has an evidence observation", () => {
     const html = renderToStaticMarkup(<GuidedProtocolRunner lotId="LOT-1" protocolId="P-1" versionId="V-1" steps={[step]} runs={[{ id: "run-1", ownerId: "owner-1", lotId: "LOT-1", protocolId: "P-1", versionId: "V-1", stepId: "step-1", status: "Passed", note: "พร้อม", measurements: {}, mediaIds: [], evidenceObservationId: "OBS-STEP-1", observedAt: "2026-07-24T00:00:00.000Z", updatedAt: "2026-07-24T00:00:00.000Z" }]} onSave={vi.fn(async () => undefined)} mediaByStep={{ "step-1": [] }} onMediaUploaded={vi.fn(async () => undefined)} />);
     expect(html).toContain("หลักฐานภาพของขั้นนี้");

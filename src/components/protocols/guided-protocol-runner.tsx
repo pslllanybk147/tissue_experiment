@@ -26,6 +26,7 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
   const [message, setMessage] = useState("");
   const step = steps[activeIndex];
   const run = useMemo(() => runs.find((item) => item.stepId === step?.id), [runs, step]);
+  const canProceed = run?.status === "Passed";
   const [status, setStatus] = useState<GuidedStepStatus>(run?.status ?? "Pending");
   const [note, setNote] = useState(run?.note ?? "");
   const [measurements, setMeasurements] = useState<Record<string, number | null>>(run?.measurements ?? {});
@@ -71,8 +72,8 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
       <div className="guided-status"><span>ผลลัพธ์</span>{statuses.map((item) => <label key={item}><input checked={status === item} onChange={() => setStatus(item)} name={`status-${step.id}`} type="radio" /> {item}</label>)}</div>
       {message && <p className="form-alert" role="status">{message}</p>}
       <div className="guided-next"><p><strong>ถ้าผ่าน:</strong> {step.nextActionOnPass}</p><p><strong>ถ้าไม่ผ่าน:</strong> {step.nextActionOnFail}</p></div>
-      <div className="form-actions"><button className="quiet-button" disabled={activeIndex === 0} onClick={() => select(activeIndex - 1)} type="button">ก่อนหน้า</button><button className="primary-button" disabled={saving} onClick={() => void save()} type="button">{saving ? "กำลังบันทึก…" : "บันทึกผลขั้นนี้"}</button><button aria-describedby={!run || run.status === "Pending" ? `next-step-help-${step.id}` : undefined} className="quiet-button" disabled={activeIndex === steps.length - 1 || !run || run.status === "Pending"} onClick={() => select(activeIndex + 1)} type="button">ถัดไป</button></div>
-      {(!run || run.status === "Pending") && activeIndex < steps.length - 1 && <p className="muted-copy" id={`next-step-help-${step.id}`}>บันทึกผลขั้นนี้ก่อน จึงจะไปขั้นถัดไปได้</p>}
+      <div className="form-actions"><button className="quiet-button" disabled={activeIndex === 0} onClick={() => select(activeIndex - 1)} type="button">ก่อนหน้า</button><button className="primary-button" disabled={saving} onClick={() => void save()} type="button">{saving ? "กำลังบันทึก…" : "บันทึกผลขั้นนี้"}</button><button aria-describedby={!canProceed ? `next-step-help-${step.id}` : undefined} className="quiet-button" disabled={activeIndex === steps.length - 1 || !canProceed} onClick={() => select(activeIndex + 1)} type="button">ถัดไป</button></div>
+      {!canProceed && activeIndex < steps.length - 1 && <p className="muted-copy" id={`next-step-help-${step.id}`}>{run?.status === "Failed" ? "ขั้นนี้ไม่ผ่าน ให้ทำตามคำแนะนำการแก้ไขแล้วบันทึกผลใหม่ก่อน" : run?.status === "Needs review" ? "ขั้นนี้ต้องตรวจเพิ่มหรือแก้ไขก่อน จึงจะไปขั้นถัดไปได้" : "บันทึกผลขั้นนี้ก่อน จึงจะไปขั้นถัดไปได้"}</p>}
     </section>
   </div>;
 }
