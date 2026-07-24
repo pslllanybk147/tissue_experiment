@@ -1716,6 +1716,7 @@
   - ข้อความไทยยาวและ evidence/reference section แสดงได้
   - Protocol Detail แสดง `คัดลอกเป็น Draft`, `แก้ไข`, ขั้นตอน และสถานะ evidence
   - keyboard Tab เปลี่ยน focus ได้ แต่ใน local dev มี Next.js Dev Tools portal เป็นจุดรับ focus แรก ต้องตรวจซ้ำใน Preview production โดยปิด dev tools
-- production domain `https://tissue-experiment-93.vercel.app` ตอบ HTTP 200 และ route knowledge ตอบได้ แต่การตรวจครั้งนี้อยู่ในสถานะ unauthenticated จึงยืนยันได้เฉพาะ Auth Gate/route availability ยังไม่ใช่หลักฐานของ authenticated Firebase flow ล่าสุด
+- หลัง push `master` แล้ว Vercel สร้าง Production deployment `74f0309` สำเร็จและแสดงสถานะ `Ready`; production domain `https://tissue-experiment-93.vercel.app` และ route knowledge ตอบ HTTP 200
+- deployment alias ถูก Vercel Deployment Protection ให้ sign in ก่อน จึงไม่ใช้ alias เป็นหลักฐาน UI โดยตรง; production domain แสดง Firebase Auth Gate ถูกต้องเมื่อยังไม่ได้ login
 - การตรวจ authenticated Preview ที่เคยทำสำเร็จยืนยันการบันทึก step และการโหลด media บน Preview เดิมแล้ว แต่ต้องตรวจซ้ำกับ deployment ที่มาจาก `master` ก่อนปิด milestone production
-- สถานะ: โค้ดและ automated verification พร้อม; งานค้างสุดท้ายคือ authenticated production Preview flow, UI keyboard/focus รอบ production และจึงเริ่ม Image Processing
+- สถานะ: โค้ด, automated verification และ production deployment พร้อม; งานค้างสุดท้ายคือ authenticated flow บน deployment ล่าสุด และ UI keyboard/focus รอบ production ก่อนเริ่ม Image Processing
