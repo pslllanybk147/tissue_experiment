@@ -1583,3 +1583,18 @@
   - `npm run build`: ผ่าน
   - `git diff --check`: ผ่าน มีเฉพาะคำเตือน line ending Windows
 - สถานะ: Guided Protocol มี workflow หลักฐานครบ note + measurement + photo พร้อม soft delete/restore; ยังต้องใช้ Firebase/Cloudinary production credentials เพื่อทดสอบ binary upload จริงก่อนเปิดใช้ production
+
+### เพิ่ม completion gate ใน Guided Runner — 2026-07-24
+
+- ปุ่ม `ถัดไป` ถูก disable จนกว่าจะบันทึกผลขั้นปัจจุบันแล้ว
+- แสดงคำแนะนำภาษาไทยชัดเจนว่าให้บันทึกผลก่อนจึงไปต่อได้
+- เพิ่ม regression test สำหรับ gate และคง photo-evidence test ไว้
+- Sandbox ผ่านที่ `/experiments/GATE-SANDBOX-001` ใน Demo mode viewport 390 px:
+  - ก่อนบันทึก: `ถัดไป` disabled
+  - หลังบันทึก note + Passed: `ถัดไป` enabled
+  - หลังบันทึก: controls รูปภาพและ `เพิ่มรูป` แสดงครบ
+- Verification:
+  - targeted Runner tests: 2 ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+- สถานะ: Guided workflow ไม่อนุญาตให้ข้ามขั้นโดยไม่ยืนยันผล; binary upload production ยังต้องตรวจด้วย credentials จริง
