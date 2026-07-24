@@ -21,6 +21,9 @@ describe("Philodendron knowledge catalog", () => {
       expect(monograph.tissueCulture.steps.map((step) => step.id)).toContain("explant-cut-location");
       expect(monograph.tissueCulture.steps.map((step) => step.id)).toContain("medium-preparation");
       expect(monograph.tissueCulture.steps.map((step) => step.id)).toContain("surface-sterilization");
+      expect(monograph.tissueCulture.mediaRecipes).toHaveLength(3);
+      expect(monograph.tissueCulture.mediaRecipes[0].batchVolumes).toEqual([100, 250, 500, 1000]);
+      expect(monograph.tissueCulture.mediaRecipes.flatMap((recipe) => recipe.ingredients.map((ingredient) => ingredient.unit))).toContain("mg/L");
     }
   });
 

@@ -12,8 +12,13 @@ export type ManualStep = {
   expectedResult: string; passCriteria: string[]; failCriteria: string[];
   evidenceState: EvidenceState; sourceIds: string[]; measurements?: { label: string; unit: string; required: boolean }[];
 };
+export type MediaIngredient = { name: string; amountPerLiter: number; unit: "×" | "g/L" | "mg/L"; note?: string };
+export type MediaRecipe = {
+  id: string; title: string; evidenceState: EvidenceState; sourceIds: string[];
+  pH: string; batchVolumes: number[]; ingredients: MediaIngredient[]; note: string;
+};
 export type TissueCultureManual = {
-  method: "nodal"; disclaimer: string; steps: ManualStep[]; mediaNotes: string[];
+  method: "nodal"; disclaimer: string; steps: ManualStep[]; mediaNotes: string[]; mediaRecipes: MediaRecipe[];
 };
 export type PhilodendronMonograph = {
   taxonId: string; title: string; subtitle: string; sections: KnowledgeSection[];
@@ -53,6 +58,12 @@ export const philodendronTaxa: TaxonRecord[] = [...baseTaxa, ...generatedSpecies
 
 const step = (id: string, order: number, title: string, objective: string, instructions: string[], materials: string[], criticalControls: string[], safetyNotes: string[], expectedResult: string, passCriteria: string[], failCriteria: string[], evidenceState: EvidenceState, sourceIds: string[] = [], measurements?: ManualStep["measurements"]): ManualStep => ({ id, order, title, objective, instructions, materials, criticalControls, safetyNotes, expectedResult, passCriteria, failCriteria, evidenceState, sourceIds, measurements });
 
+const mediaRecipes = (evidenceState: EvidenceState, sourceIds: string[], multiplicationBap: number, multiplicationNaa: number, note: string): MediaRecipe[] => [
+  { id: "establishment", title: "Establishment · ตั้งต้น", evidenceState, sourceIds, pH: "5.7–5.8", batchVolumes: [100, 250, 500, 1000], ingredients: [{ name: "MS basal salts", amountPerLiter: 1, unit: "×" }, { name: "Sucrose", amountPerLiter: 30, unit: "g/L" }, { name: "Agar", amountPerLiter: 7.5, unit: "g/L" }, { name: "BAP", amountPerLiter: 0.5, unit: "mg/L", note: "ใช้ stock solution" }, { name: "NAA", amountPerLiter: 0.05, unit: "mg/L", note: "ใช้ stock solution" }], note },
+  { id: "multiplication", title: "Multiplication · เพิ่มจำนวนยอด", evidenceState, sourceIds, pH: "5.7–5.8", batchVolumes: [100, 250, 500, 1000], ingredients: [{ name: "MS basal salts", amountPerLiter: 1, unit: "×" }, { name: "Sucrose", amountPerLiter: 30, unit: "g/L" }, { name: "Agar", amountPerLiter: 7.5, unit: "g/L" }, { name: "BAP", amountPerLiter: multiplicationBap, unit: "mg/L", note: "ค่าฮอร์โมนต้องใช้ stock solution" }, { name: "NAA", amountPerLiter: multiplicationNaa, unit: "mg/L", note: "ถ้าไม่ใช้ให้เป็น 0" }], note },
+  { id: "rooting", title: "Rooting · ออกราก", evidenceState, sourceIds, pH: "5.7–5.8", batchVolumes: [100, 250, 500, 1000], ingredients: [{ name: "MS basal salts", amountPerLiter: 0.5, unit: "×" }, { name: "Sucrose", amountPerLiter: 30, unit: "g/L" }, { name: "Agar", amountPerLiter: 7.5, unit: "g/L" }, { name: "IBA", amountPerLiter: 3, unit: "mg/L", note: "ใช้ stock solution; ค่านี้เป็นจุดอ้างอิง ไม่ใช่การรับรองทุกห้อง" }], note },
+];
+
 const sharedSteps = (evidenceState: EvidenceState, sourceIds: string[]): ManualStep[] => [
   step("baseline", 1, "รับต้นไม้และบันทึก baseline", "เก็บสภาพต้นแม่ก่อนเริ่ม", ["ติดรหัสต้นไม้และ Lot ให้ตรงกัน", "ถ่ายรูปทั้งต้น ใบ ยอด ข้อ และรากที่เห็น", "บันทึกผู้ขาย วันที่ได้รับ แหล่งที่มา สุขภาพ และลายด่าง"], ["กล้องหรือโทรศัพท์", "ป้ายรหัส", "แบบบันทึก"], ["ห้ามเริ่มโดยไม่มีรูปอ้างอิง"], ["ล้างมือหลังจับต้นที่มีอาการผิดปกติ"], "มี baseline ที่ย้อนตรวจได้", ["มีรหัส", "มีรูปทั้งต้นและจุดที่จะเลือก"], ["ระบุต้นหรือจุดเริ่มต้นไม่ได้"], "Adapted"),
   step("quarantine", 2, "ตรวจสุขภาพและกักต้นแม่", "ลดเชื้อแฝงและความเสี่ยงจากต้นแม่", ["ตรวจแมลง โรค รอยเน่า น้ำยางผิดปกติ และราก", "แยกต้นจากต้นอื่นและบันทึกสถานะ", "ยังไม่ตัดหากพบโรคที่ควบคุมไม่ได้"], ["พื้นที่กัก", "ป้ายสถานะ", "แว่นขยาย"], ["ต้นที่มีโรคชัดเจนต้องไม่เข้ารอบทดลองแพง"], ["แยกอุปกรณ์ของต้นป่วย"], "มี health decision ที่อธิบายได้", ["ไม่พบความเสี่ยงหยุดทดลอง หรือมีแผนแก้ไข"], ["โรค/แมลงควบคุมไม่ได้"], "Adapted"),
@@ -82,7 +93,7 @@ const monograph = (taxonId: string, title: string, subtitle: string, evidenceSta
     { id: "identification", title: "Identification", summary: "ใช้หลายจุดสังเกตร่วมกัน และระบุความไม่แน่นอนของต้นขายจริง", claims: extraClaims.filter((claim) => claim.id.includes("identification")) },
     { id: "tissue-culture", title: "Tissue culture", summary: "คู่มือ guided workflow 18 ขั้น พร้อม evidence state ต่อขั้น", claims: extraClaims.filter((claim) => claim.id.includes("culture")) },
   ],
-  tissueCulture: { method: "nodal", disclaimer: "คู่มือนี้เป็น research-assisted workflow ไม่ใช่การรับประกันผล สูตรหรือเวลาที่ไม่มีหลักฐานตรงพันธุ์ต้องบันทึกเป็น Adapted/Experimental และทดสอบกับระบบของผู้ใช้เอง", steps: sharedSteps(evidenceState, sourceIds), mediaNotes: ["Pink Princess มีงานตรงพันธุ์สำหรับการเพิ่มยอด/ออกราก แต่เงื่อนไขการฟอกและการเริ่มจากต้นแม่ของห้องนี้ยังต้อง validate", "Violin ยังไม่มี protocol ตรงพันธุ์ในฐานข้อมูลนี้ จึงห้ามนำตัวเลขของ Pink Princess ไปแสดงเป็น Verified"] },
+  tissueCulture: { method: "nodal", disclaimer: "คู่มือนี้เป็น research-assisted workflow ไม่ใช่การรับประกันผล สูตรหรือเวลาที่ไม่มีหลักฐานตรงพันธุ์ต้องบันทึกเป็น Adapted/Experimental และทดสอบกับระบบของผู้ใช้เอง", steps: sharedSteps(evidenceState, sourceIds), mediaNotes: ["ตารางสูตรเป็นจุดตั้งต้นสำหรับ batch เล็ก; ปริมาณต่อ batch คำนวณจากค่าต่อลิตรและต้องใช้ stock solution สำหรับฮอร์โมน", "ค่าฮอร์โมนหรือวิธีฟอกที่มีหลักฐานตรงเฉพาะบางขั้นต้องไม่ถูกตีความว่าเป็น Verified ทั้งสูตร"] , mediaRecipes: mediaRecipes(evidenceState, sourceIds, title.includes("Pink") ? 1 : 0.5, title.includes("Pink") ? 0 : 0.05, title.includes("Pink") ? "งาน Pink Princess รองรับ BAP 1.0 mg/L และ IBA 3.0 mg/L ในระบบที่ศึกษา แต่ตารางเต็มนี้เป็น Adapted สำหรับการเริ่มจาก nodal explant" : "Violin ยังไม่มีหลักฐานตรงพันธุ์ จึงถือสูตรทั้งหมดเป็น Experimental/Adapted และต้องบันทึกผลทุก batch") },
 });
 
 export const philodendronMonographs: PhilodendronMonograph[] = [

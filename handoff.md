@@ -1468,3 +1468,19 @@
 - กด `เริ่ม Plant Record` สำเร็จ และระบบนำไป `/plants/new?taxon=trade-name-violin-variegated`
 - ตรวจ prefill สำเร็จ: suspected species เป็น `Violin variegated` และ confidence เป็น `Low`
 - สถานะ: เส้นทางค้นหา → taxon detail → Plant Record ใช้งานได้ใน demo mode; authenticated Firebase flow ยังรอ environment จริง
+
+### เพิ่มตารางสูตรอาหารใน Monograph — 2026-07-24
+
+- เพิ่ม `MediaRecipe` ใน domain model สำหรับ Establishment, Multiplication และ Rooting
+- แต่ละสูตรมี evidence state, source IDs, pH เป้าหมาย, note และ batch volumes 100/250/500/1,000 mL
+- แสดงส่วนประกอบ MS, sucrose, agar และฮอร์โมนเป็นค่าต่อลิตร พร้อมคำนวณปริมาณตาม batch ในหน้าเว็บ
+- ระบุชัดว่าปริมาณฮอร์โมนต้องใช้ stock solution และค่าตารางเป็นจุดตั้งต้น ไม่ใช่การรับรองทุกห้องทดลอง
+- Pink Princess: ตารางเต็มเป็น Adapted; claim BAP 1.0 mg/L และ IBA 3.0 mg/L ยังคง Verified เฉพาะตามงานวิจัยที่อ้าง
+- Violin: ตารางทั้งหมดคงสถานะ Experimental/Adapted เนื่องจากยังไม่มี protocol ตรงพันธุ์
+- ตรวจ agent-browser ที่ 390 px แล้วพบตารางอ่านได้ผ่าน horizontal table wrapper และไม่มี page overflow
+- Verification:
+  - targeted domain/component tests: 6 passed
+  - `npm run lint`: ผ่าน
+  - `npm test -- --run`: 68 files / 140 tests ผ่าน
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: 72 files / 150 tests ผ่าน
