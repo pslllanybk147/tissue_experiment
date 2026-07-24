@@ -36,7 +36,7 @@ describe("Philodendron knowledge catalog", () => {
   });
 
   it("prefills a Plant Record from the selected taxon without claiming cultivar certainty", () => {
-    expect(plantPrefillForTaxon("cultivar-pink-princess")).toEqual({ suspectedSpecies: "Pink Princess", identificationConfidence: "Medium" });
+    expect(plantPrefillForTaxon("cultivar-pink-princess")).toEqual({ taxonId: "cultivar-pink-princess", suspectedSpecies: "Pink Princess", identificationConfidence: "Medium" });
     expect(plantPrefillForTaxon("missing-taxon")).toBeNull();
   });
 });

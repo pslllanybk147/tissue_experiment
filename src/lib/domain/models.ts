@@ -28,6 +28,7 @@ export type PlantRecord = {
   ownerId: string;
   sellerName: string;
   suspectedSpecies: string;
+  taxonId?: string;
   identificationConfidence: "Unknown" | "Low" | "Medium" | "High";
   source: string;
   receivedAt: string;

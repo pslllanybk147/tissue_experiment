@@ -153,10 +153,10 @@ export function monographForTaxon(taxonId: string): PhilodendronMonograph | null
   return philodendronMonographs.find((item) => item.taxonId === taxonId) ?? null;
 }
 
-export function plantPrefillForTaxon(taxonId: string): { suspectedSpecies: string; identificationConfidence: "Low" | "Medium" | "High" } | null {
+export function plantPrefillForTaxon(taxonId: string): { taxonId: string; suspectedSpecies: string; identificationConfidence: "Low" | "Medium" | "High" } | null {
   const taxon = philodendronTaxa.find((item) => item.id === taxonId);
   if (!taxon) return null;
-  return { suspectedSpecies: taxon.displayName, identificationConfidence: taxon.rank === "species" ? "High" : taxon.confidence === "High" ? "Medium" : taxon.confidence === "Medium" ? "Medium" : "Low" };
+  return { taxonId: taxon.id, suspectedSpecies: taxon.displayName, identificationConfidence: taxon.rank === "species" ? "High" : taxon.confidence === "High" ? "Medium" : taxon.confidence === "Medium" ? "Medium" : "Low" };
 }
 
 export type { TaxonRank };

@@ -1657,3 +1657,18 @@
   - `npm run lint`: ผ่าน
   - `npm run build`: ผ่าน
 - สถานะ: Plant Profile พร้อมเป็นศูนย์กลางเชื่อมต้นไม้กับ Lot; ข้อมูล Lot จะแสดงเมื่อ Plant Record นั้นถูกใช้สร้าง Lot จริง
+
+### เชื่อม Plant Record กับ Taxon Knowledge — 2026-07-24
+
+- เพิ่ม `taxonId` ใน `PlantRecord` เพื่อเก็บความสัมพันธ์กับรายการ Taxon จริง ไม่อาศัยชื่อพืชแบบข้อความอย่างเดียว
+- การเริ่มสร้าง Plant Record จากหน้า Taxon เช่น Pink Princess จะบันทึกทั้ง `taxonId`, ชื่อที่คาดว่าเป็น และระดับความมั่นใจ
+- หน้า Plant Profile แสดง Taxon ที่เชื่อมอยู่ ลิงก์กลับไป Taxon Detail และ evidence state ของรายการนั้น
+- หน้า Start New Plant แสดงลิงก์ `เปิดข้อมูลชนิดพืช` เมื่อมี Taxon prefill เพื่อให้มือใหม่ย้อนกลับไปอ่าน Biology, Identification และ Tissue Culture ก่อนเริ่ม Lot
+- อัปเดต domain test ให้ยืนยันว่า prefill คืน `taxonId` และไม่ทำให้ template ต้นฉบับถูกแก้
+- Verification:
+  - targeted knowledge/repository tests: 2 files / 7 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: 74 files / 156 tests ผ่าน
+  - sandbox `agent-browser` ที่ `/plants/new?taxon=cultivar-pink-princess`: Demo mode, Taxon link และ Pink Princess prefill แสดงถูกต้อง; viewport 390 px ไม่มี horizontal overflow
+- สถานะ: Plant Record เชื่อมกลับ Knowledge Base ได้แล้ว; ขั้นต่อไปคือทำ Taxon Detail ให้เริ่ม Plant Record/Lot ด้วย context เดียวกันครบทั้ง flow และเพิ่ม migration ตรวจข้อมูลเก่า
