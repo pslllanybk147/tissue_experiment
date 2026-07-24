@@ -59,6 +59,7 @@ export type ProtocolStepRun = {
   note: string;
   measurements: Record<string, number | null>;
   mediaIds: string[];
+  evidenceObservationId?: string;
   observedAt: string;
   updatedAt: string;
 };
@@ -121,6 +122,8 @@ export type ObservationInput = {
   shootCount: number | null;
   rootCount: number | null;
   contaminationCount: number | null;
+  kind?: "manual" | "protocol-step-evidence";
+  protocolStepId?: string;
 };
 
 export type Observation = ObservationInput & {
@@ -131,6 +134,8 @@ export type Observation = ObservationInput & {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
+  kind?: "manual" | "protocol-step-evidence";
+  protocolStepId?: string;
 };
 
 export type AuditEvent = {

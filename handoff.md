@@ -1551,3 +1551,35 @@
 - เลือก step 4 `เลือกยอด/ข้อ/ตาข้าง` แล้วบันทึก note พร้อมสถานะ `Needs review`
 - รายการ step เปลี่ยนเป็น `Needs review` สำเร็จ โดยไม่บังคับให้ผู้ใช้กดผ่านเมื่อหลักฐานยังไม่พอ
 - สถานะ: Violin workflow รองรับผลที่ยังไม่ชัดเจนตาม evidence policy; authenticated Firebase flow ยังรอตรวจด้วยบัญชีจริง
+
+### เพิ่มหลักฐานภาพประจำ Guided Protocol step — 2026-07-24
+
+- เพิ่ม `evidenceObservationId` ใน `ProtocolStepRun` เพื่อผูกหลักฐานภาพกับขั้นตอนที่ถูกบันทึกจริง
+- เมื่อบันทึก step ครั้งแรก ระบบสร้าง observation container ภายในสำหรับภาพหลักฐานโดยอัตโนมัติ และติด `kind: protocol-step-evidence` เพื่อไม่ให้ปนกับ Observation Timeline หลัก
+- Guided Runner แสดง `MediaUploader` และ `MediaStrip` หลังมีการบันทึกผลขั้นนั้นแล้ว โดยยังใช้ `/api/media/sign` และ Cloudinary security flow เดิม
+- ระบบยังคงบังคับ required note/measurement ก่อนบันทึก และไม่เปิดช่อง upload ก่อนมี Lot/observation target ที่ถูกต้อง
+- เพิ่ม unit test สำหรับการแสดง photo evidence controls และเพิ่ม optional observation metadata สำหรับการซ่อน system evidence container
+- Sandbox ตรวจด้วย `agent-browser` ที่ `/experiments/PHOTO-SANDBOX-001` ใน Demo mode:
+  - สร้าง Pink Princess Lot สำเร็จ
+  - Runner แสดง 18 ขั้น
+  - ก่อนบันทึก step มีข้อความให้บันทึกผลก่อนจึงอัปโหลดรูปได้
+  - หลังบันทึก step 1 สถานะ Passed แล้ว ปุ่มเลือกไฟล์/คำอธิบายภาพ/เพิ่มรูปแสดงครบ
+  - viewport 390 px ไม่มี horizontal overflow (`scrollWidth=390`, `viewport=390`)
+- Verification:
+  - targeted tests: 2 files / 3 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+- ข้อจำกัดที่ยังเหลือ: การอัปโหลดไฟล์จริงต้องตรวจด้วย authenticated Firebase + Cloudinary environment เพราะ Demo mode ไม่มี Firebase user token
+
+### ปรับการแก้ไขหลักฐานภาพใน Runner — 2026-07-24
+
+- แก้การบันทึก step เดิมให้คง `evidenceObservationId` เดิม ป้องกันการสร้าง observation container ซ้ำเมื่อแก้ผลขั้นตอน
+- เพิ่มการลบแบบ soft delete และกู้คืนรูปจากส่วนหลักฐานภาพใน Guided Runner โดยตรง
+- ใช้ repository เดิมและ owner/lot/observation validation เดิม ไม่เปิด target upload ใหม่ที่ข้าม security boundary
+- Verification หลังแก้:
+  - `npm test -- --run`: 69 files ผ่าน, 4 skipped; 142 passed, 10 skipped
+  - `npm run firebase:verify`: 73 files / 152 tests ผ่านบน Auth + Firestore emulator
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน มีเฉพาะคำเตือน line ending Windows
+- สถานะ: Guided Protocol มี workflow หลักฐานครบ note + measurement + photo พร้อม soft delete/restore; ยังต้องใช้ Firebase/Cloudinary production credentials เพื่อทดสอบ binary upload จริงก่อนเปิดใช้ production

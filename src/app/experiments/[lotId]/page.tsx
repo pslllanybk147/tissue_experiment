@@ -37,6 +37,7 @@ export default function ExperimentDetailPage() {
   const [protocolVersion, setProtocolVersion] = useState<ProtocolVersion | null>(null);
   const [media, setMedia] = useState<Record<string,ObservationMedia[]>>({});
   const [stepRuns, setStepRuns] = useState<ProtocolStepRun[]>([]);
+  const stepMedia = Object.fromEntries(stepRuns.map((run) => [run.stepId, media[run.evidenceObservationId ?? ""] ?? []]));
 
   async function load() {
     const nextLot = await repository.getLot(ownerId, lotId);
@@ -74,7 +75,16 @@ export default function ExperimentDetailPage() {
   }
   async function deleteMedia(observationId:string,mediaId:string){await mediaRepository.softDelete(ownerId,lotId,observationId,mediaId);setMedia(current=>({...current,[observationId]:(current[observationId]??[]).filter(item=>item.id!==mediaId)}));}
   async function restoreMedia(observationId:string,mediaId:string){await mediaRepository.restore(ownerId,lotId,observationId,mediaId);setMedia(current=>({...current,[observationId]:(current[observationId]??[]).map(item=>item.id===mediaId?{...item,deletedAt:null}:item)})); await load();}
-  async function saveStepRun(input: Omit<ProtocolStepRun, "id" | "ownerId" | "updatedAt">) { await stepRunRepository.save(ownerId, input); setStepRuns(await stepRunRepository.list(ownerId, lotId)); }
+  async function saveStepRun(input: Omit<ProtocolStepRun, "id" | "ownerId" | "updatedAt">) {
+    let evidenceObservationId = input.evidenceObservationId;
+    if (!evidenceObservationId) {
+      const evidence = await repository.createObservation(ownerId, lotId, { observedAt: input.observedAt, status: "Review", stage: `Protocol step evidence: ${input.stepId}`, note: "ระบบสร้าง container สำหรับเก็บภาพหลักฐานของ Guided Protocol step", shootCount: null, rootCount: null, contaminationCount: null, kind: "protocol-step-evidence", protocolStepId: input.stepId });
+      evidenceObservationId = evidence.id;
+      setObservations((current) => [...current, { ...evidence, kind: "protocol-step-evidence", protocolStepId: input.stepId }]);
+    }
+    await stepRunRepository.save(ownerId, { ...input, evidenceObservationId });
+    setStepRuns(await stepRunRepository.list(ownerId, lotId));
+  }
 
   return <AuthGate><LabShell onSignOut={() => void signOut()} section="Experiments" sessionLabel={session.status === "authenticated" ? "FIREBASE" : "DEMO"}>
     <Link className="route-back" href="/experiments">← Experiment Lots</Link>
@@ -84,9 +94,9 @@ export default function ExperimentDetailPage() {
     {state === "ready" && lot && <>
       <header className="lot-detail-heading"><div><p className="eyebrow">EXPERIMENT LOT</p><h1>{lot.id}</h1><p>{lot.plant} · {lot.protocolTitle}</p></div><span className={`badge badge-${lot.status.toLowerCase().replaceAll(" ", "-")}`}>{lot.status}</span></header>
       <div className="lot-detail-grid">
-        <section className="lot-work-column">{protocolVersion && <section className="experiment-surface protocol-lot-runner"><div className="timeline-heading"><div><p className="eyebrow">PROTOCOL PROGRESS</p><h2>{lot.protocolTitle}</h2><p className="muted-copy">ทำตามทีละขั้น บันทึกผลจริง แล้วระบบจะเก็บหลักฐานไว้กับ Lot นี้</p></div><Link href={`/protocols/${lot.protocolId}`}>เปิด Protocol</Link></div><GuidedProtocolRunner lotId={lotId} protocolId={lot.protocolId} versionId={protocolVersion.id} steps={protocolVersion.steps} runs={stepRuns} onSave={saveStepRun} /></section>}<ObservationForm defaultStage={lot.stage} editing={editing} key={editing?.id ?? "new"} onCancel={() => setEditing(null)} onSubmit={save} />
+        <section className="lot-work-column">{protocolVersion && <section className="experiment-surface protocol-lot-runner"><div className="timeline-heading"><div><p className="eyebrow">PROTOCOL PROGRESS</p><h2>{lot.protocolTitle}</h2><p className="muted-copy">ทำตามทีละขั้น บันทึกผลจริง แล้วระบบจะเก็บหลักฐานไว้กับ Lot นี้</p></div><Link href={`/protocols/${lot.protocolId}`}>เปิด Protocol</Link></div><GuidedProtocolRunner lotId={lotId} protocolId={lot.protocolId} versionId={protocolVersion.id} steps={protocolVersion.steps} runs={stepRuns} onSave={saveStepRun} mediaByStep={stepMedia} onMediaUploaded={saveMedia} onMediaDelete={deleteMedia} onMediaRestore={restoreMedia} /></section>}<ObservationForm defaultStage={lot.stage} editing={editing} key={editing?.id ?? "new"} onCancel={() => setEditing(null)} onSubmit={save} />
           <div className="timeline-heading"><div><p className="eyebrow">OBSERVATION TIMELINE</p><h2>บันทึกผล</h2></div><label><input checked={showDeleted} onChange={(e) => setShowDeleted(e.target.checked)} type="checkbox" /> แสดงรายการที่ลบ</label></div>
-          <ObservationTimeline observations={observations} onDelete={remove} onEdit={setEditing} onRestore={restore} renderMedia={item=><div className="observation-media"><MediaStrip items={media[item.id]??[]} onDelete={id=>deleteMedia(item.id,id)} onRestore={id=>restoreMedia(item.id,id)} onAddToDataset={addToDataset} />{!item.deletedAt&&<MediaUploader lotId={lotId} observationId={item.id} onUploaded={saveMedia}/>}</div>} />
+          <ObservationTimeline observations={observations.filter((item) => item.kind !== "protocol-step-evidence")} onDelete={remove} onEdit={setEditing} onRestore={restore} renderMedia={item=><div className="observation-media"><MediaStrip items={media[item.id]??[]} onDelete={id=>deleteMedia(item.id,id)} onRestore={id=>restoreMedia(item.id,id)} onAddToDataset={addToDataset} />{!item.deletedAt&&<MediaUploader lotId={lotId} observationId={item.id} onUploaded={saveMedia}/>}</div>} />
         </section>
         <aside className="lot-audit-column"><p className="eyebrow">AUDIT HISTORY</p><h2>ประวัติการเปลี่ยนแปลง</h2><AuditHistory events={audits} /></aside>
       </div>
