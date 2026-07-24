@@ -1458,3 +1458,13 @@
   - `npm run build`: ผ่าน และมี route Taxon Detail
   - `npm run firebase:verify`: 72 files / 150 tests ผ่านด้วย Auth + Firestore emulator
 - สถานะ: UI verification รุ่นนี้ผ่านและแก้ accessibility contrast แล้ว; ยังต้องทดสอบ authenticated Firebase flow เมื่อ environment จริงพร้อม
+
+### ตรวจ Violin และเส้นทางเริ่ม Plant Record — 2026-07-24
+
+- เปิด Knowledge Library ใน demo mode และเลือก `Violin variegated` สำเร็จ
+- เปิด Taxon Detail ที่ `/knowledge/taxa/trade-name-violin-variegated` สำเร็จ
+- ตรวจพบชื่อแสดงเป็น `Philodendron bipennifolium ‘Violin’ variegated` และ evidence state เป็น Experimental ตามข้อกำหนด
+- ตรวจว่าคู่มือมี 4 หมวดและ 18 ขั้นเหมือน Pink Princess แต่ไม่ยกระดับหลักฐานของ Violin เป็น Verified
+- กด `เริ่ม Plant Record` สำเร็จ และระบบนำไป `/plants/new?taxon=trade-name-violin-variegated`
+- ตรวจ prefill สำเร็จ: suspected species เป็น `Violin variegated` และ confidence เป็น `Low`
+- สถานะ: เส้นทางค้นหา → taxon detail → Plant Record ใช้งานได้ใน demo mode; authenticated Firebase flow ยังรอ environment จริง
