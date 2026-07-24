@@ -58,9 +58,9 @@ export function createMemoryExperimentRepository(uid: string, options: Repositor
     });
   }
 
-  async function listLots(ownerId: string) {
+  async function listLots(ownerId: string, includeDeleted = false) {
     assertOwner(ownerId);
-    return [...lots.values()].map(clone).sort((a, b) => b.startedAt.localeCompare(a.startedAt));
+    return [...lots.values()].filter((lot) => includeDeleted || !lot.deletedAt).map(clone).sort((a, b) => b.startedAt.localeCompare(a.startedAt));
   }
 
   async function getLot(ownerId: string, lotId: string) {
@@ -73,10 +73,31 @@ export function createMemoryExperimentRepository(uid: string, options: Repositor
     assertOwner(ownerId);
     if (lots.has(input.id)) throw new Error("Lot already exists");
     const timestamp = now();
-    const lot: ExperimentLot = { ...clone(input), ownerId: uid, createdAt: timestamp, updatedAt: timestamp };
+    const lot: ExperimentLot = { ...clone(input), ownerId: uid, createdAt: timestamp, updatedAt: timestamp, deletedAt: null };
     lots.set(lot.id, lot);
     addAudit(lot.id, "lot", lot.id, "created", null, lot as unknown as Record<string, unknown>);
     return clone(lot);
+  }
+
+  async function softDeleteLot(ownerId: string, lotId: string) {
+    assertOwner(ownerId);
+    const current = requireLot(lotId);
+    if (current.deletedAt) return clone(current);
+    const timestamp = now();
+    const updated = { ...current, deletedAt: timestamp, updatedAt: timestamp };
+    lots.set(lotId, updated);
+    addAudit(lotId, "lot", lotId, "deleted", current as unknown as Record<string, unknown>, updated as unknown as Record<string, unknown>);
+    return clone(updated);
+  }
+
+  async function restoreLot(ownerId: string, lotId: string) {
+    assertOwner(ownerId);
+    const current = requireLot(lotId);
+    if (!current.deletedAt) return clone(current);
+    const updated = { ...current, deletedAt: null, updatedAt: now() };
+    lots.set(lotId, updated);
+    addAudit(lotId, "lot", lotId, "restored", current as unknown as Record<string, unknown>, updated as unknown as Record<string, unknown>);
+    return clone(updated);
   }
 
   async function listObservations(ownerId: string, lotId: string, includeDeleted = false) {
@@ -150,6 +171,8 @@ export function createMemoryExperimentRepository(uid: string, options: Repositor
     listLots,
     getLot,
     createLot,
+    softDeleteLot,
+    restoreLot,
     listObservations,
     createObservation,
     updateObservation,

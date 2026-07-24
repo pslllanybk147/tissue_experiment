@@ -108,6 +108,7 @@ export type ExperimentLot = {
   startedAt: string;
   createdAt: string;
   updatedAt: string;
+  deletedAt?: string | null;
   plantId?: string;
   taxonId?: string;
   templateId?: string;

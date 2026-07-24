@@ -11,6 +11,7 @@ export interface ExperimentPersistenceAdapter {
   listLots(): Promise<ExperimentLot[]>;
   getLot(lotId: string): Promise<ExperimentLot | null>;
   createLotWithAudit(lot: ExperimentLot, audit: AuditEvent): Promise<ExperimentLot>;
+  commitLotMutation(lot: ExperimentLot, audit: AuditEvent): Promise<void>;
   listObservations(lotId: string): Promise<Observation[]>;
   getObservation(lotId: string, observationId: string): Promise<Observation | null>;
   commitObservationMutation(mutation: ObservationMutation): Promise<void>;
@@ -49,6 +50,12 @@ function createFirebaseAdapter(firestore: Firestore, uid: string): ExperimentPer
       batch.set(auditRef(lot.id, audit.id), audit);
       await batch.commit();
       return lot;
+    },
+    async commitLotMutation(lot, audit) {
+      const batch = writeBatch(firestore);
+      batch.set(lotRef(lot.id), lot);
+      batch.set(auditRef(lot.id, audit.id), audit);
+      await batch.commit();
     },
     async listObservations(lotId) {
       const result = await getDocs(collection(firestore, "users", uid, "lots", lotId, "observations"));
@@ -105,9 +112,9 @@ export function createFirestoreExperimentRepository(uid: string, options: Reposi
     return { id: createId(), lotId, ownerId: uid, entityType, entityId, action, actorId: uid, occurredAt: now(), before, after };
   }
 
-  async function listLots(ownerId: string) {
+  async function listLots(ownerId: string, includeDeleted = false) {
     assertOwner(ownerId);
-    return (await adapter.listLots()).sort((a, b) => b.startedAt.localeCompare(a.startedAt));
+    return (await adapter.listLots()).filter((lot) => includeDeleted || !lot.deletedAt).sort((a, b) => b.startedAt.localeCompare(a.startedAt));
   }
 
   async function getLot(ownerId: string, lotId: string) {
@@ -119,8 +126,27 @@ export function createFirestoreExperimentRepository(uid: string, options: Reposi
     assertOwner(ownerId);
     if (await adapter.getLot(input.id)) throw new Error("Lot already exists");
     const timestamp = now();
-    const lot: ExperimentLot = { ...input, ownerId: uid, createdAt: timestamp, updatedAt: timestamp };
+    const lot: ExperimentLot = { ...input, ownerId: uid, createdAt: timestamp, updatedAt: timestamp, deletedAt: null };
     return adapter.createLotWithAudit(lot, audit(lot.id, "lot", lot.id, "created", null, snapshot(lot)));
+  }
+
+  async function softDeleteLot(ownerId: string, lotId: string) {
+    assertOwner(ownerId);
+    const before = await requireLot(lotId);
+    if (before.deletedAt) return before;
+    const timestamp = now();
+    const lot = { ...before, deletedAt: timestamp, updatedAt: timestamp };
+    await adapter.commitLotMutation(lot, audit(lotId, "lot", lotId, "deleted", snapshot(before), snapshot(lot)));
+    return lot;
+  }
+
+  async function restoreLot(ownerId: string, lotId: string) {
+    assertOwner(ownerId);
+    const before = await requireLot(lotId);
+    if (!before.deletedAt) return before;
+    const lot = { ...before, deletedAt: null, updatedAt: now() };
+    await adapter.commitLotMutation(lot, audit(lotId, "lot", lotId, "restored", snapshot(before), snapshot(lot)));
+    return lot;
   }
 
   async function listObservations(ownerId: string, lotId: string, includeDeleted = false) {
@@ -201,6 +227,8 @@ export function createFirestoreExperimentRepository(uid: string, options: Reposi
     listLots,
     getLot,
     createLot,
+    softDeleteLot,
+    restoreLot,
     listObservations,
     createObservation,
     updateObservation,

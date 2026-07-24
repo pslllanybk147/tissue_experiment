@@ -28,7 +28,7 @@ const observationInput: ObservationInput = {
 };
 
 function harness() {
-  const lot: ExperimentLot = { ...lotInput, ownerId: "owner-1", createdAt: "t0", updatedAt: "t0" };
+  let lot: ExperimentLot = { ...lotInput, ownerId: "owner-1", createdAt: "t0", updatedAt: "t0" };
   let observation: Observation | null = null;
   const mutations: ObservationMutation[] = [];
   const audits: AuditEvent[] = [];
@@ -36,6 +36,7 @@ function harness() {
     listLots: async () => [lot],
     getLot: async (lotId) => lotId === lot.id ? lot : null,
     createLotWithAudit: async (created, audit) => { audits.push(audit); return created; },
+    commitLotMutation: async (updated, audit) => { lot = updated; audits.push(audit); },
     listObservations: async () => observation ? [observation] : [],
     getObservation: async (_lotId, observationId) => observation?.id === observationId ? observation : null,
     commitObservationMutation: async (mutation) => {
@@ -58,6 +59,17 @@ describe("Firestore experiment repository contract", () => {
   it("rejects owner mismatch before persistence", async () => {
     const { repository } = harness();
     await expect(repository.listLots("other")).rejects.toThrow("Owner mismatch");
+  });
+
+  it("soft deletes and restores a lot with audit snapshots", async () => {
+    const { repository } = harness();
+    const deleted = await repository.softDeleteLot("owner-1", "PPP-001");
+    expect(deleted.deletedAt).not.toBeNull();
+    expect(await repository.listLots("owner-1")).toEqual([]);
+    expect((await repository.listLots("owner-1", true))[0].deletedAt).not.toBeNull();
+    const restored = await repository.restoreLot("owner-1", "PPP-001");
+    expect(restored.deletedAt).toBeNull();
+    expect((await repository.listLots("owner-1"))[0].id).toBe("PPP-001");
   });
 
   it("pairs created observation and audit in one adapter mutation", async () => {

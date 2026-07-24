@@ -75,6 +75,8 @@ export default function ExperimentDetailPage() {
   }
   async function deleteMedia(observationId:string,mediaId:string){const deleted=await mediaRepository.softDelete(ownerId,lotId,observationId,mediaId);setMedia(current=>({...current,[observationId]:(current[observationId]??[]).map(item=>item.id===mediaId?deleted:item)}));}
   async function restoreMedia(observationId:string,mediaId:string){await mediaRepository.restore(ownerId,lotId,observationId,mediaId);setMedia(current=>({...current,[observationId]:(current[observationId]??[]).map(item=>item.id===mediaId?{...item,deletedAt:null}:item)})); await load();}
+  async function deleteLot() { if (!lot || !window.confirm(`เก็บ Lot ${lot.id} เข้าถังขยะ? ข้อมูลจะยังอยู่และกู้คืนได้`)) return; await repository.softDeleteLot(ownerId, lotId); await load(); }
+  async function restoreLot() { await repository.restoreLot(ownerId, lotId); await load(); }
   async function saveStepRun(input: Omit<ProtocolStepRun, "id" | "ownerId" | "updatedAt">) {
     let evidenceObservationId = input.evidenceObservationId;
     if (!evidenceObservationId) {
@@ -92,7 +94,8 @@ export default function ExperimentDetailPage() {
     {state === "error" && <div className="route-state error" role="alert">โหลดข้อมูล Lot ไม่สำเร็จ</div>}
     {state === "missing" && <div className="route-state"><strong>ไม่พบ Lot {lotId}</strong></div>}
     {state === "ready" && lot && <>
-      <header className="lot-detail-heading"><div><p className="eyebrow">EXPERIMENT LOT</p><h1>{lot.id}</h1><p>{lot.plant} · {lot.protocolTitle}</p></div><span className={`badge badge-${lot.status.toLowerCase().replaceAll(" ", "-")}`}>{lot.status}</span></header>
+      {lot.deletedAt && <div className="form-alert" role="status">Lot นี้อยู่ในถังขยะ ข้อมูลยังไม่ถูกลบถาวร</div>}
+      <header className="lot-detail-heading"><div><p className="eyebrow">EXPERIMENT LOT</p><h1>{lot.id}</h1><p>{lot.plant} · {lot.protocolTitle}</p></div><div className="route-actions">{lot.deletedAt ? <button className="primary-button" onClick={() => void restoreLot()} type="button">กู้คืน Lot</button> : <button className="quiet-button" onClick={() => void deleteLot()} type="button">เก็บเข้าถังขยะ</button>}<span className={`badge badge-${lot.status.toLowerCase().replaceAll(" ", "-")}`}>{lot.status}</span></div></header>
       <div className="lot-detail-grid">
         <section className="lot-work-column">{protocolVersion && <section className="experiment-surface protocol-lot-runner"><div className="timeline-heading"><div><p className="eyebrow">PROTOCOL PROGRESS</p><h2>{lot.protocolTitle}</h2><p className="muted-copy">ทำตามทีละขั้น บันทึกผลจริง แล้วระบบจะเก็บหลักฐานไว้กับ Lot นี้</p></div><Link href={`/protocols/${lot.protocolId}`}>เปิด Protocol</Link></div><GuidedProtocolRunner lotId={lotId} protocolId={lot.protocolId} versionId={protocolVersion.id} steps={protocolVersion.steps} runs={stepRuns} onSave={saveStepRun} mediaByStep={stepMedia} onMediaUploaded={saveMedia} onMediaDelete={deleteMedia} onMediaRestore={restoreMedia} /></section>}<ObservationForm defaultStage={lot.stage} editing={editing} key={editing?.id ?? "new"} onCancel={() => setEditing(null)} onSubmit={save} />
           <div className="timeline-heading"><div><p className="eyebrow">OBSERVATION TIMELINE</p><h2>บันทึกผล</h2></div><label><input checked={showDeleted} onChange={(e) => setShowDeleted(e.target.checked)} type="checkbox" /> แสดงรายการที่ลบ</label></div>

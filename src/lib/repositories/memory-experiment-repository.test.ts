@@ -47,6 +47,18 @@ describe("memory experiment repository", () => {
     await expect(repo.createLot("owner-1", lot)).rejects.toThrow("Lot already exists");
   });
 
+  it("soft deletes, hides, and restores lots", async () => {
+    const repo = repository();
+    await repo.createLot("owner-1", lot);
+    const deleted = await repo.softDeleteLot("owner-1", lot.id);
+    expect(deleted.deletedAt).not.toBeNull();
+    expect(await repo.listLots("owner-1")).toEqual([]);
+    expect((await repo.listLots("owner-1", true))[0].deletedAt).not.toBeNull();
+    const restored = await repo.restoreLot("owner-1", lot.id);
+    expect(restored.deletedAt).toBeNull();
+    expect((await repo.listLots("owner-1"))[0].id).toBe(lot.id);
+  });
+
   it("creates an observation and matching audit event", async () => {
     const repo = repository();
     await repo.createLot("owner-1", lot);

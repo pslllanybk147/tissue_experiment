@@ -21,4 +21,10 @@ describe("ExperimentList", () => {
   it("renders an explicit empty state", () => {
     expect(renderToStaticMarkup(<ExperimentList lots={[]} />)).toContain("ยังไม่มี Experiment Lot");
   });
+
+  it("shows restore action for a soft-deleted lot", () => {
+    const html = renderToStaticMarkup(<ExperimentList lots={[{ ...lot, deletedAt: "2026-07-24T00:00:00.000Z" }]} showDeleted onRestore={async () => undefined} />);
+    expect(html).toContain("อยู่ในถังขยะ");
+    expect(html).toContain("กู้คืน Lot");
+  });
 });

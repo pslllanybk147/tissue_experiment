@@ -1769,3 +1769,13 @@
 - แก้ repository ให้ normalize ค่า optional arrays เป็น `[]` ตอน `createDraft` และ `saveDraftVersion`
 - เพิ่ม regression test เพื่อป้องกันการส่ง `undefined` ลง version document อีก
 - สถานะ: แก้ที่ต้นเหตุแล้ว; ต้องตรวจ production flow สร้าง Lot หลัง Vercel deploy ใหม่
+
+### เพิ่ม Soft delete / Restore สำหรับ Experiment Lot — 2026-07-24
+
+- เพิ่ม `deletedAt` ให้ `ExperimentLot` และ normalize Lot เดิมให้เป็น `null` เมื่อยังไม่ถูกลบ
+- เพิ่ม `softDeleteLot` และ `restoreLot` ใน memory/Firestore repository
+- รายการ Lots ซ่อนรายการที่ถูกลบโดยค่าเริ่มต้น และมี checkbox `แสดงถังขยะ`
+- เพิ่มปุ่ม `เก็บเข้าถังขยะ` และ `กู้คืน Lot` ทั้งหน้า Experiment List และหน้า Lot Detail
+- การลบ/กู้คืนบันทึก audit event ของ entity ประเภท `lot` พร้อม before/after snapshot
+- การลบเป็นแบบ reversible ไม่ลบ observations, media, protocol progress หรือ audit history ถาวร
+- สถานะ: test, lint, build และ Firebase emulator ผ่าน; รอ Vercel deploy เพื่อทดสอบ production UI
