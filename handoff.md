@@ -1672,3 +1672,19 @@
   - `npm run firebase:verify`: 74 files / 156 tests ผ่าน
   - sandbox `agent-browser` ที่ `/plants/new?taxon=cultivar-pink-princess`: Demo mode, Taxon link และ Pink Princess prefill แสดงถูกต้อง; viewport 390 px ไม่มี horizontal overflow
 - สถานะ: Plant Record เชื่อมกลับ Knowledge Base ได้แล้ว; ขั้นต่อไปคือทำ Taxon Detail ให้เริ่ม Plant Record/Lot ด้วย context เดียวกันครบทั้ง flow และเพิ่ม migration ตรวจข้อมูลเก่า
+
+### ส่ง Taxon context ต่อถึง Experiment Lot — 2026-07-24
+
+- เพิ่ม `taxonId` ใน `ExperimentLot` เพื่อไม่ให้ Lot สูญเสียความสัมพันธ์กับ Taxon เมื่อชื่อพืชถูกแก้ภายหลัง
+- เพิ่ม `templateIdForTaxon()` ให้การเลือกคู่มืออิง Taxon ID เป็นหลัก: Pink Princess → nodal template, Violin → nodal template, อื่น ๆ → Generic fallback
+- หน้า Experiment New รับ `taxon`, `plant` และ `plantId` จาก context ได้ ทำให้เปิด flow ต่อจาก Taxon/Plant ได้แม้ demo mode มีการ reload หน้า
+- Lot Form แสดงข้อความว่าเชื่อม Taxon Knowledge แล้ว และส่งความสัมพันธ์ไปพร้อมข้อมูล Lot
+- Migration ของ legacy Experiment Lot รักษา `plantId`, `taxonId`, `templateId` และ `method` เมื่อข้อมูลเดิมมีฟิลด์เหล่านี้
+- Verification:
+  - `npm run firebase:verify`: 74 files / 158 tests ผ่าน
+  - targeted template/migration/Lot Form tests: 3 files / 8 tests ผ่าน
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `git diff --check`: ผ่าน
+  - sandbox ที่ 390 px: Taxon Detail แสดงคู่มือ 18 ขั้นและปุ่มเริ่ม Plant Record; Experiment New จาก context แสดง Pink Princess template และ Taxon guidance; ไม่มี horizontal overflow
+- สถานะ: Taxon → Plant Record → Experiment Lot มี context ต่อเนื่องใน domain และ UI แล้ว; ขั้นถัดไปคือทำ Taxon Detail/Plant Profile แสดง protocol ที่เลือกและความคืบหน้าของ Lot แบบรวมศูนย์

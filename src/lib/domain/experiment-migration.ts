@@ -13,5 +13,6 @@ export function normalizeExperimentLot(input: LegacyLot, now = new Date()): Expe
     protocolId: stringValue(input.protocolId, "protocol-nodal-v01"), protocolTitle: stringValue(input.protocolTitle, stringValue(input.protocol, "Unspecified protocol")),
     stage: stringValue(input.stage, "Unspecified"), status: statuses.includes(input.status as ExperimentStatus) ? input.status as ExperimentStatus : "Review",
     startedAt: stringValue(input.startedAt, fallbackStartedAt), createdAt: stringValue(input.createdAt, timestamp), updatedAt: stringValue(input.updatedAt, timestamp),
+    ...(input.plantId ? { plantId: input.plantId } : {}), ...(input.taxonId ? { taxonId: input.taxonId } : {}), ...(input.templateId ? { templateId: input.templateId } : {}), ...(input.method ? { method: input.method } : {}),
   };
 }

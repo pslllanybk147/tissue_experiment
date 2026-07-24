@@ -6,15 +6,15 @@ import { validateLotInput } from "../../lib/domain/experiment-validation";
 import type { CreateLotInput, ExperimentStatus, ProtocolTemplate } from "../../lib/domain/models";
 
 export type ProtocolOption = { id: string; title: string; versionId: string; version: string };
-type LotFormProps = { onSubmit: (input: CreateLotInput) => Promise<void>; protocolOptions?: ProtocolOption[]; templates?: ProtocolTemplate[]; initialPlantId?: string; initialPlantName?: string; initialTemplateId?: string };
+type LotFormProps = { onSubmit: (input: CreateLotInput) => Promise<void>; protocolOptions?: ProtocolOption[]; templates?: ProtocolTemplate[]; initialPlantId?: string; initialPlantName?: string; initialTaxonId?: string; initialTemplateId?: string };
 
 const initial: CreateLotInput = { id: "", plant: "", protocolId: "protocol-nodal-v01", protocolTitle: "Nodal establishment v0.1", stage: "Establishment", status: "Healthy", startedAt: new Date().toISOString().slice(0, 10) };
 
-export function LotForm({ onSubmit, protocolOptions = [], templates = [], initialPlantId, initialPlantName, initialTemplateId }: LotFormProps) {
+export function LotForm({ onSubmit, protocolOptions = [], templates = [], initialPlantId, initialPlantName, initialTaxonId, initialTemplateId }: LotFormProps) {
   const [value, setValue] = useState<CreateLotInput>(() => {
     const selected = protocolOptions[0];
     const recommended = templates.find((template) => template.id === initialTemplateId) ?? templates.find((template) => initialPlantName && template.plantScope.toLowerCase().includes(initialPlantName.toLowerCase()));
-    return selected ? { ...initial, plantId: initialPlantId, plant: initialPlantName ?? "", templateId: recommended?.id, method: recommended?.method, protocolId: selected.id, protocolTitle: selected.title, protocolVersionId: selected.versionId } : { ...initial, plantId: initialPlantId, plant: initialPlantName ?? "", templateId: recommended?.id, method: recommended?.method };
+    return selected ? { ...initial, plantId: initialPlantId, taxonId: initialTaxonId, plant: initialPlantName ?? "", templateId: recommended?.id, method: recommended?.method, protocolId: selected.id, protocolTitle: selected.title, protocolVersionId: selected.versionId } : { ...initial, plantId: initialPlantId, taxonId: initialTaxonId, plant: initialPlantName ?? "", templateId: recommended?.id, method: recommended?.method };
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [pending, setPending] = useState(false);
@@ -35,7 +35,7 @@ export function LotForm({ onSubmit, protocolOptions = [], templates = [], initia
   }
 
   return <form className="lot-form experiment-surface" noValidate onSubmit={submit}>
-    <div className="form-heading"><p className="eyebrow">NEW EXPERIMENT</p><h1>สร้าง Experiment Lot</h1><p>เก็บรหัสพืช สูตรตั้งต้น และวันที่เริ่มในโครงสร้างเดียวกัน</p>{initialPlantName && <p className="form-guidance">ระบบเชื่อมจาก Plant Record: <strong>{initialPlantName}</strong> และจะแนะนำขั้นตอนตามคู่มือที่เลือก</p>}</div>
+    <div className="form-heading"><p className="eyebrow">NEW EXPERIMENT</p><h1>สร้าง Experiment Lot</h1><p>เก็บรหัสพืช สูตรตั้งต้น และวันที่เริ่มในโครงสร้างเดียวกัน</p>{initialPlantName && <p className="form-guidance">ระบบเชื่อมจาก Plant Record: <strong>{initialPlantName}</strong>{initialTaxonId && <> · เชื่อม Taxon Knowledge แล้ว</>} และจะแนะนำขั้นตอนตามคู่มือที่เลือก</p>}</div>
     {submitError && <p className="form-alert" role="alert">{submitError}</p>}
     <div className="form-grid">
       <Field error={errors.id} label="Lot ID"><input aria-invalid={Boolean(errors.id)} onChange={(e) => update("id", e.target.value)} placeholder="PPP-001" value={value.id} /></Field>

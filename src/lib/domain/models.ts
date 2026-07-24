@@ -109,6 +109,7 @@ export type ExperimentLot = {
   createdAt: string;
   updatedAt: string;
   plantId?: string;
+  taxonId?: string;
   templateId?: string;
   method?: "shoot-tip" | "nodal" | "generic";
 };

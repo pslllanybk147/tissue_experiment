@@ -29,6 +29,12 @@ export const protocolTemplates: ProtocolTemplate[] = [
   { id: "template-generic-philodendron", title: "Generic Philodendron · Safe start", plantScope: "Philodendron ไม่ยืนยันชนิด", method: "generic", evidenceState: "Adapted", description: "เส้นทาง fallback สำหรับต้นที่ยังยืนยันชนิดไม่ได้", protocolId: "protocol-generic-philodendron" },
 ];
 
+export function templateIdForTaxon(taxonId?: string): string {
+  if (taxonId === "cultivar-pink-princess") return "template-pink-princess-nodal";
+  if (taxonId === "trade-name-violin-variegated") return "template-violin-nodal";
+  return "template-generic-philodendron";
+}
+
 function detailedStepsForTaxon(taxonId: string): ProtocolStep[] {
   const monograph = monographForTaxon(taxonId);
   if (!monograph) return [];
