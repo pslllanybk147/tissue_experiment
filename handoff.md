@@ -1688,3 +1688,18 @@
   - `git diff --check`: ผ่าน
   - sandbox ที่ 390 px: Taxon Detail แสดงคู่มือ 18 ขั้นและปุ่มเริ่ม Plant Record; Experiment New จาก context แสดง Pink Princess template และ Taxon guidance; ไม่มี horizontal overflow
 - สถานะ: Taxon → Plant Record → Experiment Lot มี context ต่อเนื่องใน domain และ UI แล้ว; ขั้นถัดไปคือทำ Taxon Detail/Plant Profile แสดง protocol ที่เลือกและความคืบหน้าของ Lot แบบรวมศูนย์
+
+### รวม protocol progress และยกระดับ Protocol Authoring — 2026-07-24
+
+- Plant Profile แสดง protocol title, protocol version, template/method, evidence state, จำนวนขั้นที่ผ่าน และวันที่แก้ไขล่าสุดของทุก Lot
+- ปุ่มสร้าง Lot ใหม่จาก Plant Profile รักษา `plantId` และไม่หลุดออกจาก context ของต้นนั้น
+- Protocol Detail เพิ่ม `คัดลอกเป็น Draft` โดยสร้าง Protocol ใหม่จาก version ที่เลือก ไม่แก้ต้นฉบับ
+- Protocol Editor เพิ่มการแก้ `Source IDs`, `Claim IDs` และ `Reference IDs` รายขั้น พร้อมเก็บกลับทั้ง Memory และ Firestore repository
+- Published version ยังคง immutable; การแก้จากหน้า Edit จะสร้าง draft version ใหม่ตามกลไกเดิม
+- Version history เพิ่ม compare summary ระหว่างสอง version ล่าสุด พร้อมจำนวน step ที่เปลี่ยน source และ claim
+- Monograph เพิ่มลิงก์ source จริงระดับ claim และ Reference Register พร้อม source type/access date
+- Verification:
+  - targeted authoring/summary/monograph tests: 6 files / 14 tests ผ่านรวมกับ regression ที่เกี่ยวข้อง
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+- สถานะ: ข้อมูลจาก Taxon, Plant Profile, Protocol และ Lot ถูกอ่านต่อเนื่องมากขึ้น; ก่อนส่ง production ต้องรัน full emulator suite และตรวจ Preview/UI ทุก breakpoint

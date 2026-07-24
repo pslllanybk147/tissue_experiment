@@ -12,5 +12,6 @@ describe("PlantExperimentSummary", () => {
     expect(html).toContain("PPP-001");
     expect(html).toContain("1/2 ขั้นผ่าน");
     expect(html).toContain("เปิด Lot");
+    expect(html).toContain("Pink Princess · Nodal culture");
   });
 });

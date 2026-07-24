@@ -46,4 +46,12 @@ describe("memory protocol repository", () => {
     expect(draft.steps).toEqual(input.steps);
     expect((await repository.listAuditEvents("owner-1", created.id)).map(event => event.action)).toContain("version_created");
   });
+
+  it("persists source and claim links when saving a draft", async () => {
+    const repository = createMemoryProtocolRepository("owner-1");
+    const created = await repository.createDraft("owner-1", input);
+    const saved = await repository.saveDraftVersion("owner-1", created.id, created.currentVersionId, { ...input, sourceIds: ["source-pp-2023"], claimIds: ["claim-pink"] });
+    expect(saved.sourceIds).toEqual(["source-pp-2023"]);
+    expect(saved.claimIds).toEqual(["claim-pink"]);
+  });
 });

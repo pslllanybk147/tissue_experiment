@@ -16,5 +16,7 @@ describe("Philodendron monograph", () => {
     expect(html).toContain("ตำแหน่งตัดและการฟอก");
     expect(html).toContain("100 mL");
     expect(html).toContain("active chlorine");
+    expect(html).toContain("แหล่งอ้างอิงของคู่มือนี้");
+    expect(html).toContain("In Vitro Propagation of Philodendron erubescens");
   });
 });
