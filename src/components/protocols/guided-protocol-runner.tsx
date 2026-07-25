@@ -19,6 +19,12 @@ type Props = {
 };
 
 const statuses: GuidedStepStatus[] = ["Passed", "Needs review", "Failed"];
+const statusLabels: Record<GuidedStepStatus, string> = {
+  Pending: "ยังไม่เริ่ม",
+  Passed: "ผ่าน",
+  "Needs review": "ต้องตรวจเพิ่ม",
+  Failed: "ไม่ผ่าน",
+};
 
 export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs, onSave, mediaByStep = {}, onMediaUploaded, onMediaDelete, onMediaRestore }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -30,6 +36,11 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
   const [status, setStatus] = useState<GuidedStepStatus>(run?.status ?? "Pending");
   const [note, setNote] = useState(run?.note ?? "");
   const [measurements, setMeasurements] = useState<Record<string, number | null>>(run?.measurements ?? {});
+  const readinessIndex = steps.findIndex((item) => item.workflowPhase === "readiness");
+  const readinessRun = readinessIndex >= 0
+    ? runs.find((item) => item.stepId === steps[readinessIndex]?.id)
+    : undefined;
+  const readinessPassed = readinessIndex < 0 || readinessRun?.status === "Passed";
 
   function select(index: number) {
     const next = steps[index];
@@ -55,10 +66,11 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
   return <div className="guided-runner">
     <aside className="guided-step-list" aria-label="รายการขั้นตอน">
       <p className="eyebrow">GUIDED PROTOCOL</p>
-      {steps.map((item, index) => { const itemRun = runs.find((entry) => entry.stepId === item.id); return <button className={index === activeIndex ? "active" : ""} key={item.id} onClick={() => select(index)} type="button"><span>{itemRun?.status === "Passed" ? "✓" : index + 1}</span><strong>{item.title}</strong><small>{itemRun?.status ?? "ยังไม่เริ่ม"}</small></button>; })}
+      {steps.map((item, index) => { const itemRun = runs.find((entry) => entry.stepId === item.id); const locked = readinessIndex >= 0 && index > readinessIndex && !readinessPassed; return <button aria-disabled={locked} className={index === activeIndex ? "active" : ""} disabled={locked} key={item.id} onClick={() => select(index)} type="button"><span>{itemRun?.status === "Passed" ? "✓" : locked ? "🔒" : index + 1}</span><strong>{item.title}</strong><small>{locked ? "รอตรวจความพร้อม" : statusLabels[itemRun?.status ?? "Pending"]}</small></button>; })}
     </aside>
     <section className="guided-step-content" aria-live="polite">
       <div className="guided-step-heading"><div><span className="step-kicker">ขั้นที่ {activeIndex + 1} / {steps.length}</span><h3>{step.title}</h3></div><span className={`evidence-label evidence-${step.evidenceState.toLowerCase().replaceAll(" ", "-")}`}>{step.evidenceState}</span></div>
+      {!readinessPassed && activeIndex <= readinessIndex && <div className="guided-readiness-warning" role="note"><strong>อย่าเพิ่งตัดต้นไม้</strong><span>ขั้นตัดจะเปิดเมื่ออาหารและพื้นที่พร้อม และบันทึก Blank test หรือเหตุผลที่ข้ามแล้ว</span></div>}
       <GuideBlock title="ทำอะไร" value={step.objective ?? step.instruction} />
       <GuideBlock title="ทำไมสำคัญ" value={step.whyItMatters} />
       <GuideList title="เตรียมอะไร" items={step.materials} />
@@ -69,7 +81,7 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
       {(step.measurements?.length ?? 0) > 0 && <div className="guided-measurements"><h4>ค่าที่ต้องวัด</h4>{step.measurements?.map((item) => <label className="form-field" key={item.id}><span>{item.label} ({item.unit}){item.required ? " *" : ""}</span><input min={item.min} max={item.max} onChange={(event) => setMeasurements((current) => ({ ...current, [item.id]: event.target.value === "" ? null : Number(event.target.value) }))} type="number" value={measurements[item.id] ?? ""} /></label>)}</div>}
       <label className="form-field guided-note"><span>บันทึก note {step.requiredEvidence?.includes("note") ? "*" : ""}</span><textarea onChange={(event) => setNote(event.target.value)} rows={4} value={note} placeholder="เขียนสิ่งที่พบจริง เช่น สี เนื้อเยื่อ กลิ่น หรือปัญหา" /></label>
       {step.allowPhoto && <div className="guided-photo-evidence"><h4>หลักฐานภาพของขั้นนี้</h4>{run?.evidenceObservationId && onMediaUploaded ? <><MediaStrip items={mediaByStep[step.id] ?? []} onDelete={async (mediaId) => { if (onMediaDelete) await onMediaDelete(run.evidenceObservationId!, mediaId); }} onRestore={async (mediaId) => { if (onMediaRestore) await onMediaRestore(run.evidenceObservationId!, mediaId); }} /><MediaUploader lotId={lotId} observationId={run.evidenceObservationId} onUploaded={onMediaUploaded} /></> : <p className="muted-copy">กด “บันทึกผลขั้นนี้” ก่อน แล้วระบบจะเปิดพื้นที่อัปโหลดภาพของขั้นนี้</p>}</div>}
-      <div className="guided-status"><span>ผลลัพธ์</span>{statuses.map((item) => <label key={item}><input checked={status === item} onChange={() => setStatus(item)} name={`status-${step.id}`} type="radio" /> {item}</label>)}</div>
+      <div className="guided-status"><span>ผลลัพธ์</span>{statuses.map((item) => <label key={item}><input aria-label={statusLabels[item]} checked={status === item} onChange={() => setStatus(item)} name={`status-${step.id}`} type="radio" /> {statusLabels[item]}</label>)}</div>
       {message && <p className="form-alert" role="status">{message}</p>}
       <div className="guided-next"><p><strong>ถ้าผ่าน:</strong> {step.nextActionOnPass}</p><p><strong>ถ้าไม่ผ่าน:</strong> {step.nextActionOnFail}</p></div>
       <div className="form-actions"><button className="quiet-button" disabled={activeIndex === 0} onClick={() => select(activeIndex - 1)} type="button">ก่อนหน้า</button><button className="primary-button" disabled={saving} onClick={() => void save()} type="button">{saving ? "กำลังบันทึก…" : "บันทึกผลขั้นนี้"}</button><button aria-describedby={!canProceed ? `next-step-help-${step.id}` : undefined} className="quiet-button" disabled={activeIndex === steps.length - 1 || !canProceed} onClick={() => select(activeIndex + 1)} type="button">ถัดไป</button></div>

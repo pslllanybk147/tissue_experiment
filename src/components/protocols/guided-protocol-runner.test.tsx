@@ -19,6 +19,41 @@ const step: ProtocolStep = {
 };
 
 describe("GuidedProtocolRunner photo evidence", () => {
+  it("shows a do-not-cut warning while the readiness gate is ahead", () => {
+    const html = renderToStaticMarkup(
+      <GuidedProtocolRunner
+        lotId="LOT-1"
+        protocolId="P-1"
+        versionId="V-1"
+        steps={[
+          step,
+          { ...step, id: "ready", workflowPhase: "readiness", title: "ตรวจความพร้อม" },
+          { ...step, id: "cut", workflowPhase: "explant-cut", title: "ตัด explant" },
+        ]}
+        runs={[]}
+        onSave={vi.fn(async () => undefined)}
+      />,
+    );
+    expect(html).toContain("อย่าเพิ่งตัดต้นไม้");
+    expect(html).toContain("อาหารและพื้นที่พร้อม");
+  });
+
+  it("renders Thai completion state labels", () => {
+    const html = renderToStaticMarkup(
+      <GuidedProtocolRunner
+        lotId="LOT-1"
+        protocolId="P-1"
+        versionId="V-1"
+        steps={[step]}
+        runs={[]}
+        onSave={vi.fn(async () => undefined)}
+      />,
+    );
+    expect(html).toContain('aria-label="ผ่าน"');
+    expect(html).toContain('aria-label="ต้องตรวจเพิ่ม"');
+    expect(html).toContain('aria-label="ไม่ผ่าน"');
+  });
+
   it("gates the next step until the current step is saved", () => {
     const html = renderToStaticMarkup(<GuidedProtocolRunner lotId="LOT-1" protocolId="P-1" versionId="V-1" steps={[step, { ...step, id: "step-2", title: "ขั้นถัดไป" }]} runs={[]} onSave={vi.fn(async () => undefined)} />);
     expect(html).toContain("บันทึกผลขั้นนี้ก่อน จึงจะไปขั้นถัดไปได้");
