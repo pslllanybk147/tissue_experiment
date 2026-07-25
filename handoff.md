@@ -2209,3 +2209,10 @@
 - พบจากภาพ iPhone SE ว่า `.lot-detail-heading` ยังเป็น flex row บน mobile ทำให้ชื่อพืช/Protocol ถูกบีบเป็นตัวอักษรแนวตั้ง
 - แก้ที่ `src/app/globals.css` ให้ header เป็นคอลัมน์บนจอไม่เกิน 700px, ลูกแต่ละส่วนกว้างเต็มกรอบ และอนุญาตให้ Lot ID/ชื่อ Protocol ตัดบรรทัดได้
 - ตรวจ `lint`, `build` และ production UI sandbox ที่ 360, 390, 768, 1024 และ 1440px ผ่าน
+
+## Experiment list mobile table correction (2026-07-25)
+
+- พบจากภาพจริงที่ `/experiments` ว่ากฎ table mobile หลายชุดชนกัน ทำให้ cell ชื่อพืช/Protocol มีความกว้างใกล้ศูนย์และแสดงทีละตัวอักษร
+- เพิ่ม override ที่ max-width 820px ให้แต่ละ Lot เป็นแถวหนึ่งคอลัมน์, label/value ใช้ flex, และทุก cell/child มี `min-width: 0`
+- ผลคือชื่อพืช, Protocol, Stage, อายุ, สถานะ และการจัดการไม่ถูกบีบเป็นแนวตั้งบน iPhone/iPad
+- ตรวจ `lint`, `build` และ production UI sandbox ที่ 360, 390, 768, 1024 และ 1440px ผ่าน

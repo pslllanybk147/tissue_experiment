@@ -493,6 +493,14 @@ td a, .source-row a, .knowledge-source-claim a {
   .lot-detail-heading > .route-actions { align-items: stretch; }
   .lot-detail-heading > .route-actions > * { width: 100%; }
 }
+@media (max-width: 820px) {
+  .experiment-table tr { grid-template-columns: minmax(0, 1fr); }
+  .experiment-table td,
+  .experiment-table td:first-child,
+  .experiment-table td:last-child { display: flex; width: 100%; min-width: 0; grid-column: auto; align-items: flex-start; gap: 8px; }
+  .experiment-table td::before { flex: 0 0 82px; }
+  .experiment-table td > * { min-width: 0; max-width: 100%; }
+}
 html, body { max-width: 100%; overflow-x: hidden; }
 /* Immediate feedback is global so even small/legacy actions communicate a press. */
 button, a.primary-button, a.secondary-button, a.quiet-button, a.text-button, a.square-button {
