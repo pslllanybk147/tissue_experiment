@@ -42,6 +42,7 @@ sandbox-server*.log
 
 # vercel
 .vercel
+/.superpowers/
 
 # typescript
 *.tsbuildinfo

@@ -8,6 +8,19 @@
 
 ## Current status
 
+### Approved design awaiting implementation plan — 2026-07-25
+
+- อนุมัติสถาปัตยกรรม `Base Protocol + Sterilization Profile`
+- รองรับการฆ่าเชื้ออาหารสองแบบ: `haiter-chemical` และ `pressure-sterilization`
+- ล็อกวิธีฆ่าเชื้อต่อ Experiment Lot; หากต้องการเปลี่ยนให้สร้าง Lot หรือ Protocol version ใหม่
+- Haiter รับค่า `% sodium hypochlorite / active chlorine` จากฉลากและคำนวณปริมาตร
+- Blank test สำหรับ Haiter เป็นคำแนะนำที่ข้ามได้เมื่อบันทึกเหตุผล
+- เพิ่ม readiness gate: ห้ามเปิดขั้นตัด explant ก่อนอาหาร ภาชนะ เครื่องมือ และพื้นที่พร้อม
+- อนุมัติ Beginner Wizard: เพิ่มต้นไม้ → เลือกเป้าหมาย → เลือกวิธีฆ่าเชื้อ → ตรวจอุปกรณ์ → สร้าง Lot
+- ตรวจ visual mockup แล้วและกำหนดให้เพิ่ม contrast ของข้อความรอง เส้นแบ่ง สถานะ และ focus
+- Design spec: `docs/superpowers/specs/2026-07-25-sterilization-profiles-beginner-ux-design.md`
+- ขั้นถัดไป: สร้าง implementation plan แบบ TDD แล้วจึงเริ่มแก้โค้ด
+
 ### Completed
 
 - สร้าง Next.js App Router + TypeScript project ที่ `philodendron-lab/`
