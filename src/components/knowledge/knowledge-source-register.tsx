@@ -79,6 +79,7 @@ export function KnowledgeSourceRegister({ focusClaimId, records, sources, claims
 
   return <section className="knowledge-sources" aria-label="Knowledge source registry">
     <div className="knowledge-section-heading"><div><p className="eyebrow">EVIDENCE PIPELINE</p><h2>Source Registry & Claim Review</h2><p>ลงทะเบียน DOI/URL และแยก claim draft ออกจากข้อสรุป เพื่อป้องกันข้อมูลที่ยังไม่ตรวจถูกแสดงเป็นความจริง</p></div></div>
+    <div className="manual-generation-guide" role="note"><strong>สร้างคู่มือสำหรับต้นชนิดใหม่อย่างไร</strong><span>ระบบช่วยดึง metadata → คุณเลือก claim จากแหล่งอ้างอิง → reviewer ตรวจ → ระบบสร้าง <b>playbook draft</b> ให้แก้ไขและ publish เป็น version</span><span>จะไม่สร้างคู่มือเป็น Verified หรือเผยแพร่ให้อัตโนมัติ และถ้าไม่มีหลักฐานตรงพันธุ์จะติดป้าย Adapted / Experimental</span></div>
     {message && <p className="dataset-feedback success" role="status">{message}</p>}
     {discoveryError && <p className="dataset-feedback error" role="alert">{discoveryError}</p>}
     <div className="knowledge-source-grid">

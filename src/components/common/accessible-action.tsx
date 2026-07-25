@@ -22,6 +22,7 @@ export function AccessibleAction({
       {...buttonProps}
     >
       {children}
+      {buttonProps.disabled && buttonProps["aria-busy"] === true ? <span className="accessible-action-spinner" aria-hidden="true" /> : null}
     </button>
   );
 }

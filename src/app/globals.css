@@ -480,6 +480,36 @@ td a, .source-row a, .knowledge-source-claim a {
   .guided-runner .form-actions > .primary-button { grid-column: auto; }
 }
 html, body { max-width: 100%; overflow-x: hidden; }
+/* Immediate feedback is global so even small/legacy actions communicate a press. */
+button, a.primary-button, a.secondary-button, a.quiet-button, a.text-button, a.square-button {
+  transition: transform .12s ease, box-shadow .16s ease, background-color .16s ease, border-color .16s ease, color .16s ease, opacity .16s ease;
+}
+button:not(:disabled):hover, a.primary-button:hover, a.secondary-button:hover, a.square-button:hover { transform: translateY(-1px); box-shadow: 0 3px 9px rgb(20 24 20 / 12%); }
+button:not(:disabled):active, a.primary-button:active, a.secondary-button:active, a.quiet-button:active, a.text-button:active, a.square-button:active { transform: translateY(1px) scale(.98); box-shadow: inset 0 1px 3px rgb(20 24 20 / 18%); }
+button:disabled { cursor: not-allowed; }
+.accessible-action { position: relative; }
+.accessible-action-label { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; }
+.accessible-action-spinner { width: .9rem; height: .9rem; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: action-spin .7s linear infinite; }
+@keyframes action-spin { to { transform: rotate(360deg); } }
+.beginner-cut-guide { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, .8fr); gap: 22px; padding: 18px; border: 2px solid #316b50; background: #f5faf6; }
+.beginner-cut-guide h4 { margin-top: 0; }
+.beginner-cut-guide p, .beginner-cut-guide li { line-height: 1.75; }
+.explant-visual { position: relative; min-height: 280px; overflow: hidden; border: 1px solid #b6cbbd; background: linear-gradient(90deg, #f8fbf8, #edf5ef); }
+.explant-stem { position: absolute; left: 46%; top: 34px; bottom: 45px; width: 12px; transform: translateX(-50%); border-radius: 8px; background: #376b4c; }
+.explant-leaf { position: absolute; width: 88px; height: 36px; border-radius: 80% 10%; background: #77a870; }
+.explant-leaf-one { left: 17%; top: 88px; transform: rotate(-24deg); }
+.explant-leaf-two { left: 48%; top: 142px; transform: scaleX(-1) rotate(-24deg); }
+.explant-node { position: absolute; left: 52%; padding: 4px 7px; border: 1px solid #245438; background: #fff; color: #173b27; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.explant-node-one { top: 91px; }
+.explant-node-two { top: 151px; }
+.explant-label, .explant-cut, .explant-caption { position: absolute; font-size: 12px; }
+.explant-label-top { top: 12px; left: 40%; font-weight: 700; }
+.explant-cut { left: 16%; bottom: 17px; padding: 4px 7px; border: 2px solid #b42318; background: #fff1f0; color: #8d1f17; font-weight: 700; }
+.explant-caption { right: 8px; bottom: 5px; color: #52645a; font-size: 10px; }
+.manual-generation-guide { display: grid; gap: 5px; margin: 14px 0 18px; padding: 14px 16px; border-left: 5px solid #316b50; background: #f5faf6; color: #193a28; line-height: 1.65; }
+.manual-generation-guide strong { font-size: 1rem; }
+.manual-generation-guide span { font-size: .9rem; }
+@media (max-width: 700px) { .beginner-cut-guide { grid-template-columns: 1fr; padding: 14px; } .explant-visual { min-height: 245px; } }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     scroll-behavior: auto !important;
@@ -487,4 +517,5 @@ html, body { max-width: 100%; overflow-x: hidden; }
     animation-iteration-count: 1 !important;
     transition-duration: .01ms !important;
   }
+  .accessible-action-spinner { animation: none; }
 }
