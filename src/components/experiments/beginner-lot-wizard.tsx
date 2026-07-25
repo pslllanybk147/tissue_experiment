@@ -31,8 +31,9 @@ const wizardStages = [
   "สร้าง Lot",
 ];
 
-function defaultLotId() {
-  return `LOT-${new Date().toISOString().slice(0, 10).replaceAll("-", "")}`;
+export function createSuggestedLotId(now = new Date()) {
+  const timestamp = now.toISOString().replaceAll("-", "").replaceAll(":", "");
+  return `LOT-${timestamp.slice(0, 8)}-${timestamp.slice(9, 15)}`;
 }
 
 export function BeginnerLotWizard({
@@ -99,7 +100,7 @@ export function BeginnerLotWizard({
     event.preventDefault();
     if (!profile || !template) return;
     const input: CreateLotInput = {
-      id: defaultLotId(),
+      id: createSuggestedLotId(),
       plant: plant.trim(),
       plantId: initialPlantId,
       taxonId: initialTaxonId,

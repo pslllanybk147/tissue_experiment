@@ -1815,3 +1815,34 @@
 - หลัง push ให้ตรวจตามลำดับ: GitHub `master`/`main` commit เดียวกัน → Vercel Production Deployment สถานะ Ready → Production Domain → login และ flow สำคัญ
 - Preview ใช้ได้เฉพาะตรวจ branch ชั่วคราว ห้ามใช้เป็นหลักฐานว่า production deploy สำเร็จ
 - ก่อนส่งงานทุกครั้งต้องบันทึก commit, branch ที่ push, Production URL และผลตรวจใน `handoff.md`
+
+### Sterilization profiles + Beginner Guided Workflow — 2026-07-25
+
+- เพิ่มวิธีฆ่าเชื้ออาหารที่เลือกและล็อกต่อ Lot:
+  - `haiter-chemical` สำหรับการใช้ Haiter/NaOCl แบบ Home Lab — แสดง `Experimental`
+  - `pressure-sterilization` สำหรับหม้อนึ่งแรงดัน — แสดงตาม evidence state ของ profile
+- เพิ่ม snapshot ของวิธีฆ่าเชื้อใน `ExperimentLot` เพื่อให้สูตร ความเข้มข้น ปริมาตร และเวอร์ชัน profile ย้อนตรวจได้ และไม่เปลี่ยนตาม template ภายหลัง
+- เพิ่มตัวคำนวณ Haiter จาก `% active chlorine` บนฉลาก, ค่าเป้าหมาย, ปริมาตรอาหาร และขีดจำกัดเครื่องมือ; ถ้าปริมาตรต่ำเกินวัด ระบบต้องเตือนให้เจือจางอย่างมีโครงสร้างแทนการเดา
+- เพิ่ม Beginner Wizard 5 ขั้น: ระบุต้นไม้ → เลือกคู่มือ → เลือกวิธีฆ่าเชื้อ → ตรวจอุปกรณ์ → ตรวจสรุปและสร้าง Lot
+- เปลี่ยน Lot ID ที่ระบบเสนอเป็น `LOT-YYYYMMDD-HHMMSS` เพื่อป้องกัน Lot หลายรายการในวันเดียวกันชนกัน
+- ปรับ Guided Protocol ให้ลำดับจริงเป็น:
+  1. baseline/สุขภาพ/ยืนยันชนิด
+  2. ทำเครื่องหมาย explant โดยยังไม่ตัด
+  3. เตรียมและฆ่าเชื้ออาหารตาม profile
+  4. Blank test หรือบันทึกเหตุผลที่ข้าม
+  5. เตรียมพื้นที่และตรวจ readiness
+  6. จึงปลดล็อกขั้นตัดและฟอก explant
+- ขั้นหลัง readiness แสดงสถานะล็อกชัดเจน และไม่ให้ข้ามไปตัดต้นก่อนอาหาร อุปกรณ์ พื้นที่ และการตัดสินใจเรื่อง Blank พร้อม
+- ปรับ visual hierarchy/contrast สำหรับผู้เริ่มต้น และเพิ่ม CTA `เริ่มจากต้นไม้ 1 ต้น`
+- Browser sandbox ยืนยัน flow Pink Princess + Haiter จริง:
+  - คำนวณ Haiter 6% → เป้าหมาย 0.003% สำหรับอาหาร 1,000 mL ได้ 0.5 mL
+  - checklist อุปกรณ์ gate ปุ่มถัดไป
+  - สร้าง Lot สำเร็จ
+  - Guided Runner เรียง 10 ขั้นเตรียมการก่อนขั้น `ตัดและเตรียม explant`
+  - ขั้นตัดและขั้นถัดไปถูกล็อกด้วยข้อความ `รอตรวจความพร้อม`
+- ผลตรวจล่าสุด:
+  - `npm test`: 74 files ผ่าน, 4 skipped; 181 tests ผ่าน, 10 skipped
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: Auth/Firestore emulator ผ่าน 78 files / 191 tests
+- หลัง commit ให้ push `master` และ `main` ให้ชี้ commit เดียวกัน แล้วรอ Vercel Production deployment ก่อนถือว่าเผยแพร่เสร็จ
