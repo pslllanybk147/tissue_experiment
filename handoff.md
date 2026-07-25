@@ -2188,3 +2188,10 @@
 ระบบต้องไม่ยกระดับ AI/ร่างอัตโนมัติเป็น Verified และไม่ publish เอง หากไม่มีหลักฐานตรงพันธุ์ให้ใช้ Adapted/Experimental/Pending review พร้อมบอกข้อจำกัด ผู้ดูแลต้องเปรียบเทียบแหล่งอนุกรมวิธาน เช่น Kew/IPNI กับคู่มือ extension/สารานุกรมและงาน peer-reviewed ก่อนอนุมัติเนื้อหา คู่มือการขยายพันธุ์ทั่วไปใช้เป็นหลักการ Adapted เท่านั้น ไม่ใช่หลักฐาน tissue culture ตรงพันธุ์
 
 แหล่งเริ่มต้นสำหรับการทบทวนเนื้อหา: Kew POWO, IPNI, NC State Extension, Virginia Tech Extension และ UNH Extension โดยต้องเก็บ URL, วันที่เข้าถึง และระดับหลักฐานไว้ใน source registry
+
+## Mobile overflow correction after iPhone SE review (2026-07-25)
+
+- พบจากภาพจริงที่ 375px ว่า checklist “ตรวจว่าพร้อมไปต่อหรือยัง” และปุ่ม “ถ้ายังไม่แน่ใจ” ล้นด้านขวา เพราะ flex/grid child ยังรักษาความกว้างตามข้อความยาว
+- เพิ่มกฎ mobile ใน `src/app/globals.css` ให้ guide, readiness panel และ uncertainty actions มี `min-width: 0`, `max-width: 100%`, และให้ข้อความ/ปุ่มตัดบรรทัดตามธรรมชาติ
+- ปุ่ม uncertainty เปลี่ยนเป็นเต็มความกว้างของกรอบบน mobile เพื่อให้กดง่ายและไม่ถูกตัด
+- ตรวจซ้ำด้วย production sandbox ที่ 360, 390, 768, 1024 และ 1440px: ผ่าน

@@ -321,6 +321,13 @@ td a, .source-row a, .knowledge-source-claim a {
 }
 @media (max-width: 760px) {
   .beginner-uncertainty-actions { grid-template-columns: 1fr; }
+  .beginner-step-guide,
+  .beginner-guide-section,
+  .beginner-readiness,
+  .beginner-uncertainty-actions { width: 100%; max-width: 100%; min-width: 0; }
+  .beginner-readiness label { width: 100%; min-width: 0; box-sizing: border-box; }
+  .beginner-readiness label span { min-width: 0; max-width: 100%; overflow-wrap: anywhere; word-break: normal; }
+  .beginner-uncertainty-actions button { width: 100%; min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; word-break: normal; }
   .form-actions { display: grid; grid-template-columns: 1fr; }
   .form-actions > * { width: 100%; }
   .beginner-wizard { padding-inline: .75rem; }
