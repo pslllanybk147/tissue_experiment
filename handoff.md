@@ -2095,3 +2095,29 @@
   - เก็บภาพที่ผ่าน provenance/label review ให้ครบอย่างน้อย 3 Lot ต่อคลาส
   - preprocess แล้วสร้าง readiness report v2
   - เมื่อ `ready: true` จึงต่อ baseline training/evaluation จริง
+
+## Image Processing — baseline centroid training/evaluation (2026-07-25)
+
+- เพิ่ม `src/lib/image/baseline-classifier.ts` เป็น baseline ที่รันได้จริงด้วย `sharp`:
+  - resize/อ่านภาพ RGB
+  - สร้าง feature vector จากค่าเฉลี่ย, ส่วนเบี่ยงเบน, histogram สี และสัดส่วน pixel ที่เข้าเกณฑ์ variegation
+  - train centroid แยกตาม class
+  - ประเมิน validation/test พร้อม accuracy, per-class accuracy และ confusion matrix
+  - ตรวจไม่ให้ Lot เดียวกันอยู่ทั้ง train และ evaluation
+- เพิ่ม API `POST /api/dataset/baseline`:
+  - ต้อง login
+  - ตรวจ ownership ของ preprocessing job และ dataset items
+  - หยุดที่ HTTP 409 พร้อม readiness report หาก dataset ยังไม่พร้อม
+  - ดึงเฉพาะ preprocessed artifact จาก Cloudinary และจำกัดขนาด/host ของไฟล์
+  - บันทึก model/evaluation เป็น `trainingRuns` พร้อม schema และ warnings
+- เพิ่มปุ่ม `เริ่ม baseline training` ในหน้า Image Review
+- สถานะทางวิทยาศาสตร์:
+  - baseline นี้ใช้ตรวจ pipeline และเป็นจุดอ้างอิงเริ่มต้นเท่านั้น
+  - ยังไม่ใช่โมเดลระบุสายพันธุ์ที่พร้อมใช้จริง และผลต้องผ่าน human review
+  - ยังไม่มีการสร้างผลลัพธ์จริงใน production เพราะ dataset ยังไม่ผ่าน readiness gate
+- ผลตรวจ:
+  - baseline tests 5 ผ่าน
+  - full tests 84 files / 220 tests ผ่าน + 10 skipped
+  - Firebase emulator 88 files / 230 tests ผ่าน
+  - lint และ production build ผ่าน
+  - sandbox UI verification ผ่าน 390, 1024 และ 1440px
