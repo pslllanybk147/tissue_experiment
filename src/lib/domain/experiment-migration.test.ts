@@ -11,4 +11,33 @@ describe("normalizeExperimentLot", () => {
     const lot = normalizeExperimentLot({ id: "PPP-002", ownerId: "u1", plant: "Pink Princess", protocol: "Nodal", stage: "Establishment", status: "Healthy", plantId: "plant-1", taxonId: "cultivar-pink-princess", templateId: "template-pink-princess-nodal", method: "nodal" });
     expect(lot).toMatchObject({ plantId: "plant-1", taxonId: "cultivar-pink-princess", templateId: "template-pink-princess-nodal", method: "nodal" });
   });
+
+  it("preserves the locked sterilization snapshot and protocol version", () => {
+    const lot = normalizeExperimentLot({
+      id: "LOT-20260725-043801",
+      ownerId: "u1",
+      plant: "Pink Princess",
+      protocolId: "protocol-1",
+      protocolTitle: "Pink Princess · Nodal culture",
+      protocolVersionId: "version-1",
+      stage: "Establishment",
+      status: "Healthy",
+      sterilization: {
+        profileId: "haiter-chemical-v1",
+        profileVersion: "1.0.0",
+        method: "haiter-chemical",
+        activeChlorinePercent: 6,
+        targetChlorinePercent: 0.003,
+        mediumVolumeMl: 1000,
+        calculatedDoseMl: 0.5,
+      },
+    });
+
+    expect(lot.protocolVersionId).toBe("version-1");
+    expect(lot.sterilization).toMatchObject({
+      profileId: "haiter-chemical-v1",
+      method: "haiter-chemical",
+      calculatedDoseMl: 0.5,
+    });
+  });
 });

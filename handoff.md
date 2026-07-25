@@ -1860,3 +1860,17 @@
   - `npm run lint`: ผ่าน
   - `npm run build`: ผ่าน
   - `npm run firebase:verify`: Auth/Firestore emulator ผ่าน 79 files / 192 tests
+
+### แก้ Lot ที่เลือกวิธีฆ่าเชื้อแล้วถูกอ่านเป็น Legacy — 2026-07-25
+
+- อาการ: Lot ที่สร้างผ่าน Beginner Wizard และเลือก Haiter/หม้อนึ่งแล้ว ยังแสดง `LEGACY LOT`
+- สาเหตุ: Firestore write มี `sterilization` ถูกต้อง แต่ `normalizeExperimentLot()` ใน read-path สร้าง object ใหม่โดยไม่คัดลอก `sterilization` และ `protocolVersionId`
+- แก้ normalizer ให้รักษา locked sterilization snapshot และ protocol version ของ Lot รุ่นใหม่ โดยยังรองรับข้อมูล legacy เดิม
+- Lot ที่สร้างไว้แล้วไม่ต้องสร้างใหม่ หาก document เดิมมี snapshot อยู่; หลัง production deploy และ refresh จะเปิด Guided Protocol ได้
+- เพิ่ม regression test ด้วย Lot ที่มี Haiter snapshot จริง
+- ผลตรวจ:
+  - focused migration/repository tests: 10 ผ่าน
+  - `npm test`: 75 files ผ่าน, 4 skipped; 183 tests ผ่าน, 10 skipped
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: Auth/Firestore emulator ผ่าน 79 files / 193 tests
