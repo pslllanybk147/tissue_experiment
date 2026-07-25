@@ -62,7 +62,7 @@ export const sterilizationProfiles: SterilizationProfile[] = [
       profileStep(
         "prepare-haiter-medium",
         "เตรียมอาหารแบบ Haiter",
-        "เตรียมอาหารตามสูตรและเติม Haiter ตามค่าที่คำนวณและ Protocol version",
+        "เลือกสูตรตาม Protocol version ชั่ง MS น้ำตาล วุ้น และ stock hormones ปรับ pH ติด batch id แล้วเติม Haiter ตามค่าที่คำนวณ",
       ),
       commonBlankStep,
     ],
@@ -84,7 +84,7 @@ export const sterilizationProfiles: SterilizationProfile[] = [
       profileStep(
         "prepare-pressure-medium",
         "เตรียมอาหารสำหรับหม้อนึ่งแรงดัน",
-        "เตรียมอาหาร บรรจุภาชนะ และติดป้าย batch ก่อนฆ่าเชื้อ",
+        "เลือกสูตรตาม Protocol version ชั่ง MS น้ำตาล วุ้น และ stock hormones ปรับ pH บรรจุภาชนะ และติดป้าย batch ก่อนฆ่าเชื้อ",
         "Adapted",
       ),
       profileStep(
@@ -129,10 +129,18 @@ function readinessStep(): ProtocolStep {
 
 function classifyBaseStep(step: ProtocolStep): ProtocolStep {
   const title = step.title.toLowerCase();
-  if (title.includes("baseline") || title.includes("รับต้นไม้")) {
+  if (
+    title.includes("baseline")
+    || title.includes("รับต้นไม้")
+    || title.includes("ตรวจสุขภาพ")
+    || title.includes("ยืนยันชนิด")
+  ) {
     return { ...step, workflowPhase: "baseline" };
   }
-  if (title.includes("เลือกตำแหน่ง")) {
+  if (
+    title.includes("เลือกตำแหน่ง")
+    || title.includes("เลือกยอด/ข้อ/ตาข้าง")
+  ) {
     return {
       ...step,
       title: "ทำเครื่องหมายตำแหน่ง explant (ยังไม่ตัด)",
@@ -140,7 +148,10 @@ function classifyBaseStep(step: ProtocolStep): ProtocolStep {
       workflowPhase: "mark-explant",
     };
   }
-  if (title.includes("ตัดและเตรียมชิ้นพืช")) {
+  if (
+    title.includes("ตัดและเตรียมชิ้นพืช")
+    || title.includes("ตัดและเตรียม explant")
+  ) {
     return { ...step, workflowPhase: "explant-cut" };
   }
   if (title.includes("ฟอกฆ่าเชื้อ")) {
@@ -149,6 +160,9 @@ function classifyBaseStep(step: ProtocolStep): ProtocolStep {
       title: "ฟอกฆ่าเชื้อผิว explant",
       workflowPhase: "surface-sterilization",
     };
+  }
+  if (title.includes("เตรียมพื้นที่ปลอดเชื้อ")) {
+    return { ...step, workflowPhase: "medium-preparation" };
   }
   return { ...step, workflowPhase: "culture" };
 }
@@ -165,10 +179,13 @@ export function composeGuidedSteps(
   const cutAndSurface = classified.filter((step) =>
     step.workflowPhase === "explant-cut" || step.workflowPhase === "surface-sterilization");
   const remaining = beforeCut.filter((step) => step.workflowPhase === "culture");
-  const preparation = beforeCut.filter((step) => step.workflowPhase !== "culture");
+  const preparation = beforeCut.filter((step) =>
+    step.workflowPhase === "baseline" || step.workflowPhase === "mark-explant");
+  const workspace = beforeCut.filter((step) => step.workflowPhase === "medium-preparation");
   const composed = [
     ...preparation,
     ...profile.steps.map((step) => structuredClone(step)),
+    ...workspace,
     readinessStep(),
     ...cutAndSurface,
     ...remaining,

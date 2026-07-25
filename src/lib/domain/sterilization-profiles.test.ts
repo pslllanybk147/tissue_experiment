@@ -6,6 +6,7 @@ import {
   profileById,
   sterilizationProfiles,
 } from "./sterilization-profiles";
+import { stepsForTemplate } from "./protocol-templates";
 
 const baseSteps: ProtocolStep[] = [
   {
@@ -80,6 +81,23 @@ describe("sterilization profiles", () => {
 
     expect(pressureIndex).toBeGreaterThan(-1);
     expect(pressureIndex).toBeLessThan(readinessIndex);
+  });
+
+  test("keeps real monograph health and explant marking before readiness, then cuts before surface sterilization", () => {
+    const steps = composeGuidedSteps(
+      stepsForTemplate("template-pink-princess-nodal"),
+      profileById("haiter-chemical-v1"),
+    );
+    const titles = steps.map((step) => step.title);
+    const readinessIndex = titles.indexOf("ตรวจความพร้อมก่อนตัดต้น");
+
+    expect(titles.indexOf("ตรวจสุขภาพและกักต้นแม่")).toBeLessThan(readinessIndex);
+    expect(titles.indexOf("ยืนยันชนิดและเลือกวิธีทดลอง")).toBeLessThan(readinessIndex);
+    expect(titles.indexOf("ทำเครื่องหมายตำแหน่ง explant (ยังไม่ตัด)")).toBeLessThan(readinessIndex);
+    expect(titles.indexOf("ตัดและเตรียม explant")).toBeGreaterThan(readinessIndex);
+    expect(titles.indexOf("ตัดและเตรียม explant")).toBeLessThan(
+      titles.indexOf("ฟอกฆ่าเชื้อผิว explant"),
+    );
   });
 });
 
