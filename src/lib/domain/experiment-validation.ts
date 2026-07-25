@@ -20,6 +20,22 @@ function validateCount(errors: Record<string, string>, field: keyof ObservationI
   }
 }
 
+function positiveNumber(
+  errors: Record<string, string>,
+  field: string,
+  value: number | undefined,
+) {
+  if (value === undefined || !Number.isFinite(value) || value <= 0) {
+    errors[field] = "ต้องเป็นตัวเลขที่มากกว่า 0";
+  }
+}
+
+function cleanUndefined<T extends object>(value: T): T {
+  return Object.fromEntries(
+    Object.entries(value).filter(([, item]) => item !== undefined),
+  ) as T;
+}
+
 export function validateLotInput(input: CreateLotInput): ValidationResult<CreateLotInput> {
   const errors: Record<string, string> = {};
   const id = input.id.trim().toUpperCase();
@@ -31,6 +47,22 @@ export function validateLotInput(input: CreateLotInput): ValidationResult<Create
   if (id && !/^[A-Z0-9-]+$/.test(id)) errors.id = "ใช้ได้เฉพาะ A-Z, 0-9 และขีดกลาง";
   if (!statuses.includes(input.status)) errors.status = "สถานะไม่ถูกต้อง";
   if (!isValidDate(input.startedAt)) errors.startedAt = "วันที่ไม่ถูกต้อง";
+  if (input.sterilization) {
+    required(errors, "sterilizationProfileId", input.sterilization.profileId);
+    required(errors, "sterilizationProfileVersion", input.sterilization.profileVersion);
+    if (input.sterilization.method === "haiter-chemical") {
+      positiveNumber(errors, "activeChlorinePercent", input.sterilization.activeChlorinePercent);
+      positiveNumber(errors, "targetChlorinePercent", input.sterilization.targetChlorinePercent);
+      positiveNumber(errors, "mediumVolumeMl", input.sterilization.mediumVolumeMl);
+      positiveNumber(errors, "calculatedDoseMl", input.sterilization.calculatedDoseMl);
+    }
+    if (
+      input.sterilization.blankDecision === "skipped"
+      && !input.sterilization.blankSkipReason?.trim()
+    ) {
+      errors.blankSkipReason = "กรุณาบันทึกเหตุผลที่ข้าม Blank test";
+    }
+  }
 
   if (Object.keys(errors).length) return { ok: false, value: null, errors };
   return {
@@ -42,6 +74,12 @@ export function validateLotInput(input: CreateLotInput): ValidationResult<Create
       protocolId: input.protocolId.trim(),
       protocolTitle: input.protocolTitle.trim(),
       stage: input.stage.trim(),
+      sterilization: input.sterilization
+        ? cleanUndefined({
+            ...input.sterilization,
+            blankSkipReason: input.sterilization.blankSkipReason?.trim(),
+          })
+        : undefined,
     },
     errors: {},
   };

@@ -12,6 +12,16 @@ const validLot = {
   startedAt: "2026-07-22",
 };
 
+const haiterSnapshot = {
+  profileId: "haiter-chemical-v1",
+  profileVersion: "1.0.0",
+  method: "haiter-chemical" as const,
+  activeChlorinePercent: 6,
+  targetChlorinePercent: 0.003,
+  mediumVolumeMl: 1000,
+  calculatedDoseMl: 0.5,
+};
+
 const validObservation = {
   observedAt: "2026-07-22T09:30",
   status: "Review" as const,
@@ -45,6 +55,46 @@ describe("validateLotInput", () => {
       expect(result.errors.startedAt).toBeDefined();
       expect(result.errors.status).toBeDefined();
     }
+  });
+
+  it("accepts and preserves a valid sterilization snapshot", () => {
+    const result = validateLotInput({ ...validLot, sterilization: haiterSnapshot });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.sterilization?.profileId).toBe("haiter-chemical-v1");
+      expect(result.value.sterilization?.calculatedDoseMl).toBe(0.5);
+    }
+  });
+
+  it("rejects skipped blank without a reason", () => {
+    const result = validateLotInput({
+      ...validLot,
+      sterilization: {
+        ...haiterSnapshot,
+        blankDecision: "skipped",
+        blankSkipReason: "",
+      },
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.errors.blankSkipReason).toBeDefined();
+  });
+
+  it("rejects Haiter snapshot without required concentration values", () => {
+    const result = validateLotInput({
+      ...validLot,
+      sterilization: {
+        profileId: "haiter-chemical-v1",
+        profileVersion: "1.0.0",
+        method: "haiter-chemical",
+      },
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.errors.activeChlorinePercent).toBeDefined();
+  });
+
+  it("allows a legacy lot without sterilization snapshot", () => {
+    const result = validateLotInput(validLot);
+    expect(result.ok).toBe(true);
   });
 });
 
