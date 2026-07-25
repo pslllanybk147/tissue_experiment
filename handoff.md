@@ -1972,3 +1972,29 @@
 - ขั้นถัดไป:
   - triage npm advisories แยกตาม production/dev dependency
   - ทำ authenticated production smoke ซ้ำเมื่อแก้ Auth, Firestore rules, media upload หรือ environment variables
+
+## Milestone — แก้ Guided Runner ไม่มีช่องกรอก Haiter (2026-07-25)
+
+- ผู้ใช้พบว่าขั้น `ให้ระบบหาปริมาตร Haiter ที่ต้องใช้` แสดงคำสั่งให้กรอกข้อมูล แต่ไม่มีช่องกรอกจริง
+- Root cause:
+  - เครื่องคำนวณเดิมอยู่เฉพาะ Beginner Lot Wizard
+  - `calculate-haiter-dose` ไม่มี measurement schema
+  - Guided Runner จึงแสดงข้อความและ checklist แต่ไม่ render input หรือผลคำนวณ
+- การแก้ไข:
+  - เพิ่มช่องกรอกติดกับคำอธิบายในขั้นเดียวกัน 3 ช่อง:
+    - เปอร์เซ็นต์จากฉลาก Haiter
+    - ปริมาตรอาหารทั้งหมด
+    - ปริมาตรต่ำสุดที่อุปกรณ์ตวงได้
+  - ใช้ target chlorine จาก Protocol/Lot snapshot และแสดงให้ผู้ใช้ทราบโดยไม่ให้เดาค่าเอง
+  - แสดงคำสั่ง direct dose หรือ working dilution ทันทีใต้ช่องกรอก
+  - prefill เปอร์เซ็นต์และปริมาตรอาหารจาก Lot ที่สร้างผ่าน Wizard
+  - เพิ่ม measurement gate เพื่อห้ามยืนยันขั้นเมื่อค่าบังคับไม่ครบ
+- Regression/verification:
+  - เขียน regression test ก่อนแก้และยืนยันว่า fail เพราะไม่มี inline calculator
+  - focused tests 18 ผ่าน
+  - full tests 81 files ผ่าน + 4 skipped; 211 tests ผ่าน + 10 skipped
+  - Firebase emulator 85 files / 221 tests ผ่าน
+  - lint ผ่าน
+  - production build ผ่าน
+  - sandbox UI verification ผ่านที่ 390, 1024 และ 1440px
+  - UI script ตรวจเพิ่มว่าขั้น Haiter มีช่องกรอกและแสดงคำสั่ง working dilution จริง

@@ -66,11 +66,19 @@ export const sterilizationProfiles: SterilizationProfile[] = [
         "อ่านความเข้มข้นจากฉลาก Haiter",
         "บันทึก % sodium hypochlorite หรือ active chlorine ตามฉลาก ห้ามคาดเดาจากชื่อสินค้า",
       ),
-      profileStep(
-        "calculate-haiter-dose",
-        "ให้ระบบหาปริมาตร Haiter ที่ต้องใช้",
-        "กรอกเปอร์เซ็นต์จากฉลาก ปริมาตรอาหาร และค่าต่ำสุดที่อุปกรณ์ตวงได้ แล้วอ่านคำสั่งตวงที่ระบบแสดง ห้ามคำนวณหรือเดาด้วยตนเอง",
-      ),
+      {
+        ...profileStep(
+          "calculate-haiter-dose",
+          "ให้ระบบหาปริมาตร Haiter ที่ต้องใช้",
+          "กรอกเปอร์เซ็นต์จากฉลาก ปริมาตรอาหาร และค่าต่ำสุดที่อุปกรณ์ตวงได้ แล้วอ่านคำสั่งตวงที่ระบบแสดง ห้ามคำนวณหรือเดาด้วยตนเอง",
+        ),
+        requiredEvidence: ["note", "measurement"],
+        measurements: [
+          { id: "haiter-source-percent", label: "เปอร์เซ็นต์จากฉลาก Haiter", unit: "%", min: 0, required: true },
+          { id: "medium-volume-ml", label: "ปริมาตรอาหารทั้งหมด", unit: "mL", min: 1, required: true },
+          { id: "minimum-tool-volume-ml", label: "ปริมาตรต่ำสุดที่อุปกรณ์ตวงได้", unit: "mL", min: 0.001, required: true },
+        ],
+      },
       {
         ...profileStep(
           "prepare-haiter-working-dilution",

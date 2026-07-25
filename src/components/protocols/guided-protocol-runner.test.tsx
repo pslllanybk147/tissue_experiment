@@ -72,4 +72,38 @@ describe("GuidedProtocolRunner photo evidence", () => {
     expect(html).toContain("เลือกหรือถ่ายรูปของขั้นนี้");
     expect(html).toContain("อัปโหลดรูปที่เลือก");
   });
+
+  it("renders the Haiter calculator beside the calculation instruction", () => {
+    const html = renderToStaticMarkup(
+      <GuidedProtocolRunner
+        haiterDefaults={{
+          labelPercent: 6,
+          targetPercent: 0.003,
+          mediumVolumeMl: 100,
+          minimumToolVolumeMl: 0.1,
+        }}
+        lotId="LOT-1"
+        protocolId="P-1"
+        versionId="V-1"
+        steps={[{
+          ...step,
+          id: "calculate-haiter-dose",
+          title: "ให้ระบบหาปริมาตร Haiter ที่ต้องใช้",
+          measurements: [
+            { id: "haiter-source-percent", label: "เปอร์เซ็นต์จากฉลาก Haiter", unit: "%", required: true },
+            { id: "medium-volume-ml", label: "ปริมาตรอาหารทั้งหมด", unit: "mL", required: true },
+            { id: "minimum-tool-volume-ml", label: "ปริมาตรต่ำสุดที่อุปกรณ์ตวงได้", unit: "mL", required: true },
+          ],
+        }]}
+        runs={[]}
+        onSave={vi.fn(async () => undefined)}
+      />,
+    );
+
+    expect(html).toContain("กรอกตัวเลข 3 ช่องนี้");
+    expect(html).toContain("เปอร์เซ็นต์จากฉลาก Haiter");
+    expect(html).toContain("ปริมาตรอาหารทั้งหมด");
+    expect(html).toContain("ปริมาตรต่ำสุดที่อุปกรณ์ตวงได้");
+    expect(html).toContain("เตรียมสารไฮเตอร์เจือจาง 10 เท่าก่อน");
+  });
 });

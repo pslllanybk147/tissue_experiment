@@ -112,6 +112,16 @@ async function verifyWizard(page, viewportName) {
   await inspectPage(page, viewportName, "guided-runner");
   assert(await page.locator(".beginner-step-guide").isVisible(), `${viewportName}: Guided Runner ไม่มีคู่มือมือใหม่`);
   assert(await page.getByText("ขั้นที่ 1 / 22").isVisible(), `${viewportName}: Guided Runner ไม่แสดง 22 ขั้น`);
+  await page.getByRole("button", { name: /ให้ระบบหาปริมาตร Haiter ที่ต้องใช้/ }).click();
+  await page.getByLabel("ปริมาตรต่ำสุดที่อุปกรณ์ตวงได้ (mL) *").fill("0.1");
+  assert(
+    await page.getByText("กรอกตัวเลข 3 ช่องนี้").isVisible(),
+    `${viewportName}: ขั้นคำนวณ Haiter ไม่มีฟอร์มกรอกข้อมูล`,
+  );
+  assert(
+    (await page.locator(".haiter-plan").innerText()).includes("เตรียมสารไฮเตอร์เจือจาง 10 เท่าก่อน"),
+    `${viewportName}: Guided Runner ไม่แสดงคำสั่ง working dilution`,
+  );
 }
 
 const browser = await chromium.launch({

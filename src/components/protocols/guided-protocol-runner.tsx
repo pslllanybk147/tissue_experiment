@@ -6,6 +6,14 @@ import { MediaStrip } from "../media/media-strip";
 import { MediaUploader } from "../media/media-uploader";
 import { AccessibleAction } from "../common/accessible-action";
 import { BeginnerStepGuide } from "./beginner-step-guide";
+import { createHaiterActionPlan } from "../../lib/domain/haiter-guidance";
+
+type HaiterDefaults = {
+  labelPercent?: number;
+  targetPercent?: number;
+  mediumVolumeMl?: number;
+  minimumToolVolumeMl?: number;
+};
 
 type Props = {
   lotId: string;
@@ -18,6 +26,7 @@ type Props = {
   onMediaUploaded?: (media: ObservationMedia) => Promise<void>;
   onMediaDelete?: (observationId: string, mediaId: string) => Promise<void>;
   onMediaRestore?: (observationId: string, mediaId: string) => Promise<void>;
+  haiterDefaults?: HaiterDefaults;
 };
 
 const statuses: GuidedStepStatus[] = ["Passed", "Needs review", "Failed"];
@@ -28,7 +37,7 @@ const statusLabels: Record<GuidedStepStatus, string> = {
   Failed: "ไม่ผ่าน",
 };
 
-export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs, onSave, mediaByStep = {}, onMediaUploaded, onMediaDelete, onMediaRestore }: Props) {
+export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs, onSave, mediaByStep = {}, onMediaUploaded, onMediaDelete, onMediaRestore, haiterDefaults }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -38,7 +47,23 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
   const canProceed = run?.status === "Passed";
   const [status, setStatus] = useState<GuidedStepStatus>(run?.status ?? "Pending");
   const [note, setNote] = useState(run?.note ?? "");
-  const [measurements, setMeasurements] = useState<Record<string, number | null>>(run?.measurements ?? {});
+  const [measurements, setMeasurements] = useState<Record<string, number | null>>({
+    "haiter-source-percent": haiterDefaults?.labelPercent ?? null,
+    "medium-volume-ml": haiterDefaults?.mediumVolumeMl ?? null,
+    "minimum-tool-volume-ml": haiterDefaults?.minimumToolVolumeMl ?? null,
+    ...(run?.measurements ?? {}),
+  });
+  const isHaiterCalculation = step?.id === "calculate-haiter-dose";
+  const haiterPlan = useMemo(() => {
+    if (!isHaiterCalculation) return null;
+    return createHaiterActionPlan({
+      labelPercent: measurements["haiter-source-percent"] ?? null,
+      targetPercent: haiterDefaults?.targetPercent ?? 0.003,
+      mediumVolumeMl: measurements["medium-volume-ml"] ?? 0,
+      minimumToolVolumeMl: measurements["minimum-tool-volume-ml"] ?? 0,
+      permittedDiluent: "น้ำปลอดเชื้อ",
+    });
+  }, [haiterDefaults?.targetPercent, isHaiterCalculation, measurements]);
   const readinessIndex = steps.findIndex((item) => item.workflowPhase === "readiness");
   const readinessRun = readinessIndex >= 0
     ? runs.find((item) => item.stepId === steps[readinessIndex]?.id)
@@ -48,7 +73,15 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
   function select(index: number) {
     const next = steps[index];
     const nextRun = runs.find((item) => item.stepId === next?.id);
-    setActiveIndex(index); setStatus(nextRun?.status ?? "Pending"); setNote(nextRun?.note ?? ""); setMeasurements(nextRun?.measurements ?? {}); setReadinessConfirmed(false); setMessage("");
+    const nextMeasurements = next?.id === "calculate-haiter-dose"
+      ? {
+          "haiter-source-percent": haiterDefaults?.labelPercent ?? null,
+          "medium-volume-ml": haiterDefaults?.mediumVolumeMl ?? null,
+          "minimum-tool-volume-ml": haiterDefaults?.minimumToolVolumeMl ?? null,
+          ...(nextRun?.measurements ?? {}),
+        }
+      : nextRun?.measurements ?? {};
+    setActiveIndex(index); setStatus(nextRun?.status ?? "Pending"); setNote(nextRun?.note ?? ""); setMeasurements(nextMeasurements); setReadinessConfirmed(false); setMessage("");
   }
 
   async function save(mode: "draft" | "confirm") {
@@ -93,7 +126,7 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
           <p>หยุดไว้ก่อนและสร้าง Lot จาก Wizard ด้วย Protocol เวอร์ชันล่าสุด</p>
         </div>
       )}
-      {(step.measurements?.length ?? 0) > 0 && <div className="guided-measurements"><h4>ค่าที่ต้องวัด</h4>{step.measurements?.map((item) => <label className="form-field" key={item.id}><span>{item.label} ({item.unit}){item.required ? " *" : ""}</span><input min={item.min} max={item.max} onChange={(event) => setMeasurements((current) => ({ ...current, [item.id]: event.target.value === "" ? null : Number(event.target.value) }))} type="number" value={measurements[item.id] ?? ""} /></label>)}</div>}
+      {(step.measurements?.length ?? 0) > 0 && <div className={`guided-measurements${isHaiterCalculation ? " haiter-inline-calculator" : ""}`}><h4>{isHaiterCalculation ? "กรอกตัวเลข 3 ช่องนี้" : "ค่าที่ต้องวัด"}</h4>{isHaiterCalculation && <p className="muted-copy">ใช้ตัวเลขที่เห็นจริง ระบบใช้ค่าคลอรีนเป้าหมาย {haiterDefaults?.targetPercent ?? 0.003}% ตาม Protocol นี้</p>}{step.measurements?.map((item) => <label className="form-field" key={item.id}><span>{item.label} ({item.unit}){item.required ? " *" : ""}</span><input min={item.min} max={item.max} onChange={(event) => setMeasurements((current) => ({ ...current, [item.id]: event.target.value === "" ? null : Number(event.target.value) }))} type="number" value={measurements[item.id] ?? ""} /></label>)}{haiterPlan && <div className={`haiter-plan haiter-plan-${haiterPlan.state}`} role="status">{haiterPlan.state === "blocked" ? <><strong>ยังคำนวณไม่ได้</strong><p>{haiterPlan.reason}</p><p>{haiterPlan.safeAction}</p></> : <><strong>{haiterPlan.primaryInstruction}</strong><ol>{haiterPlan.actions.map((action) => <li key={action}>{action}</li>)}</ol></>}</div>}</div>}
       <label className="form-field guided-note"><span>บันทึก note {step.requiredEvidence?.includes("note") ? "*" : ""}</span><textarea onChange={(event) => setNote(event.target.value)} rows={4} value={note} placeholder="เขียนสิ่งที่พบจริง เช่น สี เนื้อเยื่อ กลิ่น หรือปัญหา" /></label>
       {step.allowPhoto && <div className="guided-photo-evidence"><h4>หลักฐานภาพของขั้นนี้</h4>{run?.evidenceObservationId && onMediaUploaded ? <><MediaStrip items={mediaByStep[step.id] ?? []} onDelete={async (mediaId) => { if (onMediaDelete) await onMediaDelete(run.evidenceObservationId!, mediaId); }} onRestore={async (mediaId) => { if (onMediaRestore) await onMediaRestore(run.evidenceObservationId!, mediaId); }} /><MediaUploader actionLabel="เลือกหรือถ่ายรูปของขั้นนี้" lotId={lotId} observationId={run.evidenceObservationId} onUploaded={onMediaUploaded} purpose="ใช้ยืนยันว่าคุณทำขั้นตอนนี้กับของจริง" requiredFrame={step.beginner?.evidencePrompt ?? []} /></> : <p className="muted-copy">กด “บันทึกร่าง” ก่อน แล้วระบบจะเปิดพื้นที่อัปโหลดภาพของขั้นนี้ จากนั้นจึงยืนยันผล</p>}</div>}
       <div className="guided-status"><span>ผลลัพธ์</span>{statuses.map((item) => <label key={item}><input aria-label={statusLabels[item]} checked={status === item} onChange={() => setStatus(item)} name={`status-${step.id}`} type="radio" /> {statusLabels[item]}</label>)}</div>
