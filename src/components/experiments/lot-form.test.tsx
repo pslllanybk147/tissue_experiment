@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
 import { LotForm } from "./lot-form";
+import { sterilizationProfiles } from "../../lib/domain/sterilization-profiles";
 
 describe("LotForm", () => {
   it("renders accessible structured lot fields", () => {
@@ -25,5 +26,17 @@ describe("LotForm", () => {
     expect(html).toContain('value="Violin variegated"');
     expect(html).toContain('value="template-violin-nodal"');
     expect(html).toContain("จะแนะนำขั้นตอน");
+  });
+
+  it("requires a sterilization profile in advanced mode", () => {
+    const html = renderToStaticMarkup(
+      <LotForm
+        onSubmit={async () => undefined}
+        sterilizationProfiles={sterilizationProfiles}
+      />,
+    );
+    expect(html).toContain("วิธีฆ่าเชื้ออาหาร");
+    expect(html).toContain("Haiter / sodium hypochlorite");
+    expect(html).toContain("หม้อนึ่งแรงดัน");
   });
 });

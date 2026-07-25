@@ -3,14 +3,14 @@
 import { useState, type FormEvent } from "react";
 
 import { validateLotInput } from "../../lib/domain/experiment-validation";
-import type { CreateLotInput, ExperimentStatus, ProtocolTemplate } from "../../lib/domain/models";
+import type { CreateLotInput, ExperimentStatus, ProtocolTemplate, SterilizationProfile } from "../../lib/domain/models";
 
 export type ProtocolOption = { id: string; title: string; versionId: string; version: string };
-type LotFormProps = { onSubmit: (input: CreateLotInput) => Promise<void>; protocolOptions?: ProtocolOption[]; templates?: ProtocolTemplate[]; initialPlantId?: string; initialPlantName?: string; initialTaxonId?: string; initialTemplateId?: string };
+type LotFormProps = { onSubmit: (input: CreateLotInput) => Promise<void>; protocolOptions?: ProtocolOption[]; templates?: ProtocolTemplate[]; sterilizationProfiles?: SterilizationProfile[]; initialPlantId?: string; initialPlantName?: string; initialTaxonId?: string; initialTemplateId?: string };
 
 const initial: CreateLotInput = { id: "", plant: "", protocolId: "protocol-nodal-v01", protocolTitle: "Nodal establishment v0.1", stage: "Establishment", status: "Healthy", startedAt: new Date().toISOString().slice(0, 10) };
 
-export function LotForm({ onSubmit, protocolOptions = [], templates = [], initialPlantId, initialPlantName, initialTaxonId, initialTemplateId }: LotFormProps) {
+export function LotForm({ onSubmit, protocolOptions = [], templates = [], sterilizationProfiles = [], initialPlantId, initialPlantName, initialTaxonId, initialTemplateId }: LotFormProps) {
   const [value, setValue] = useState<CreateLotInput>(() => {
     const selected = protocolOptions[0];
     const recommended = templates.find((template) => template.id === initialTemplateId) ?? templates.find((template) => initialPlantName && template.plantScope.toLowerCase().includes(initialPlantName.toLowerCase()));
@@ -24,6 +24,23 @@ export function LotForm({ onSubmit, protocolOptions = [], templates = [], initia
   function selectProtocol(compositeId: string) {
     const selected = protocolOptions.find((option) => `${option.id}::${option.versionId}` === compositeId);
     if (selected) setValue((current) => ({ ...current, protocolId: selected.id, protocolTitle: selected.title, protocolVersionId: selected.versionId }));
+  }
+
+  function selectSterilization(profileId: string) {
+    const profile = sterilizationProfiles.find((item) => item.id === profileId);
+    if (!profile) return;
+    setValue((current) => ({
+      ...current,
+      sterilization: {
+        profileId: profile.id,
+        profileVersion: profile.version,
+        method: profile.method,
+        activeChlorinePercent: profile.method === "haiter-chemical" ? current.sterilization?.activeChlorinePercent : undefined,
+        targetChlorinePercent: profile.method === "haiter-chemical" ? current.sterilization?.targetChlorinePercent : undefined,
+        mediumVolumeMl: profile.method === "haiter-chemical" ? current.sterilization?.mediumVolumeMl : undefined,
+        calculatedDoseMl: profile.method === "haiter-chemical" ? current.sterilization?.calculatedDoseMl : undefined,
+      },
+    }));
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -41,6 +58,7 @@ export function LotForm({ onSubmit, protocolOptions = [], templates = [], initia
       <Field error={errors.id} label="Lot ID"><input aria-invalid={Boolean(errors.id)} onChange={(e) => update("id", e.target.value)} placeholder="PPP-001" value={value.id} /></Field>
       <Field error={errors.plant} label="ชื่อพืช"><input aria-invalid={Boolean(errors.plant)} onChange={(e) => update("plant", e.target.value)} placeholder="Pink Princess" value={value.plant} /></Field>
       {templates.length > 0 && <Field label="คู่มือเริ่มต้น"><select value={value.templateId ?? ""} onChange={(e) => { const template = templates.find((item) => item.id === e.target.value); if (template) setValue((current) => ({ ...current, templateId: template.id, method: template.method, plant: current.plant || template.plantScope })); }}><option disabled value="">เลือกชนิด/วิธีทดลอง</option>{templates.map((template) => <option key={template.id} value={template.id}>{template.title} · {template.evidenceState}</option>)}</select></Field>}
+      {sterilizationProfiles.length > 0 && <Field error={errors.sterilizationProfileId} label="วิธีฆ่าเชื้ออาหาร"><select value={value.sterilization?.profileId ?? ""} onChange={(e) => selectSterilization(e.target.value)}><option disabled value="">เลือกตามอุปกรณ์ที่มี</option>{sterilizationProfiles.map((profile) => <option key={profile.id} value={profile.id}>{profile.method === "haiter-chemical" ? "Haiter / sodium hypochlorite" : "หม้อนึ่งแรงดัน"}</option>)}</select></Field>}
       {protocolOptions.length > 0 ? <Field error={errors.protocolTitle ?? errors.protocolId} label="Protocol version"><select name="protocolVersion" onChange={(e) => selectProtocol(e.target.value)} value={`${value.protocolId}::${value.protocolVersionId ?? ""}`}>{protocolOptions.map((option) => <option key={option.versionId} value={`${option.id}::${option.versionId}`}>{option.title} · v{option.version}</option>)}</select></Field> : <>
         <Field error={errors.protocolTitle} label="Protocol"><input aria-invalid={Boolean(errors.protocolTitle)} onChange={(e) => update("protocolTitle", e.target.value)} value={value.protocolTitle} /></Field>
         <Field error={errors.protocolId} label="Protocol ID"><input aria-invalid={Boolean(errors.protocolId)} onChange={(e) => update("protocolId", e.target.value)} value={value.protocolId} /></Field>

@@ -7,12 +7,14 @@ import { useRouter } from "next/navigation";
 import { AuthGate } from "@/components/auth/auth-gate";
 import { useAuth } from "@/components/auth/auth-provider";
 import { LotForm, type ProtocolOption } from "@/components/experiments/lot-form";
+import { BeginnerLotWizard } from "@/components/experiments/beginner-lot-wizard";
 import { LabShell } from "@/components/lab/lab-shell";
 import type { CreateLotInput } from "@/lib/domain/models";
 import { getExperimentRepository } from "@/lib/repositories/experiment-repository-factory";
 import { getProtocolRepository } from "@/lib/repositories/protocol-repository-factory";
 import { getPlantRepository } from "@/lib/repositories/plant-repository-factory";
 import { protocolTemplates, stepsForTemplate, templateIdForTaxon } from "@/lib/domain/protocol-templates";
+import { sterilizationProfiles } from "@/lib/domain/sterilization-profiles";
 
 export default function NewExperimentPage() {
   const router = useRouter();
@@ -28,6 +30,7 @@ export default function NewExperimentPage() {
   const [initialTemplateId, setInitialTemplateId] = useState<string | undefined>(() => typeof window === "undefined" ? undefined : templateIdForTaxon(new URLSearchParams(window.location.search).get("taxon") ?? undefined));
   const [protocolsLoaded, setProtocolsLoaded] = useState(false);
   const [plantLoaded, setPlantLoaded] = useState(() => !initialPlantId);
+  const [advancedMode, setAdvancedMode] = useState(false);
   useEffect(() => {
     let active = true;
     protocolRepository.list(ownerId).then(async (records) => {
@@ -70,6 +73,9 @@ export default function NewExperimentPage() {
 
   return <AuthGate><LabShell onSignOut={() => void signOut()} section="Experiments" sessionLabel={session.status === "authenticated" ? "FIREBASE" : "DEMO"}>
     <Link className="route-back" href="/experiments">← กลับไป Experiment Lots</Link>
-    {protocolsLoaded && plantLoaded ? <LotForm onSubmit={createLot} protocolOptions={protocolOptions} templates={protocolTemplates} initialPlantId={initialPlantId} initialPlantName={initialPlantName} initialTaxonId={initialTaxonId} initialTemplateId={initialTemplateId} /> : <p className="route-loading" role="status">กำลังเตรียม Plant Record และ Protocol…</p>}
+    {protocolsLoaded && plantLoaded ? advancedMode
+      ? <LotForm onSubmit={createLot} protocolOptions={protocolOptions} templates={protocolTemplates} sterilizationProfiles={sterilizationProfiles} initialPlantId={initialPlantId} initialPlantName={initialPlantName} initialTaxonId={initialTaxonId} initialTemplateId={initialTemplateId} />
+      : <BeginnerLotWizard onAdvancedMode={() => setAdvancedMode(true)} onSubmit={createLot} protocolOptions={protocolOptions} profiles={sterilizationProfiles} templates={protocolTemplates} initialPlantId={initialPlantId} initialPlantName={initialPlantName} initialTaxonId={initialTaxonId} initialTemplateId={initialTemplateId} />
+      : <p className="route-loading" role="status">กำลังเตรียม Plant Record และ Protocol…</p>}
   </LabShell></AuthGate>;
 }
