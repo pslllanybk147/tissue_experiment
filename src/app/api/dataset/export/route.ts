@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     const uid = await authenticate(request);
     const { firestore, manifest } = await getManifest(uid);
     const id = `export-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
-    const record = { id, ownerId: uid, schemaVersion: manifest.schemaVersion, generatedAt: manifest.generatedAt, itemCount: manifest.itemCount, itemIds: manifest.items.map(item => item.id), splitCounts: manifest.splitCounts, splitStrategy: "lot-hash-v1" };
+    const record = { id, ownerId: uid, schemaVersion: manifest.schemaVersion, generatedAt: manifest.generatedAt, itemCount: manifest.itemCount, itemIds: manifest.items.map(item => item.id), splitCounts: manifest.splitCounts, splitStrategy: "class-lot-stratified-v2" };
     await firestore.doc(`users/${uid}/datasetExports/${id}`).set(record);
     return NextResponse.json({ ...manifest, exportId: id }, { status: 201, headers: { "Cache-Control": "no-store" } });
   } catch (error) {

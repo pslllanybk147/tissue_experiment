@@ -67,7 +67,7 @@ describe("training readiness report", () => {
       }
     }
     const manifest: ModelReadyManifest = {
-      schemaVersion: "image-dataset-model-ready-v1",
+      schemaVersion: "image-dataset-model-ready-v2",
       generatedAt: "2026-07-25T00:00:00.000Z",
       sourceJobId: "job-ready",
       itemCount: entries.length,

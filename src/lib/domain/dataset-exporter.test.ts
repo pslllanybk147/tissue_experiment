@@ -25,11 +25,23 @@ const base: DatasetItem = {
 describe("dataset exporter", () => {
   it("exports only approved, labeled training candidates", () => {
     const manifest = buildDatasetManifest([base, { ...base, id: "pending", reviewStatus: "Pending review", includedInTraining: false }, { ...base, id: "unknown", label: { ...base.label, confidence: "Unknown" } }], "2026-07-23T01:00:00.000Z");
-    expect(manifest).toMatchObject({ schemaVersion: "image-dataset-v1", generatedAt: "2026-07-23T01:00:00.000Z", itemCount: 1, splitCounts: { train: 1, validation: 0, test: 0 } });
+    expect(manifest).toMatchObject({ schemaVersion: "image-dataset-v2", generatedAt: "2026-07-23T01:00:00.000Z", itemCount: 1, splitCounts: { train: 1, validation: 0, test: 0 } });
     expect(manifest.items[0]).toMatchObject({ id: "dataset-1", cultivarName: "Pink Princess", confidence: "High", split: "train" });
   });
   it("keeps items from the same lot in one split", () => {
     const manifest = buildDatasetManifest([base, { ...base, id: "dataset-2", mediaId: "media-2" }]);
     expect(new Set(manifest.items.map((item) => item.split))).toHaveLength(1);
+  });
+  it("stratifies lots within each class across train, validation, and test", () => {
+    const items = ["LOT-A", "LOT-B", "LOT-C"].flatMap((lotId, lotIndex) =>
+      Array.from({ length: 2 }, (_, imageIndex) => ({ ...base, id: `item-${lotIndex}-${imageIndex}`, mediaId: `media-${lotIndex}-${imageIndex}`, lotId })),
+    );
+    const manifest = buildDatasetManifest(items);
+    expect(new Map(manifest.items.map((item) => [item.lotId, item.split]))).toEqual(new Map([
+      ["LOT-A", expect.any(String)],
+      ["LOT-B", expect.any(String)],
+      ["LOT-C", expect.any(String)],
+    ]));
+    expect(new Set(manifest.items.map((item) => item.split))).toEqual(new Set(["train", "validation", "test"]));
   });
 });

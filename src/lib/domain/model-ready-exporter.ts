@@ -10,7 +10,7 @@ export type ModelReadyManifestEntry = DatasetManifestEntry & {
 };
 
 export type ModelReadyManifest = Omit<DatasetManifest, "schemaVersion" | "items"> & {
-  schemaVersion: "image-dataset-model-ready-v1";
+  schemaVersion: "image-dataset-model-ready-v2";
   sourceJobId: string;
   items: ModelReadyManifestEntry[];
 };
@@ -28,5 +28,5 @@ export function buildModelReadyManifest(items: DatasetItem[], job: Preprocessing
     return { ...entry, sourceAssetUrl: entry.assetUrl, artifactUrl: artifact.secureUrl, artifactPublicId: artifact.publicId, artifactSha256: artifact.sha256 };
   });
   if (job.status !== "completed" || entries.length !== base.itemCount || job.itemIds.length !== base.itemCount) throw new Error("Preprocessing job is not complete for the current dataset");
-  return { ...base, schemaVersion: "image-dataset-model-ready-v1", sourceJobId: job.id, items: entries };
+  return { ...base, schemaVersion: "image-dataset-model-ready-v2", sourceJobId: job.id, items: entries };
 }

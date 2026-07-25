@@ -12,7 +12,7 @@ function job(overrides: Partial<PreprocessingJob> = {}): PreprocessingJob {
 describe("model-ready exporter", () => {
   it("uses only completed preprocessed artifacts", () => {
     const manifest = buildModelReadyManifest([item], job(), "2026-07-23T00:00:00.000Z");
-    expect(manifest).toMatchObject({ schemaVersion: "image-dataset-model-ready-v1", sourceJobId: "job-1", itemCount: 1, items: [{ artifactUrl: expect.stringContaining("preprocessed-item-1"), artifactSha256: "hash-1" }] });
+    expect(manifest).toMatchObject({ schemaVersion: "image-dataset-model-ready-v2", sourceJobId: "job-1", itemCount: 1, items: [{ artifactUrl: expect.stringContaining("preprocessed-item-1"), artifactSha256: "hash-1" }] });
   });
 
   it("rejects incomplete jobs", () => {

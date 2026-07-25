@@ -33,11 +33,11 @@ suite("dataset export integration", () => {
     const response = await POST(new Request("http://localhost/api/dataset/export", { method: "POST", headers: { authorization: `Bearer ${token}` } }));
     const body = await response.json();
     expect(response.status).toBe(201);
-    expect(body).toMatchObject({ exportId: expect.any(String), schemaVersion: "image-dataset-v1", itemCount: 1, items: [expect.objectContaining({ id: "DATASET-1", split: "train" })] });
+    expect(body).toMatchObject({ exportId: expect.any(String), schemaVersion: "image-dataset-v2", itemCount: 1, items: [expect.objectContaining({ id: "DATASET-1", split: "train" })] });
     await testEnv.withSecurityRulesDisabled(async context => {
       const exportRecord = await context.firestore().doc(`users/${uid}/datasetExports/${body.exportId}`).get();
       expect(exportRecord.exists).toBe(true);
-      expect(exportRecord.data()).toMatchObject({ itemCount: 1, splitStrategy: "lot-hash-v1" });
+      expect(exportRecord.data()).toMatchObject({ itemCount: 1, splitStrategy: "class-lot-stratified-v2" });
     });
   }, 15000);
 });

@@ -2069,3 +2069,29 @@
   - push implementation แล้วทั้ง `origin/master` และ `origin/main`
   - production URL `https://tissue-experiment-93.vercel.app/` ตอบ HTTP 200
   - ตรวจพบ CSS ใหม่ของ mobile Protocol และ Training Readiness บน production แล้ว
+
+## Image Processing — class/lot stratified dataset split v2 (2026-07-25)
+
+- ปรับ dataset manifest จากการแบ่ง split ด้วย hash ของ Lot อย่างเดียวเป็น `class-lot-stratified-v2`
+- เหตุผล: วิธีเดิมอาจทำให้ Lot ของคลาสเดียวกันไปอยู่ train หรือ validation/test เพียงชุดเดียว แม้มีหลาย Lot ทำให้ readiness report ไม่สะท้อน dataset ที่พร้อม train อย่างถูกต้อง
+- กติกาใหม่:
+  - ภาพจาก Lot เดียวกันยังอยู่ split เดียวกันเสมอ ป้องกันข้อมูลรั่วระหว่างภาพชุดเดียวกัน
+  - จัดกลุ่ม Lot แยกตาม `scientificName · cultivarName`
+  - ถ้ามีอย่างน้อย 3 Lot ต่อคลาส ระบบจะกระจาย Lot อย่างน้อยหนึ่งชุดไป train, validation และ test
+  - Lot เพิ่มเติมกระจายตามสัดส่วนเป้าหมาย 70/20/10 แบบ deterministic
+  - ใช้ stable hash เพื่อให้ export ซ้ำได้ผลเดิมโดยไม่สุ่ม
+- เปลี่ยน schema เพื่อแยกจาก manifest เก่า:
+  - `image-dataset-v2`
+  - `image-dataset-model-ready-v2`
+- เพิ่มการตรวจว่า split ของคลาสเดียวกันกระจายครบสามชุดเมื่อมี 3 Lot
+- ผลตรวจหลังแก้:
+  - focused tests 9 ผ่าน
+  - full tests 82 files / 215 tests ผ่าน + 10 skipped
+  - Firebase emulator 86 files / 225 tests ผ่าน
+  - lint ผ่าน
+  - production build ผ่าน
+  - sandbox UI verification ผ่าน 390, 1024 และ 1440px
+- ขั้นถัดไป:
+  - เก็บภาพที่ผ่าน provenance/label review ให้ครบอย่างน้อย 3 Lot ต่อคลาส
+  - preprocess แล้วสร้าง readiness report v2
+  - เมื่อ `ready: true` จึงต่อ baseline training/evaluation จริง
