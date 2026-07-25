@@ -4,6 +4,7 @@ export type ProtocolStatus = "Draft" | "Active" | "Archived";
 export type ProtocolStep = {
   id: string; order: number; title: string; instruction: string; durationMinutes: number | null;
   criticalControls: string[]; safetyNotes: string[]; referenceIds: string[]; evidenceState: EvidenceState;
+  workflowPhase?: "baseline" | "mark-explant" | "medium-preparation" | "readiness" | "explant-cut" | "surface-sterilization" | "culture";
   objective?: string;
   whyItMatters?: string;
   prerequisites?: string[];
@@ -47,6 +48,43 @@ export type ProtocolTemplate = {
   evidenceState: EvidenceState;
   description: string;
   protocolId?: string;
+};
+
+export type SterilizationMethod = "haiter-chemical" | "pressure-sterilization";
+export type BlankDecision = "completed" | "skipped";
+
+export type SterilizationProfile = {
+  id: string;
+  title: string;
+  method: SterilizationMethod;
+  version: string;
+  evidenceState: EvidenceState;
+  referenceIds: string[];
+  equipmentRequirements: string[];
+  steps: ProtocolStep[];
+  blankPolicy: "required" | "recommended-skippable" | "optional";
+};
+
+export type LotSterilizationSnapshot = {
+  profileId: string;
+  profileVersion: string;
+  method: SterilizationMethod;
+  lockedAt?: string;
+  activeChlorinePercent?: number;
+  targetChlorinePercent?: number;
+  mediumVolumeMl?: number;
+  calculatedDoseMl?: number;
+  blankDecision?: BlankDecision;
+  blankSkipReason?: string;
+};
+
+export type SterilizationReadiness = {
+  mediumReady: boolean;
+  containersReady: boolean;
+  workspaceReady: boolean;
+  toolsReady: boolean;
+  blankDecision: BlankDecision;
+  blankSkipReason: string;
 };
 
 export type ProtocolStepRun = {
@@ -113,6 +151,7 @@ export type ExperimentLot = {
   taxonId?: string;
   templateId?: string;
   method?: "shoot-tip" | "nodal" | "generic";
+  sterilization?: LotSterilizationSnapshot;
 };
 
 export type CreateLotInput = Omit<ExperimentLot, "ownerId" | "createdAt" | "updatedAt">;
