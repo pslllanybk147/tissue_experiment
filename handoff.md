@@ -1848,3 +1848,15 @@
 - หลัง commit ให้ push `master` และ `main` ให้ชี้ commit เดียวกัน แล้วรอ Vercel Production deployment ก่อนถือว่าเผยแพร่เสร็จ
 - implementation commit `b497735510e50266f28a73f2cb2d5f3b49d80e07` ถูก push ไป `master` และ `main` แล้ว
 - Vercel Production deployment `dpl_86cLqFcUoP5pYd7EF7xSatVfNZUC` สถานะ `READY`; production alias คือ `https://tissue-experiment-93.vercel.app`
+
+### แก้ Plant Record optional `taxonId` เป็น undefined — 2026-07-25
+
+- อาการ production: `Function setDoc() called with invalid data` ที่ `plants/{plantId}.taxonId`
+- สาเหตุ: ฟอร์มสร้างต้นไม้โดยไม่ได้เริ่มจากหน้า Taxon ส่ง `taxonId: undefined`; Firestore ไม่ยอมรับค่า `undefined`
+- เพิ่ม `sanitizePlantForFirestore` แบบ recursive และเรียกก่อน `setDoc` ทั้ง `create` และ `update`
+- เพิ่ม regression test ที่ยืนยันว่า optional `taxonId` ถูกตัดออกจาก payload แทนการบันทึกเป็น `undefined`
+- ผลตรวจ:
+  - `npm test`: 75 files ผ่าน, 4 skipped; 182 tests ผ่าน, 10 skipped
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: Auth/Firestore emulator ผ่าน 79 files / 192 tests
