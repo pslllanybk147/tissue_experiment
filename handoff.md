@@ -1787,6 +1787,13 @@
 - เพิ่ม regression test ด้วย Pink Princess template จริง ตรวจทั้งระดับ version และ nested step fields
 - สถานะ: แก้ต้นเหตุที่สองแล้ว; ต้อง deploy commit ใหม่และทดสอบสร้าง Lot จากหน้าเว็บอีกครั้ง
 
+### แก้ Lot optional field เป็น undefined (`plantId`) — 2026-07-25
+
+- สาเหตุ: `LotForm` ใส่ optional fields เช่น `plantId`, `taxonId`, `templateId` และ `method` เป็น `undefined` เมื่อผู้ใช้สร้าง Lot โดยไม่เริ่มจาก Plant Record
+- Firestore ไม่อนุญาตให้เขียน field ที่มีค่า `undefined` จึงเกิด error ที่ `lots/{lotId}.plantId`
+- เพิ่มการล้าง `undefined` แบบ recursive ก่อนสร้าง Lot และเพิ่ม regression test ที่จำลองค่า optional fields ว่าง
+- สถานะ: แก้แล้ว; ต้อง deploy commit ใหม่และทดสอบสร้าง Lot จากหน้าเว็บอีกครั้ง
+
 ### Production deployment policy — ใช้ main/master แทน Preview — 2026-07-25
 
 - ห้ามใช้ URL จาก Preview deployment เป็น URL หลักสำหรับการทดสอบผู้ใช้หรือ production verification

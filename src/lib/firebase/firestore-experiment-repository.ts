@@ -28,6 +28,14 @@ function snapshot(value: object): Record<string, unknown> {
   return structuredClone(value) as Record<string, unknown>;
 }
 
+function removeUndefined<T>(value: T): T {
+  if (Array.isArray(value)) return value.map((item) => removeUndefined(item)) as T;
+  if (value && typeof value === "object") {
+    return Object.fromEntries(Object.entries(value).filter(([, item]) => item !== undefined).map(([key, item]) => [key, removeUndefined(item)])) as T;
+  }
+  return value;
+}
+
 function createFirebaseAdapter(firestore: Firestore, uid: string): ExperimentPersistenceAdapter {
   const lotRef = (lotId: string) => doc(firestore, "users", uid, "lots", lotId);
   const observationRef = (lotId: string, observationId: string) =>
@@ -126,7 +134,7 @@ export function createFirestoreExperimentRepository(uid: string, options: Reposi
     assertOwner(ownerId);
     if (await adapter.getLot(input.id)) throw new Error("Lot already exists");
     const timestamp = now();
-    const lot: ExperimentLot = { ...input, ownerId: uid, createdAt: timestamp, updatedAt: timestamp, deletedAt: null };
+    const lot = removeUndefined<ExperimentLot>({ ...input, ownerId: uid, createdAt: timestamp, updatedAt: timestamp, deletedAt: null });
     return adapter.createLotWithAudit(lot, audit(lot.id, "lot", lot.id, "created", null, snapshot(lot)));
   }
 

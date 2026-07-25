@@ -52,13 +52,22 @@ function harness() {
     createId: () => `id-${++id}`,
     now: () => `2026-07-22T10:00:0${id}.000Z`,
   });
-  return { repository, mutations };
+  return { repository, mutations, audits };
 }
 
 describe("Firestore experiment repository contract", () => {
   it("rejects owner mismatch before persistence", async () => {
     const { repository } = harness();
     await expect(repository.listLots("other")).rejects.toThrow("Owner mismatch");
+  });
+
+  it("does not persist undefined optional lot fields", async () => {
+    const { repository, audits } = harness();
+    await repository.createLot("owner-1", { ...lotInput, id: "AAA-131", plantId: undefined, taxonId: undefined, templateId: undefined, method: undefined });
+    const after = audits[0].after ?? {};
+    expect(Object.values(after).some((value) => value === undefined)).toBe(false);
+    expect(after).not.toHaveProperty("plantId");
+    expect(after).not.toHaveProperty("taxonId");
   });
 
   it("soft deletes and restores a lot with audit snapshots", async () => {
