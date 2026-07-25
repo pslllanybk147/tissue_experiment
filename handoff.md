@@ -1786,3 +1786,12 @@
 - เพิ่ม `removeUndefined` แบบ recursive ก่อนบันทึก `ProtocolVersion` ใน `createDraft`, `createDraftFromClaim` และ `saveDraftVersion`
 - เพิ่ม regression test ด้วย Pink Princess template จริง ตรวจทั้งระดับ version และ nested step fields
 - สถานะ: แก้ต้นเหตุที่สองแล้ว; ต้อง deploy commit ใหม่และทดสอบสร้าง Lot จากหน้าเว็บอีกครั้ง
+
+### Production deployment policy — ใช้ main/master แทน Preview — 2026-07-25
+
+- ห้ามใช้ URL จาก Preview deployment เป็น URL หลักสำหรับการทดสอบผู้ใช้หรือ production verification
+- ให้ตั้งค่า Vercel Project → Settings → Git → Production Branch เป็น `master` ซึ่งเป็น branch หลักที่เชื่อมกับ workflow ปัจจุบัน
+- branch `main` ต้อง push ให้ตรงกับ `master` ทุกครั้ง หาก GitHub เปลี่ยน default branch เป็น `main` ให้ปรับ Production Branch ของ Vercel เป็น `main` และตรวจว่า commit ตรงกับ `master`
+- หลัง push ให้ตรวจตามลำดับ: GitHub `master`/`main` commit เดียวกัน → Vercel Production Deployment สถานะ Ready → Production Domain → login และ flow สำคัญ
+- Preview ใช้ได้เฉพาะตรวจ branch ชั่วคราว ห้ามใช้เป็นหลักฐานว่า production deploy สำเร็จ
+- ก่อนส่งงานทุกครั้งต้องบันทึก commit, branch ที่ push, Production URL และผลตรวจใน `handoff.md`
