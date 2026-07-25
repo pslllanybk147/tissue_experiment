@@ -23,8 +23,12 @@ export type ExplantGuide = {
   selectionNotes: string[]; preSterilizationSize: string; finalExplantSize: string;
   sterilizationTrials: SterilizationTrial[]; safetyNotes: string[];
 };
+export type ExplantReference = {
+  id: string; title: string; kind: "diagram" | "source" | "research";
+  description: string; url?: string; label: string; evidenceState: EvidenceState;
+};
 export type TissueCultureManual = {
-  method: "nodal"; disclaimer: string; steps: ManualStep[]; mediaNotes: string[]; mediaRecipes: MediaRecipe[]; explantGuide: ExplantGuide;
+  method: "nodal"; disclaimer: string; steps: ManualStep[]; mediaNotes: string[]; mediaRecipes: MediaRecipe[]; explantGuide: ExplantGuide; explantReferences: ExplantReference[];
 };
 export type PhilodendronMonograph = {
   taxonId: string; title: string; subtitle: string; sections: KnowledgeSection[];
@@ -126,7 +130,11 @@ const monograph = (taxonId: string, title: string, subtitle: string, evidenceSta
     { id: "identification", title: "Identification", summary: "ใช้หลายจุดสังเกตร่วมกัน และระบุความไม่แน่นอนของต้นขายจริง", claims: extraClaims.filter((claim) => claim.id.includes("identification")) },
     { id: "tissue-culture", title: "Tissue culture", summary: "คู่มือ guided workflow 18 ขั้น พร้อม evidence state ต่อขั้น", claims: extraClaims.filter((claim) => claim.id.includes("culture")) },
   ],
-  tissueCulture: { method: "nodal", disclaimer: "คู่มือนี้เป็น research-assisted workflow ไม่ใช่การรับประกันผล สูตรหรือเวลาที่ไม่มีหลักฐานตรงพันธุ์ต้องบันทึกเป็น Adapted/Experimental และทดสอบกับระบบของผู้ใช้เอง", steps: sharedSteps(evidenceState, sourceIds), mediaNotes: ["ตารางสูตรเป็นจุดตั้งต้นสำหรับ batch เล็ก; ปริมาณต่อ batch คำนวณจากค่าต่อลิตรและต้องใช้ stock solution สำหรับฮอร์โมน", "ค่าฮอร์โมนหรือวิธีฟอกที่มีหลักฐานตรงเฉพาะบางขั้นต้องไม่ถูกตีความว่าเป็น Verified ทั้งสูตร"] , mediaRecipes: mediaRecipes(evidenceState, sourceIds, title.includes("Pink") ? 1 : 0.5, title.includes("Pink") ? 0 : 0.05, title.includes("Pink") ? "งาน Pink Princess รองรับ BAP 1.0 mg/L และ IBA 3.0 mg/L ในระบบที่ศึกษา แต่ตารางเต็มนี้เป็น Adapted สำหรับการเริ่มจาก nodal explant" : "Violin ยังไม่มีหลักฐานตรงพันธุ์ จึงถือสูตรทั้งหมดเป็น Experimental/Adapted และต้องบันทึกผลทุก batch"), explantGuide: explantGuide(title, evidenceState, sourceIds) },
+  tissueCulture: { method: "nodal", disclaimer: "คู่มือนี้เป็น research-assisted workflow ไม่ใช่การรับประกันผล สูตรหรือเวลาที่ไม่มีหลักฐานตรงพันธุ์ต้องบันทึกเป็น Adapted/Experimental และทดสอบกับระบบของผู้ใช้เอง", steps: sharedSteps(evidenceState, sourceIds), mediaNotes: ["ตารางสูตรเป็นจุดตั้งต้นสำหรับ batch เล็ก; ปริมาณต่อ batch คำนวณจากค่าต่อลิตรและต้องใช้ stock solution สำหรับฮอร์โมน", "ค่าฮอร์โมนหรือวิธีฟอกที่มีหลักฐานตรงเฉพาะบางขั้นต้องไม่ถูกตีความว่าเป็น Verified ทั้งสูตร"] , mediaRecipes: mediaRecipes(evidenceState, sourceIds, title.includes("Pink") ? 1 : 0.5, title.includes("Pink") ? 0 : 0.05, title.includes("Pink") ? "งาน Pink Princess รองรับ BAP 1.0 mg/L และ IBA 3.0 mg/L ในระบบที่ศึกษา แต่ตารางเต็มนี้เป็น Adapted สำหรับการเริ่มจาก nodal explant" : "Violin ยังไม่มีหลักฐานตรงพันธุ์ จึงถือสูตรทั้งหมดเป็น Experimental/Adapted และต้องบันทึกผลทุก batch"), explantGuide: explantGuide(title, evidenceState, sourceIds), explantReferences: [
+    { id: "diagram-node", title: "ภาพจำลอง: ดูข้อและตาข้าง", kind: "diagram", description: "ภาพจำลองในคู่มือนี้ ใช้ทำความเข้าใจตำแหน่งเท่านั้น ต้องยืนยันกับต้นจริงก่อนตัด", label: "ภาพจำลอง", evidenceState: "Adapted" },
+    { id: "uf-node-illustration", title: "ภาพอ้างอิง: shoot tip และ axillary node", kind: "source", description: "แหล่งอธิบายชนิดของ shoot culture และตำแหน่ง axillary shoot/node แบบทั่วไป ไม่ใช่ภาพยืนยัน Pink Princess หรือ Violin", url: "https://propg.ifas.ufl.edu/09-tissue-culture/01-types/08-tctypes-shootcultures.html", label: "เปิดแหล่งอ้างอิง", evidenceState: "Adapted" },
+    ...(title.includes("Pink") ? [{ id: "pink-research-explant", title: "งานวิจัย Pink Princess: PLB explant", kind: "research" as const, description: "งานวิจัยตรงพันธุ์เริ่มจาก protocorm-like bodies (PLBs) ไม่ใช่ภาพตำแหน่งตัดข้อจากต้นแม่ จึงใช้ยืนยันบริบทงานวิจัย ไม่ใช้แทนภาพตัดต้นจริง", url: "https://doi.org/10.3390/horticulturae9060688", label: "เปิดงานวิจัย", evidenceState: "Verified" as EvidenceState }] : [{ id: "violin-evidence-gap", title: "Violin variegated: ยังไม่มีภาพตรงพันธุ์", kind: "research" as const, description: "ยังไม่มีภาพและ protocol tissue culture ตรง cultivar ใน registry นี้ ภาพ node เป็นเพียงหลักการจาก Philodendron/Araceae ที่ใกล้เคียง", label: "Evidence gap", evidenceState: "Experimental" as EvidenceState }]),
+  ] },
 });
 
 export const philodendronMonographs: PhilodendronMonograph[] = [

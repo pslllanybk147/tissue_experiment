@@ -2195,3 +2195,11 @@
 - เพิ่มกฎ mobile ใน `src/app/globals.css` ให้ guide, readiness panel และ uncertainty actions มี `min-width: 0`, `max-width: 100%`, และให้ข้อความ/ปุ่มตัดบรรทัดตามธรรมชาติ
 - ปุ่ม uncertainty เปลี่ยนเป็นเต็มความกว้างของกรอบบน mobile เพื่อให้กดง่ายและไม่ถูกตัด
 - ตรวจซ้ำด้วย production sandbox ที่ 360, 390, 768, 1024 และ 1440px: ผ่าน
+
+## Explant reference gallery (2026-07-25)
+
+- เพิ่ม `ExplantReference` ใน domain manual และเพิ่ม Reference Gallery ในหน้า monograph
+- Pink Princess แสดงภาพจำลอง, แหล่งอธิบาย shoot tip/axillary node และงานวิจัยตรงพันธุ์ที่ใช้ PLB เป็น explant พร้อมแยกชัดเจนว่า PLB paper ไม่ใช่ภาพตัดข้อจากต้นแม่
+- Violin แสดงภาพจำลองและ evidence gap ว่ายังไม่มีภาพ/protocol ตรง cultivar ใน registry
+- ภาพจากภายนอกเก็บเป็นลิงก์พร้อมคำอธิบาย/ระดับหลักฐาน ไม่ดึงภาพจาก Google มาคัดลอกโดยไม่มี license
+- เพิ่มแนวทางต่อยอด: เมื่อผู้ใช้อัปโหลดภาพต้นจริง ระบบควรสร้าง annotated reference เฉพาะต้นนั้น และเก็บภาพต้นฉบับ/ผู้ตรวจ/วันที่ไว้ใน audit

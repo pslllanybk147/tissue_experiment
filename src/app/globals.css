@@ -516,6 +516,21 @@ button:disabled { cursor: not-allowed; }
 .manual-generation-guide { display: grid; gap: 5px; margin: 14px 0 18px; padding: 14px 16px; border-left: 5px solid #316b50; background: #f5faf6; color: #193a28; line-height: 1.65; }
 .manual-generation-guide strong { font-size: 1rem; }
 .manual-generation-guide span { font-size: .9rem; }
+.explant-reference-gallery { display: grid; gap: 12px; padding: 16px; border: 1px solid #b6cbbd; background: #fff; }
+.explant-reference-gallery .knowledge-detail-heading { margin: 0; }
+.explant-reference-gallery h4 { margin: 0 0 4px; }
+.explant-reference-gallery h5 { margin: 7px 0 4px; font-size: 1rem; }
+.explant-reference-gallery p { margin: 0; font-size: .9rem; line-height: 1.6; overflow-wrap: anywhere; }
+.explant-reference-gallery a { display: inline-flex; min-height: 2.75rem; align-items: center; color: #174ea6; font-weight: 700; }
+.explant-reference-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.explant-reference-card { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 10px; min-width: 0; padding: 10px; border: 1px solid #c5cec8; background: #f8fbf8; }
+.explant-reference-preview { position: relative; display: grid; min-height: 74px; place-items: center; overflow: hidden; background: #eaf3ec; color: #245438; font: 10px var(--font-geist-mono), monospace; }
+.explant-reference-diagram .reference-stem { position: absolute; top: 12px; bottom: 12px; left: 50%; width: 7px; transform: translateX(-50%); background: #376b4c; }
+.explant-reference-diagram .reference-node { position: absolute; top: 28px; left: 42%; width: 18px; height: 18px; border: 3px solid #245438; border-radius: 50%; background: #fff; }
+.explant-reference-diagram .reference-cut-line { position: absolute; left: 12px; right: 12px; bottom: 20px; border-top: 3px solid #b42318; }
+.explant-reference-source { background: #eef2ff; color: #34429b; }
+.explant-reference-research { background: #fff5e8; color: #8d4b0a; }
+@media (max-width: 800px) { .explant-reference-grid { grid-template-columns: 1fr; } }
 @media (max-width: 700px) { .beginner-cut-guide { grid-template-columns: 1fr; padding: 14px; } .explant-visual { min-height: 245px; } }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
