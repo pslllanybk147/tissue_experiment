@@ -2203,3 +2203,9 @@
 - Violin แสดงภาพจำลองและ evidence gap ว่ายังไม่มีภาพ/protocol ตรง cultivar ใน registry
 - ภาพจากภายนอกเก็บเป็นลิงก์พร้อมคำอธิบาย/ระดับหลักฐาน ไม่ดึงภาพจาก Google มาคัดลอกโดยไม่มี license
 - เพิ่มแนวทางต่อยอด: เมื่อผู้ใช้อัปโหลดภาพต้นจริง ระบบควรสร้าง annotated reference เฉพาะต้นนั้น และเก็บภาพต้นฉบับ/ผู้ตรวจ/วันที่ไว้ใน audit
+
+## Lot detail mobile header correction (2026-07-25)
+
+- พบจากภาพ iPhone SE ว่า `.lot-detail-heading` ยังเป็น flex row บน mobile ทำให้ชื่อพืช/Protocol ถูกบีบเป็นตัวอักษรแนวตั้ง
+- แก้ที่ `src/app/globals.css` ให้ header เป็นคอลัมน์บนจอไม่เกิน 700px, ลูกแต่ละส่วนกว้างเต็มกรอบ และอนุญาตให้ Lot ID/ชื่อ Protocol ตัดบรรทัดได้
+- ตรวจ `lint`, `build` และ production UI sandbox ที่ 360, 390, 768, 1024 และ 1440px ผ่าน

@@ -486,6 +486,13 @@ td a, .source-row a, .knowledge-source-claim a {
   .guided-runner .form-actions { grid-template-columns: 1fr; }
   .guided-runner .form-actions > .primary-button { grid-column: auto; }
 }
+@media (max-width: 700px) {
+  .lot-detail-heading { align-items: flex-start; flex-direction: column; gap: 14px; }
+  .lot-detail-heading > * { width: 100%; min-width: 0; }
+  .lot-detail-heading h1 { max-width: 100%; overflow-wrap: anywhere; word-break: normal; }
+  .lot-detail-heading > .route-actions { align-items: stretch; }
+  .lot-detail-heading > .route-actions > * { width: 100%; }
+}
 html, body { max-width: 100%; overflow-x: hidden; }
 /* Immediate feedback is global so even small/legacy actions communicate a press. */
 button, a.primary-button, a.secondary-button, a.quiet-button, a.text-button, a.square-button {
