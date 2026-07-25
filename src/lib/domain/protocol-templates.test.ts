@@ -4,7 +4,7 @@ import { protocolTemplates, stepsForTemplate, templateIdForTaxon } from "./proto
 describe("guided protocol templates", () => {
   it("contains a beginner path for each supported scope", () => {
     expect(protocolTemplates).toHaveLength(3);
-    expect(stepsForTemplate("template-generic-philodendron")).toHaveLength(13);
+    expect(stepsForTemplate("template-generic-philodendron")).toHaveLength(18);
     expect(stepsForTemplate("template-generic-philodendron")[0]).toMatchObject({ title: "รับต้นไม้และบันทึก baseline", objective: expect.any(String), passCriteria: expect.any(Array) });
   });
 

@@ -1,0 +1,76 @@
+import { describe, expect, it } from "vitest";
+
+import type { BeginnerInstruction, ProtocolStep } from "./models";
+import {
+  beginnerInstructionIssues,
+  defaultUncertaintyPaths,
+  isBeginnerReadyStep,
+} from "./zero-knowledge-protocol";
+
+const completeInstruction: BeginnerInstruction = {
+  currentAction: "ถ่ายรูปด้านข้างของลำต้น",
+  doNotDoYet: ["ยังไม่ตัดต้นไม้"],
+  whatToFind: ["มองหาจุดที่ใบงอกจากลำต้น จุดนี้เรียกว่า ข้อ"],
+  materials: [
+    {
+      name: "โทรศัพท์ที่มีกล้อง",
+      appearance: "เครื่องที่ใช้ถ่ายรูปตามปกติ",
+      purpose: "บันทึกสภาพก่อนเริ่ม",
+    },
+  ],
+  actions: ["วางต้นไม้ในที่สว่าง", "ถ่ายรูปให้เห็นทั้งต้น"],
+  stopConditions: ["หยุดถ้าภาพมืดจนมองไม่เห็นลำต้น"],
+  evidencePrompt: ["เก็บรูปที่เห็นทั้งต้นอย่างน้อย 1 รูป"],
+  readyChecklist: ["ฉันเห็นลำต้นชัดในรูป", "ฉันยังไม่ได้ตัดต้น"],
+  uncertaintyPaths: defaultUncertaintyPaths("ถ่ายรูปใหม่ในที่สว่างกว่าเดิม"),
+  scienceNote: "ภาพก่อนเริ่มใช้เปรียบเทียบการเปลี่ยนแปลงภายหลัง",
+};
+
+const completeStep: ProtocolStep = {
+  id: "baseline",
+  order: 0,
+  title: "บันทึกสภาพต้นไม้ก่อนเริ่ม",
+  instruction: "ถ่ายรูปต้นไม้ก่อนเริ่ม",
+  durationMinutes: 10,
+  criticalControls: [],
+  safetyNotes: [],
+  referenceIds: [],
+  evidenceState: "Adapted",
+  beginner: completeInstruction,
+};
+
+describe("zero-knowledge protocol contract", () => {
+  it("accepts a step that explains every beginner-facing section", () => {
+    expect(beginnerInstructionIssues(completeInstruction)).toEqual([]);
+    expect(isBeginnerReadyStep(completeStep)).toBe(true);
+  });
+
+  it("reports missing physical actions and uncertainty routes", () => {
+    const incomplete = {
+      ...completeInstruction,
+      actions: [],
+      uncertaintyPaths: [],
+    };
+
+    expect(beginnerInstructionIssues(incomplete)).toEqual([
+      "ต้องมีวิธีทำแบบทีละข้อ",
+      "ต้องมีทางเลือกเมื่อผู้ใช้ไม่แน่ใจ",
+    ]);
+  });
+
+  it("provides safe routes that never guess or silently continue", () => {
+    const paths = defaultUncertaintyPaths("ถ่ายรูปเพิ่มแล้วขอให้ตรวจ");
+
+    expect(paths.map((path) => path.label)).toEqual([
+      "ฉันหาไม่เจอ",
+      "ฉันไม่แน่ใจ",
+      "ฉันไม่มีอุปกรณ์นี้",
+    ]);
+    expect(paths.every((path) => path.blocksCompletion)).toBe(true);
+    expect(paths.every((path) => path.safeAction.length > 0)).toBe(true);
+  });
+
+  it("does not classify a legacy step without beginner guidance as ready", () => {
+    expect(isBeginnerReadyStep({ ...completeStep, beginner: undefined })).toBe(false);
+  });
+});

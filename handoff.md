@@ -1909,3 +1909,59 @@
 - สร้างแผน TDD 8 งานที่ `docs/superpowers/plans/2026-07-25-zero-knowledge-senior-friendly.md`
 - แผนครอบคลุม domain contract, rewrite 22 ขั้น, Haiter action planner, runner, photo UX, visual tokens, system-wide review และ automated browser verification
 - ขั้นถัดไปต้องเลือกวิธี execution ก่อนเริ่มแก้ production code
+
+### Implement Zero-Knowledge + Senior-Friendly Design B — 2026-07-25
+
+- ผู้ใช้เลือก Inline Execution (ตัวเลือก 2) และอนุมัติให้ดำเนินงานตาม spec
+- เพิ่ม zero-knowledge domain contract:
+  - `BeginnerInstruction`, `BeginnerMaterial`, `UncertaintyPath`
+  - ทุกขั้นต้องบอกสิ่งที่ทำ สิ่งที่ห้าม สิ่งที่มองหา อุปกรณ์ วิธีทำ เงื่อนไขหยุด หลักฐาน checklist และทางเลือกเมื่อไม่แน่ใจ
+  - validation ปฏิเสธ beginner guidance ที่มีโครงสร้างไม่ครบ
+- ปรับ Template:
+  - Pink Princess, Violin variegated และ Generic Philodendron มี beginner guidance ทุก base step
+  - เมื่อประกอบ Haiter profile แล้วได้ user-visible journey 22 ขั้นคงที่
+  - readiness gate อยู่ก่อนการตัด explant และขั้นหลัง readiness ถูกล็อก
+- เพิ่ม `createHaiterActionPlan`:
+  - ผู้ใช้กรอกตัวเลขจากฉลาก ปริมาตรอาหาร และค่าต่ำสุดของอุปกรณ์
+  - direct example 6% / 1,000 mL แสดงให้ตวง 0.50 mL
+  - working dilution example 6% / 100 mL แสดงให้ตวง 1.00 mL + น้ำปลอดเชื้อ 9.00 mL แล้วใช้ 0.50 mL
+  - primary instructions ไม่แสดง C1V1/C2V2; สมการอยู่เฉพาะ science disclosure
+  - หากข้อมูลหรืออุปกรณ์ไม่พอ ระบบ block และห้ามเดา
+- Guided Runner:
+  - แสดงลำดับสำหรับมือใหม่ครบทุกหัวข้อ
+  - มีปุ่ม `ฉันหาไม่เจอ`, `ฉันไม่แน่ใจ`, `ฉันไม่มีอุปกรณ์นี้`
+  - แยก `บันทึกร่าง`, `ยืนยันผลของขั้นนี้`, `ไปขั้นถัดไป`
+  - required note/measurement/photo ถูกตรวจตอนยืนยัน
+  - published version เก่าที่ไม่มี beginner contract แสดง migration state
+- Photo evidence:
+  - ปุ่มเลือก/ถ่ายรูปเต็มความกว้างและสูงอย่างน้อย 60px
+  - อธิบายเหตุผลและสิ่งที่ต้องอยู่ในภาพ
+  - ต้องบันทึกร่างก่อนอัปโหลด แล้วจึงยืนยันผล
+- Senior-friendly visual contract:
+  - `Noto Sans Thai` เป็นฟอนต์หลักของข้อความไทย
+  - body 18px, label 16px, metadata 14px
+  - target ขั้นต่ำ 48×48px, primary 56px, photo 60px
+  - focus 3px, reduced motion, wrap/overflow safety
+  - เมนูหลักเปลี่ยนเป็นภาษาไทยแบบเน้นงาน
+- เพิ่ม `npm run ui:verify` ด้วย Playwright และ system Chrome:
+  - ตรวจ 390px, 1024px, 1440px
+  - ตรวจ body font, target size, horizontal overflow, framework overlay, console error และ keyboard focus
+  - จำลองสร้าง Pink Princess Haiter Lot จริงใน demo mode และตรวจ Guided Runner 22 ขั้น
+- ผลตรวจล่าสุด:
+  - focused tests: 19 ผ่าน
+  - full `npm test` ก่อน emulator: 81 files ผ่าน, 4 skipped; 210 tests ผ่าน, 10 skipped
+  - `npm run firebase:verify`: 85 files / 220 tests ผ่าน
+  - `npm run lint`: ผ่าน 0 warning
+  - `npm run build`: ผ่าน
+  - `npm run ui:verify`: ผ่าน 390, 1024, 1440px
+  - sandbox ไม่มี console error, error overlay หรือ horizontal overflow ในเส้นทางที่ตรวจ
+- Dependency advisory:
+  - `npm audit` รายงาน 35 รายการ (moderate 9, high 26, critical 0)
+  - ยังไม่ใช้ `npm audit fix --force`; ต้อง triage แยกเพื่อหลีกเลี่ยง breaking update
+- ไฟล์ภาพ sandbox:
+  - `C:\Users\HP\AppData\Local\Temp\philodendron-wizard-390.png`
+  - `C:\Users\HP\AppData\Local\Temp\philodendron-haiter-390.png`
+  - `C:\Users\HP\AppData\Local\Temp\philodendron-runner-390.png`
+- ขั้นถัดไปหลัง push:
+  - ตรวจ Vercel production deployment และ authenticated smoke test
+  - triage npm advisories แยกตาม production/dev dependency

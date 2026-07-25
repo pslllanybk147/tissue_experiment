@@ -2,7 +2,7 @@
 
 import { useMemo, useState, type FormEvent } from "react";
 
-import { calculateHaiterDose } from "../../lib/domain/haiter-calculations";
+import { createHaiterActionPlan } from "../../lib/domain/haiter-guidance";
 import { validateLotInput } from "../../lib/domain/experiment-validation";
 import type {
   CreateLotInput,
@@ -64,18 +64,15 @@ export function BeginnerLotWizard({
   const profile = profiles.find((item) => item.id === profileId);
   const template = templates.find((item) => item.id === templateId);
   const protocol = protocolOptions[0];
-  const haiterResult = useMemo(() => {
+  const haiterPlan = useMemo(() => {
     if (profile?.method !== "haiter-chemical") return null;
-    try {
-      return calculateHaiterDose({
-        sourcePercent: Number(sourcePercent),
-        targetPercent: Number(targetPercent),
-        finalVolumeMl: Number(mediumVolumeMl),
-        minimumMeasurableMl: Number(minimumMeasurableMl),
-      });
-    } catch {
-      return null;
-    }
+    return createHaiterActionPlan({
+      labelPercent: sourcePercent.trim() ? Number(sourcePercent) : null,
+      targetPercent: Number(targetPercent),
+      mediumVolumeMl: Number(mediumVolumeMl),
+      minimumToolVolumeMl: Number(minimumMeasurableMl),
+      permittedDiluent: "น้ำปลอดเชื้อ",
+    });
   }, [
     mediumVolumeMl,
     minimumMeasurableMl,
@@ -91,7 +88,7 @@ export function BeginnerLotWizard({
   function canContinue() {
     if (stage === 1) return plant.trim().length > 0;
     if (stage === 2) return Boolean(template);
-    if (stage === 3) return profile?.method === "pressure-sterilization" || Boolean(haiterResult);
+    if (stage === 3) return profile?.method === "pressure-sterilization" || haiterPlan?.state === "direct" || haiterPlan?.state === "working-dilution";
     if (stage === 4) return equipmentComplete;
     return true;
   }
@@ -120,7 +117,9 @@ export function BeginnerLotWizard({
         activeChlorinePercent: profile.method === "haiter-chemical" ? Number(sourcePercent) : undefined,
         targetChlorinePercent: profile.method === "haiter-chemical" ? Number(targetPercent) : undefined,
         mediumVolumeMl: profile.method === "haiter-chemical" ? Number(mediumVolumeMl) : undefined,
-        calculatedDoseMl: profile.method === "haiter-chemical" ? haiterResult?.sourceVolumeMl : undefined,
+        calculatedDoseMl: profile.method === "haiter-chemical" && haiterPlan && haiterPlan.state !== "blocked"
+          ? haiterPlan.directDoseMl
+          : undefined,
       },
     };
     const result = validateLotInput(input);
@@ -166,6 +165,8 @@ export function BeginnerLotWizard({
             {item.method === "haiter-chemical" ? "ไฮเตอร์ / NaOCl" : "หม้อนึ่งแรงดัน"}
           </span>
         ))}
+        <p>ถ้าเลือกไฮเตอร์ ให้กรอกตัวเลขเปอร์เซ็นต์ที่พิมพ์อยู่บนฉลาก ระบบจะคำนวณและบอกวิธีตวงให้</p>
+        <button className="text-button" type="button">หาเปอร์เซ็นต์ไม่เจอ</button>
       </aside>
       <p className="wizard-guard wizard-guard-global">
         <strong>อย่าเพิ่งตัดต้นไม้</strong> ระบบจะเปิดขั้นตัดหลังอาหาร อุปกรณ์ และพื้นที่พร้อมแล้ว
@@ -233,11 +234,26 @@ export function BeginnerLotWizard({
             </div>
             {profile?.method === "haiter-chemical" && (
               <div className="wizard-calculation">
-                <label className="form-field"><span>% active chlorine จากฉลาก</span><input inputMode="decimal" onChange={(event) => setSourcePercent(event.target.value)} placeholder="อ่านจากฉลาก ห้ามเดา" value={sourcePercent} /></label>
+                <label className="form-field"><span>ตัวเลขเปอร์เซ็นต์ที่พิมพ์อยู่บนฉลาก</span><input inputMode="decimal" onChange={(event) => setSourcePercent(event.target.value)} placeholder="เช่น 6 — ถ้าหาไม่เจอให้หยุด" value={sourcePercent} /></label>
                 <label className="form-field"><span>% เป้าหมายตาม Protocol</span><input inputMode="decimal" onChange={(event) => setTargetPercent(event.target.value)} value={targetPercent} /></label>
                 <label className="form-field"><span>ปริมาตรอาหารทั้งหมด (mL)</span><input inputMode="decimal" onChange={(event) => setMediumVolumeMl(event.target.value)} value={mediumVolumeMl} /></label>
                 <label className="form-field"><span>เครื่องมือวัดได้ต่ำสุด (mL)</span><input inputMode="decimal" onChange={(event) => setMinimumMeasurableMl(event.target.value)} value={minimumMeasurableMl} /></label>
-                {haiterResult && <p className="calculation-result">ใช้ Haiter <strong>{haiterResult.sourceVolumeMl} mL</strong>{haiterResult.warning && <><br />{haiterResult.warning}</>}</p>}
+                {haiterPlan?.state === "blocked" && (
+                  <div className="calculation-result" role="alert">
+                    <strong>{haiterPlan.reason}</strong>
+                    <p>{haiterPlan.safeAction}</p>
+                  </div>
+                )}
+                {haiterPlan && haiterPlan.state !== "blocked" && (
+                  <div className="calculation-result">
+                    <strong>{haiterPlan.primaryInstruction}</strong>
+                    <ol>{haiterPlan.actions.map((action) => <li key={action}>{action}</li>)}</ol>
+                    <details>
+                      <summary>เหตุผลทางวิทยาศาสตร์</summary>
+                      <p>{haiterPlan.scienceNote}</p>
+                    </details>
+                  </div>
+                )}
               </div>
             )}
           </>
@@ -270,7 +286,7 @@ export function BeginnerLotWizard({
               <div><dt>ต้นไม้</dt><dd>{plant}</dd></div>
               <div><dt>คู่มือ</dt><dd>{template?.title}</dd></div>
               <div><dt>การฆ่าเชื้ออาหาร</dt><dd>{profile?.title}</dd></div>
-              {haiterResult && <div><dt>ปริมาตร Haiter</dt><dd>{haiterResult.sourceVolumeMl} mL</dd></div>}
+              {haiterPlan && haiterPlan.state !== "blocked" && <div><dt>คำสั่งเตรียม</dt><dd>{haiterPlan.primaryInstruction}</dd></div>}
             </dl>
             <p className="wizard-guard"><strong>ยังไม่ต้องตัดต้น</strong> หลังสร้าง Lot ระบบจะเริ่มจากการเตรียมอาหารและ readiness gate</p>
           </>

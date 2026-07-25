@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import type { GuidedStepStatus, ObservationMedia, ProtocolStep, ProtocolStepRun } from "@/lib/domain/models";
 import { MediaStrip } from "../media/media-strip";
 import { MediaUploader } from "../media/media-uploader";
+import { AccessibleAction } from "../common/accessible-action";
+import { BeginnerStepGuide } from "./beginner-step-guide";
 
 type Props = {
   lotId: string;
@@ -30,6 +32,7 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
   const [activeIndex, setActiveIndex] = useState(0);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [readinessConfirmed, setReadinessConfirmed] = useState(false);
   const step = steps[activeIndex];
   const run = useMemo(() => runs.find((item) => item.stepId === step?.id), [runs, step]);
   const canProceed = run?.status === "Passed";
@@ -45,19 +48,22 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
   function select(index: number) {
     const next = steps[index];
     const nextRun = runs.find((item) => item.stepId === next?.id);
-    setActiveIndex(index); setStatus(nextRun?.status ?? "Pending"); setNote(nextRun?.note ?? ""); setMeasurements(nextRun?.measurements ?? {}); setMessage("");
+    setActiveIndex(index); setStatus(nextRun?.status ?? "Pending"); setNote(nextRun?.note ?? ""); setMeasurements(nextRun?.measurements ?? {}); setReadinessConfirmed(false); setMessage("");
   }
 
-  async function save() {
+  async function save(mode: "draft" | "confirm") {
     if (!step) return;
+    if (mode === "confirm" && step.beginner && !readinessConfirmed) { setMessage("กรุณาตรวจรายการความพร้อมให้ครบก่อนยืนยันผล"); return; }
     const required = step.requiredEvidence ?? [];
-    if (required.includes("note") && !note.trim()) { setMessage("ขั้นนี้ต้องมี note ก่อนบันทึก"); return; }
+    if (mode === "confirm" && required.includes("note") && !note.trim()) { setMessage("ขั้นนี้ต้องมี note ก่อนยืนยันผล"); return; }
     const missingMeasurement = (step.measurements ?? []).some((item) => item.required && measurements[item.id] == null);
-    if (required.includes("measurement") && missingMeasurement) { setMessage("กรุณากรอกค่าที่วัดให้ครบ"); return; }
+    if (mode === "confirm" && required.includes("measurement") && missingMeasurement) { setMessage("กรุณากรอกค่าที่วัดให้ครบ"); return; }
+    const photoCount = mediaByStep[step.id]?.filter((item) => !item.deletedAt).length ?? 0;
+    if (mode === "confirm" && required.includes("photo") && photoCount === 0) { setMessage("ขั้นนี้ต้องมีรูปหลักฐานอย่างน้อย 1 รูปก่อนยืนยันผล"); return; }
     setSaving(true); setMessage("");
     try {
       await onSave({ lotId, protocolId, versionId, stepId: step.id, status, note, measurements, mediaIds: run?.mediaIds ?? [], evidenceObservationId: run?.evidenceObservationId, observedAt: new Date().toISOString() });
-      setMessage("บันทึกผลแล้ว");
+      setMessage(mode === "draft" ? "บันทึกร่างแล้ว คุณกลับมาแก้หรือเพิ่มรูปได้" : "ยืนยันผลขั้นนี้แล้ว");
     } catch (error) { setMessage(error instanceof Error ? error.message : "บันทึกผลไม่สำเร็จ"); }
     finally { setSaving(false); }
   }
@@ -71,24 +77,30 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
     <section className="guided-step-content" aria-live="polite">
       <div className="guided-step-heading"><div><span className="step-kicker">ขั้นที่ {activeIndex + 1} / {steps.length}</span><h3>{step.title}</h3></div><span className={`evidence-label evidence-${step.evidenceState.toLowerCase().replaceAll(" ", "-")}`}>{step.evidenceState}</span></div>
       {!readinessPassed && activeIndex <= readinessIndex && <div className="guided-readiness-warning" role="note"><strong>อย่าเพิ่งตัดต้นไม้</strong><span>ขั้นตัดจะเปิดเมื่ออาหารและพื้นที่พร้อม และบันทึก Blank test หรือเหตุผลที่ข้ามแล้ว</span></div>}
-      <GuideBlock title="ทำอะไร" value={step.objective ?? step.instruction} />
-      <GuideBlock title="ทำไมสำคัญ" value={step.whyItMatters} />
-      <GuideList title="เตรียมอะไร" items={step.materials} />
-      <GuideBlock title="วิธีทำ" value={step.instruction} />
-      <GuideList title="จุดควบคุมและความปลอดภัย" items={[...(step.criticalControls ?? []), ...(step.safetyNotes ?? [])]} />
-      <GuideBlock title="ผลที่ควรเห็น" value={step.expectedResult} />
-      <div className="guided-criteria"><GuideList title="ผ่านเมื่อ" items={step.passCriteria} /><GuideList title="ไม่ผ่านเมื่อ" items={step.failCriteria} /></div>
+      {step.beginner ? (
+        <BeginnerStepGuide
+          instruction={step.beginner}
+          onReadinessChange={setReadinessConfirmed}
+          onUncertainty={(path) => {
+            setStatus(path.blocksCompletion ? "Needs review" : status);
+            setNote(path.safeAction);
+            setMessage(path.safeAction);
+          }}
+        />
+      ) : (
+        <div className="migration-state" role="note">
+          <strong>คู่มือเวอร์ชันเก่ายังไม่มีคำอธิบายสำหรับมือใหม่</strong>
+          <p>หยุดไว้ก่อนและสร้าง Lot จาก Wizard ด้วย Protocol เวอร์ชันล่าสุด</p>
+        </div>
+      )}
       {(step.measurements?.length ?? 0) > 0 && <div className="guided-measurements"><h4>ค่าที่ต้องวัด</h4>{step.measurements?.map((item) => <label className="form-field" key={item.id}><span>{item.label} ({item.unit}){item.required ? " *" : ""}</span><input min={item.min} max={item.max} onChange={(event) => setMeasurements((current) => ({ ...current, [item.id]: event.target.value === "" ? null : Number(event.target.value) }))} type="number" value={measurements[item.id] ?? ""} /></label>)}</div>}
       <label className="form-field guided-note"><span>บันทึก note {step.requiredEvidence?.includes("note") ? "*" : ""}</span><textarea onChange={(event) => setNote(event.target.value)} rows={4} value={note} placeholder="เขียนสิ่งที่พบจริง เช่น สี เนื้อเยื่อ กลิ่น หรือปัญหา" /></label>
-      {step.allowPhoto && <div className="guided-photo-evidence"><h4>หลักฐานภาพของขั้นนี้</h4>{run?.evidenceObservationId && onMediaUploaded ? <><MediaStrip items={mediaByStep[step.id] ?? []} onDelete={async (mediaId) => { if (onMediaDelete) await onMediaDelete(run.evidenceObservationId!, mediaId); }} onRestore={async (mediaId) => { if (onMediaRestore) await onMediaRestore(run.evidenceObservationId!, mediaId); }} /><MediaUploader lotId={lotId} observationId={run.evidenceObservationId} onUploaded={onMediaUploaded} /></> : <p className="muted-copy">กด “บันทึกผลขั้นนี้” ก่อน แล้วระบบจะเปิดพื้นที่อัปโหลดภาพของขั้นนี้</p>}</div>}
+      {step.allowPhoto && <div className="guided-photo-evidence"><h4>หลักฐานภาพของขั้นนี้</h4>{run?.evidenceObservationId && onMediaUploaded ? <><MediaStrip items={mediaByStep[step.id] ?? []} onDelete={async (mediaId) => { if (onMediaDelete) await onMediaDelete(run.evidenceObservationId!, mediaId); }} onRestore={async (mediaId) => { if (onMediaRestore) await onMediaRestore(run.evidenceObservationId!, mediaId); }} /><MediaUploader actionLabel="เลือกหรือถ่ายรูปของขั้นนี้" lotId={lotId} observationId={run.evidenceObservationId} onUploaded={onMediaUploaded} purpose="ใช้ยืนยันว่าคุณทำขั้นตอนนี้กับของจริง" requiredFrame={step.beginner?.evidencePrompt ?? []} /></> : <p className="muted-copy">กด “บันทึกร่าง” ก่อน แล้วระบบจะเปิดพื้นที่อัปโหลดภาพของขั้นนี้ จากนั้นจึงยืนยันผล</p>}</div>}
       <div className="guided-status"><span>ผลลัพธ์</span>{statuses.map((item) => <label key={item}><input aria-label={statusLabels[item]} checked={status === item} onChange={() => setStatus(item)} name={`status-${step.id}`} type="radio" /> {statusLabels[item]}</label>)}</div>
       {message && <p className="form-alert" role="status">{message}</p>}
       <div className="guided-next"><p><strong>ถ้าผ่าน:</strong> {step.nextActionOnPass}</p><p><strong>ถ้าไม่ผ่าน:</strong> {step.nextActionOnFail}</p></div>
-      <div className="form-actions"><button className="quiet-button" disabled={activeIndex === 0} onClick={() => select(activeIndex - 1)} type="button">ก่อนหน้า</button><button className="primary-button" disabled={saving} onClick={() => void save()} type="button">{saving ? "กำลังบันทึก…" : "บันทึกผลขั้นนี้"}</button><button aria-describedby={!canProceed ? `next-step-help-${step.id}` : undefined} className="quiet-button" disabled={activeIndex === steps.length - 1 || !canProceed} onClick={() => select(activeIndex + 1)} type="button">ถัดไป</button></div>
+      <div className="form-actions"><AccessibleAction disabled={activeIndex === 0} onClick={() => select(activeIndex - 1)}>ไปขั้นก่อนหน้า</AccessibleAction><AccessibleAction disabled={saving} onClick={() => void save("draft")}>บันทึกร่าง</AccessibleAction><AccessibleAction intent="primary" disabled={saving || Boolean(step.beginner && !readinessConfirmed)} onClick={() => void save("confirm")}>{saving ? "กำลังบันทึก…" : "ยืนยันผลของขั้นนี้"}</AccessibleAction><AccessibleAction aria-describedby={!canProceed ? `next-step-help-${step.id}` : undefined} disabled={activeIndex === steps.length - 1 || !canProceed} onClick={() => select(activeIndex + 1)}>ไปขั้นถัดไป</AccessibleAction></div>
       {!canProceed && activeIndex < steps.length - 1 && <p className="muted-copy" id={`next-step-help-${step.id}`}>{run?.status === "Failed" ? "ขั้นนี้ไม่ผ่าน ให้ทำตามคำแนะนำการแก้ไขแล้วบันทึกผลใหม่ก่อน" : run?.status === "Needs review" ? "ขั้นนี้ต้องตรวจเพิ่มหรือแก้ไขก่อน จึงจะไปขั้นถัดไปได้" : "บันทึกผลขั้นนี้ก่อน จึงจะไปขั้นถัดไปได้"}</p>}
     </section>
   </div>;
 }
-
-function GuideBlock({ title, value }: { title: string; value?: string }) { return value ? <div className="guide-block"><h4>{title}</h4><p>{value}</p></div> : null; }
-function GuideList({ title, items }: { title: string; items?: string[] }) { return items?.length ? <div className="guide-block"><h4>{title}</h4><ul>{items.map((item) => <li key={item}>{item}</li>)}</ul></div> : null; }

@@ -1,4 +1,5 @@
 import type { ProtocolDraftInput } from "./models";
+import { beginnerInstructionIssues } from "./zero-knowledge-protocol";
 
 export type ProtocolDraftErrors = { title?: string; plantScope?: string; steps?: string; stepFields?: Record<string, string> };
 
@@ -16,6 +17,12 @@ export function validateProtocolDraft(input: ProtocolDraftInput): ProtocolDraftE
     if (!step.title.trim()) messages.push("กรุณาระบุชื่อขั้นตอน");
     if (!step.instruction.trim()) messages.push("กรุณาระบุคำสั่ง");
     if (step.durationMinutes !== null && step.durationMinutes < 0) messages.push("ระยะเวลาต้องไม่ติดลบ");
+    if (step.beginner) {
+      const beginnerIssues = beginnerInstructionIssues(step.beginner);
+      if (beginnerIssues.length) {
+        messages.push(`คู่มือมือใหม่ยังไม่ครบ: ${beginnerIssues.join(", ")}`);
+      }
+    }
     if (messages.length) fieldErrors[step.id] = messages.join(" · ");
   }
   if (Object.keys(fieldErrors).length) errors.stepFields = fieldErrors;

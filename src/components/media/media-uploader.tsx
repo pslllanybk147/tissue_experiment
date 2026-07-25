@@ -18,7 +18,23 @@ export async function readApiError(response: Response, fallback: string): Promis
   }
 }
 
-export function MediaUploader({ lotId, observationId, onUploaded }: { lotId: string; observationId: string; onUploaded: (media: ObservationMedia) => Promise<void> }) {
+type MediaUploaderProps = {
+  lotId: string;
+  observationId: string;
+  onUploaded: (media: ObservationMedia) => Promise<void>;
+  actionLabel?: string;
+  purpose?: string;
+  requiredFrame?: string[];
+};
+
+export function MediaUploader({
+  lotId,
+  observationId,
+  onUploaded,
+  actionLabel = "เลือกหรือถ่ายรูป",
+  purpose = "ใช้เป็นหลักฐานของสิ่งที่เห็นในขั้นนี้",
+  requiredFrame = [],
+}: MediaUploaderProps) {
   const [file, setFile] = useState<File | null>(null);
   const [caption, setCaption] = useState("");
   const [status, setStatus] = useState("");
@@ -60,9 +76,22 @@ export function MediaUploader({ lotId, observationId, onUploaded }: { lotId: str
   }
 
   return <form className="media-uploader" onSubmit={submit}>
-    <label>รูปภาพ<input accept={accepted} onChange={(event) => setFile(event.target.files?.[0] ?? null)} type="file" /></label>
-    <label>คำอธิบายภาพ<input value={caption} onChange={(event) => setCaption(event.target.value)} /></label>
-    <button className="quiet-button" type="submit">เพิ่มรูป</button>
+    <div className="media-purpose">
+      <strong>{actionLabel}</strong>
+      <p>{purpose}</p>
+      {requiredFrame.length > 0 && (
+        <>
+          <span>ในรูปต้องเห็น:</span>
+          <ul>{requiredFrame.map((item) => <li key={item}>{item}</li>)}</ul>
+        </>
+      )}
+    </div>
+    <label className="photo-action">
+      <span>{file ? `เลือกแล้ว: ${file.name}` : actionLabel}</span>
+      <input accept={accepted} onChange={(event) => setFile(event.target.files?.[0] ?? null)} type="file" />
+    </label>
+    <label>คำอธิบายภาพ<input value={caption} onChange={(event) => setCaption(event.target.value)} placeholder="เช่น ฉลากด้านหลัง เห็นตัวเลข 6%" /></label>
+    <button className="primary-button media-submit" disabled={!file} type="submit">อัปโหลดรูปที่เลือก</button>
     {status && <small role="status">{status}</small>}
     {error && <small className="field-error" role="alert">{error}</small>}
   </form>;

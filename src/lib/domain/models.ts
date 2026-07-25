@@ -1,6 +1,32 @@
 export type EvidenceState = "Verified" | "Adapted" | "Experimental" | "Pending review";
 export type ProtocolStatus = "Draft" | "Active" | "Archived";
 
+export type BeginnerMaterial = {
+  name: string;
+  appearance: string;
+  purpose: string;
+};
+
+export type UncertaintyPath = {
+  id: "cannot-find" | "not-sure" | "missing-equipment" | string;
+  label: string;
+  safeAction: string;
+  blocksCompletion: boolean;
+};
+
+export type BeginnerInstruction = {
+  currentAction: string;
+  doNotDoYet: string[];
+  whatToFind: string[];
+  materials: BeginnerMaterial[];
+  actions: string[];
+  stopConditions: string[];
+  evidencePrompt: string[];
+  readyChecklist: string[];
+  uncertaintyPaths: UncertaintyPath[];
+  scienceNote: string;
+};
+
 export type ProtocolStep = {
   id: string; order: number; title: string; instruction: string; durationMinutes: number | null;
   criticalControls: string[]; safetyNotes: string[]; referenceIds: string[]; evidenceState: EvidenceState;
@@ -18,6 +44,7 @@ export type ProtocolStep = {
   requiredEvidence?: Array<"note" | "photo" | "measurement">;
   allowPhoto?: boolean;
   allowNote?: boolean;
+  beginner?: BeginnerInstruction;
 };
 
 export type MeasurementUnit = "mL" | "g" | "mg/L" | "%" | "min" | "°C" | "pH" | "count";

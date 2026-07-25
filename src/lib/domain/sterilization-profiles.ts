@@ -3,6 +3,7 @@ import type {
   SterilizationProfile,
   SterilizationReadiness,
 } from "./models";
+import { createBeginnerInstruction } from "./zero-knowledge-protocol";
 
 function profileStep(
   id: string,
@@ -24,6 +25,17 @@ function profileStep(
     allowNote: true,
     allowPhoto: true,
     requiredEvidence: ["note"],
+    beginner: createBeginnerInstruction({
+      currentAction: title,
+      actions: [instruction],
+      materials: ["โทรศัพท์หรือแบบบันทึก", "อุปกรณ์ที่ระบุในขั้นนี้"],
+      doNotDoYet: ["อย่าเดาค่า อย่าเปลี่ยนอุปกรณ์ และอย่าข้ามขั้นตอนเอง"],
+      whatToFind: ["มองหาชื่อ ตัวเลข หรือผลที่ขั้นตอนนี้ระบุ"],
+      stopConditions: ["หยุดถ้าอ่านฉลากไม่ได้ ไม่มีอุปกรณ์ หรือผลไม่ตรงกับคำอธิบาย"],
+      evidencePrompt: ["เขียนค่าจากฉลากหรือสิ่งที่เห็นจริง และถ่ายรูปเมื่อทำได้"],
+      readyChecklist: ["ฉันอ่านค่าหรือผลได้ชัด", "ฉันบันทึกข้อมูลจริงแล้ว"],
+      scienceNote: `ขั้น “${title}” ใช้ควบคุมความเสี่ยงก่อนทำขั้นถัดไป`,
+    }),
   };
 }
 
@@ -56,8 +68,8 @@ export const sterilizationProfiles: SterilizationProfile[] = [
       ),
       profileStep(
         "calculate-haiter-dose",
-        "คำนวณปริมาตร Haiter",
-        "ใช้ C1V1 = C2V2 และตรวจว่าปริมาตรที่ได้วัดได้ด้วยอุปกรณ์จริง หากน้อยเกินไปให้ทำ working dilution",
+        "ให้ระบบหาปริมาตร Haiter ที่ต้องใช้",
+        "กรอกเปอร์เซ็นต์จากฉลาก ปริมาตรอาหาร และค่าต่ำสุดที่อุปกรณ์ตวงได้ แล้วอ่านคำสั่งตวงที่ระบบแสดง ห้ามคำนวณหรือเดาด้วยตนเอง",
       ),
       {
         ...profileStep(
@@ -235,12 +247,27 @@ export function composeGuidedSteps(
   const workspace = beforeCut.filter((step) => step.workflowPhase === "medium-preparation");
   const composed = [
     ...preparation,
-    ...profile.steps.map((step) => structuredClone(step)),
+    ...profile.steps
+      .filter((step) => step.id !== "prepare-haiter-working-dilution")
+      .map((step) => structuredClone(step)),
     ...workspace,
     readinessStep(),
     ...cutAndSurface,
     ...remaining,
   ];
 
-  return composed.map((step, order) => ({ ...step, order }));
+  return composed.map((step, order) => ({
+    ...step,
+    order,
+    beginner: step.beginner ?? createBeginnerInstruction({
+      currentAction: step.objective ?? step.title,
+      actions: [step.instruction],
+      materials: step.materials,
+      doNotDoYet: step.criticalControls,
+      whatToFind: step.expectedResult ? [step.expectedResult] : undefined,
+      stopConditions: step.failCriteria,
+      readyChecklist: step.passCriteria,
+      scienceNote: step.whyItMatters ?? step.objective ?? `ขั้นนี้ช่วยให้ทำ “${step.title}” อย่างเป็นลำดับ`,
+    }),
+  }));
 }

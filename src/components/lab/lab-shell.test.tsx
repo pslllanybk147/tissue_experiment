@@ -21,4 +21,17 @@ describe("LabShell", () => {
     expect(html).toContain("Experiment lots");
     expect(html).toContain("FIREBASE");
   });
+
+  it("uses plain Thai task labels in navigation", () => {
+    const html = renderToStaticMarkup(
+      <LabShell section="Experiments" sessionLabel="DEMO" onSignOut={() => undefined}>
+        <p>content</p>
+      </LabShell>,
+    );
+
+    expect(html).toContain("เริ่มต้น");
+    expect(html).toContain("การทดลอง");
+    expect(html).toContain("คลังความรู้");
+    expect(html).toContain('aria-label="เมนูหลัก"');
+  });
 });

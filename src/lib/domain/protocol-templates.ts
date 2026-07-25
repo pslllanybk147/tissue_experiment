@@ -1,5 +1,6 @@
 import type { MeasurementUnit, ProtocolStep, ProtocolTemplate } from "./models";
 import { monographForTaxon } from "./philodendron-knowledge";
+import { createBeginnerInstruction } from "./zero-knowledge-protocol";
 
 const step = (value: Omit<ProtocolStep, "id" | "order">, order: number): ProtocolStep => ({
   ...value,
@@ -62,16 +63,40 @@ function detailedStepsForTaxon(taxonId: string): ProtocolStep[] {
     requiredEvidence: ["note"],
     allowPhoto: true,
     allowNote: true,
+    beginner: createBeginnerInstruction({
+      currentAction: step.objective,
+      doNotDoYet: step.criticalControls,
+      whatToFind: [step.expectedResult],
+      materials: step.materials,
+      actions: step.instructions,
+      stopConditions: step.failCriteria,
+      evidencePrompt: [
+        "ถ่ายรูปก่อนและหลังทำเมื่อทำได้",
+        "เขียนสิ่งที่ทำและผลที่เห็นจริง ห้ามเขียนจากสิ่งที่คาดว่าจะเกิด",
+      ],
+      readyChecklist: step.passCriteria,
+      scienceNote: step.objective,
+      uncertaintyAction: "หยุดขั้นตอนนี้ ถ่ายรูปให้เห็นจุดที่สงสัย และขอให้ผู้มีประสบการณ์ตรวจ",
+    }),
   }));
 }
 
 export function stepsForTemplate(templateId: string): ProtocolStep[] {
   if (templateId === "template-pink-princess-nodal") return detailedStepsForTaxon("cultivar-pink-princess");
   if (templateId === "template-violin-nodal") return detailedStepsForTaxon("trade-name-violin-variegated");
-  return standardSteps.map((item, index) => {
-    const copy = structuredClone(item);
-    if (templateId === "template-pink-princess-nodal" && index === 8) copy.evidenceState = "Verified";
-    if (templateId === "template-violin-nodal") copy.evidenceState = index === 0 ? "Adapted" : "Experimental";
-    return step(copy, index);
-  });
+  const genericSource = detailedStepsForTaxon("cultivar-pink-princess");
+  const genericSteps = genericSource.length
+    ? genericSource
+    : standardSteps.map((item, index) => step(structuredClone(item), index));
+  return genericSteps.map((item) => ({
+    ...item,
+    evidenceState: item.evidenceState === "Verified" ? "Adapted" : item.evidenceState,
+    referenceIds: [],
+    beginner: item.beginner
+      ? {
+          ...item.beginner,
+          scienceNote: `${item.beginner.scienceNote} ขั้นนี้เป็นแนวทางกลางสำหรับ Philodendron ที่ยังไม่ยืนยันชนิด`,
+        }
+      : undefined,
+  }));
 }

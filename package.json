@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
+    "ui:verify": "node scripts/verify-accessible-ui.mjs",
     "firebase:emulators": "firebase emulators:start --only auth,firestore --project demo-philodendron-lab",
     "firebase:verify": "firebase emulators:exec --only auth,firestore --project demo-philodendron-lab \"npm test\""
   },
@@ -28,6 +29,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.11",
     "firebase-tools": "^15.24.0",
+    "playwright": "^1.62.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.10"

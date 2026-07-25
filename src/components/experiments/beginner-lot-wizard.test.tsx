@@ -50,4 +50,20 @@ describe("BeginnerLotWizard", () => {
     expect(html).toContain("อย่าเพิ่งตัดต้นไม้");
     expect(html).toContain("ใช้แบบฟอร์มขั้นสูง");
   });
+
+  test("asks for an observable label value instead of showing an equation", () => {
+    const html = renderToStaticMarkup(
+      <BeginnerLotWizard
+        initialPlantName="Pink Princess"
+        onSubmit={async () => undefined}
+        protocolOptions={[]}
+        profiles={sterilizationProfiles}
+        templates={protocolTemplates}
+      />,
+    );
+
+    expect(html).toContain("ตัวเลขเปอร์เซ็นต์ที่พิมพ์อยู่บนฉลาก");
+    expect(html).toContain("หาเปอร์เซ็นต์ไม่เจอ");
+    expect(html).not.toMatch(/C1V1|C2V2/);
+  });
 });
