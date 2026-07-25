@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { ProtocolDraftInput, ProtocolRecord, ProtocolVersion } from "../domain/models";
 import type { ProtocolAuditEvent } from "../repositories/protocol-repository";
+import { stepsForTemplate } from "../domain/protocol-templates";
 import { createFirestoreProtocolRepository, type ProtocolMutation, type ProtocolPersistenceAdapter } from "./firestore-protocol-repository";
 
 const input: ProtocolDraftInput = { title: "Nodal", plantScope: "Philodendron", evidenceState: "Adapted", summary: "Summary", changeNote: "Initial", steps: [{ id: "s1", order: 0, title: "Wash", instruction: "Wash", durationMinutes: 10, criticalControls: [], safetyNotes: [], referenceIds: [], evidenceState: "Adapted" }] };
@@ -19,6 +20,14 @@ function harness() {
 }
 
 describe("Firestore protocol repository", () => {
+  it("removes undefined nested optional fields from template steps before persistence", async () => {
+    const { repository, mutations } = harness();
+    await repository.createDraft("owner-1", { ...input, steps: stepsForTemplate("template-pink-princess-nodal") });
+    const serialized = JSON.stringify(mutations[0].version);
+    expect(serialized).not.toContain("undefined");
+    expect(mutations[0].version.steps.some((step) => Object.values(step).some((value) => value === undefined))).toBe(false);
+  });
+
   it("pairs protocol, version and audit in one mutation", async () => {
     const { repository, mutations } = harness(); const created = await repository.createDraft("owner-1", input);
     expect(mutations[0].version.claimIds).toEqual([]);

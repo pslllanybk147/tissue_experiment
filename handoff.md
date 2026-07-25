@@ -1779,3 +1779,10 @@
 - การลบ/กู้คืนบันทึก audit event ของ entity ประเภท `lot` พร้อม before/after snapshot
 - การลบเป็นแบบ reversible ไม่ลบ observations, media, protocol progress หรือ audit history ถาวร
 - สถานะ: test, lint, build และ Firebase emulator ผ่าน; รอ Vercel deploy เพื่อทดสอบ production UI
+
+### แก้ Protocol template nested undefined — 2026-07-25
+
+- สาเหตุเพิ่มเติมของ `WriteBatch.set() called with invalid data`: `stepsForTemplate("template-pink-princess-nodal")` มี optional fields บางขั้นเป็น `undefined` ภายใน array `steps`
+- เพิ่ม `removeUndefined` แบบ recursive ก่อนบันทึก `ProtocolVersion` ใน `createDraft`, `createDraftFromClaim` และ `saveDraftVersion`
+- เพิ่ม regression test ด้วย Pink Princess template จริง ตรวจทั้งระดับ version และ nested step fields
+- สถานะ: แก้ต้นเหตุที่สองแล้ว; ต้อง deploy commit ใหม่และทดสอบสร้าง Lot จากหน้าเว็บอีกครั้ง
