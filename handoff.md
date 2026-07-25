@@ -1846,3 +1846,5 @@
   - `npm run build`: ผ่าน
   - `npm run firebase:verify`: Auth/Firestore emulator ผ่าน 78 files / 191 tests
 - หลัง commit ให้ push `master` และ `main` ให้ชี้ commit เดียวกัน แล้วรอ Vercel Production deployment ก่อนถือว่าเผยแพร่เสร็จ
+- implementation commit `b497735510e50266f28a73f2cb2d5f3b49d80e07` ถูก push ไป `master` และ `main` แล้ว
+- Vercel Production deployment `dpl_86cLqFcUoP5pYd7EF7xSatVfNZUC` สถานะ `READY`; production alias คือ `https://tissue-experiment-93.vercel.app`
