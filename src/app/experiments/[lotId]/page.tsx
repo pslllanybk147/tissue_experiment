@@ -49,7 +49,7 @@ export default function ExperimentDetailPage() {
     } catch {
       return null;
     }
-  }, [lot?.sterilization, protocolVersion]);
+  }, [lot, protocolVersion]);
 
   async function load() {
     const nextLot = await repository.getLot(ownerId, lotId);
