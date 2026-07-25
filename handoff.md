@@ -1902,3 +1902,10 @@
 - ขอบเขตคือ rewrite Guided Protocol ครบ 22 ขั้น และ review UX/UI ทั้งระบบ
 - design spec: `docs/superpowers/specs/2026-07-25-zero-knowledge-senior-friendly-design.md`
 - ยังไม่เริ่ม implementation จนกว่าผู้ใช้จะ review และอนุมัติ written spec
+
+### อนุมัติ spec และจัดทำ implementation plan — 2026-07-25
+
+- ผู้ใช้อนุมัติ `docs/superpowers/specs/2026-07-25-zero-knowledge-senior-friendly-design.md`
+- สร้างแผน TDD 8 งานที่ `docs/superpowers/plans/2026-07-25-zero-knowledge-senior-friendly.md`
+- แผนครอบคลุม domain contract, rewrite 22 ขั้น, Haiter action planner, runner, photo UX, visual tokens, system-wide review และ automated browser verification
+- ขั้นถัดไปต้องเลือกวิธี execution ก่อนเริ่มแก้ production code
