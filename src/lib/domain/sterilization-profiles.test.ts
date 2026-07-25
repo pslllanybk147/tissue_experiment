@@ -99,6 +99,21 @@ describe("sterilization profiles", () => {
       titles.indexOf("ฟอกฆ่าเชื้อผิว explant"),
     );
   });
+
+  test("includes a beginner-complete working dilution procedure", () => {
+    const profile = profileById("haiter-chemical-v1");
+    const step = profile.steps.find((item) => item.id === "prepare-haiter-working-dilution");
+
+    expect(step?.instruction).toContain("ตัวอย่าง 1:10");
+    expect(step?.instruction).toContain("1 mL");
+    expect(step?.instruction).toContain("9 mL");
+    expect(step?.instruction).toContain("0.6%");
+    expect(step?.instruction).toContain("คำนวณ V1 ใหม่");
+    expect(step?.criticalControls).toContain("ใช้สารเจือจางที่ Protocol อนุญาตและติดฉลากทันที");
+    expect(step?.measurements?.map((item) => item.unit)).toEqual(
+      expect.arrayContaining(["%", "mL"]),
+    );
+  });
 });
 
 describe("readiness gate", () => {

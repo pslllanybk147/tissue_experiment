@@ -1874,3 +1874,22 @@
   - `npm run lint`: ผ่าน
   - `npm run build`: ผ่าน
   - `npm run firebase:verify`: Auth/Firestore emulator ผ่าน 79 files / 193 tests
+
+### เพิ่มขั้นตอน Working dilution สำหรับ Haiter แบบมือใหม่ — 2026-07-25
+
+- เพิ่ม guided step `เตรียม Working dilution เมื่อปริมาตรตรงเล็กเกินวัด` หลังขั้นคำนวณ direct dose
+- ขั้นตอนอธิบายครบ:
+  - เปรียบเทียบ direct dose กับค่าต่ำสุดของเครื่องมือ
+  - เลือก dilution factor
+  - คำนวณ `Cworking = Csource ÷ dilution factor`
+  - ตัวอย่าง 1:10 จาก Haiter 6%: Haiter 1 mL + สารเจือจาง 9 mL = working solution 0.6%
+  - คำนวณ `CworkingV1 = CtargetVfinal` ใหม่
+  - ตรวจว่า V1 ใหม่อยู่ในช่วงวัดได้; ถ้ายังต่ำให้หยุดและคำนวณใหม่
+- เพิ่มช่องบันทึก Csource, dilution factor, Cworking, ปริมาตร Haiter, ปริมาตรสารเจือจาง และ V1 ใหม่
+- กรณี direct dose วัดได้อยู่แล้ว ให้บันทึกว่าไม่ต้องทำ working dilution โดยไม่บังคับกรอก measurement ที่ไม่เกี่ยวข้อง
+- เพิ่ม safety/critical controls: ห้ามนับหยด ห้ามผสมกับกรดหรือแอมโมเนีย ต้องใช้สารเจือจางตาม Protocol และติดฉลากทันที
+- ผลตรวจ:
+  - focused profile tests: 8 ผ่าน
+  - `npm test`: 75 files ผ่าน, 4 skipped; 184 tests ผ่าน, 10 skipped
+  - `npm run lint` และ `npm run build`: ผ่าน
+  - `npm run firebase:verify`: Auth/Firestore emulator ผ่าน 79 files / 194 tests

@@ -59,6 +59,57 @@ export const sterilizationProfiles: SterilizationProfile[] = [
         "คำนวณปริมาตร Haiter",
         "ใช้ C1V1 = C2V2 และตรวจว่าปริมาตรที่ได้วัดได้ด้วยอุปกรณ์จริง หากน้อยเกินไปให้ทำ working dilution",
       ),
+      {
+        ...profileStep(
+          "prepare-haiter-working-dilution",
+          "เตรียม Working dilution เมื่อปริมาตรตรงเล็กเกินวัด",
+          "ทำขั้นนี้เฉพาะเมื่อปริมาตร Haiter ที่คำนวณได้ต่ำกว่าค่าต่ำสุดของเครื่องมือ: 1) เลือก dilution factor ที่ทำให้ทั้งปริมาตรตั้งต้นและปริมาตรที่จะเติมวัดได้ 2) คำนวณ Cworking = Csource ÷ dilution factor 3) ตัวอย่าง 1:10 จาก Haiter 6% ปริมาตร working solution 10 mL: ตวง Haiter 1 mL เติมสารเจือจางที่ Protocol อนุญาต 9 mL จะได้ working solution 0.6% 4) ผสมและติดฉลากชื่อ ความเข้มข้น วันเวลา และผู้เตรียม 5) ใช้ CworkingV1 = CtargetVfinal คำนวณ V1 ใหม่จาก working solution 6) ตรวจว่า V1 ใหม่ไม่น้อยกว่าขีดจำกัดเครื่องมือ หากยังน้อยให้หยุดและวางแผน dilution factor ใหม่ ห้ามประมาณด้วยหยด หากปริมาตรตรงวัดได้อยู่แล้ว ให้บันทึกว่าไม่ต้องเจือจางและผ่านขั้นนี้",
+        ),
+        objective: "ทำให้ปริมาตรสารที่ต้องเติมอยู่ในช่วงที่อุปกรณ์วัดได้อย่างน่าเชื่อถือ",
+        whyItMatters: "การประมาณปริมาตรเล็กมากทำให้ความเข้มข้นคลอรีนจริงคลาดเคลื่อนและอาจทำให้อาหารไม่ปลอดเชื้อหรือเป็นพิษต่อ explant",
+        prerequisites: [
+          "อ่าน % active chlorine จากฉลากแล้ว",
+          "คำนวณ direct dose แล้ว",
+          "ทราบค่าต่ำสุดที่อุปกรณ์วัดได้",
+        ],
+        materials: [
+          "Haiter ตามฉลาก",
+          "สารเจือจางที่ Protocol อนุญาต",
+          "ปิเปตหรือกระบอกตวงที่เหมาะกับช่วงปริมาตร",
+          "ภาชนะสะอาดและฉลาก",
+        ],
+        criticalControls: [
+          "ใช้สารเจือจางที่ Protocol อนุญาตและติดฉลากทันที",
+          "คำนวณจาก % active chlorine บนฉลาก ไม่ใช้ชื่อผลิตภัณฑ์แทนค่า",
+          "ห้ามใช้การนับหยดแทนเครื่องมือวัดปริมาตร",
+          "Working dilution ต้องเตรียมใหม่ตามข้อกำหนดของ Protocol และไม่เก็บโดยไม่มีข้อมูลความคงตัว",
+        ],
+        safetyNotes: [
+          "สวมถุงมือและแว่นตา ทำในพื้นที่ระบายอากาศ",
+          "ห้ามผสม sodium hypochlorite กับกรด แอมโมเนีย หรือสารทำความสะอาดอื่น",
+        ],
+        expectedResult: "ได้ working solution ที่ติดฉลากครบ และปริมาตร V1 ใหม่อยู่ในช่วงที่อุปกรณ์วัดได้",
+        passCriteria: [
+          "บันทึก Csource, dilution factor, Cworking และ V1 ใหม่ครบ",
+          "ปริมาตรทุกค่าที่ตวงไม่น้อยกว่าขีดจำกัดเครื่องมือ",
+        ],
+        failCriteria: [
+          "ต้องประมาณด้วยหยด",
+          "ไม่ทราบ % จากฉลาก",
+          "V1 ใหม่ยังต่ำกว่าขีดจำกัดเครื่องมือ",
+        ],
+        nextActionOnPass: "ใช้ working solution ตาม V1 ใหม่ในขั้นเตรียมอาหาร",
+        nextActionOnFail: "หยุดและคำนวณ dilution factor/ปริมาตร working solution ใหม่",
+        requiredEvidence: ["note"],
+        measurements: [
+          { id: "haiter-source-percent", label: "Csource จากฉลาก", unit: "%", min: 0 },
+          { id: "working-dilution-factor", label: "Dilution factor", unit: "count", min: 1 },
+          { id: "working-percent", label: "Cworking", unit: "%", min: 0 },
+          { id: "working-source-volume", label: "ปริมาตร Haiter ที่ใช้ทำ working solution", unit: "mL", min: 0 },
+          { id: "working-diluent-volume", label: "ปริมาตรสารเจือจาง", unit: "mL", min: 0 },
+          { id: "working-dose-volume", label: "V1 ใหม่ที่เติมในอาหาร", unit: "mL", min: 0 },
+        ],
+      },
       profileStep(
         "prepare-haiter-medium",
         "เตรียมอาหารแบบ Haiter",
