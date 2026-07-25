@@ -2145,3 +2145,21 @@
   - browser sandbox เดินตรวจเมนู Plants, Experiments, Protocols, Knowledge, Research และ Image Review ที่ 390px ผ่านครบ
 - หมายเหตุ: dev server เดิมค้างใน Firebase loading สำหรับ Playwright จึงใช้ production server ที่ `http://127.0.0.1:3200` เป็น sandbox render source เพื่อหลีกเลี่ยงผลตรวจลวงจาก HMR/dev auth timing
 - งาน image processing เดิมยังอยู่ในชุดเดียวกัน และยังไม่ถือว่าพร้อมใช้งานจริงจนกว่าจะมี dataset ผ่าน provenance/label review ครบตาม readiness gate
+
+## Mobile visual correction after real sandbox review (2026-07-25)
+
+- พบจากภาพ render จริงว่าการแก้รอบก่อนยังไม่ครอบคลุม breakpoint 768–820px:
+  - sidebar desktop ยังแสดงบน tablet บางขนาด
+  - ตาราง Experiment ถูกบีบจนชื่อพืช/Protocol ขึ้นทีละตัวอักษร
+  - Guided Runner ยังแบ่งพื้นที่เป็นสองคอลัมน์ ทำให้เนื้อหากลางแคบ
+  - action buttons ของ runner แคบและอ่านยาก
+- แก้โดยเพิ่ม mobile layout ที่ `max-width: 820px`:
+  - ซ่อน sidebar และใช้ topbar/mobile navigation
+  - เปลี่ยน Experiment table เป็น stacked record layout
+  - เปลี่ยน Guided Runner เป็นคอลัมน์เดียว และให้ step list เลื่อนแนวนอน
+  - จัด action buttons เป็น grid ที่อ่านได้ และเป็น single-column บนจอเล็กกว่า 480px
+- ตรวจภาพจริงใน sandbox ที่ 800px และ 390px หลังแก้ พบว่า sidebar หาย, ตารางอ่านได้, Wizard เต็มกรอบ และปุ่มไม่ถูกบีบ
+- ผลตรวจหลังแก้:
+  - `npm run lint` ผ่าน
+  - `npm run build` ผ่าน
+  - `npm run ui:verify` ผ่าน 360, 390, 768, 1024 และ 1440px
