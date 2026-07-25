@@ -1893,3 +1893,12 @@
   - `npm test`: 75 files ผ่าน, 4 skipped; 184 tests ผ่าน, 10 skipped
   - `npm run lint` และ `npm run build`: ผ่าน
   - `npm run firebase:verify`: Auth/Firestore emulator ผ่าน 79 files / 194 tests
+
+### อนุมัติ Zero-Knowledge + Senior-Friendly Design B — 2026-07-25
+
+- ผู้ใช้ยืนยันว่าการจำลอง beginner ต้องถือว่าไม่มีความรู้เรื่องพืช เพาะเลี้ยงเนื้อเยื่อ แล็บ อุปกรณ์ หน่วย หรือสมการ
+- เลือก visual direction B จาก visual companion
+- ล็อกมาตรฐาน: Thai body 18px ขึ้นไป, ปุ่มขั้นต่ำ 48×48px, primary 56px, photo action 60px, WCAG AA, zoom 200%, ภาษาไทยธรรมดา และมี uncertainty path
+- ขอบเขตคือ rewrite Guided Protocol ครบ 22 ขั้น และ review UX/UI ทั้งระบบ
+- design spec: `docs/superpowers/specs/2026-07-25-zero-knowledge-senior-friendly-design.md`
+- ยังไม่เริ่ม implementation จนกว่าผู้ใช้จะ review และอนุมัติ written spec
