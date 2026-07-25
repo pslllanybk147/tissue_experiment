@@ -76,6 +76,62 @@ async function inspectPage(page, viewportName, route) {
   }
 }
 
+async function inspectProtocolTypography(page, viewportName, route) {
+  const result = await page.evaluate(() => {
+    const thaiSample = [...document.querySelectorAll(
+      ".protocol-row small, .protocol-reading-step small, .guided-step-content small, .step-kicker, .evidence-label",
+    )].find((element) => /[\u0E00-\u0E7F]/.test(element.textContent ?? ""));
+    const content = document.querySelector(
+      ".protocol-reading-step > div, .guided-step-content, .protocol-row > :first-child",
+    );
+    const heading = document.querySelector(".guided-step-heading");
+    const contentRect = content?.getBoundingClientRect();
+    return {
+      thaiFont: thaiSample ? getComputedStyle(thaiSample).fontFamily : "",
+      wordBreak: content ? getComputedStyle(content).wordBreak : "",
+      overflowWrap: content ? getComputedStyle(content).overflowWrap : "",
+      contentWidth: contentRect ? Math.round(contentRect.width) : 0,
+      headingDirection: heading ? getComputedStyle(heading).flexDirection : "",
+    };
+  });
+  const prefix = `${viewportName} ${route}`;
+  if (result.thaiFont) {
+    assert(!/mono/i.test(result.thaiFont), `${prefix}: ข้อความไทยยังใช้ฟอนต์ mono (${result.thaiFont})`);
+  }
+  assert(result.wordBreak !== "break-all", `${prefix}: ใช้ word-break: break-all`);
+  if (viewportName === "mobile" && result.contentWidth) {
+    assert(result.contentWidth >= 250, `${prefix}: พื้นที่ข้อความถูกบีบเหลือ ${result.contentWidth}px`);
+  }
+  if (viewportName === "mobile" && route === "guided-runner") {
+    assert(result.headingDirection === "column", `${prefix}: heading ยังไม่เรียงแนวตั้ง`);
+  }
+}
+
+async function verifyProtocolPages(page, viewportName) {
+  await page.locator("nav:visible a[href='/protocols']").first().click();
+  await page.waitForURL("**/protocols");
+  await page.locator(".protocol-list").waitFor({ state: "visible" });
+  await inspectPage(page, viewportName, "/protocols");
+  await inspectProtocolTypography(page, viewportName, "/protocols");
+  const firstProtocol = page.locator(".protocol-row").first();
+  assert(await firstProtocol.isVisible(), `${viewportName}: ไม่พบ Protocol สำหรับตรวจ typography`);
+  if (await firstProtocol.isVisible()) {
+    await firstProtocol.click();
+    await page.waitForURL("**/protocols/*");
+    await page.locator(".protocol-detail-grid").waitFor({ state: "visible" });
+    await inspectPage(page, viewportName, "/protocols/[id]");
+    await inspectProtocolTypography(page, viewportName, "/protocols/[id]");
+    const editLink = page.getByRole("link", { name: "แก้ไข" });
+    if (await editLink.isVisible()) {
+      await editLink.click();
+      await page.waitForURL("**/edit");
+      await page.locator(".protocol-editor").waitFor({ state: "visible" });
+      await inspectPage(page, viewportName, "/protocols/[id]/edit");
+      await inspectProtocolTypography(page, viewportName, "/protocols/[id]/edit");
+    }
+  }
+}
+
 async function verifyWizard(page, viewportName) {
   await page.locator("nav:visible a[href='/experiments']").first().click();
   await page.waitForURL("**/experiments");
@@ -110,6 +166,7 @@ async function verifyWizard(page, viewportName) {
     state: "visible",
   });
   await inspectPage(page, viewportName, "guided-runner");
+  await inspectProtocolTypography(page, viewportName, "guided-runner");
   assert(await page.locator(".beginner-step-guide").isVisible(), `${viewportName}: Guided Runner ไม่มีคู่มือมือใหม่`);
   assert(await page.getByText("ขั้นที่ 1 / 22").isVisible(), `${viewportName}: Guided Runner ไม่แสดง 22 ขั้น`);
   await page.getByRole("button", { name: /ให้ระบบหาปริมาตร Haiter ที่ต้องใช้/ }).click();
@@ -151,6 +208,7 @@ try {
       await inspectPage(page, viewport.name, route.href);
     }
 
+    await verifyProtocolPages(page, viewport.name);
     await verifyWizard(page, viewport.name);
     assert(
       consoleErrors.length === 0,

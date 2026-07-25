@@ -1998,3 +1998,69 @@
   - production build ผ่าน
   - sandbox UI verification ผ่านที่ 390, 1024 และ 1440px
   - UI script ตรวจเพิ่มว่าขั้น Haiter มีช่องกรอกและแสดงคำสั่ง working dilution จริง
+
+## Image Processing — Pilot training gate v2 (2026-07-25)
+
+- เดินต่อจาก pipeline ที่มีอยู่จริง:
+  - reviewed DatasetItem
+  - Lot-level train/validation/test split
+  - PNG 224×224 preprocessing artifact
+  - model-ready manifest
+- ปรับ `training-readiness` จากการตรวจเพียงว่ามี split หรือไม่ เป็นเกณฑ์ pilot สำหรับจำแนกอย่างน้อย 2 คลาส:
+  - อย่างน้อย 20 ภาพ train ต่อคลาส
+  - อย่างน้อย 5 ภาพ validation ต่อคลาส
+  - อย่างน้อย 5 ภาพ test ต่อคลาส
+  - อย่างน้อย 3 Lot อิสระต่อคลาส
+  - artifact hash ซ้ำเป็น blocker เพื่อป้องกันภาพเดียวกันรั่วข้าม record
+- รายงาน schema ใหม่ `training-readiness-v2` เพิ่ม:
+  - `policy`
+  - `classSplitCounts`
+  - `blockers`
+  - จำนวนภาพและจำนวน Lot แยกตามชนิด/สายพันธุ์
+- เพิ่ม `TrainingReadinessPanel` ในหน้า Image Review:
+  - แสดงว่า “พร้อม” หรือ “ยังไม่พร้อม”
+  - แสดงจำนวนภาพ train/validation/test และ Lot ต่อคลาส
+  - บอกจำนวนภาพที่ต้องเพิ่มเป็นข้อความภาษาไทย
+  - ยังคงดาวน์โหลด JSON report สำหรับ audit ได้
+- สถานะทางวิทยาศาสตร์:
+  - เกณฑ์นี้เป็น pilot engineering gate ไม่ใช่หลักฐานว่าจำนวนดังกล่าวรับประกันความแม่นยำ
+  - ยังไม่มีการ train หรือ inference จริง เพราะต้องมีข้อมูลอย่างน้อย Pink Princess และ Violin ที่ผ่าน review ตามเกณฑ์ก่อน
+  - prediction ในอนาคตต้องแสดงเป็น candidate พร้อม confidence และให้มนุษย์ยืนยัน ห้ามแสดงเป็น Verified อัตโนมัติ
+- ผลตรวจ:
+  - focused tests 5 ผ่าน
+  - full tests 82 files ผ่าน + 4 skipped; 214 tests ผ่าน + 10 skipped
+  - Firebase Auth/Firestore emulator 86 files / 224 tests ผ่าน
+  - lint ผ่าน
+  - production build ผ่าน
+  - sandbox UI verification ผ่าน 390, 1024 และ 1440px
+- ขั้นถัดไป:
+  - เก็บและ review ภาพอย่างน้อย 2 คลาสให้ผ่าน gate
+  - เมื่อ report `ready: true` จึงสร้าง baseline transfer-learning training run, evaluation report และ versioned model artifact
+
+## Mobile Protocol readability audit (2026-07-25)
+
+- ตรวจหน้า Protocol ที่เกี่ยวข้องครบ:
+  - Protocol list
+  - Protocol detail และ version history
+  - Protocol editor
+  - Guided Protocol Runner
+- แก้สาเหตุข้อความไทยถูกบีบบนมือถือ:
+  - ยกเลิกการใช้ Geist Mono กับข้อความไทยประเภท metadata, evidence label, step kicker และข้อความย่อย
+  - เก็บ mono font ไว้เฉพาะ code, Lot ID และ version ID
+  - เปลี่ยนการตัดคำในพื้นผิว Protocol จาก `overflow-wrap:anywhere` เป็นการตัดคำปกติ
+  - ให้หัวข้อขั้นตอนกับ evidence label เรียงแนวตั้งเมื่อจอแคบ
+  - ลด padding ซ้อนใน Guided Runner และเพิ่ม `min-width:0` ให้ grid children
+  - จัด Protocol list/detail/editor actions เป็นแนวตั้งบนมือถือ
+  - เพิ่มขนาดพื้นที่กดลิงก์/ปุ่มให้ไม่น้อยกว่า 48×48px
+- เพิ่ม UI regression checks:
+  - ตรวจ Protocol list/detail/edit/runner โดยตรง
+  - ตรวจข้อความไทยไม่ใช้ mono font
+  - ตรวจพื้นที่ข้อความบนมือถือไม่แคบกว่า 250px
+  - ตรวจ heading ของ Guided Runner เรียงแนวตั้ง
+  - ตรวจ horizontal overflow และ touch targets
+- ผลตรวจสุดท้าย:
+  - `npm run ui:verify` ผ่าน 390, 1024 และ 1440px
+  - `npm run lint` ผ่าน
+  - `npm run build` ผ่าน
+  - `npm test` ผ่าน 82 files + 4 skipped; 214 tests + 10 skipped
+  - `npm run firebase:verify` ผ่าน 86 files / 224 tests

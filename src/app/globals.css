@@ -109,6 +109,7 @@ button { cursor: pointer; }
 .wizard-actions{display:flex;justify-content:space-between;gap:12px;padding-top:18px;border-top:2px solid #89938c}.wizard-actions>button{min-width:120px;padding:11px 15px}.wizard-advanced{margin-top:16px;text-decoration:underline}
 .guided-readiness-warning{display:grid;gap:4px;margin:16px 0 2px;padding:13px 15px;border:2px solid #a84f13;border-left-width:7px;background:#fff0da;color:#5c2608;font-size:12px}.guided-step-list button:disabled{opacity:1;background:#ecefeb;color:#3f4942;cursor:not-allowed}.migration-state{display:grid;gap:12px;padding:24px;border:2px solid #9a5a1c;background:#fff7ed}.migration-state h2,.migration-state p{margin:0}.migration-state .primary-button{width:max-content}
 .form-field>span,.guide-block h4,.guided-measurements h4{color:#354038}.form-field input,.form-field select,.form-field textarea{border-color:#8f9991;color:#111713;background:#fff}.muted-copy,.route-back,.step-kicker{color:#465149}
+.training-readiness-panel{margin:24px 0;padding:24px;border:2px solid var(--line);background:#fff}.training-readiness-panel.ready{border-color:#2f6d49}.training-readiness-panel.blocked{border-color:#a54a2a}.training-readiness-heading{display:flex;justify-content:space-between;align-items:start;gap:24px}.training-readiness-heading h2{margin:4px 0 0}.training-blockers{margin:20px 0;padding:18px;border-left:6px solid #a54a2a;background:#fff1eb}.training-blockers h3{margin:0 0 10px}.training-blockers ul{margin:0;padding-left:24px}.table-scroll{overflow-x:auto;margin-top:20px}.training-class-table{width:100%;border-collapse:collapse;min-width:680px}.training-class-table th,.training-class-table td{padding:12px;border:1px solid var(--line);text-align:left}.training-class-table thead th{background:var(--soft)}.training-class-table tbody th{font-weight:600}
 :where(a,button,input,select,textarea):focus-visible{outline:3px solid #1d4ed8;outline-offset:3px}
 @media(max-width:760px){.beginner-wizard{padding:18px 15px}.wizard-progress{display:flex;overflow-x:auto}.wizard-progress li{flex:0 0 128px}.wizard-choice-grid,.wizard-calculation{grid-template-columns:1fr}.calculation-result{grid-column:auto}.wizard-review div{grid-template-columns:1fr;gap:5px}.wizard-actions{flex-wrap:wrap}.wizard-actions .primary-button{order:-1;width:100%}.wizard-actions>button:not(.primary-button){flex:1}.migration-state .primary-button{width:100%}}
 
@@ -142,9 +143,12 @@ small, .eyebrow, .step-kicker, .session-chip, time,
 .evidence-label, code, .metadata {
   font-size: var(--text-meta);
 }
-small, .eyebrow, .step-kicker, .session-chip, time,
-.evidence-label, code, .metadata {
+code, .mono, .lot-id, .version-id {
   font-family: var(--font-metadata);
+}
+small, .eyebrow, .step-kicker, .session-chip, time,
+.evidence-label, .metadata {
+  font-family: var(--font-thai-ui);
 }
 .primary-button, .accessible-action-primary { min-height: var(--action-primary); }
 .accessible-action {
@@ -258,6 +262,29 @@ small, .eyebrow, .step-kicker, .session-chip, time,
 }
 .guided-step-content { font-size: var(--text-body); }
 .guided-step-content h3 { font-size: clamp(1.65rem, 4vw, 2.25rem); }
+.guided-step-content,
+.protocol-list,
+.protocol-detail-grid,
+.protocol-editor,
+.protocol-reading-step,
+.protocol-row {
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+.protocol-reading-step > div,
+.protocol-row > *,
+.guided-step-heading > div {
+  min-width: 0;
+}
+.protocol-reading-step p,
+.protocol-reading-step small,
+.protocol-row small,
+.guided-step-content p,
+.guided-step-content li {
+  line-height: 1.7;
+  word-break: normal;
+}
 .guided-step-list button { min-height: 4.25rem; font-size: var(--text-label); }
 .lab-route-nav a, .lab-route-mobile-nav a, .lab-route-session button,
 .mobile-sign-out { min-height: var(--target-min); font-size: var(--text-label); }
@@ -276,8 +303,10 @@ small, .eyebrow, .step-kicker, .session-chip, time,
 .text-button {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  min-width: var(--target-min);
   min-height: var(--target-min);
-  padding-block: .65rem;
+  padding: .65rem .85rem;
 }
 td a, .source-row a, .knowledge-source-claim a {
   display: inline-flex;
@@ -293,7 +322,84 @@ td a, .source-row a, .knowledge-source-claim a {
   .beginner-uncertainty-actions { grid-template-columns: 1fr; }
   .form-actions { display: grid; grid-template-columns: 1fr; }
   .form-actions > * { width: 100%; }
-  .guided-step-content, .beginner-wizard { padding-inline: 1rem; }
+  .beginner-wizard { padding-inline: .75rem; }
+  .guided-step-content { padding-inline: 0; }
+  .guided-step-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: .75rem;
+  }
+  .guided-step-heading .evidence-label {
+    align-self: flex-start;
+    max-width: 100%;
+    white-space: normal;
+  }
+  .beginner-guide-section {
+    padding: 1rem .85rem;
+  }
+  .beginner-materials {
+    padding-left: 1.05rem;
+  }
+  .beginner-actions {
+    padding-left: 1.35rem;
+  }
+  .protocol-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: .65rem;
+    align-items: start;
+    padding: 1rem .25rem;
+  }
+  .protocol-row .badge,
+  .protocol-row .evidence-label {
+    justify-self: start;
+    white-space: normal;
+  }
+  .protocol-detail-grid {
+    gap: 1rem;
+  }
+  .protocol-detail-grid > .experiment-surface {
+    min-width: 0;
+    padding-inline: .75rem;
+  }
+  .protocol-reading-step {
+    grid-template-columns: 2rem minmax(0, 1fr);
+    gap: .65rem;
+    padding: 1rem 0;
+  }
+  .protocol-reading-step h2 {
+    margin-top: 0;
+    font-size: 1.25rem;
+    line-height: 1.45;
+  }
+  .protocol-reading-step p,
+  .protocol-reading-step small {
+    font-size: 1rem;
+  }
+  .protocol-history {
+    padding-left: 1.25rem;
+  }
+  .protocol-step-heading,
+  .step-controls,
+  .route-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .protocol-step-heading > *,
+  .step-controls > *,
+  .route-actions > * {
+    width: 100%;
+  }
+  .protocol-step-editor {
+    padding: .9rem .75rem;
+  }
+  .protocol-step-editor input,
+  .protocol-step-editor textarea,
+  .protocol-step-editor select {
+    min-width: 0;
+    font-family: var(--font-thai-ui);
+    line-height: 1.6;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
