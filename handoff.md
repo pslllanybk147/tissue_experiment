@@ -1962,6 +1962,13 @@
   - `C:\Users\HP\AppData\Local\Temp\philodendron-wizard-390.png`
   - `C:\Users\HP\AppData\Local\Temp\philodendron-haiter-390.png`
   - `C:\Users\HP\AppData\Local\Temp\philodendron-runner-390.png`
-- ขั้นถัดไปหลัง push:
-  - ตรวจ Vercel production deployment และ authenticated smoke test
+- Git และ deployment:
+  - implementation commit `e11b68d1cc3d007e413ecc5605a6f5a6241cdb31`
+  - push แล้วทั้ง `origin/master` และ `origin/main`
+  - Vercel production deployment `dpl_3bWgLNb3q1tC4dTXtpRBrUyQrNg6` สถานะ `READY`
+  - Vercel main deployment `dpl_6uRdrHgdhzkrgE1UnHfcBBn1PuwQ` สถานะ `READY`
+  - production URL `https://tissue-experiment-93.vercel.app/` ตอบ HTTP 200 และพบชื่อระบบใน HTML
+  - full authenticated production flow ยังต้องตรวจด้วย session ผู้ใช้จริงเมื่อมีการเปลี่ยน Firebase/Auth; รอบนี้ยืนยัน full flow ผ่าน local demo sandbox และ Firebase emulator แล้ว
+- ขั้นถัดไป:
   - triage npm advisories แยกตาม production/dev dependency
+  - ทำ authenticated production smoke ซ้ำเมื่อแก้ Auth, Firestore rules, media upload หรือ environment variables
