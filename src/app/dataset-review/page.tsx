@@ -7,6 +7,7 @@ import { LabShell } from "@/components/lab/lab-shell";
 import { ReviewQueue } from "@/components/dataset/review-queue";
 import { PreprocessingJobs } from "@/components/dataset/preprocessing-jobs";
 import { TrainingReadinessPanel } from "@/components/dataset/training-readiness-panel";
+import { BaselineTrainingRuns } from "@/components/dataset/baseline-training-runs";
 import type { DatasetConfidence, DatasetItem, DatasetReviewStatus } from "@/lib/domain/models";
 import type { TrainingReadinessReport } from "@/lib/domain/training-readiness";
 import type { PreprocessingJob } from "@/lib/image/preprocessing-job";
@@ -24,6 +25,7 @@ export default function DatasetReviewPage() {
   const [jobMessage, setJobMessage] = useState<string | null>(null);
   const [jobError, setJobError] = useState<string | null>(null);
   const [trainingReport, setTrainingReport] = useState<TrainingReadinessReport | null>(null);
+  const [baselineRuns, setBaselineRuns] = useState<Array<{ id: string; sourceJobId: string; status: string; createdAt: string; schemaVersion: string; evaluation: { validation: { total: number; correct: number; accuracy: number | null } | null; test: { total: number; correct: number; accuracy: number | null } | null; warnings: string[] } | null }>>([]);
 
   async function load() {
     setState("loading");
@@ -41,13 +43,24 @@ export default function DatasetReviewPage() {
     setJobs(body.jobs ?? []);
   }, [authenticated]);
 
+  const loadBaselineRuns = useCallback(async () => {
+    if (!authenticated) return;
+    const user = getFirebaseServices()?.auth.currentUser;
+    if (!user) return;
+    const token = await user.getIdToken();
+    const response = await fetch("/api/dataset/baseline?limit=10", { headers: { authorization: `Bearer ${token}` }, cache: "no-store" });
+    if (!response.ok) throw new Error("โหลด baseline runs ไม่สำเร็จ");
+    const body = await response.json() as { runs?: typeof baselineRuns };
+    setBaselineRuns(body.runs ?? []);
+  }, [authenticated]);
+
   useEffect(() => {
     if (session.status !== "authenticated" && session.status !== "demo") return;
     let active = true;
     repository.list(ownerId).then(value => { if (active) { setItems(value); setState("ready"); } }).catch(() => { if (active) setState("error"); });
-    queueMicrotask(() => { void loadJobs().catch(() => undefined); });
+    queueMicrotask(() => { void loadJobs().catch(() => undefined); void loadBaselineRuns().catch(() => undefined); });
     return () => { active = false; };
-  }, [loadJobs, ownerId, repository, session.status]);
+  }, [loadBaselineRuns, loadJobs, ownerId, repository, session.status]);
 
   async function reviewProvenance(itemId: string, status: DatasetReviewStatus, note: string) {
     await repository.reviewProvenance(ownerId, itemId, status, ownerId, note);
@@ -135,8 +148,9 @@ export default function DatasetReviewPage() {
       if (body.readiness) setTrainingReport(body.readiness);
       if (!response.ok) throw new Error(body.error || "เริ่ม baseline training ไม่สำเร็จ");
       setJobMessage(`baseline training เสร็จแล้ว (${body.runId}) · validation ${body.evaluation?.validation?.accuracy ?? "ไม่มีข้อมูล"} · test ${body.evaluation?.test?.accuracy ?? "ไม่มีข้อมูล"}`);
+      await loadBaselineRuns();
     } catch (error) { setJobError(error instanceof Error ? error.message : "เริ่ม baseline training ไม่สำเร็จ"); }
   }
 
-  return <AuthGate><LabShell section="Image review" sessionLabel={authenticated ? "FIREBASE" : "DEMO"} onSignOut={() => void signOut()}><header className="route-heading"><div><p className="eyebrow">IMAGE PROCESSING / PHASE 1</p><h1>Image Review</h1><p>ตรวจ provenance และยืนยัน label ก่อนนำภาพไปใช้ฝึกโมเดล</p></div></header>{state === "loading" && <p className="route-state" role="status">กำลังโหลดรายการตรวจ…</p>}{state === "error" && <div className="route-state error" role="alert">โหลด Review Queue ไม่สำเร็จ <button className="quiet-button" onClick={() => void load()} type="button">ลองใหม่</button></div>}{state === "ready" && <><ReviewQueue items={items} onReviewProvenance={reviewProvenance} onSetLabel={setLabel} onExport={authenticated ? exportManifest : undefined} />{authenticated && <><div className="dataset-feedback-stack">{jobMessage && <p className="dataset-feedback success" role="status">{jobMessage}</p>}{jobError && <p className="dataset-feedback error" role="alert">{jobError}</p>}</div>{trainingReport && <TrainingReadinessPanel report={trainingReport} />}<PreprocessingJobs jobs={jobs} onStart={startPreprocessing} onRetry={retryPreprocessing} onExport={exportModelReady} onReport={exportTrainingReport} onBaseline={runBaselineTraining} /></>}</>}</LabShell></AuthGate>;
+  return <AuthGate><LabShell section="Image review" sessionLabel={authenticated ? "FIREBASE" : "DEMO"} onSignOut={() => void signOut()}><header className="route-heading"><div><p className="eyebrow">IMAGE PROCESSING / PHASE 1</p><h1>Image Review</h1><p>ตรวจ provenance และยืนยัน label ก่อนนำภาพไปใช้ฝึกโมเดล</p></div></header>{state === "loading" && <p className="route-state" role="status">กำลังโหลดรายการตรวจ…</p>}{state === "error" && <div className="route-state error" role="alert">โหลด Review Queue ไม่สำเร็จ <button className="quiet-button" onClick={() => void load()} type="button">ลองใหม่</button></div>}{state === "ready" && <><ReviewQueue items={items} onReviewProvenance={reviewProvenance} onSetLabel={setLabel} onExport={authenticated ? exportManifest : undefined} />{authenticated && <><div className="dataset-feedback-stack">{jobMessage && <p className="dataset-feedback success" role="status">{jobMessage}</p>}{jobError && <p className="dataset-feedback error" role="alert">{jobError}</p>}</div>{trainingReport && <TrainingReadinessPanel report={trainingReport} />}<PreprocessingJobs jobs={jobs} onStart={startPreprocessing} onRetry={retryPreprocessing} onExport={exportModelReady} onReport={exportTrainingReport} onBaseline={runBaselineTraining} /><BaselineTrainingRuns runs={baselineRuns} /></>}</>}</LabShell></AuthGate>;
 }

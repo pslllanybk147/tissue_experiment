@@ -6,7 +6,9 @@ const executablePath = process.env.CHROME_PATH
     ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
     : undefined);
 const viewports = [
+  { name: "android-small", width: 360, height: 800 },
   { name: "mobile", width: 390, height: 844 },
+  { name: "ipad", width: 768, height: 1024 },
   { name: "tablet", width: 1024, height: 900 },
   { name: "desktop", width: 1440, height: 1000 },
 ];
@@ -158,10 +160,15 @@ async function verifyWizard(page, viewportName) {
     await checks.nth(index).check();
   }
   await page.getByRole("button", { name: "ถัดไป" }).click();
-  await Promise.all([
-    page.waitForURL((url) => /^\/experiments\/(?!new$)[^/]+$/.test(url.pathname)),
-    page.getByRole("button", { name: "สร้าง Lot และเปิดคู่มือ" }).click(),
-  ]);
+  const createLotButton = page.getByRole("button", { name: "สร้าง Lot และเปิดคู่มือ" }).last();
+  await createLotButton.waitFor({ state: "visible" });
+  await page.evaluate(() => {
+    const button = [...document.querySelectorAll("button")]
+      .find((item) => item.textContent?.includes("สร้าง Lot และเปิดคู่มือ"));
+    if (!button) throw new Error("ไม่พบปุ่มสร้าง Lot และเปิดคู่มือ");
+    button.click();
+  });
+  await page.waitForURL((url) => /^\/experiments\/(?!new$)[^/]+$/.test(url.pathname));
   await page.locator(".beginner-step-guide, .migration-state").first().waitFor({
     state: "visible",
   });

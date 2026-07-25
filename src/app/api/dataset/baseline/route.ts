@@ -72,3 +72,35 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Baseline training unavailable" }, { status: 503 });
   }
 }
+
+export async function GET(request: Request) {
+  try {
+    const uid = await authenticate(request);
+    const requestedLimit = Number(new URL(request.url).searchParams.get("limit") || 10);
+    const limit = Number.isFinite(requestedLimit) && requestedLimit > 0 ? Math.min(requestedLimit, 20) : 10;
+    const { getFirestore } = await import("firebase-admin/firestore");
+    const { getAdminApp } = await import("../../../../lib/firebase/admin");
+    const snapshot = await getFirestore(getAdminApp()).collection(`users/${uid}/trainingRuns`).get();
+    const runs = snapshot.docs
+      .map((document) => document.data())
+      .sort((left, right) => String(right.createdAt || "").localeCompare(String(left.createdAt || "")))
+      .slice(0, limit)
+      .map((run) => ({
+        id: run.id,
+        sourceJobId: run.sourceJobId,
+        status: run.status,
+        createdAt: run.createdAt,
+        schemaVersion: run.schemaVersion,
+        evaluation: run.evaluation ? {
+          validation: run.evaluation.validation ? { total: run.evaluation.validation.total, correct: run.evaluation.validation.correct, accuracy: run.evaluation.validation.accuracy } : null,
+          test: run.evaluation.test ? { total: run.evaluation.test.total, correct: run.evaluation.test.correct, accuracy: run.evaluation.test.accuracy } : null,
+          warnings: run.evaluation.warnings ?? [],
+        } : null,
+      }));
+    return NextResponse.json({ runs }, { headers: { "Cache-Control": "no-store" } });
+  } catch (error) {
+    if (error instanceof Response) return new NextResponse(error.body, { status: error.status, headers: { "content-type": "application/json" } });
+    console.error("baseline training run list failure", { errorName: error instanceof Error ? error.name : "UnknownError" });
+    return NextResponse.json({ error: "Baseline training runs unavailable" }, { status: 503 });
+  }
+}

@@ -2121,3 +2121,27 @@
   - Firebase emulator 88 files / 230 tests ผ่าน
   - lint และ production build ผ่าน
   - sandbox UI verification ผ่าน 390, 1024 และ 1440px
+
+## Mobile responsive audit — Android/iPhone/iPad (2026-07-25)
+
+- ปรับ responsive layer ท้าย `src/app/globals.css` ให้ override กฎ desktop-first เดิมอย่างเป็นระบบ โดยเน้น:
+  - Android ขนาดเล็ก 360px, mobile 390px, iPad 768px และ tablet 1024px
+  - ข้อความไทยใช้ขนาดและ line-height ที่อ่านได้ ไม่ถูกบีบหรือใช้ mono โดยไม่จำเป็น
+  - grid children มี `min-width: 0` ลดการดันกรอบออกนอกจอ
+  - data list, observation, dataset review, knowledge และ monograph เปลี่ยนเป็น single-column เมื่อเหมาะสม
+  - ปุ่ม filter และปุ่มขึ้น/ลง/ลบใน Protocol editor มีพื้นที่กดอย่างน้อย 48px
+  - ปุ่มภาษาไทยอนุญาตให้ขึ้นบรรทัดใหม่ และตัดคำตามธรรมชาติ
+  - ป้องกัน horizontal overflow ของ document โดยไม่บังคับให้เนื้อหาตารางอ่านยาก
+- ปรับ `scripts/verify-accessible-ui.mjs`:
+  - เพิ่ม viewport 360px และ 768px
+  - ตรวจ flow หลักตั้งแต่ login/demo, navigation, Protocol list/detail/edit, wizard และ Guided Runner
+  - ทำการ submit wizard ให้ทนต่อ React rerender ระหว่างจอเล็ก
+- ผลตรวจ:
+  - `npm run lint` ผ่าน
+  - `npm run build` ผ่าน
+  - `npm test` ผ่าน 89 files / 231 tests (10 skipped)
+  - `npm run firebase:verify` ผ่าน 89 files / 231 tests
+  - production sandbox `npm run ui:verify` ผ่าน 360, 390, 768, 1024 และ 1440px
+  - browser sandbox เดินตรวจเมนู Plants, Experiments, Protocols, Knowledge, Research และ Image Review ที่ 390px ผ่านครบ
+- หมายเหตุ: dev server เดิมค้างใน Firebase loading สำหรับ Playwright จึงใช้ production server ที่ `http://127.0.0.1:3200` เป็น sandbox render source เพื่อหลีกเลี่ยงผลตรวจลวงจาก HMR/dev auth timing
+- งาน image processing เดิมยังอยู่ในชุดเดียวกัน และยังไม่ถือว่าพร้อมใช้งานจริงจนกว่าจะมี dataset ผ่าน provenance/label review ครบตาม readiness gate
