@@ -2239,3 +2239,29 @@
 - หน้าคู่มือยังคงแสดงขั้นตอนปัจจุบันเต็มความกว้าง จึงไม่ถูกบีบจาก sidebar ซ้ายบน iPad 9/Pro
 - เพิ่ม sandbox assertions สำหรับ hamburger: เริ่มต้นปิด, เปิดแล้วเห็นเมนู, ปิดกลับได้ และปรับ flow ให้เปิดรายการขั้นตอนก่อนตรวจขั้น Haiter
 - ตรวจภาพจริงหลังแก้ที่ iPad 9, iPad Pro 12 และมือถือ พร้อม matrix 14 viewport ผ่านครบ
+
+## Beginner end-to-end sandbox review (2026-07-26)
+
+- จำลองผู้ใช้ที่ไม่มีพื้นฐานผ่านเมนู `เริ่มต้น → ต้นไม้ของฉัน → สร้าง Plant Record → สร้าง Experiment Lot → Guided Protocol → คู่มือและ Protocol → คลังความรู้ → ตรวจงานวิจัย → ตรวจรูปภาพ`
+- สร้าง Plant Record และ Lot แบบ Haiter ใน demo จริง แล้วบันทึกผลขั้นตอนใน Guided Runner
+- พบ release blockers/ข้อบกพร่องสำคัญ:
+  - เมื่อเริ่ม Lot จาก Plant Profile ชื่อและ `plantId` ไม่ถูกส่งเข้า Wizard; ช่องชื่อพืชว่างและ template เริ่มต้นเป็น Generic ทำให้ Lot ไม่เชื่อมกับ Plant Record และเสี่ยงเลือกคู่มือผิด
+  - ขั้น `เตรียมอาหารแบบ Haiter` ใช้ข้อความ material/evidence แบบ generic ว่าให้ถ่ายภาพต้นไม้และตำแหน่งทำงาน ซึ่งผิดบริบทของการเตรียมอาหาร; รายการอุปกรณ์ก็เป็นคำกว้าง ๆ ว่า “อุปกรณ์ที่ระบุในขั้นนี้”
+  - `profileStep` ไม่มี next action เมื่อผ่าน/ไม่ผ่าน จึงเกิดกล่องคำแนะนำว่างในบางขั้น
+  - กด `ถัดไป` ใน Guided Runner แล้วไม่เลื่อนกลับหัวขั้นตอน; วัดได้จาก `scrollY` 2545.6 → 2944.8 หลังเปลี่ยนจากขั้น 7 เป็นขั้น 8
+  - Knowledge Library ของ Pink Princess แสดง `Claims 0` และ “ยังไม่มี playbook” แต่ Taxon Detail มี monograph, claims, คู่มือ 18 ขั้น และสูตรครบแล้ว เป็น schema/repository state ที่ขัดกันและทำให้มือใหม่ไม่รู้ว่าคู่มือมีจริงหรือไม่
+  - Dashboard แสดง `6 Protocol steps` แต่คู่มือปัจจุบันมี 18/22 ขั้น จึงเป็นตัวเลข seed/legacy ที่ทำให้เข้าใจผิด
+- Responsive checks แบบ browser emulator:
+  - ตรวจ route หลัก 7 หน้าและ route สำคัญ 4 หน้า ที่ iPhone SE 375×667, Android 412×915, iPad 9 768×1024 และ iPad Pro 1024×1366
+  - route หลักไม่เกิด body-level horizontal overflow
+  - Taxon Detail บนมือถือมีตารางสูตรกว้าง 391px ภายในพื้นที่เนื้อหาประมาณ 331–368px และอาศัย container ซ่อน/เลื่อน; ควรทำ mobile recipe cards หรือมีคำใบ้การเลื่อน
+  - Wizard `/experiments/new` บนมือถือวาง stepper 5 ขั้นกว้างเกิน viewport; ขั้น 3–5 อยู่นอกจอแม้ body ไม่รายงาน overflow เพราะ parent ซ่อน/scroll
+  - form labels และ status บางส่วนยังใช้ 10–11px; ลิงก์อ้างอิงใน monograph สูงเพียง 15–33px ต่ำกว่า touch target ที่เหมาะกับผู้สูงอายุ
+- เมนู Research ใช้งานแบบ read-only ได้ แต่การ์ดหลักฐานไม่มีลิงก์เปิด source โดยตรง จึงตรวจสอบแหล่งที่มาได้ไม่ต่อเนื่อง
+- เมนู Image Review แสดง empty state ถูกต้อง แต่ไม่มี CTA อธิบายเส้นทาง “ไปเพิ่ม Observation/รูป” ทำให้มือใหม่ติดอยู่ที่คิวว่าง
+- Verification:
+  - `npm test`: ผ่าน 221 tests, skip 10 ในการรันปกติ
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: ผ่าน 231 tests บน Auth/Firestore emulator
+  - `npm run ui:verify`: ไม่ผ่านหลังเพิ่ม hamburger navigation เพราะ helper `returnToApp()` ยังรอ `.lab-route-topbar:visible, .lab-route-sidebar:visible`; ต้องอัปเดต selector/flow ให้รู้จัก mobile/tablet hamburger ก่อนถือว่า release gate ผ่าน
