@@ -7,6 +7,7 @@ import type {
   UncertaintyPath,
 } from "@/lib/domain/models";
 import { AccessibleAction } from "../common/accessible-action";
+import { ProtocolReferenceVisual } from "./protocol-reference-visual";
 
 type BeginnerStepGuideProps = {
   instruction: BeginnerInstruction;
@@ -44,6 +45,19 @@ export function BeginnerStepGuide({
       <GuideSection title="ข้อมูลหรือผลที่ต้องตรวจ">
         <BulletList items={instruction.whatToFind} />
       </GuideSection>
+
+      {instruction.visualAids?.length ? (
+        <GuideSection title="ภาพประกอบของขั้นนี้">
+          <p className="protocol-visual-disclaimer">
+            ภาพต่อไปนี้เป็นภาพจำลองเพื่อช่วยหาตำแหน่ง ไม่ใช่ภาพต้นจริงของคุณ
+          </p>
+          <div className="protocol-visual-list">
+            {instruction.visualAids.map((visual) => (
+              <ProtocolReferenceVisual key={visual.id} visual={visual} />
+            ))}
+          </div>
+        </GuideSection>
+      ) : null}
 
       <GuideSection title="อุปกรณ์และสารที่ใช้">
         <ul className="beginner-materials">

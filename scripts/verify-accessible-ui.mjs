@@ -250,6 +250,7 @@ async function verifyWizard(page, viewportName) {
   if (await stepsToggle.isVisible()) await stepsToggle.click();
   const availableSteps = page.locator(".guided-step-list button:not(:disabled)");
   const availableStepCount = await availableSteps.count();
+  let visualAidFound = false;
   for (let index = 0; index < availableStepCount; index += 1) {
     await availableSteps.nth(index).click();
     await inspectProtocolTypography(
@@ -257,7 +258,15 @@ async function verifyWizard(page, viewportName) {
       viewportName,
       `guided-runner step ${index + 1}`,
     );
+    if (await page.locator(".protocol-visual-aid").isVisible().catch(() => false)) {
+      visualAidFound = true;
+      await page.screenshot({
+        path: path.join(screenshotRoot, `${viewportName}-guided-reference-image.png`),
+        fullPage: true,
+      });
+    }
   }
+  assert(visualAidFound, `${viewportName}: ขั้นเลือก/ตัด explant ไม่มีภาพอ้างอิงในคู่มือ`);
   await page.getByRole("button", { name: /ให้ระบบหาปริมาตร Haiter ที่ต้องใช้/ }).click();
   await page.waitForTimeout(80);
   const guidedContentTop = await page.locator(".guided-step-content").evaluate(

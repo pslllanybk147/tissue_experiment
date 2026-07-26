@@ -2,6 +2,26 @@
 
 # Philodendron Lab — Handoff
 
+## 2026-07-26 — เชื่อมภาพอ้างอิงเข้ากับ Guided Protocol
+
+- เพิ่ม `ProtocolVisualAid` ใน domain model เพื่อให้ภาพประกอบเป็นข้อมูลของแต่ละขั้น ไม่ใช่ภาพที่ฝังไว้เฉพาะหน้า Knowledge
+- เพิ่มคอมโพเนนต์กลาง `ProtocolReferenceVisual` และแสดงในโหมด `1. อ่านคู่มือ` ใต้หัวข้อ `ภาพประกอบของขั้นนี้`
+- เชื่อมภาพจำลองข้อ–ตาข้าง–แนวตัดเข้ากับขั้น:
+  - เลือกยอด/ข้อ/ตาข้าง
+  - ตัดและเตรียม explant
+- เชื่อมภาพจำลองการวาง explant ลงอาหารเข้ากับขั้น `ตัดแต่งและลงอาหารระยะเริ่มต้น`
+- ภาพทุกภาพต้องระบุว่าเป็น `ภาพจำลอง ไม่ใช่ภาพต้นจริง` แสดง evidence state และแหล่งอ้างอิงเมื่อมี
+- ใช้ภาพวาดต้นฉบับของระบบ ไม่คัดลอกภาพจาก `PLANTS IN JARS PROTOCOL LIBARARY v2 (1).pdf` เนื่องจากเอกสารมีข้อจำกัดการทำซ้ำ
+- แหล่งอ้างอิงภาพ node/shoot culture ที่เชื่อมในระบบ: University of Florida IFAS
+- เพิ่ม automated test ป้องกันภาพหลุดจากขั้น explant/placement และเพิ่ม `ui:verify` ให้ตรวจว่าภาพปรากฏจริงใน Guided Runner
+- ผลตรวจ:
+  - `npm test`: ผ่าน 227 tests (ส่วนที่ไม่ใช้ emulator) และ 237 tests ใน emulator
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: ผ่าน Auth + Firestore emulator
+  - `npm run ui:verify`: ผ่าน 14 widths ตั้งแต่ 360–1920 px
+  - ตรวจภาพ render จริงจาก `iphone-se-guided-reference-image.png` และ `ipad-9-guided-reference-image.png`: ไม่มีข้อความ/ภาพล้นกรอบ
+
 ## Project purpose
 
 เว็บพื้นที่วิจัยสำหรับจัดการ Protocol, Experiment Lots, งานวิจัย และรูปภาพของโครงการเพาะเลี้ยงเนื้อเยื่อ Philodendron ด่าง โดยใช้แนวทาง visual จาก Gridgeist และออกแบบให้รองรับ desktop/mobile ในระบบเดียวกัน

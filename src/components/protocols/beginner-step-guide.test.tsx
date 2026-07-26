@@ -24,6 +24,15 @@ const instruction: BeginnerInstruction = {
     blocksCompletion: true,
   }],
   scienceNote: "ภาพนี้ใช้เปรียบเทียบภายหลัง",
+  visualAids: [{
+    id: "node",
+    kind: "node-cut-diagram",
+    title: "ภาพจำลองข้อและแนวตัด",
+    caption: "ห้ามตัดผ่านตาข้าง",
+    evidenceState: "Adapted",
+    sourceLabel: "แหล่งอ้างอิง",
+    sourceUrl: "https://example.com/reference",
+  }],
 };
 
 describe("BeginnerStepGuide", () => {
@@ -39,6 +48,7 @@ describe("BeginnerStepGuide", () => {
       "เป้าหมายของขั้นนี้",
       "ก่อนเริ่ม",
       "ข้อมูลหรือผลที่ต้องตรวจ",
+      "ภาพประกอบของขั้นนี้",
       "อุปกรณ์และสารที่ใช้",
       "วิธีทำ",
       "หยุดและตรวจสอบใหม่เมื่อ",
@@ -51,6 +61,21 @@ describe("BeginnerStepGuide", () => {
 
     expect(indexes.every((index) => index >= 0)).toBe(true);
     expect(indexes).toEqual([...indexes].sort((left, right) => left - right));
+  });
+
+  it("shows an original diagram, its limitation, and its reference link", () => {
+    const html = renderToStaticMarkup(
+      <BeginnerStepGuide
+        instruction={instruction}
+        onReadinessChange={() => undefined}
+        onUncertainty={() => undefined}
+      />,
+    );
+
+    expect(html).toContain("ภาพจำลองเพื่อช่วยหาตำแหน่ง");
+    expect(html).toContain("แนวตัดใต้ข้อ");
+    expect(html).toContain("https://example.com/reference");
+    expect(html).toContain("Adapted");
   });
 
   it("presents equipment as a concise manual without appearance boilerplate", () => {

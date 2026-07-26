@@ -1,6 +1,39 @@
 import type { MeasurementUnit, ProtocolStep, ProtocolTemplate } from "./models";
 import { monographForTaxon } from "./philodendron-knowledge";
 import { createBeginnerInstruction } from "./zero-knowledge-protocol";
+import type { ProtocolVisualAid } from "./models";
+
+const nodeCutVisual: ProtocolVisualAid = {
+  id: "philodendron-node-cut",
+  kind: "node-cut-diagram",
+  title: "ภาพจำลองการหา “ข้อ” ตาข้าง และแนวตัด",
+  caption: "หาจุดที่ก้านใบต่อกับลำต้น ตาข้างอยู่ใกล้ข้อนั้น แนวตัดอยู่ใต้ข้อและห้ามตัดผ่านตา ภาพนี้ใช้ทำความเข้าใจเท่านั้น ต้องเทียบกับต้นจริงหลายมุมก่อนตัด",
+  evidenceState: "Adapted",
+  sourceLabel: "หลักการ shoot tip และ axillary node — University of Florida IFAS",
+  sourceUrl: "https://propg.ifas.ufl.edu/09-tissue-culture/01-types/08-tctypes-shootcultures.html",
+};
+
+const mediumPlacementVisual: ProtocolVisualAid = {
+  id: "philodendron-medium-placement",
+  kind: "medium-placement-diagram",
+  title: "ภาพจำลองการวาง explant ลงอาหาร",
+  caption: "ให้โคนชิ้นพืชแตะอาหารเพียงเล็กน้อย โดยยอดและตาข้างอยู่เหนือผิววุ้น ไม่ฝังยอดและไม่กลับด้าน",
+  evidenceState: "Adapted",
+};
+
+function visualAidsForStep(stepId: string, title: string): ProtocolVisualAid[] | undefined {
+  const normalized = `${stepId} ${title}`.toLowerCase();
+  if (
+    normalized.includes("mark-explant")
+    || normalized.includes("explant-selection")
+    || normalized.includes("ตัดและเตรียม explant")
+    || normalized.includes("เลือกตำแหน่ง")
+  ) return [nodeCutVisual];
+  if (normalized.includes("initiation") || normalized.includes("ลงอาหารระยะเริ่มต้น")) {
+    return [mediumPlacementVisual];
+  }
+  return undefined;
+}
 
 const step = (value: Omit<ProtocolStep, "id" | "order">, order: number): ProtocolStep => ({
   ...value,
@@ -77,6 +110,7 @@ function detailedStepsForTaxon(taxonId: string): ProtocolStep[] {
       readyChecklist: step.passCriteria,
       scienceNote: step.objective,
       uncertaintyAction: "หยุดขั้นตอนนี้ ถ่ายรูปให้เห็นจุดที่สงสัย และขอให้ผู้มีประสบการณ์ตรวจ",
+      visualAids: visualAidsForStep(step.id, step.title),
     }),
   }));
 }

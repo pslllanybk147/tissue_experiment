@@ -618,6 +618,84 @@ button:disabled { cursor: not-allowed; }
 .explant-reference-research { background: #fff5e8; color: #8d4b0a; }
 @media (max-width: 800px) { .explant-reference-grid { grid-template-columns: 1fr; } }
 @media (max-width: 700px) { .beginner-cut-guide { grid-template-columns: 1fr; padding: 14px; } .explant-visual { min-height: 245px; } }
+
+.protocol-visual-disclaimer {
+  margin: 0 0 14px;
+  color: #5b4630;
+  font-weight: 650;
+}
+.protocol-visual-list { display: grid; gap: 16px; }
+.protocol-visual-aid {
+  margin: 0;
+  border: 1px solid #9fb4a5;
+  background: #fff;
+}
+.protocol-visual-aid figcaption { padding: 16px; }
+.protocol-visual-aid figcaption > strong { display: block; font-size: 1.08rem; }
+.protocol-visual-aid figcaption p { margin: 8px 0 12px; }
+.protocol-visual-meta { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; font-size: .92rem; }
+.protocol-visual-meta span { padding: 4px 8px; background: #edf5ef; color: #245b3e; font-weight: 700; }
+.protocol-visual-meta a { color: #164f38; text-underline-offset: 3px; }
+.protocol-visual-canvas {
+  position: relative;
+  min-height: 310px;
+  overflow: hidden;
+  border-bottom: 1px solid #c8d4cb;
+  background: linear-gradient(135deg, #f7fbf8, #e8f2eb);
+}
+.protocol-visual-node-cut-diagram .visual-stem {
+  position: absolute; left: 47%; top: 38px; width: 18px; height: 225px;
+  border-radius: 14px; background: #4f805d; transform: rotate(3deg);
+}
+.protocol-visual-node-cut-diagram .visual-tip { position: absolute; left: calc(47% - 13px); top: 12px; font-weight: 750; }
+.protocol-visual-node-cut-diagram .visual-leaf {
+  position: absolute; width: 105px; height: 52px; border-radius: 100% 0 100% 0;
+  background: #82aa75; border: 2px solid #467450;
+}
+.protocol-visual-node-cut-diagram .visual-leaf-top { left: calc(47% + 12px); top: 68px; transform: rotate(-13deg); }
+.protocol-visual-node-cut-diagram .visual-leaf-bottom { right: calc(53% + 1px); top: 145px; transform: scaleX(-1) rotate(-8deg); }
+.protocol-visual-node-cut-diagram .visual-node {
+  position: absolute; left: calc(47% - 23px); padding: 5px 8px; border-radius: 4px;
+  background: #fff; border: 2px solid #315f43; font-weight: 700; white-space: nowrap;
+}
+.protocol-visual-node-cut-diagram .visual-node-top { top: 104px; transform: translateX(-100%); }
+.protocol-visual-node-cut-diagram .visual-node-bottom { top: 184px; transform: translateX(38px); }
+.protocol-visual-node-cut-diagram .visual-cut-line {
+  position: absolute; left: 20%; right: 16%; top: 228px; padding-top: 8px;
+  border-top: 4px dashed #b94727; color: #8b2e17; font-weight: 800; text-align: right;
+}
+.protocol-visual-node-cut-diagram .visual-keep {
+  position: absolute; left: 18px; top: 38px; padding: 7px 10px;
+  background: #e6f3e9; border-left: 5px solid #31704c; font-weight: 700;
+}
+.protocol-visual-medium-placement-diagram .visual-vessel {
+  position: absolute; left: 24%; right: 24%; top: 30px; bottom: 28px;
+  border: 5px solid #728178; border-top: 0; border-radius: 0 0 22px 22px; background: rgba(255,255,255,.62);
+}
+.protocol-visual-medium-placement-diagram .visual-medium {
+  position: absolute; left: calc(24% + 5px); right: calc(24% + 5px); bottom: 33px; height: 70px;
+  padding-top: 28px; background: #e7dba0; text-align: center; font-weight: 700;
+}
+.protocol-visual-medium-placement-diagram .visual-explant {
+  position: absolute; left: 49%; top: 70px; width: 14px; height: 165px;
+  border-radius: 12px; background: #4f805d; transform: rotate(-2deg);
+}
+.protocol-visual-medium-placement-diagram .visual-shoot,
+.protocol-visual-medium-placement-diagram .visual-base {
+  position: absolute; padding: 7px 10px; background: white; border: 1px solid #809789; font-weight: 700;
+}
+.protocol-visual-medium-placement-diagram .visual-shoot { left: 8%; top: 70px; }
+.protocol-visual-medium-placement-diagram .visual-base { right: 5%; bottom: 110px; }
+@media (max-width: 520px) {
+  .protocol-visual-canvas { min-height: 285px; }
+  .protocol-visual-node-cut-diagram .visual-leaf { width: 78px; height: 43px; }
+  .protocol-visual-node-cut-diagram .visual-node { font-size: .82rem; }
+  .protocol-visual-node-cut-diagram .visual-keep { max-width: 125px; font-size: .82rem; }
+  .protocol-visual-medium-placement-diagram .visual-vessel { left: 16%; right: 16%; }
+  .protocol-visual-medium-placement-diagram .visual-medium { left: calc(16% + 5px); right: calc(16% + 5px); }
+  .protocol-visual-medium-placement-diagram .visual-shoot,
+  .protocol-visual-medium-placement-diagram .visual-base { max-width: 135px; font-size: .8rem; }
+}
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     scroll-behavior: auto !important;

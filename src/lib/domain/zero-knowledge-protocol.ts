@@ -2,6 +2,7 @@ import type {
   BeginnerInstruction,
   BeginnerMaterial,
   ProtocolStep,
+  ProtocolVisualAid,
   UncertaintyPath,
 } from "./models";
 
@@ -135,6 +136,7 @@ export function createBeginnerInstruction(input: {
   readyChecklist?: string[];
   scienceNote: string;
   uncertaintyAction?: string;
+  visualAids?: ProtocolVisualAid[];
 }): BeginnerInstruction {
   return {
     currentAction: input.currentAction,
@@ -162,5 +164,6 @@ export function createBeginnerInstruction(input: {
       input.uncertaintyAction ?? "หยุดไว้ก่อน ถ่ายรูปสิ่งที่เห็น และขอให้ตรวจโดยไม่เดาคำตอบ",
     ),
     scienceNote: input.scienceNote,
+    visualAids: input.visualAids,
   };
 }

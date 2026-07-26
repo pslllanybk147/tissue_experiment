@@ -15,6 +15,22 @@ describe("guided protocol templates", () => {
     expect(stepsForTemplate("template-violin-nodal").every((step) => step.evidenceState !== "Verified")).toBe(true);
   });
 
+  it("connects reference diagrams to explant and placement steps", () => {
+    const steps = stepsForTemplate("template-pink-princess-nodal");
+    const explantStep = steps.find((item) => item.id.includes("explant-selection"));
+    const placementStep = steps.find((item) => item.id.includes("initiation"));
+
+    expect(explantStep?.beginner?.visualAids).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        kind: "node-cut-diagram",
+        sourceUrl: expect.stringContaining("ifas.ufl.edu"),
+      }),
+    ]));
+    expect(placementStep?.beginner?.visualAids).toEqual(expect.arrayContaining([
+      expect.objectContaining({ kind: "medium-placement-diagram" }),
+    ]));
+  });
+
   it("selects a stable template from a Taxon relation", () => {
     expect(templateIdForTaxon("cultivar-pink-princess")).toBe("template-pink-princess-nodal");
     expect(templateIdForTaxon("trade-name-violin-variegated")).toBe("template-violin-nodal");

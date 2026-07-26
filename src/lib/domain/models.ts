@@ -14,6 +14,16 @@ export type UncertaintyPath = {
   blocksCompletion: boolean;
 };
 
+export type ProtocolVisualAid = {
+  id: string;
+  kind: "node-cut-diagram" | "medium-placement-diagram";
+  title: string;
+  caption: string;
+  evidenceState: EvidenceState;
+  sourceLabel?: string;
+  sourceUrl?: string;
+};
+
 export type BeginnerInstruction = {
   currentAction: string;
   doNotDoYet: string[];
@@ -25,6 +35,7 @@ export type BeginnerInstruction = {
   readyChecklist: string[];
   uncertaintyPaths: UncertaintyPath[];
   scienceNote: string;
+  visualAids?: ProtocolVisualAid[];
 };
 
 export type ProtocolStep = {
