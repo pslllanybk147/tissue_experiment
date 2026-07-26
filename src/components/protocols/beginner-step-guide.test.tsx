@@ -38,7 +38,7 @@ describe("BeginnerStepGuide", () => {
     const labels = [
       "เป้าหมายของขั้นนี้",
       "ก่อนเริ่ม",
-      "สิ่งที่ต้องตรวจให้พบ",
+      "ข้อมูลหรือผลที่ต้องตรวจ",
       "อุปกรณ์และสารที่ใช้",
       "วิธีทำ",
       "หยุดและตรวจสอบใหม่เมื่อ",
@@ -62,8 +62,10 @@ describe("BeginnerStepGuide", () => {
       />,
     );
 
-    expect(html).toContain("เก็บภาพก่อนเริ่ม");
+    expect(html).toContain("โทรศัพท์");
     expect(html).not.toContain("หน้าตา:");
+    expect(html).not.toContain("ใช้เพื่อ:");
+    expect(html).not.toContain("เก็บภาพก่อนเริ่ม");
     expect(html).not.toContain("เครื่องที่ใช้ถ่ายรูป");
   });
 });

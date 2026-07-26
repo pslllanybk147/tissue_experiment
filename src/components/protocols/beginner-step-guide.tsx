@@ -41,7 +41,7 @@ export function BeginnerStepGuide({
         <BulletList items={instruction.doNotDoYet} />
       </GuideSection>
 
-      <GuideSection title="สิ่งที่ต้องตรวจให้พบ">
+      <GuideSection title="ข้อมูลหรือผลที่ต้องตรวจ">
         <BulletList items={instruction.whatToFind} />
       </GuideSection>
 
@@ -50,7 +50,6 @@ export function BeginnerStepGuide({
           {instruction.materials.map((material) => (
             <li key={material.name}>
               <strong>{material.name}</strong>
-              <span>{material.purpose}</span>
             </li>
           ))}
         </ul>

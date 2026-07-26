@@ -259,7 +259,6 @@ async function verifyWizard(page, viewportName) {
     );
   }
   await page.getByRole("button", { name: /ให้ระบบหาปริมาตร Haiter ที่ต้องใช้/ }).click();
-  await page.getByRole("tab", { name: "2. บันทึกผลขั้นนี้" }).click();
   await page.waitForTimeout(80);
   const guidedContentTop = await page.locator(".guided-step-content").evaluate(
     (element) => Math.round(element.getBoundingClientRect().top),
@@ -268,6 +267,7 @@ async function verifyWizard(page, viewportName) {
     guidedContentTop >= 0 && guidedContentTop <= 180,
     `${viewportName}: เปลี่ยนขั้นแล้วไม่เลื่อนกลับหัวคู่มือ (top ${guidedContentTop}px)`,
   );
+  await page.getByRole("tab", { name: "2. บันทึกผลขั้นนี้" }).click();
   await page.getByLabel("ปริมาตรต่ำสุดที่อุปกรณ์ตวงได้ (mL) *").fill("0.1");
   assert(
     await page.getByText("กรอกตัวเลข 3 ช่องนี้").isVisible(),

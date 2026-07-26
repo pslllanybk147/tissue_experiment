@@ -131,6 +131,20 @@ describe("sterilization profiles", () => {
     expect(medium?.nextActionOnPass).toContain("Blank");
     expect(medium?.nextActionOnFail).toContain("ห้ามใช้กับ explant");
   });
+
+  test("does not expose generic placeholder guidance in any sterilization step", () => {
+    const visibleGuidance = sterilizationProfiles.flatMap((profile) => (
+      profile.steps.flatMap((step) => [
+        ...(step.beginner?.whatToFind ?? []),
+        ...(step.beginner?.actions ?? []),
+        ...(step.beginner?.evidencePrompt ?? []),
+      ])
+    )).join(" ");
+
+    expect(visibleGuidance).not.toContain("ผลที่ขั้นตอนนี้ระบุ");
+    expect(visibleGuidance).not.toContain("มองหาผลที่ระบุ");
+    expect(visibleGuidance).not.toContain("คำสั่งว่าต้องตวง");
+  });
 });
 
 describe("readiness gate", () => {
