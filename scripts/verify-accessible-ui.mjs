@@ -45,14 +45,18 @@ async function enterDemo(page) {
   const demo = page.getByRole("button", { name: "Continue in demo mode" });
   await demo.waitFor({ state: "visible" });
   await demo.click();
-  await page.locator(".lab-route-topbar:visible, .lab-route-sidebar:visible").first().waitFor({ state: "visible" });
+  await page.locator(".lab-route-shell:visible").waitFor({ state: "visible" });
 }
 
 async function returnToApp(page) {
   await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
+  const shell = page.locator(".lab-route-shell:visible");
   const demo = page.getByRole("button", { name: "Continue in demo mode" });
-  if (await demo.isVisible().catch(() => false)) await demo.click();
-  await page.locator(".lab-route-topbar:visible, .lab-route-sidebar:visible").first().waitFor({ state: "visible" });
+  if (!await shell.isVisible().catch(() => false)) {
+    await demo.waitFor({ state: "visible", timeout: 10_000 });
+    await demo.click();
+  }
+  await shell.waitFor({ state: "visible" });
 }
 
 async function ensureMainNav(page) {

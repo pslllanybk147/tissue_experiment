@@ -2265,3 +2265,10 @@
   - `npm run build`: ผ่าน
   - `npm run firebase:verify`: ผ่าน 231 tests บน Auth/Firestore emulator
   - `npm run ui:verify`: ไม่ผ่านหลังเพิ่ม hamburger navigation เพราะ helper `returnToApp()` ยังรอ `.lab-route-topbar:visible, .lab-route-sidebar:visible`; ต้องอัปเดต selector/flow ให้รู้จัก mobile/tablet hamburger ก่อนถือว่า release gate ผ่าน
+
+## UI verification gate repair (2026-07-26)
+
+- แก้ `scripts/verify-accessible-ui.mjs` ให้ตรวจ readiness จาก `.lab-route-shell:visible` ซึ่งใช้ร่วมกันได้ทั้ง desktop sidebar และ mobile/tablet hamburger
+- แก้ `returnToApp()` ให้รอ AuthGate แสดงปุ่ม demo ก่อนคลิก แทนการตรวจ `isVisible()` ทันทีหลัง `domcontentloaded` ซึ่งเกิด race condition ได้
+- `npm run ui:verify` ผ่านครบ 14 viewport: 360, 375, 390, 412, 428, 600, 744, 768, 820, 834, 1024, 1280, 1440 และ 1920px
+- ตรวจซ้ำแล้ว `npm test`, `npm run lint` และ `npm run build` ผ่าน
