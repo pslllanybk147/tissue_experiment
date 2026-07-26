@@ -2229,3 +2229,13 @@
 - ผล sandbox ล่าสุด: `npm run ui:verify` ผ่านครบทั้ง 14 viewport และสร้าง screenshot audit 196 ไฟล์
 - ภาพตรวจด้วยตาเพิ่มเติมที่ iPhone SE, iPad 9 และ iPad Pro 12 พบว่า Experiment list เปลี่ยนเป็น stacked record ที่อ่านได้ และ Guided Runner ไม่บีบข้อความ/ปุ่มเป็นแนวตั้ง
 - หากพบปัญหาจากอุปกรณ์จริงที่ไม่อยู่ใน preset ให้เพิ่ม preset ตามขนาดจริงแล้วรัน matrix ใหม่ก่อน release ห้ามสรุปว่าผ่านจาก desktop เพียงอย่างเดียว
+
+## Collapsible navigation and protocol step drawer (2026-07-26)
+
+- ปรับ `LabShell` สำหรับความกว้างไม่เกิน 1100px ให้ซ่อน sidebar เดิมและใช้ hamburger menu แทน เพื่อคืนพื้นที่อ่านบน iPad/Android tablet
+- เมนูหลักเปิด/ปิดได้ด้วยปุ่มขนาดกดง่าย มี `aria-expanded`, `aria-controls`, label ภาษาไทย และสถานะ hamburger → close เมื่อเปิด
+- เมื่อเลือกเมนู ระบบปิดเมนูอัตโนมัติ ไม่บังหน้าเนื้อหา และยังคง active route ให้เห็นชัด
+- ปรับ `GuidedProtocolRunner` ให้รายการขั้นตอน 22 ขั้นย่อเป็นปุ่ม `เปิดรายการขั้นตอน` บน tablet/mobile; เปิดแล้วจึงแสดงรายการทั้งหมด และบนจอเล็กใช้แถบเลื่อนแนวนอน
+- หน้าคู่มือยังคงแสดงขั้นตอนปัจจุบันเต็มความกว้าง จึงไม่ถูกบีบจาก sidebar ซ้ายบน iPad 9/Pro
+- เพิ่ม sandbox assertions สำหรับ hamburger: เริ่มต้นปิด, เปิดแล้วเห็นเมนู, ปิดกลับได้ และปรับ flow ให้เปิดรายการขั้นตอนก่อนตรวจขั้น Haiter
+- ตรวจภาพจริงหลังแก้ที่ iPad 9, iPad Pro 12 และมือถือ พร้อม matrix 14 viewport ผ่านครบ

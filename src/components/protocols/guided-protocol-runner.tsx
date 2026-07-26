@@ -39,6 +39,7 @@ const statusLabels: Record<GuidedStepStatus, string> = {
 
 export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs, onSave, mediaByStep = {}, onMediaUploaded, onMediaDelete, onMediaRestore, haiterDefaults }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [stepsOpen, setStepsOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [readinessConfirmed, setReadinessConfirmed] = useState(false);
@@ -102,8 +103,10 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
   }
 
   if (!step) return <p className="route-state">ยังไม่มีขั้นตอนใน Protocol version นี้</p>;
-  return <div className="guided-runner">
-    <aside className="guided-step-list" aria-label="รายการขั้นตอน">
+  return <div className={`guided-runner-shell${stepsOpen ? " steps-open" : ""}`}>
+    <button aria-controls="guided-protocol-step-list" aria-expanded={stepsOpen} className="guided-steps-toggle" onClick={() => setStepsOpen((open) => !open)} type="button"><span aria-hidden="true">☰</span>{stepsOpen ? "ซ่อนรายการขั้นตอน" : "เปิดรายการขั้นตอน"}<small>ขั้นที่ {activeIndex + 1} / {steps.length}</small></button>
+    <div className="guided-runner">
+    <aside className="guided-step-list" aria-label="รายการขั้นตอน" id="guided-protocol-step-list">
       <p className="eyebrow">GUIDED PROTOCOL</p>
       {steps.map((item, index) => { const itemRun = runs.find((entry) => entry.stepId === item.id); const locked = readinessIndex >= 0 && index > readinessIndex && !readinessPassed; return <button aria-disabled={locked} className={index === activeIndex ? "active" : ""} disabled={locked} key={item.id} onClick={() => select(index)} type="button"><span>{itemRun?.status === "Passed" ? "✓" : locked ? "🔒" : index + 1}</span><strong>{item.title}</strong><small>{locked ? "รอตรวจความพร้อม" : statusLabels[itemRun?.status ?? "Pending"]}</small></button>; })}
     </aside>
@@ -135,5 +138,6 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
       <div className="form-actions"><AccessibleAction disabled={activeIndex === 0} onClick={() => select(activeIndex - 1)}>ไปขั้นก่อนหน้า</AccessibleAction><AccessibleAction disabled={saving} onClick={() => void save("draft")}>บันทึกร่าง</AccessibleAction><AccessibleAction intent="primary" disabled={saving || Boolean(step.beginner && !readinessConfirmed)} onClick={() => void save("confirm")}>{saving ? "กำลังบันทึก…" : "ยืนยันผลของขั้นนี้"}</AccessibleAction><AccessibleAction aria-describedby={!canProceed ? `next-step-help-${step.id}` : undefined} disabled={activeIndex === steps.length - 1 || !canProceed} onClick={() => select(activeIndex + 1)}>ไปขั้นถัดไป</AccessibleAction></div>
       {!canProceed && activeIndex < steps.length - 1 && <p className="muted-copy" id={`next-step-help-${step.id}`}>{run?.status === "Failed" ? "ขั้นนี้ไม่ผ่าน ให้ทำตามคำแนะนำการแก้ไขแล้วบันทึกผลใหม่ก่อน" : run?.status === "Needs review" ? "ขั้นนี้ต้องตรวจเพิ่มหรือแก้ไขก่อน จึงจะไปขั้นถัดไปได้" : "บันทึกผลขั้นนี้ก่อน จึงจะไปขั้นถัดไปได้"}</p>}
     </section>
+    </div>
   </div>;
 }

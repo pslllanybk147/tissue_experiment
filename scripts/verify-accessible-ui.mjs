@@ -45,14 +45,31 @@ async function enterDemo(page) {
   const demo = page.getByRole("button", { name: "Continue in demo mode" });
   await demo.waitFor({ state: "visible" });
   await demo.click();
-  await page.locator("nav:visible").first().waitFor({ state: "visible" });
+  await page.locator(".lab-route-topbar:visible, .lab-route-sidebar:visible").first().waitFor({ state: "visible" });
 }
 
 async function returnToApp(page) {
   await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
   const demo = page.getByRole("button", { name: "Continue in demo mode" });
   if (await demo.isVisible().catch(() => false)) await demo.click();
+  await page.locator(".lab-route-topbar:visible, .lab-route-sidebar:visible").first().waitFor({ state: "visible" });
+}
+
+async function ensureMainNav(page) {
+  const toggle = page.locator(".lab-route-menu-toggle:visible");
+  if (await toggle.count() && (await toggle.getAttribute("aria-expanded")) !== "true") await toggle.click();
   await page.locator("nav:visible").first().waitFor({ state: "visible" });
+}
+
+async function verifyCompactMenu(page, viewportName) {
+  const toggle = page.locator(".lab-route-menu-toggle:visible");
+  if (!await toggle.count()) return;
+  assert(await toggle.getAttribute("aria-expanded") === "false", `${viewportName}: hamburger เริ่มต้นต้องปิด`);
+  await toggle.click();
+  assert(await toggle.getAttribute("aria-expanded") === "true", `${viewportName}: hamburger เปิดเมนูไม่ได้`);
+  assert(await page.locator("#lab-route-mobile-nav:visible").count() === 1, `${viewportName}: เมนูที่เปิดไม่แสดง`);
+  await toggle.click();
+  assert(await toggle.getAttribute("aria-expanded") === "false", `${viewportName}: hamburger ปิดเมนูไม่ได้`);
 }
 
 async function inspectPage(page, viewportName, route) {
@@ -134,6 +151,7 @@ async function inspectProtocolTypography(page, viewportName, route) {
 }
 
 async function verifyProtocolPages(page, viewportName) {
+  await ensureMainNav(page);
   await page.locator("nav:visible a[href='/protocols']").first().click();
   await page.waitForURL("**/protocols");
   await page.locator(".protocol-list").waitFor({ state: "visible" });
@@ -159,6 +177,7 @@ async function verifyProtocolPages(page, viewportName) {
 }
 
 async function verifyWizard(page, viewportName) {
+  await ensureMainNav(page);
   await page.locator("nav:visible a[href='/experiments']").first().click();
   await page.waitForURL("**/experiments");
   await page.getByRole("link", { name: "สร้าง Lot ใหม่" }).click();
@@ -199,7 +218,9 @@ async function verifyWizard(page, viewportName) {
   await inspectPage(page, viewportName, "guided-runner");
   await inspectProtocolTypography(page, viewportName, "guided-runner");
   assert(await page.locator(".beginner-step-guide").isVisible(), `${viewportName}: Guided Runner ไม่มีคู่มือมือใหม่`);
-  assert(await page.getByText("ขั้นที่ 1 / 22").isVisible(), `${viewportName}: Guided Runner ไม่แสดง 22 ขั้น`);
+  assert(await page.locator(".step-kicker").filter({ hasText: "ขั้นที่ 1 / 22" }).isVisible(), `${viewportName}: Guided Runner ไม่แสดง 22 ขั้น`);
+  const stepsToggle = page.getByRole("button", { name: /เปิดรายการขั้นตอน/ });
+  if (await stepsToggle.isVisible()) await stepsToggle.click();
   await page.getByRole("button", { name: /ให้ระบบหาปริมาตร Haiter ที่ต้องใช้/ }).click();
   await page.getByLabel("ปริมาตรต่ำสุดที่อุปกรณ์ตวงได้ (mL) *").fill("0.1");
   assert(
@@ -263,11 +284,13 @@ try {
     });
     await enterDemo(page);
     await inspectPage(page, viewport.name, "/");
+    await verifyCompactMenu(page, viewport.name);
     await page.keyboard.press("Tab");
     const focusTag = await page.evaluate(() => document.activeElement?.tagName ?? "BODY");
     assert(focusTag !== "BODY", `${viewport.name}: keyboard focus ไม่เข้าสู่ interactive element`);
 
     for (const route of routes.slice(1)) {
+      await ensureMainNav(page);
       await page.locator(`nav:visible a[href='${route.href}']`).first().click();
       await page.waitForURL(`**${route.href}`);
       await inspectPage(page, viewport.name, route.href);
