@@ -2,7 +2,7 @@ import { chromium } from "playwright";
 import fs from "node:fs";
 import path from "node:path";
 
-const baseUrl = process.env.UI_BASE_URL ?? "http://127.0.0.1:3100";
+const baseUrl = process.env.UI_BASE_URL ?? "http://localhost:3100";
 const executablePath = process.env.CHROME_PATH
   ?? (process.platform === "win32"
     ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
@@ -52,8 +52,8 @@ async function returnToApp(page) {
   await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
   const shell = page.locator(".lab-route-shell:visible");
   const demo = page.getByRole("button", { name: "Continue in demo mode" });
+  await shell.or(demo).waitFor({ state: "visible", timeout: 10_000 });
   if (!await shell.isVisible().catch(() => false)) {
-    await demo.waitFor({ state: "visible", timeout: 10_000 });
     await demo.click();
   }
   await shell.waitFor({ state: "visible" });
@@ -133,12 +133,36 @@ async function inspectProtocolTypography(page, viewportName, route) {
     );
     const heading = document.querySelector(".guided-step-heading");
     const contentRect = content?.getBoundingClientRect();
+    const viewportWidth = document.documentElement.clientWidth;
+    const clippingTargets = [...document.querySelectorAll(
+      ".beginner-guide-section, .beginner-materials li, .beginner-materials strong, "
+      + ".beginner-materials span, .beginner-actions li, .guided-readiness-warning, "
+      + ".guided-step-content h3, .guided-step-content p",
+    )];
+    const clipped = clippingTargets.flatMap((element) => {
+      const rect = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      if (rect.width <= 0 || rect.height <= 0 || style.display === "none") return [];
+      const rightOutsideViewport = rect.right > viewportWidth + 1;
+      const leftOutsideViewport = rect.left < -1;
+      const contentClipped = element.scrollWidth > element.clientWidth + 1;
+      if (!rightOutsideViewport && !leftOutsideViewport && !contentClipped) return [];
+      return [{
+        text: (element.textContent ?? "").trim().slice(0, 80),
+        clientWidth: Math.round(element.clientWidth),
+        scrollWidth: Math.round(element.scrollWidth),
+        left: Math.round(rect.left),
+        right: Math.round(rect.right),
+        viewportWidth,
+      }];
+    }).slice(0, 8);
     return {
       thaiFont: thaiSample ? getComputedStyle(thaiSample).fontFamily : "",
       wordBreak: content ? getComputedStyle(content).wordBreak : "",
       overflowWrap: content ? getComputedStyle(content).overflowWrap : "",
       contentWidth: contentRect ? Math.round(contentRect.width) : 0,
       headingDirection: heading ? getComputedStyle(heading).flexDirection : "",
+      clipped,
     };
   });
   const prefix = `${viewportName} ${route}`;
@@ -146,6 +170,10 @@ async function inspectProtocolTypography(page, viewportName, route) {
     assert(!/mono/i.test(result.thaiFont), `${prefix}: ข้อความไทยยังใช้ฟอนต์ mono (${result.thaiFont})`);
   }
   assert(result.wordBreak !== "break-all", `${prefix}: ใช้ word-break: break-all`);
+  assert(
+    result.clipped.length === 0,
+    `${prefix}: พบข้อความหรือกรอบถูกตัด ${JSON.stringify(result.clipped)}`,
+  );
   if (viewportName === "mobile" && result.contentWidth) {
     assert(result.contentWidth >= 250, `${prefix}: พื้นที่ข้อความถูกบีบเหลือ ${result.contentWidth}px`);
   }
@@ -209,12 +237,7 @@ async function verifyWizard(page, viewportName) {
   await page.getByRole("button", { name: "ถัดไป" }).click();
   const createLotButton = page.getByRole("button", { name: "สร้าง Lot และเปิดคู่มือ" }).last();
   await createLotButton.waitFor({ state: "visible" });
-  await page.evaluate(() => {
-    const button = [...document.querySelectorAll("button")]
-      .find((item) => item.textContent?.includes("สร้าง Lot และเปิดคู่มือ"));
-    if (!button) throw new Error("ไม่พบปุ่มสร้าง Lot และเปิดคู่มือ");
-    button.click();
-  });
+  await createLotButton.click();
   await page.waitForURL((url) => /^\/experiments\/(?!new$)[^/]+$/.test(url.pathname));
   await page.locator(".beginner-step-guide, .migration-state").first().waitFor({
     state: "visible",
@@ -225,6 +248,16 @@ async function verifyWizard(page, viewportName) {
   assert(await page.locator(".step-kicker").filter({ hasText: "ขั้นที่ 1 / 22" }).isVisible(), `${viewportName}: Guided Runner ไม่แสดง 22 ขั้น`);
   const stepsToggle = page.getByRole("button", { name: /เปิดรายการขั้นตอน/ });
   if (await stepsToggle.isVisible()) await stepsToggle.click();
+  const availableSteps = page.locator(".guided-step-list button:not(:disabled)");
+  const availableStepCount = await availableSteps.count();
+  for (let index = 0; index < availableStepCount; index += 1) {
+    await availableSteps.nth(index).click();
+    await inspectProtocolTypography(
+      page,
+      viewportName,
+      `guided-runner step ${index + 1}`,
+    );
+  }
   await page.getByRole("button", { name: /ให้ระบบหาปริมาตร Haiter ที่ต้องใช้/ }).click();
   await page.waitForTimeout(80);
   const guidedContentTop = await page.locator(".guided-step-content").evaluate(

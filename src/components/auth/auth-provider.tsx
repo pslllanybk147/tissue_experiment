@@ -8,11 +8,17 @@ import { authSessionReducer, initialAuthSession, type AuthSession } from "./auth
 
 type AuthContextValue = { session: AuthSession; signIn: () => Promise<void>; signOut: () => Promise<void>; useDemo: () => void };
 const AuthContext = createContext<AuthContextValue | null>(null);
+const demoSessionKey = "philodendron-lab-demo-session";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, dispatch] = useReducer(authSessionReducer, initialAuthSession);
 
   useEffect(() => {
+    if (window.sessionStorage.getItem(demoSessionKey) === "active") {
+      dispatch({ type: "DEMO" });
+      return;
+    }
+
     const fallback = window.setTimeout(() => dispatch({ type: "UNCONFIGURED" }), 1_500);
 
     try {
@@ -49,12 +55,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signOut() {
+    window.sessionStorage.removeItem(demoSessionKey);
     const services = getFirebaseServices();
     if (services && session.status === "authenticated") await firebaseSignOut(services.auth);
     dispatch(services ? { type: "SIGNED_OUT" } : { type: "UNCONFIGURED" });
   }
 
-  return <AuthContext.Provider value={{ session, signIn, signOut, useDemo: () => dispatch({ type: "DEMO" }) }}>{children}</AuthContext.Provider>;
+  function useDemo() {
+    window.sessionStorage.setItem(demoSessionKey, "active");
+    dispatch({ type: "DEMO" });
+  }
+
+  return <AuthContext.Provider value={{ session, signIn, signOut, useDemo }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {

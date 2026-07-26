@@ -231,7 +231,20 @@ small, .eyebrow, .step-kicker, .session-chip, time,
   color: #701913;
 }
 .beginner-materials { display: grid; gap: .75rem; padding-left: 1.25rem; }
-.beginner-materials li { display: grid; gap: .2rem; }
+.beginner-materials li {
+  display: grid;
+  min-width: 0;
+  max-width: 100%;
+  gap: .2rem;
+}
+.beginner-materials strong,
+.beginner-materials span {
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
 .beginner-materials span { color: #3f4842; }
 .beginner-actions { display: grid; gap: .75rem; padding-left: 1.6rem; }
 .beginner-actions li::marker { font-weight: 800; }
@@ -344,9 +357,19 @@ td a, .source-row a, .knowledge-source-claim a {
   }
   .beginner-guide-section {
     padding: 1rem .85rem;
+    overflow: visible;
   }
   .beginner-materials {
-    padding-left: 1.05rem;
+    margin: 0;
+    padding-left: 0;
+    list-style-position: inside;
+  }
+  .beginner-materials li {
+    width: 100%;
+    padding: .15rem 0;
+  }
+  .beginner-materials li::marker {
+    color: #386b4e;
   }
   .beginner-actions {
     padding-left: 1.35rem;
