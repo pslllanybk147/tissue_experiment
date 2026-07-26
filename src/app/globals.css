@@ -246,6 +246,13 @@ small, .eyebrow, .step-kicker, .session-chip, time,
   word-break: normal;
 }
 .beginner-materials span { color: #3f4842; }
+.beginner-material-note {
+  margin: 1rem 0 0;
+  padding-top: .85rem;
+  border-top: 1px solid #d7ddd8;
+  color: #4a554e;
+  font-size: var(--text-label);
+}
 .beginner-actions { display: grid; gap: .75rem; padding-left: 1.6rem; }
 .beginner-actions li::marker { font-weight: 800; }
 .beginner-readiness { display: grid; gap: .65rem; }
@@ -276,6 +283,45 @@ small, .eyebrow, .step-kicker, .session-chip, time,
 }
 .guided-step-content { font-size: var(--text-body); }
 .guided-step-content h3 { font-size: clamp(1.65rem, 4vw, 2.25rem); }
+.guided-workspace-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .5rem;
+  margin: 1.25rem 0;
+  padding: .35rem;
+  border: 1px solid #bbc2bd;
+  border-radius: .45rem;
+  background: #f1f3f1;
+}
+.guided-workspace-tabs button {
+  min-width: 0;
+  padding: .75rem;
+  border: 0;
+  border-radius: .3rem;
+  background: transparent;
+  color: #455049;
+  font-weight: 700;
+}
+.guided-workspace-tabs button.active {
+  background: #fff;
+  color: #123e28;
+  box-shadow: 0 1px 4px #0002;
+}
+.guided-manual-pane,
+.guided-record-pane { display: grid; gap: 1rem; min-width: 0; }
+.guided-manual-pane[hidden],
+.guided-record-pane[hidden] { display: none !important; }
+.guided-next-pane { width: 100%; margin-top: .25rem; }
+.guided-record-intro {
+  display: grid;
+  gap: .55rem;
+  padding: 1rem;
+  border: 1px solid #aab1ac;
+  border-left: .4rem solid #386b4e;
+  background: #f8faf8;
+}
+.guided-record-intro p { margin: 0; }
+.guided-record-intro .secondary-button { justify-self: start; }
 .guided-step-content,
 .protocol-list,
 .protocol-detail-grid,
@@ -333,6 +379,8 @@ td a, .source-row a, .knowledge-source-claim a {
   outline-offset: 3px;
 }
 @media (max-width: 760px) {
+  .guided-workspace-tabs { grid-template-columns: 1fr; }
+  .guided-record-intro .secondary-button { width: 100%; }
   .beginner-uncertainty-actions { grid-template-columns: 1fr; }
   .beginner-step-guide,
   .beginner-guide-section,

@@ -259,6 +259,7 @@ async function verifyWizard(page, viewportName) {
     );
   }
   await page.getByRole("button", { name: /ให้ระบบหาปริมาตร Haiter ที่ต้องใช้/ }).click();
+  await page.getByRole("tab", { name: "2. บันทึกผลขั้นนี้" }).click();
   await page.waitForTimeout(80);
   const guidedContentTop = await page.locator(".guided-step-content").evaluate(
     (element) => Math.round(element.getBoundingClientRect().top),

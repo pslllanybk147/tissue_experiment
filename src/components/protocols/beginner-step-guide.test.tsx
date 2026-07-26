@@ -36,13 +36,13 @@ describe("BeginnerStepGuide", () => {
       />,
     );
     const labels = [
-      "ตอนนี้กำลังทำอะไร",
-      "ตอนนี้ยังห้ามทำอะไร",
-      "สิ่งที่ต้องมองหา",
-      "ของที่ต้องหยิบ",
-      "ทำทีละข้อ",
-      "หยุดทันทีถ้า",
-      "บันทึกอะไรไว้",
+      "เป้าหมายของขั้นนี้",
+      "ก่อนเริ่ม",
+      "สิ่งที่ต้องตรวจให้พบ",
+      "อุปกรณ์และสารที่ใช้",
+      "วิธีทำ",
+      "หยุดและตรวจสอบใหม่เมื่อ",
+      "หลักฐานที่ควรบันทึก",
       "ตรวจว่าพร้อมไปต่อหรือยัง",
       "ถ้ายังไม่แน่ใจ",
       "เหตุผลทางวิทยาศาสตร์",
@@ -53,7 +53,7 @@ describe("BeginnerStepGuide", () => {
     expect(indexes).toEqual([...indexes].sort((left, right) => left - right));
   });
 
-  it("shows appearance and purpose instead of only naming equipment", () => {
+  it("presents equipment as a concise manual without appearance boilerplate", () => {
     const html = renderToStaticMarkup(
       <BeginnerStepGuide
         instruction={instruction}
@@ -62,7 +62,8 @@ describe("BeginnerStepGuide", () => {
       />,
     );
 
-    expect(html).toContain("เครื่องที่ใช้ถ่ายรูป");
     expect(html).toContain("เก็บภาพก่อนเริ่ม");
+    expect(html).not.toContain("หน้าตา:");
+    expect(html).not.toContain("เครื่องที่ใช้ถ่ายรูป");
   });
 });

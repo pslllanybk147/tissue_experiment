@@ -33,41 +33,41 @@ export function BeginnerStepGuide({
 
   return (
     <div className="beginner-step-guide">
-      <GuideSection title="ตอนนี้กำลังทำอะไร">
+      <GuideSection title="เป้าหมายของขั้นนี้">
         <p className="beginner-current-action">{instruction.currentAction}</p>
       </GuideSection>
 
-      <GuideSection tone="warning" title="ตอนนี้ยังห้ามทำอะไร">
+      <GuideSection tone="warning" title="ก่อนเริ่ม">
         <BulletList items={instruction.doNotDoYet} />
       </GuideSection>
 
-      <GuideSection title="สิ่งที่ต้องมองหา">
+      <GuideSection title="สิ่งที่ต้องตรวจให้พบ">
         <BulletList items={instruction.whatToFind} />
       </GuideSection>
 
-      <GuideSection title="ของที่ต้องหยิบ">
+      <GuideSection title="อุปกรณ์และสารที่ใช้">
         <ul className="beginner-materials">
           {instruction.materials.map((material) => (
             <li key={material.name}>
               <strong>{material.name}</strong>
-              <span>หน้าตา: {material.appearance}</span>
-              <span>ใช้เพื่อ: {material.purpose}</span>
+              <span>{material.purpose}</span>
             </li>
           ))}
         </ul>
+        <p className="beginner-material-note">ตรวจชื่อบนฉลากหรือรายการอุปกรณ์ให้ตรงกับชื่อนี้ หากไม่แน่ใจอย่าใช้ของที่ดูคล้ายกันแทน</p>
       </GuideSection>
 
-      <GuideSection title="ทำทีละข้อ">
+      <GuideSection title="วิธีทำ">
         <ol className="beginner-actions">
           {instruction.actions.map((action) => <li key={action}>{action}</li>)}
         </ol>
       </GuideSection>
 
-      <GuideSection tone="danger" title="หยุดทันทีถ้า">
+      <GuideSection tone="danger" title="หยุดและตรวจสอบใหม่เมื่อ">
         <BulletList items={instruction.stopConditions} />
       </GuideSection>
 
-      <GuideSection title="บันทึกอะไรไว้">
+      <GuideSection title="หลักฐานที่ควรบันทึก">
         <BulletList items={instruction.evidencePrompt} />
       </GuideSection>
 

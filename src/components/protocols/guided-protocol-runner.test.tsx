@@ -19,6 +19,22 @@ const step: ProtocolStep = {
 };
 
 describe("GuidedProtocolRunner photo evidence", () => {
+  it("separates the readable manual from the step record", () => {
+    const html = renderToStaticMarkup(
+      <GuidedProtocolRunner
+        lotId="LOT-1"
+        protocolId="P-1"
+        versionId="V-1"
+        steps={[step]}
+        runs={[]}
+        onSave={vi.fn(async () => undefined)}
+      />,
+    );
+    expect(html).toContain("1. อ่านคู่มือ");
+    expect(html).toContain("2. บันทึกผลขั้นนี้");
+    expect(html).toContain("อ่านจบแล้ว ไปบันทึกผลขั้นนี้");
+  });
+
   it("shows a do-not-cut warning while the readiness gate is ahead", () => {
     const html = renderToStaticMarkup(
       <GuidedProtocolRunner
