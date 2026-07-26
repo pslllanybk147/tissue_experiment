@@ -157,6 +157,9 @@ export function BeginnerLotWizard({
           </li>
         ))}
       </ol>
+      <p aria-live="polite" className="wizard-progress-mobile">
+        ขั้นที่ {stage} จาก {wizardStages.length} · {wizardStages[stage - 1]}
+      </p>
 
       <aside className="wizard-method-summary" aria-label="วิธีฆ่าเชื้อที่ระบบรองรับ">
         <strong>วิธีที่เลือกได้:</strong>

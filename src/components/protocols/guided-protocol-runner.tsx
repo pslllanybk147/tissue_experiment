@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { GuidedStepStatus, ObservationMedia, ProtocolStep, ProtocolStepRun } from "@/lib/domain/models";
 import { MediaStrip } from "../media/media-strip";
 import { MediaUploader } from "../media/media-uploader";
@@ -43,6 +43,7 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [readinessConfirmed, setReadinessConfirmed] = useState(false);
+  const contentRef = useRef<HTMLElement>(null);
   const step = steps[activeIndex];
   const run = useMemo(() => runs.find((item) => item.stepId === step?.id), [runs, step]);
   const canProceed = run?.status === "Passed";
@@ -83,6 +84,13 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
         }
       : nextRun?.measurements ?? {};
     setActiveIndex(index); setStatus(nextRun?.status ?? "Pending"); setNote(nextRun?.note ?? ""); setMeasurements(nextMeasurements); setReadinessConfirmed(false); setMessage("");
+    requestAnimationFrame(() => {
+      const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+        ? "auto"
+        : "smooth";
+      contentRef.current?.scrollIntoView({ behavior, block: "start" });
+      contentRef.current?.focus({ preventScroll: true });
+    });
   }
 
   async function save(mode: "draft" | "confirm") {
@@ -110,7 +118,7 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
       <p className="eyebrow">GUIDED PROTOCOL</p>
       {steps.map((item, index) => { const itemRun = runs.find((entry) => entry.stepId === item.id); const locked = readinessIndex >= 0 && index > readinessIndex && !readinessPassed; return <button aria-disabled={locked} className={index === activeIndex ? "active" : ""} disabled={locked} key={item.id} onClick={() => select(index)} type="button"><span>{itemRun?.status === "Passed" ? "✓" : locked ? "🔒" : index + 1}</span><strong>{item.title}</strong><small>{locked ? "รอตรวจความพร้อม" : statusLabels[itemRun?.status ?? "Pending"]}</small></button>; })}
     </aside>
-    <section className="guided-step-content" aria-live="polite">
+    <section className="guided-step-content" aria-live="polite" ref={contentRef} tabIndex={-1}>
       <div className="guided-step-heading"><div><span className="step-kicker">ขั้นที่ {activeIndex + 1} / {steps.length}</span><h3>{step.title}</h3></div><span className={`evidence-label evidence-${step.evidenceState.toLowerCase().replaceAll(" ", "-")}`}>{step.evidenceState}</span></div>
       {!readinessPassed && activeIndex <= readinessIndex && <div className="guided-readiness-warning" role="note"><strong>อย่าเพิ่งตัดต้นไม้</strong><span>ขั้นตัดจะเปิดเมื่ออาหารและพื้นที่พร้อม และบันทึก Blank test หรือเหตุผลที่ข้ามแล้ว</span></div>}
       {step.beginner ? (

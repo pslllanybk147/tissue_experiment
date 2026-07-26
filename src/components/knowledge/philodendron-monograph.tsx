@@ -28,7 +28,7 @@ export function PhilodendronMonograph({ monograph }: { monograph: Monograph }) {
       <div className="media-recipe-list">
         {monograph.tissueCulture.mediaRecipes.map((recipe) => <article className="media-recipe" key={recipe.id}>
           <div className="knowledge-detail-heading"><div><h3>{recipe.title}</h3><p>pH เป้าหมาย {recipe.pH} · batch {recipe.batchVolumes.join(" / ")} mL</p></div><span className={evidenceClass(recipe.evidenceState)}>{recipe.evidenceState}</span></div>
-          <div className="media-recipe-table-wrap"><table className="media-recipe-table"><thead><tr><th>สาร/องค์ประกอบ</th>{recipe.batchVolumes.map((volume) => <th key={volume}>{volume} mL</th>)}</tr></thead><tbody>{recipe.ingredients.map((ingredient) => <tr key={ingredient.name}><th>{ingredient.name}<small>{ingredient.note}</small></th>{recipe.batchVolumes.map((volume) => <td key={volume}>{scaledAmount(ingredient.amountPerLiter, ingredient.unit, volume)}</td>)}</tr>)}</tbody></table></div>
+          <div className="media-recipe-table-wrap"><table className="media-recipe-table"><thead><tr><th>สาร/องค์ประกอบ</th>{recipe.batchVolumes.map((volume) => <th key={volume}>{volume} mL</th>)}</tr></thead><tbody>{recipe.ingredients.map((ingredient) => <tr key={ingredient.name}><th>{ingredient.name}<small>{ingredient.note}</small></th>{recipe.batchVolumes.map((volume) => <td data-label={`${volume} mL`} key={volume}>{scaledAmount(ingredient.amountPerLiter, ingredient.unit, volume)}</td>)}</tr>)}</tbody></table></div>
           <p className="muted-copy">{recipe.note} ปรับ pH ก่อนทำให้วุ้นแข็ง และบันทึก batch ID ทุกครั้ง</p>
         </article>)}
       </div>

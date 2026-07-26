@@ -114,6 +114,23 @@ describe("sterilization profiles", () => {
       expect.arrayContaining(["%", "mL"]),
     );
   });
+
+  test("uses medium-specific beginner guidance instead of plant-photo boilerplate", () => {
+    const medium = profileById("haiter-chemical-v1").steps.find(
+      (item) => item.id === "prepare-haiter-medium",
+    );
+
+    expect(medium?.materials).toEqual(expect.arrayContaining([
+      "MS basal salts ตามสูตร",
+      "เครื่องวัด pH",
+      "Haiter ที่อ่านฉลากแล้ว",
+    ]));
+    expect(medium?.beginner?.actions.join(" ")).toContain("ชั่ง MS");
+    expect(medium?.beginner?.evidencePrompt.join(" ")).toContain("ฉลาก batch");
+    expect(medium?.beginner?.evidencePrompt.join(" ")).toContain("ไม่ต้องถ่ายต้นไม้");
+    expect(medium?.nextActionOnPass).toContain("Blank");
+    expect(medium?.nextActionOnFail).toContain("ห้ามใช้กับ explant");
+  });
 });
 
 describe("readiness gate", () => {

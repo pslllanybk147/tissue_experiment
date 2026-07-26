@@ -236,6 +236,7 @@ export type ResearchSource = {
   source: string;
   evidence: EvidenceState;
   note: string;
+  url?: string;
 };
 
 export type DatasetReviewStatus = "Pending review" | "Approved" | "Rejected";

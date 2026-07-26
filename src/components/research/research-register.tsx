@@ -4,6 +4,10 @@ export function ResearchRegister({ sources }: { sources: ResearchSource[] }) {
   if (!sources.length) return <div className="route-state">ยังไม่มีแหล่งงานวิจัย</div>;
   return <div className="research-list">{sources.map((source) => <article className="research-row" key={source.id}>
     <div className="research-copy"><div className="research-title-row"><strong>{source.title}</strong><span className="badge">{source.evidence}</span></div>
-      <p>{source.source}</p><small>{source.note}</small></div>
+      <p>{source.source}</p><small>{source.note}</small>
+      {source.url
+        ? <a className="research-source-link" href={source.url} rel="noreferrer" target="_blank">เปิดแหล่งอ้างอิง ↗</a>
+        : <span className="muted-copy">ยังไม่มี URL ในทะเบียน — ต้องตรวจ source เพิ่ม</span>}
+    </div>
   </article>)}</div>;
 }

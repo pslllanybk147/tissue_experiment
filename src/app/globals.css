@@ -557,6 +557,95 @@ button:disabled { cursor: not-allowed; }
   .accessible-action-spinner { animation: none; }
 }
 
+/* Beginner mobile reading: compact progress, readable recipes and large sources. */
+.wizard-progress-mobile { display: none; }
+.monograph-layout a {
+  min-height: var(--target-min);
+  display: inline-flex;
+  align-items: center;
+  padding-block: .5rem;
+}
+.research-source-link {
+  display: inline-flex;
+  width: max-content;
+  min-height: var(--target-min);
+  align-items: center;
+  margin-top: .5rem;
+  padding: .55rem .75rem;
+  border: 1px solid var(--line);
+  color: #174ea6;
+  font-weight: 700;
+}
+.dataset-empty {
+  display: grid;
+  gap: .8rem;
+}
+.dataset-empty ol { margin: 0; padding-left: 1.5rem; }
+.dataset-empty .route-actions { margin-top: .4rem; }
+.monograph-sections li,
+.monograph-step p,
+.monograph-step li,
+.media-recipe,
+.explant-guide {
+  font-size: var(--text-label);
+}
+.media-recipe-table {
+  font-size: var(--text-label);
+}
+@media (max-width: 600px) {
+  .wizard-progress { display: none; }
+  .wizard-progress-mobile {
+    display: block;
+    margin: 1rem 0;
+    padding: .9rem 1rem;
+    border-left: .4rem solid #2e6c48;
+    background: #eef4ef;
+    color: #173b27;
+    font-size: var(--text-label);
+    font-weight: 750;
+  }
+  .media-recipe-table-wrap { overflow: visible; }
+  .media-recipe-table,
+  .media-recipe-table tbody,
+  .media-recipe-table tr,
+  .media-recipe-table th,
+  .media-recipe-table td {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+  .media-recipe-table thead { display: none; }
+  .media-recipe-table tbody {
+    display: grid;
+    gap: .85rem;
+  }
+  .media-recipe-table tr {
+    padding: .85rem;
+    border: 1px solid var(--line);
+    background: #fafbf9;
+  }
+  .media-recipe-table tbody th {
+    padding: 0 0 .65rem;
+    border: 0;
+    white-space: normal;
+    font-size: 1.05rem;
+  }
+  .media-recipe-table td {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: .55rem 0;
+    border-bottom: 1px solid var(--line);
+    white-space: normal;
+  }
+  .media-recipe-table td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-weight: 650;
+  }
+  .media-recipe-table td:last-child { border-bottom: 0; }
+}
+
 /* Compact tablet navigation: keep the reading surface wide and reveal menus on demand. */
 .lab-route-menu-toggle,
 .guided-steps-toggle { display: none; }

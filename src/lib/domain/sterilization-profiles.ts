@@ -5,12 +5,180 @@ import type {
 } from "./models";
 import { createBeginnerInstruction } from "./zero-knowledge-protocol";
 
+type ProfileGuidance = {
+  objective: string;
+  materials: string[];
+  actions: string[];
+  whatToFind: string[];
+  stopConditions: string[];
+  evidencePrompt: string[];
+  readyChecklist: string[];
+  nextActionOnPass: string;
+  nextActionOnFail: string;
+  allowPhoto?: boolean;
+};
+
+function guidanceForProfileStep(
+  id: string,
+  title: string,
+  instruction: string,
+): ProfileGuidance {
+  const shared = {
+    objective: title,
+    actions: [instruction],
+    whatToFind: ["ผลที่ขั้นตอนนี้ระบุ"],
+    stopConditions: ["หยุดเมื่อข้อมูล อุปกรณ์ หรือผลที่เห็นไม่ตรงกับคำแนะนำ"],
+    evidencePrompt: ["บันทึกค่าที่ใช้จริงและผลที่เห็นจริง"],
+    readyChecklist: ["ฉันทำครบตามลำดับ", "ฉันบันทึกข้อมูลจริงแล้ว"],
+    nextActionOnPass: "ไปขั้นถัดไปตามรายการ",
+    nextActionOnFail: "หยุด บันทึกปัญหา และแก้ไขขั้นนี้ก่อน",
+  };
+  if (id === "read-haiter-label") return {
+    ...shared,
+    objective: "อ่านค่าความเข้มข้นที่พิมพ์อยู่บนขวดให้ถูกต้อง",
+    materials: ["ขวด Haiter พร้อมฉลาก", "โทรศัพท์หรือกล้อง", "แบบบันทึก"],
+    actions: [
+      "วางขวดในที่สว่างและหมุนหาด้านที่มีคำว่า sodium hypochlorite, NaOCl หรือ active chlorine",
+      "คัดลอกตัวเลขเปอร์เซ็นต์และหน่วยตามฉลากโดยไม่ปัดหรือเดา",
+      "ถ่ายรูปฉลากให้เห็นชื่อสาร ตัวเลขเปอร์เซ็นต์ และชื่อผลิตภัณฑ์ในภาพเดียว",
+    ],
+    whatToFind: ["ตัวเลขเปอร์เซ็นต์ที่อยู่ติดกับ sodium hypochlorite, NaOCl หรือ active chlorine"],
+    stopConditions: ["หยุดถ้าฉลากลบ อ่านไม่ได้ หรือมีแต่คำว่าเข้มข้นโดยไม่มีตัวเลขเปอร์เซ็นต์"],
+    evidencePrompt: ["บันทึกเปอร์เซ็นต์ตามฉลาก", "ถ่ายรูปฉลาก ไม่ต้องถ่ายต้นไม้"],
+    readyChecklist: ["ฉันเห็นชื่อสารและตัวเลขเปอร์เซ็นต์ชัด", "ฉันคัดลอกค่าและถ่ายฉลากแล้ว"],
+    nextActionOnPass: "กรอกค่าจากฉลากให้ระบบคำนวณปริมาตร",
+    nextActionOnFail: "เปลี่ยนเป็นผลิตภัณฑ์ที่มีฉลากชัดหรือให้ผู้มีประสบการณ์ตรวจ",
+  };
+  if (id === "calculate-haiter-dose") return {
+    ...shared,
+    objective: "ให้ระบบคำนวณปริมาตรจากค่าที่อ่านได้จริง",
+    materials: ["รูปฉลาก Haiter", "แบบบันทึก", "ปิเปตหรือกระบอกตวง"],
+    actions: [
+      "กรอกเปอร์เซ็นต์จากฉลาก",
+      "กรอกปริมาตรอาหารทั้งหมดและปริมาตรต่ำสุดที่อุปกรณ์ตวงได้",
+      "อ่านคำสั่งที่ระบบแสดงและคัดลอกปริมาตรลงบันทึก ห้ามคำนวณด้วยการกะหรือจำนวนหยด",
+    ],
+    whatToFind: ["คำสั่งว่าต้องตวงจากขวดโดยตรงหรือทำสารเจือจางก่อน"],
+    stopConditions: ["หยุดถ้าช่องใดไม่มีค่าจริง หรือระบบแจ้งว่ายังคำนวณไม่ได้"],
+    evidencePrompt: ["บันทึกค่าทั้งสามช่องและคำสั่งตวงที่ระบบแสดง"],
+    readyChecklist: ["ค่าทุกช่องมาจากฉลากหรือเครื่องมือจริง", "ฉันอ่านคำสั่งตวงครบแล้ว"],
+    nextActionOnPass: "เตรียมอาหารตามคำสั่งตวงที่ระบบแสดง",
+    nextActionOnFail: "ย้อนกลับไปตรวจฉลาก ปริมาตรอาหาร และช่วงการตวงของอุปกรณ์",
+    allowPhoto: false,
+  };
+  if (id === "prepare-haiter-medium") return {
+    ...shared,
+    objective: "เตรียมอาหารเพาะและติดตาม batch โดยไม่สัมผัสต้นไม้ในขั้นนี้",
+    materials: [
+      "MS basal salts ตามสูตร",
+      "น้ำตาล sucrose",
+      "วุ้น agar",
+      "สารละลาย stock hormone ตาม Protocol",
+      "น้ำและภาชนะผสมที่เหมาะสม",
+      "เครื่องวัด pH",
+      "เครื่องชั่งและอุปกรณ์ตวง",
+      "Haiter ที่อ่านฉลากแล้ว",
+      "ภาชนะเพาะ ฝา ป้าย batch และปากกา",
+      "ถุงมือและแว่นตา",
+    ],
+    actions: [
+      "เปิดสูตรของ Protocol version นี้และเลือกปริมาตร batch ที่จะทำ",
+      "ชั่ง MS, sucrose และ agar ตามตาราง แล้วเติม stock hormone ตามปริมาตรที่คำนวณไว้",
+      "เติมน้ำเกือบครบปริมาตร คนให้ละลาย แล้วปรับ pH ตามช่วงที่สูตรระบุ",
+      "ปรับปริมาตรสุดท้ายและทำให้วุ้นละลายตามวิธีของห้อง",
+      "รอให้อาหารเย็นถึงเงื่อนไขที่ Protocol กำหนดก่อนเติม Haiter ตามปริมาตรที่ระบบคำนวณ ห้ามเดาด้วยหยด",
+      "แบ่งลงภาชนะ ปิดฝา และติดป้าย batch id สูตร ปริมาตร วันที่ และวิธี Haiter",
+    ],
+    whatToFind: ["น้ำหนักและปริมาตรตรงกับสูตร", "pH อยู่ในช่วงที่กำหนด", "ทุกภาชนะมีฉลาก batch เดียวกัน"],
+    stopConditions: [
+      "หยุดถ้าชั่งผิด สูตรไม่ตรง pH นอกช่วง หรือปริมาตร Haiter ต่ำกว่าอุปกรณ์ตวง",
+      "หยุดทันทีหาก Haiter สัมผัสกรด แอมโมเนีย แอลกอฮอล์ หรือสารทำความสะอาดอื่น",
+    ],
+    evidencePrompt: [
+      "ถ่ายรูปฉลาก batch และภาชนะอาหาร ไม่ต้องถ่ายต้นไม้",
+      "บันทึกสูตร ปริมาตร pH ปริมาตร Haiter เวลา และผู้เตรียม",
+    ],
+    readyChecklist: ["สูตรและปริมาตรถูกบันทึก", "pH ถูกบันทึก", "ทุกภาชนะปิดและติดฉลาก"],
+    nextActionOnPass: "ตั้ง Blank และรอตรวจตามช่วงเวลาของ Protocol",
+    nextActionOnFail: "แยก batch นี้ ห้ามใช้กับ explant และเตรียม batch ใหม่",
+  };
+  if (id === "record-blank-decision") return {
+    ...shared,
+    objective: "ตรวจว่าอาหารและภาชนะยังไม่มีสัญญาณปนเปื้อนก่อนตัดต้น",
+    materials: ["ภาชนะ Blank ที่ไม่ใส่ชิ้นพืช", "ป้าย batch", "โทรศัพท์หรือกล้อง", "แบบบันทึก"],
+    actions: [
+      "ตรวจรหัส Blank ให้ตรงกับ batch อาหาร",
+      "มองผ่านภาชนะโดยไม่เปิดฝา หาเส้นใย ฝ้า เมือก สีหรือกลิ่นผิดปกติ",
+      "ถ่ายรูป Blank และบันทึกวันเวลาที่ตรวจ หากข้ามให้เขียนเหตุผลและความเสี่ยง",
+    ],
+    whatToFind: ["อาหารยังใสหรือมีลักษณะตามสูตร ไม่มีรา เมือก หรือการเปลี่ยนสีผิดปกติ"],
+    stopConditions: ["หยุดและกักทั้ง batch หาก Blank มีการปนเปื้อนหรือฉลากไม่ตรง"],
+    evidencePrompt: ["ถ่ายรูปภาชนะ Blank และฉลาก batch ไม่ต้องถ่ายต้นไม้"],
+    readyChecklist: ["ฉันตรวจโดยไม่เปิดฝา", "ฉันบันทึกผลหรือเหตุผลที่ข้ามแล้ว"],
+    nextActionOnPass: "เตรียมพื้นที่ปลอดเชื้อและตรวจความพร้อมก่อนตัด",
+    nextActionOnFail: "กัก batch ห้ามใช้กับ explant และตรวจหาสาเหตุ",
+  };
+  if (id === "prepare-pressure-medium") return {
+    ...shared,
+    objective: "เตรียมอาหารและภาชนะให้พร้อมสำหรับหม้อนึ่งแรงดัน",
+    materials: ["ส่วนประกอบอาหารตามสูตร", "เครื่องชั่งและอุปกรณ์ตวง", "เครื่องวัด pH", "ภาชนะทนความร้อน", "ป้ายทนความร้อน"],
+    actions: [
+      "ชั่งและผสมอาหารตาม Protocol version",
+      "ปรับ pH และปริมาตรสุดท้าย",
+      "แบ่งลงภาชนะทนความร้อน ปิดตาม SOP และติด batch id",
+    ],
+    whatToFind: ["สูตร pH ปริมาตร และ batch id ครบ"],
+    stopConditions: ["หยุดถ้าภาชนะไม่ระบุว่าทนความร้อน/ความดัน หรือข้อมูล batch ไม่ครบ"],
+    evidencePrompt: ["ถ่ายรูปภาชนะและฉลาก batch ก่อนนึ่ง ไม่ต้องถ่ายต้นไม้"],
+    readyChecklist: ["ภาชนะเหมาะกับแรงดัน", "สูตร pH และ batch ถูกบันทึก"],
+    nextActionOnPass: "ฆ่าเชื้ออาหารด้วยหม้อนึ่งตาม SOP",
+    nextActionOnFail: "แก้สูตร ภาชนะ หรือฉลากก่อนเริ่มเครื่อง",
+  };
+  if (id === "pressure-sterilize-medium") return {
+    ...shared,
+    objective: "ฆ่าเชื้ออาหารด้วยเงื่อนไขที่ตรวจสอบย้อนกลับได้",
+    materials: ["หม้อนึ่งแรงดันหรือ autoclave", "ภาชนะอาหารที่เตรียมแล้ว", "ตัวบันทึกเวลา/อุณหภูมิ/ความดัน", "ถุงมือกันความร้อน"],
+    actions: [
+      "จัดภาชนะและใช้งานเครื่องตามคู่มือผู้ผลิตและ SOP ของพื้นที่",
+      "บันทึกเวลา อุณหภูมิ และความดันจริงของรอบ",
+      "รอให้ความดันเป็นศูนย์และอาหารเย็นก่อนเคลื่อนย้ายหรือตรวจ",
+    ],
+    whatToFind: ["รอบฆ่าเชื้อจบครบเงื่อนไข ภาชนะไม่รั่ว แตก หรือฝาเปิด"],
+    stopConditions: ["หยุดหากไม่เคยได้รับการฝึกใช้เครื่อง เครื่องผิดปกติ หรือความดันยังไม่เป็นศูนย์"],
+    evidencePrompt: ["บันทึกค่ารอบเครื่องและถ่ายฉลาก batch/ผลตัวบ่งชี้ ไม่ต้องถ่ายต้นไม้"],
+    readyChecklist: ["รอบเครื่องครบตาม SOP", "ความดันเป็นศูนย์และภาชนะปลอดภัยต่อการจับ"],
+    nextActionOnPass: "ตั้ง Blank และรอตรวจตาม Protocol",
+    nextActionOnFail: "กัก batch และให้ผู้รับผิดชอบเครื่องตรวจสอบ",
+  };
+  if (id === "sterilization-readiness-gate") return {
+    ...shared,
+    objective: "ยืนยันว่าอาหาร พื้นที่ และอุปกรณ์พร้อมก่อนทำให้ต้นแม่เกิดบาดแผล",
+    materials: ["รายการตรวจอาหารและ Blank", "รายการอุปกรณ์ปลอดเชื้อ", "รูปพื้นที่ทำงาน", "แบบบันทึก"],
+    actions: [
+      "ตรวจว่า batch อาหารและ Blank ผ่านหรือมีเหตุผลที่ข้าม",
+      "ตรวจภาชนะ เครื่องมือ และพื้นที่สะอาดว่าพร้อมใช้งาน",
+      "บันทึกผลทุกข้อก่อนเปิดขั้นตัดต้น",
+    ],
+    whatToFind: ["อาหาร ภาชนะ เครื่องมือ พื้นที่ และบันทึก Blank พร้อมครบ"],
+    stopConditions: ["หยุดถ้าขาดข้อใดข้อหนึ่ง ห้ามตัดต้นไว้รอ"],
+    evidencePrompt: ["ถ่ายภาพพื้นที่และอุปกรณ์ที่จัดเตรียมแล้ว ไม่ต้องถ่ายต้นไม้ในขั้นนี้"],
+    readyChecklist: ["อาหารและภาชนะพร้อม", "พื้นที่และเครื่องมือพร้อม", "Blank ถูกบันทึกแล้ว"],
+    nextActionOnPass: "เปิดขั้นตัดและเตรียม explant",
+    nextActionOnFail: "จัดเตรียมรายการที่ขาดแล้วตรวจซ้ำ",
+  };
+  return {
+    ...shared,
+    materials: ["แบบบันทึก", "อุปกรณ์ที่ระบุชื่อใน Protocol"],
+  };
+}
+
 function profileStep(
   id: string,
   title: string,
   instruction: string,
   evidenceState: ProtocolStep["evidenceState"] = "Experimental",
 ): ProtocolStep {
+  const guidance = guidanceForProfileStep(id, title, instruction);
   return {
     id,
     order: 0,
@@ -23,17 +191,24 @@ function profileStep(
     evidenceState,
     workflowPhase: "medium-preparation",
     allowNote: true,
-    allowPhoto: true,
+    objective: guidance.objective,
+    expectedResult: guidance.whatToFind.join("; "),
+    passCriteria: guidance.readyChecklist,
+    failCriteria: guidance.stopConditions,
+    nextActionOnPass: guidance.nextActionOnPass,
+    nextActionOnFail: guidance.nextActionOnFail,
+    materials: guidance.materials,
+    allowPhoto: guidance.allowPhoto ?? true,
     requiredEvidence: ["note"],
     beginner: createBeginnerInstruction({
       currentAction: title,
-      actions: [instruction],
-      materials: ["โทรศัพท์หรือแบบบันทึก", "อุปกรณ์ที่ระบุในขั้นนี้"],
+      actions: guidance.actions,
+      materials: guidance.materials,
       doNotDoYet: ["อย่าเดาค่า อย่าเปลี่ยนอุปกรณ์ และอย่าข้ามขั้นตอนเอง"],
-      whatToFind: ["มองหาชื่อ ตัวเลข หรือผลที่ขั้นตอนนี้ระบุ"],
-      stopConditions: ["หยุดถ้าอ่านฉลากไม่ได้ ไม่มีอุปกรณ์ หรือผลไม่ตรงกับคำอธิบาย"],
-      evidencePrompt: ["เขียนค่าจากฉลากหรือสิ่งที่เห็นจริง และถ่ายรูปเมื่อทำได้"],
-      readyChecklist: ["ฉันอ่านค่าหรือผลได้ชัด", "ฉันบันทึกข้อมูลจริงแล้ว"],
+      whatToFind: guidance.whatToFind,
+      stopConditions: guidance.stopConditions,
+      evidencePrompt: guidance.evidencePrompt,
+      readyChecklist: guidance.readyChecklist,
       scienceNote: `ขั้น “${title}” ใช้ควบคุมความเสี่ยงก่อนทำขั้นถัดไป`,
     }),
   };

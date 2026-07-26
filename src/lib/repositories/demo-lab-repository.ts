@@ -8,9 +8,9 @@ const lots: Omit<ExperimentLot, "ownerId">[] = [
 ];
 
 const research: Omit<ResearchSource, "ownerId">[] = [
-  { id: "L-PP-2023", title: "In Vitro Propagation of Philodendron erubescens ‘Pink Princess’", source: "Horticulturae · 2023", evidence: "Verified", note: "BAP 1.0 mg/L และ IBA 3.0 mg/L ในระบบ PLB/ยอดที่ตั้งตัวแล้ว" },
+  { id: "L-PP-2023", title: "In Vitro Propagation of Philodendron erubescens ‘Pink Princess’", source: "Horticulturae · 2023", evidence: "Verified", note: "BAP 1.0 mg/L และ IBA 3.0 mg/L ในระบบ PLB/ยอดที่ตั้งตัวแล้ว", url: "https://doi.org/10.3390/horticulturae9060688" },
   { id: "L-CHERRY-2022", title: "Sterilization Methods for Philodendron ‘Cherry Red’", source: "Wichcha Journal · 2022", evidence: "Adapted", note: "มีการทดลอง Haiter แต่ต้องตรวจหน่วยและ active chlorine จาก PDF" },
-  { id: "L-VIO-OPEN", title: "Violin variegated / P. bipennifolium", source: "Evidence gap", evidence: "Pending review", note: "ยังไม่พบงานตรงพันธุ์จากการค้นรอบแรก" },
+  { id: "L-VIO-OPEN", title: "Violin variegated / P. bipennifolium", source: "Evidence gap", evidence: "Pending review", note: "ยังไม่พบงานตรงพันธุ์จากการค้นรอบแรก", url: "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A326132-2" },
 ];
 
 export function createDemoLabRepository(): LabRepository {

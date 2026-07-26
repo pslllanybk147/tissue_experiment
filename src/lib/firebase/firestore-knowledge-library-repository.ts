@@ -1,5 +1,6 @@
 import { collection, doc, getDoc, getDocs, setDoc, type Firestore } from "firebase/firestore";
-import { starterTaxa, type KnowledgeLibraryRecord } from "../domain/knowledge-library";
+import type { KnowledgeLibraryRecord } from "../domain/knowledge-library";
+import { hydrateKnowledgeRecord, starterKnowledgeRecords } from "../domain/knowledge-seed";
 import type { KnowledgeLibraryRepository } from "../repositories/knowledge-library-repository";
 import { getFirebaseServices } from "./client";
 
@@ -9,14 +10,15 @@ function adapter(db: Firestore, uid: string): KnowledgeLibraryRepository {
     async list(ownerId) {
       if (ownerId !== uid) throw new Error("Owner mismatch");
       const records = (await getDocs(collection(db, "users", uid, "knowledgeTaxa"))).docs.map(item => item.data() as KnowledgeLibraryRecord);
-      return records.length ? records : starterTaxa.map(taxon => ({ taxon, claims: [], playbooks: [] }));
+      return records.length
+        ? records.map(hydrateKnowledgeRecord)
+        : starterKnowledgeRecords();
     },
     async get(ownerId, taxonId) {
       if (ownerId !== uid) throw new Error("Owner mismatch");
       const item = await getDoc(ref(taxonId));
-      if (item.exists()) return item.data() as KnowledgeLibraryRecord;
-      const fallback = starterTaxa.find(taxon => taxon.id === taxonId);
-      return fallback ? { taxon: fallback, claims: [], playbooks: [] } : null;
+      if (item.exists()) return hydrateKnowledgeRecord(item.data() as KnowledgeLibraryRecord);
+      return starterKnowledgeRecords().find((record) => record.taxon.id === taxonId) ?? null;
     },
     async upsert(ownerId, taxon) {
       if (ownerId !== uid) throw new Error("Owner mismatch");

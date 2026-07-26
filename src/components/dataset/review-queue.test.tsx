@@ -17,4 +17,11 @@ describe("ReviewQueue", () => {
     expect(html).toContain("ต้อง Approve provenance ก่อน");
     expect(html).toContain("disabled");
   });
+
+  it("shows a beginner route to add the first image when the queue is empty", () => {
+    const html = renderToStaticMarkup(<ReviewQueue items={[]} onReviewProvenance={async () => undefined} onSetLabel={async () => undefined} />);
+    expect(html).toContain("ไปเพิ่มรูปใน Experiment");
+    expect(html).toContain('href="/experiments"');
+    expect(html).toContain("ยังไม่มีต้นไม้ — เริ่มที่นี่");
+  });
 });

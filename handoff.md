@@ -2272,3 +2272,31 @@
 - แก้ `returnToApp()` ให้รอ AuthGate แสดงปุ่ม demo ก่อนคลิก แทนการตรวจ `isVisible()` ทันทีหลัง `domcontentloaded` ซึ่งเกิด race condition ได้
 - `npm run ui:verify` ผ่านครบ 14 viewport: 360, 375, 390, 412, 428, 600, 744, 768, 820, 834, 1024, 1280, 1440 และ 1920px
 - ตรวจซ้ำแล้ว `npm test`, `npm run lint` และ `npm run build` ผ่าน
+
+## Beginner workflow consistency and mobile completion (2026-07-26)
+
+- เปลี่ยนคำแนะนำของ Sterilization Profile จากข้อความ generic เป็นข้อมูลเฉพาะบริบท:
+  - อ่านฉลาก Haiter ให้ถ่ายเฉพาะฉลากและคัดลอกเปอร์เซ็นต์
+  - ขั้นคำนวณระบุสิ่งที่ต้องกรอกและไม่บังคับรูป
+  - ขั้นเตรียมอาหารระบุ MS, sucrose, agar, stock hormone, pH, เครื่องชั่ง/ตวง, Haiter, ภาชนะและ PPE พร้อมลำดับทำจริง
+  - ขั้น Blank ให้ตรวจ/ถ่ายภาชนะ Blank ไม่ใช่ต้นไม้
+  - ขั้นหม้อนึ่งแยกการเตรียมอาหารกับการเดินเครื่องและข้อห้ามด้านแรงดัน
+  - readiness gate ตรวจอาหาร Blank พื้นที่ และเครื่องมือก่อนเปิดขั้นตัดต้น
+- ทุก profile step มี objective, expected result, pass/fail criteria และ next action ที่ไม่ว่าง
+- Guided Runner ใช้ `scrollIntoView` และย้าย focus กลับหัวเนื้อหาเมื่อเปลี่ยนขั้น รองรับ reduced motion; UI matrix มี assertion ตรวจตำแหน่งหลังเลือกขั้น
+- เพิ่ม `knowledge-seed.ts` เพื่อสร้าง claims/playbook จาก monograph เดียวกัน:
+  - Pink Princess แสดง 5 claims และ active nodal playbook v0.1.0
+  - Violin แสดง evidence gap และ Experimental playbook
+  - memory และ Firestore fallback hydrate record เก่าที่ claims/playbooks ว่าง จึงไม่ขัดกับ Taxon Detail
+- Mobile UX:
+  - Wizard ใช้ progress summary “ขั้นที่ n จาก 5” บนจอเล็ก แทน stepper แนวนอนที่ซ่อนขั้นท้าย
+  - ตารางสูตรเปลี่ยนเป็น ingredient cards บนจอ ≤600px พร้อม label ปริมาตรทุกค่า
+  - เพิ่มขนาดข้อความ monograph และ touch target ของลิงก์อ้างอิง
+- Image Review empty state มีลำดับ 3 ขั้นและ CTA ไปเพิ่มรูปใน Experiment หรือเริ่ม Plant Record
+- Research cards เปิด source โดยตรงเมื่อมี URL และแสดงสถานะชัดเจนเมื่อทะเบียนยังไม่มี URL
+- Verification หลังแก้:
+  - `npm test`: ผ่าน 223 tests, skip 10
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: ผ่าน 233 tests บน Auth/Firestore emulator
+  - `npm run ui:verify`: ผ่านครบ 14 viewport ตั้งแต่ 360 ถึง 1920px รวม auto-scroll assertion

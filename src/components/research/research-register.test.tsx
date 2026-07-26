@@ -8,9 +8,12 @@ describe("ResearchRegister", () => {
     const html = renderToStaticMarkup(<ResearchRegister sources={[{
       id: "source-1", ownerId: "owner-1", title: "Pink Princess study",
       source: "Journal · 2023", evidence: "Verified", note: "Direct evidence",
+      url: "https://doi.org/10.3390/example",
     }]} />);
     expect(html).toContain("Pink Princess study");
     expect(html).toContain("Verified");
     expect(html).toContain("Direct evidence");
+    expect(html).toContain("เปิดแหล่งอ้างอิง");
+    expect(html).toContain('href="https://doi.org/10.3390/example"');
   });
 });
