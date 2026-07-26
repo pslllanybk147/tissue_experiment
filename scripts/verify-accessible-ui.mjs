@@ -1,4 +1,6 @@
 import { chromium } from "playwright";
+import fs from "node:fs";
+import path from "node:path";
 
 const baseUrl = process.env.UI_BASE_URL ?? "http://127.0.0.1:3100";
 const executablePath = process.env.CHROME_PATH
@@ -6,11 +8,20 @@ const executablePath = process.env.CHROME_PATH
     ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
     : undefined);
 const viewports = [
-  { name: "android-small", width: 360, height: 800 },
-  { name: "mobile", width: 390, height: 844 },
-  { name: "ipad", width: 768, height: 1024 },
-  { name: "tablet", width: 1024, height: 900 },
+  { name: "android-360", width: 360, height: 800 },
+  { name: "iphone-se", width: 375, height: 667 },
+  { name: "iphone-12", width: 390, height: 844 },
+  { name: "android-412", width: 412, height: 915 },
+  { name: "iphone-14-plus", width: 428, height: 926 },
+  { name: "android-tablet", width: 600, height: 960 },
+  { name: "ipad-mini", width: 744, height: 1133 },
+  { name: "ipad-9", width: 768, height: 1024 },
+  { name: "ipad-air", width: 820, height: 1180 },
+  { name: "ipad-pro-11", width: 834, height: 1194 },
+  { name: "ipad-pro-12", width: 1024, height: 1366 },
+  { name: "tablet-landscape", width: 1280, height: 800 },
   { name: "desktop", width: 1440, height: 1000 },
+  { name: "wide-desktop", width: 1920, height: 1080 },
 ];
 const routes = [
   { href: "/", label: "เริ่มต้น" },
@@ -23,6 +34,8 @@ const routes = [
 ];
 
 const failures = [];
+const screenshotRoot = path.resolve(process.env.UI_SCREENSHOT_DIR ?? "work/ui-audit");
+fs.mkdirSync(screenshotRoot, { recursive: true });
 function assert(condition, message) {
   if (!condition) failures.push(message);
 }
@@ -32,6 +45,13 @@ async function enterDemo(page) {
   const demo = page.getByRole("button", { name: "Continue in demo mode" });
   await demo.waitFor({ state: "visible" });
   await demo.click();
+  await page.locator("nav:visible").first().waitFor({ state: "visible" });
+}
+
+async function returnToApp(page) {
+  await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
+  const demo = page.getByRole("button", { name: "Continue in demo mode" });
+  if (await demo.isVisible().catch(() => false)) await demo.click();
   await page.locator("nav:visible").first().waitFor({ state: "visible" });
 }
 
@@ -66,6 +86,10 @@ async function inspectPage(page, viewportName, route) {
   });
 
   const prefix = `${viewportName} ${route}`;
+  await page.screenshot({
+    path: path.join(screenshotRoot, `${viewportName}-${route.replaceAll("/", "_").replaceAll("[", "").replaceAll("]", "") || "home"}.png`),
+    fullPage: true,
+  });
   assert(result.bodyText > 0, `${prefix}: หน้าเว็บว่าง`);
   assert(!result.hasOverlay, `${prefix}: พบ framework error overlay`);
   assert(result.bodyFont >= 18, `${prefix}: body font ${result.bodyFont}px ต่ำกว่า 18px`);
@@ -188,6 +212,40 @@ async function verifyWizard(page, viewportName) {
   );
 }
 
+async function verifyDirectRoutes(page, viewportName) {
+  const routes = [
+    "/plants/new",
+    "/experiments/new",
+    "/protocols/new",
+    "/knowledge/taxa/cultivar-pink-princess",
+  ];
+  for (const route of routes) {
+    await page.goto(`${baseUrl}${route}`, { waitUntil: "domcontentloaded" });
+    await page.locator("main").first().waitFor({ state: "visible" });
+    await inspectPage(page, viewportName, route);
+    if (route.includes("knowledge/taxa")) await inspectProtocolTypography(page, viewportName, route);
+  }
+
+  await page.goto(`${baseUrl}/knowledge`, { waitUntil: "domcontentloaded" });
+  const firstSource = page.locator("a[href^='/knowledge/sources/']").first();
+  if (await firstSource.isVisible()) {
+    await firstSource.click();
+    await page.waitForURL("**/knowledge/sources/*");
+    await page.locator("main").first().waitFor({ state: "visible" });
+    await inspectPage(page, viewportName, "/knowledge/sources/[id]");
+  }
+}
+
+async function verifyPlantDetail(page, viewportName) {
+  await page.goto(`${baseUrl}/plants`, { waitUntil: "domcontentloaded" });
+  const firstPlant = page.locator(".record-row").first();
+  if (await firstPlant.isVisible()) {
+    await firstPlant.click();
+    await page.waitForURL("**/plants/*");
+    await inspectPage(page, viewportName, "/plants/[id]");
+  }
+}
+
 const browser = await chromium.launch({
   headless: true,
   ...(executablePath ? { executablePath } : { channel: "chrome" }),
@@ -215,6 +273,9 @@ try {
       await inspectPage(page, viewport.name, route.href);
     }
 
+    await verifyDirectRoutes(page, viewport.name);
+    await verifyPlantDetail(page, viewport.name);
+    await returnToApp(page);
     await verifyProtocolPages(page, viewport.name);
     await verifyWizard(page, viewport.name);
     assert(

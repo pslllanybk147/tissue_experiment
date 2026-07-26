@@ -2216,3 +2216,16 @@
 - เพิ่ม override ที่ max-width 820px ให้แต่ละ Lot เป็นแถวหนึ่งคอลัมน์, label/value ใช้ flex, และทุก cell/child มี `min-width: 0`
 - ผลคือชื่อพืช, Protocol, Stage, อายุ, สถานะ และการจัดการไม่ถูกบีบเป็นแนวตั้งบน iPhone/iPad
 - ตรวจ `lint`, `build` และ production UI sandbox ที่ 360, 390, 768, 1024 และ 1440px ผ่าน
+
+## Exhaustive responsive sandbox matrix (2026-07-26)
+
+- ขยาย `scripts/verify-accessible-ui.mjs` ให้ตรวจ 14 viewport presets ครอบคลุมมือถือ Android/iPhone, tablet Android, iPad mini/9/Air/Pro และ desktop:
+  - 360, 375, 390, 412, 428, 600, 744, 768, 820, 834, 1024, 1280, 1440 และ 1920 px
+- ทุก viewport ตรวจ route หลัก: Overview, Plants, Experiments, Protocols, Knowledge, Research และ Image Review
+- เพิ่ม route ตรวจโดยตรงสำหรับ Plant creation, Experiment creation, Protocol creation, Taxon detail, Source detail เมื่อมีข้อมูล และ Plant detail เมื่อมี record
+- ตรวจ flow จริงของ Protocol detail/edit และ Guided Protocol Runner ตั้งแต่สร้าง Lot เลือกวิธีฟอกแบบ Haiter/NaOCl กรอกค่าคำนวณ working dilution ตรวจ checklist จนถึงเปิด runner
+- ตรวจ body text, ฟอนต์ขั้นต่ำ 18px, horizontal overflow, framework error overlay, ขนาด interactive target ขั้นต่ำ 48x48, keyboard focus และข้อความไทยใน protocol ไม่ใช้ `word-break: break-all`
+- บันทึก full-page screenshots ทุก route/viewport ไว้ใน `work/ui-audit/` ซึ่งเป็นโฟลเดอร์ audit ที่ไม่ commit เข้า repository
+- ผล sandbox ล่าสุด: `npm run ui:verify` ผ่านครบทั้ง 14 viewport และสร้าง screenshot audit 196 ไฟล์
+- ภาพตรวจด้วยตาเพิ่มเติมที่ iPhone SE, iPad 9 และ iPad Pro 12 พบว่า Experiment list เปลี่ยนเป็น stacked record ที่อ่านได้ และ Guided Runner ไม่บีบข้อความ/ปุ่มเป็นแนวตั้ง
+- หากพบปัญหาจากอุปกรณ์จริงที่ไม่อยู่ใน preset ให้เพิ่ม preset ตามขนาดจริงแล้วรัน matrix ใหม่ก่อน release ห้ามสรุปว่าผ่านจาก desktop เพียงอย่างเดียว
