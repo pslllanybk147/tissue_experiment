@@ -737,6 +737,8 @@ button:disabled { cursor: not-allowed; }
 .inline-recipe-table { width: 100%; border-collapse: collapse; background: #fff; }
 .inline-recipe-table th, .inline-recipe-table td { padding: 12px; border: 1px solid #b8c4bc; text-align: left; vertical-align: top; }
 .inline-stock-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.inline-ms-calculator { display: grid; gap: 12px; padding: 16px; border: 1px solid #7b9282; background: #fff; }
+.inline-ms-calculator h5, .inline-ms-calculator p { margin: 0; }
 .inline-stock-card { display: grid; gap: 12px; min-width: 0; padding: 16px; border: 1px solid #94a69a; background: #fff; }
 .calculation-placeholder, .guided-reference-only { margin: 0; padding: 12px; border-left: 4px solid #63766a; background: #f5f6f5; }
 .protocol-incomplete-warning { margin: 18px 0; padding: 18px; border: 2px solid #ad3d2d; background: #fff1ee; }

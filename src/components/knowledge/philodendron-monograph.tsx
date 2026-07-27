@@ -5,7 +5,7 @@ import { WorkingStockCalculator } from "./working-stock-calculator";
 
 function evidenceClass(value: string) { return `evidence-label evidence-${value.toLowerCase().replaceAll(" ", "-")}`; }
 function scaledAmount(amountPerLiter: number, unit: string, volume: number) {
-  if (unit === "×") return `${amountPerLiter}×`;
+  if (unit === "×") return `${amountPerLiter}× (เต็มสูตร ไม่ใช่ ${amountPerLiter} g; คำนวณจาก g/L บนฉลาก)`;
   const amount = amountPerLiter * volume / 1000;
   return `${Number(amount.toFixed(4))} ${unit.replace("/L", "")}`;
 }

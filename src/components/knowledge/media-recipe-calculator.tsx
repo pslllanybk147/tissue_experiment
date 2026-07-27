@@ -4,8 +4,10 @@ import { useMemo, useState } from "react";
 
 import type { MediaRecipe } from "../../lib/domain/philodendron-knowledge";
 
-function amountFor(amountPerLiter: number, unit: string, volumeMl: number) {
-  if (unit === "×") return `${amountPerLiter}× ของความเข้มข้น MS ที่ฉลากกำหนด`;
+function amountFor(amountPerLiter: number, unit: string, volumeMl: number, msLabelRate: number) {
+  if (unit === "×") return msLabelRate > 0
+    ? `${Number((msLabelRate * amountPerLiter * volumeMl / 1000).toFixed(4))} g (อัตราฉลาก ${msLabelRate} g/L × ${amountPerLiter})`
+    : `${amountPerLiter}× = เต็มสูตร; กรอกอัตรา g/L จากฉลากก่อน`;
   const amount = amountPerLiter * volumeMl / 1000;
   return `${Number(amount.toFixed(4))} ${unit.replace("/L", "")}`;
 }
@@ -17,6 +19,7 @@ export function MediaRecipeCalculator({ recipes }: { recipes: MediaRecipe[] }) {
   const [spareJars, setSpareJars] = useState(1);
   const [perJarMl, setPerJarMl] = useState(25);
   const [lossPercent, setLossPercent] = useState(10);
+  const [msLabelRate, setMsLabelRate] = useState(0);
   const recipe = recipes.find((item) => item.id === recipeId) ?? recipes[0];
   const plan = useMemo(() => {
     const jars = Math.max(0, cultureJars) + Math.max(0, blankJars) + Math.max(0, spareJars);
@@ -47,6 +50,7 @@ export function MediaRecipeCalculator({ recipes }: { recipes: MediaRecipe[] }) {
         <label className="form-field"><span>กระปุกสำรอง</span><input min="0" type="number" value={spareJars} onChange={(event) => setSpareJars(Number(event.target.value))} /></label>
         <label className="form-field"><span>อาหารต่อกระปุก (mL)</span><input min="1" type="number" value={perJarMl} onChange={(event) => setPerJarMl(Number(event.target.value))} /></label>
         <label className="form-field"><span>เผื่อสูญเสีย (%)</span><input min="0" type="number" value={lossPercent} onChange={(event) => setLossPercent(Number(event.target.value))} /></label>
+        <label className="form-field"><span>อัตรา MS basal salts บนฉลาก (g/L)</span><input min="0" step="any" type="number" value={msLabelRate || ""} placeholder="อ่านจากฉลาก ห้ามเดา" onChange={(event) => setMsLabelRate(Number(event.target.value))} /></label>
       </div>
       <div className="medium-batch-result" role="status">
         <strong>เตรียมอาหาร {plan.total} mL สำหรับ {plan.jars} กระปุก</strong>
@@ -55,7 +59,7 @@ export function MediaRecipeCalculator({ recipes }: { recipes: MediaRecipe[] }) {
       <div className="media-recipe-table-wrap">
         <table className="media-recipe-table">
           <thead><tr><th>สาร/องค์ประกอบ</th><th>ปริมาณสำหรับ {plan.total} mL</th><th>วิธีใช้</th></tr></thead>
-          <tbody>{recipe.ingredients.map((ingredient) => <tr key={ingredient.name}><th>{ingredient.name}</th><td data-label="ปริมาณ">{amountFor(ingredient.amountPerLiter, ingredient.unit, plan.total)}</td><td data-label="วิธีใช้">{ingredient.note || "เติมตามลำดับในคู่มือ"}</td></tr>)}</tbody>
+          <tbody>{recipe.ingredients.map((ingredient) => <tr key={ingredient.name}><th>{ingredient.name}</th><td data-label="ปริมาณ">{amountFor(ingredient.amountPerLiter, ingredient.unit, plan.total, msLabelRate)}</td><td data-label="วิธีใช้">{ingredient.unit === "×" ? "1× หมายถึงความเข้มข้นเต็มสูตร ไม่ใช่ 1 กรัม" : ingredient.note || "เติมตามลำดับในคู่มือ"}</td></tr>)}</tbody>
         </table>
       </div>
       <p className="form-alert"><strong>ฮอร์โมนหน่วย mg ต้องเตรียมเป็น stock solution:</strong> ตัวเลขในตารางคือมวลสารที่ต้องมีในอาหาร ไม่ใช่ปริมาตร stock ที่ตวง ให้ใช้คู่มือ working stock ด้านล่างและตรวจความเข้มข้นบนฉลาก stock ก่อนเติม</p>

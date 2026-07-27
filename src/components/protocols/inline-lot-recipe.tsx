@@ -22,6 +22,7 @@ export type LotRecipePlan = {
 };
 
 export function InlineLotRecipe({ plan }: { plan: LotRecipePlan }) {
+  const msIngredient = plan.ingredients.find((ingredient) => ingredient.unit === "×");
   return (
     <aside className="guided-inline-recipe" aria-label="สูตรอาหารและเครื่องคำนวณของ Lot นี้">
       <header>
@@ -39,14 +40,15 @@ export function InlineLotRecipe({ plan }: { plan: LotRecipePlan }) {
             {plan.ingredients.map((ingredient) => (
               <tr key={ingredient.name}>
                 <th>{ingredient.name}</th>
-                <td>{ingredient.unit === "×" ? `${ingredient.amount}×` : `${formatNumber(ingredient.amount)} ${ingredient.unit}`}</td>
-                <td>{ingredient.unit === "mg" ? "กรอกความเข้มข้น stock ด้านล่าง ระบบจะคำนวณปริมาตรให้" : ingredient.note || "ชั่งหรือตวงตามค่านี้"}</td>
+                <td>{ingredient.unit === "×" ? `${ingredient.amount}× (เต็มสูตร)` : `${formatNumber(ingredient.amount)} ${ingredient.unit}`}</td>
+                <td>{ingredient.unit === "×" ? "ไม่ใช่ 1 กรัม — กรอกอัตรา g/L จากฉลากด้านล่าง" : ingredient.unit === "mg" ? "กรอกความเข้มข้น stock ด้านล่าง ระบบจะคำนวณปริมาตรให้" : ingredient.note || "ชั่งหรือตวงตามค่านี้"}</td>
               </tr>
             ))}
             <tr><th>pH</th><td>{plan.pH}</td><td>ปรับหลังสารละลายครบ ก่อนทำให้วุ้นแข็ง</td></tr>
           </tbody>
         </table>
       </div>
+      {msIngredient ? <InlineMsDose concentrationMultiplier={msIngredient.amount} volumeMl={plan.volumeMl} /> : null}
       <div className="inline-stock-grid">
         {plan.ingredients.filter((ingredient) => ingredient.unit === "mg").map((ingredient) => (
           <InlineStockDose
@@ -58,6 +60,37 @@ export function InlineLotRecipe({ plan }: { plan: LotRecipePlan }) {
       </div>
       <p className="form-alert"><strong>ค่าที่ระบบดึงให้อัตโนมัติ:</strong> สูตรและปริมาตรรวมมาจาก batch ที่บันทึกตอนสร้าง Lot โดยตรง ไม่คำนวณจำนวนกระปุกใหม่ในหน้านี้</p>
     </aside>
+  );
+}
+
+function InlineMsDose({
+  concentrationMultiplier,
+  volumeMl,
+}: {
+  concentrationMultiplier: number;
+  volumeMl: number;
+}) {
+  const [labelRate, setLabelRate] = useState("");
+  const grams = Number(labelRate) > 0
+    ? Number((Number(labelRate) * concentrationMultiplier * volumeMl / 1000).toFixed(6))
+    : null;
+  return (
+    <section className="inline-ms-calculator">
+      <h5>แปลง MS {concentrationMultiplier}× เป็นกรัม</h5>
+      <p><strong>{concentrationMultiplier}× หมายถึงความเข้มข้นเต็มสูตรตามฉลาก ไม่ใช่ {concentrationMultiplier} กรัม</strong></p>
+      <label className="form-field">
+        <span>ฉลากระบุให้ใช้ MS basal salts กี่กรัมต่อน้ำ 1 ลิตร (g/L)</span>
+        <input inputMode="decimal" min="0" onChange={(event) => setLabelRate(event.target.value)} placeholder="เช่น อ่านค่าจากฉลากผลิตภัณฑ์" step="any" type="number" value={labelRate} />
+      </label>
+      {grams === null ? (
+        <p className="calculation-placeholder">ยังคำนวณกรัมไม่ได้: อ่านอัตรา g/L จากฉลากก่อน ห้ามใช้ตัวอย่างของผลิตภัณฑ์อื่นแทน</p>
+      ) : (
+        <div className="calculation-result" role="status">
+          <strong>ชั่ง MS basal salts {formatNumber(grams)} g สำหรับอาหาร {formatNumber(volumeMl)} mL</strong>
+          <p>คำนวณจากอัตราฉลาก {labelRate} g/L × {concentrationMultiplier}× × {volumeMl}/1000</p>
+        </div>
+      )}
+    </section>
   );
 }
 
