@@ -319,6 +319,8 @@ export function BeginnerLotWizard({
               <div><dt>ต้นไม้</dt><dd>{plant}</dd></div>
               <div><dt>คู่มือ</dt><dd>{template?.title}</dd></div>
               <div><dt>การฆ่าเชื้ออาหาร</dt><dd>{profile?.title}</dd></div>
+              {mediumPlan && <div><dt>อาหารที่ต้องเตรียม</dt><dd>{mediumPlan.totalVolumeMl} mL สำหรับ {mediumPlan.totalJarCount} กระปุก (เพาะ {cultureJarCount}, Blank {blankJarCount}, สำรอง {spareJarCount})</dd></div>}
+              {profile?.method === "haiter-chemical" && <div><dt>ค่าคลอรีน</dt><dd>ฉลาก {sourcePercent}% → เป้าหมาย {targetPercent}%</dd></div>}
               {haiterPlan && haiterPlan.state !== "blocked" && <div><dt>คำสั่งเตรียม</dt><dd>{haiterPlan.primaryInstruction}</dd></div>}
             </dl>
             <p className="wizard-guard"><strong>ยังไม่ต้องตัดต้น</strong> หลังสร้าง Lot ระบบจะเริ่มจากการเตรียมอาหารและ readiness gate</p>

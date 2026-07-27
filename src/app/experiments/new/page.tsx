@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { AuthGate } from "@/components/auth/auth-gate";
 import { useAuth } from "@/components/auth/auth-provider";
@@ -17,18 +17,19 @@ import { protocolTemplates, stepsForTemplate, templateIdForTaxon } from "@/lib/d
 import { sterilizationProfiles } from "@/lib/domain/sterilization-profiles";
 import { isBeginnerCompleteProtocol } from "@/lib/domain/protocol-validation";
 
-export default function NewExperimentPage() {
+function NewExperimentPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { session, signOut } = useAuth();
   const ownerId = session.user?.uid ?? "demo-owner";
   const repository = useMemo(() => getExperimentRepository(ownerId, session.status === "authenticated"), [ownerId, session.status]);
   const protocolRepository = useMemo(() => getProtocolRepository(ownerId, session.status === "authenticated"), [ownerId, session.status]);
   const plantRepository = useMemo(() => getPlantRepository(ownerId, session.status === "authenticated"), [ownerId, session.status]);
   const [protocolOptions, setProtocolOptions] = useState<ProtocolOption[]>([]);
-  const [initialPlantId] = useState<string | undefined>(() => typeof window === "undefined" ? undefined : new URLSearchParams(window.location.search).get("plantId") ?? undefined);
-  const [initialPlantName, setInitialPlantName] = useState<string | undefined>(() => typeof window === "undefined" ? undefined : new URLSearchParams(window.location.search).get("plant") ?? undefined);
-  const [initialTaxonId, setInitialTaxonId] = useState<string | undefined>(() => typeof window === "undefined" ? undefined : new URLSearchParams(window.location.search).get("taxon") ?? undefined);
-  const [initialTemplateId, setInitialTemplateId] = useState<string | undefined>(() => typeof window === "undefined" ? undefined : templateIdForTaxon(new URLSearchParams(window.location.search).get("taxon") ?? undefined));
+  const initialPlantId = searchParams.get("plantId") ?? undefined;
+  const [initialPlantName, setInitialPlantName] = useState<string | undefined>(() => searchParams.get("plant") ?? undefined);
+  const [initialTaxonId, setInitialTaxonId] = useState<string | undefined>(() => searchParams.get("taxon") ?? undefined);
+  const [initialTemplateId, setInitialTemplateId] = useState<string | undefined>(() => templateIdForTaxon(searchParams.get("taxon") ?? undefined));
   const [protocolsLoaded, setProtocolsLoaded] = useState(false);
   const [plantLoaded, setPlantLoaded] = useState(() => !initialPlantId);
   const [advancedMode, setAdvancedMode] = useState(false);
@@ -81,4 +82,8 @@ export default function NewExperimentPage() {
       : <BeginnerLotWizard onAdvancedMode={() => setAdvancedMode(true)} onSubmit={createLot} protocolOptions={protocolOptions} profiles={sterilizationProfiles} templates={protocolTemplates} initialPlantId={initialPlantId} initialPlantName={initialPlantName} initialTaxonId={initialTaxonId} initialTemplateId={initialTemplateId} />
       : <p className="route-loading" role="status">กำลังเตรียม Plant Record และ Protocol…</p>}
   </LabShell></AuthGate>;
+}
+
+export default function NewExperimentPage() {
+  return <Suspense fallback={<p className="route-loading" role="status">กำลังอ่านข้อมูลต้นไม้…</p>}><NewExperimentPageContent /></Suspense>;
 }

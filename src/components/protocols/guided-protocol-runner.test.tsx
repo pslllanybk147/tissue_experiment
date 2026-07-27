@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
 import type { ProtocolStep } from "@/lib/domain/models";
-import { GuidedProtocolRunner } from "./guided-protocol-runner";
+import { GuidedProtocolRunner, persistedStatusForSave } from "./guided-protocol-runner";
 
 const step: ProtocolStep = {
   id: "step-1",
@@ -19,6 +19,11 @@ const step: ProtocolStep = {
 };
 
 describe("GuidedProtocolRunner photo evidence", () => {
+  it("never marks a draft as Passed", () => {
+    expect(persistedStatusForSave("draft", "Passed")).toBe("Pending");
+    expect(persistedStatusForSave("confirm", "Passed")).toBe("Passed");
+  });
+
   it("separates the readable manual from the step record", () => {
     const html = renderToStaticMarkup(
       <GuidedProtocolRunner

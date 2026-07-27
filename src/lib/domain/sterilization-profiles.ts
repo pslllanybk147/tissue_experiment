@@ -263,7 +263,14 @@ export const sterilizationProfiles: SterilizationProfile[] = [
     equipmentRequirements: [
       "ฉลากที่ระบุ % sodium hypochlorite หรือ active chlorine",
       "อุปกรณ์วัดปริมาตรที่อ่านค่าต่ำสุดได้",
+      "MS basal salts ตามสูตร",
+      "น้ำตาล sucrose และวุ้น agar",
+      "stock hormone ตามสูตรและอุปกรณ์ตวงที่ครอบคลุมปริมาตร",
+      "เครื่องชั่งที่ละเอียดพอสำหรับค่าตามสูตร",
+      "เครื่องวัด pH หรือแถบ pH ช่วงแคบที่สูตรอนุญาต",
       "ภาชนะอาหารและภาชนะ Blank",
+      "ถุงมือ แว่นตานิรภัย และพื้นที่ระบายอากาศ",
+      "พื้นที่สะอาดสำหรับเตรียมอาหารและติดฉลาก batch",
     ],
     blankPolicy: "recommended-skippable",
     steps: [
@@ -355,6 +362,9 @@ export const sterilizationProfiles: SterilizationProfile[] = [
       "หม้อนึ่งแรงดันหรือ autoclave",
       "ภาชนะทนความร้อนและความดัน",
       "ตัวบันทึกเวลาและเงื่อนไขการฆ่าเชื้อ",
+      "MS basal salts น้ำตาล sucrose วุ้น agar และ stock hormone ตามสูตร",
+      "เครื่องชั่ง อุปกรณ์ตวง และเครื่องวัด pH",
+      "ถุงมือกันความร้อน แว่นตานิรภัย และพื้นที่วางภาชนะร้อน",
     ],
     blankPolicy: "recommended-skippable",
     steps: [

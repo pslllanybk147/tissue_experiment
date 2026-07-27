@@ -39,6 +39,10 @@ const statusLabels: Record<GuidedStepStatus, string> = {
   Failed: "ไม่ผ่าน",
 };
 
+export function persistedStatusForSave(mode: "draft" | "confirm", status: GuidedStepStatus): GuidedStepStatus {
+  return mode === "draft" ? "Pending" : status;
+}
+
 export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs, onSave, mediaByStep = {}, onMediaUploaded, onMediaDelete, onMediaRestore, haiterDefaults, recipeHref }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [stepsOpen, setStepsOpen] = useState(false);
@@ -122,7 +126,7 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
     if (mode === "confirm" && required.includes("photo") && photoCount === 0) { setMessage("ขั้นนี้ต้องมีรูปหลักฐานอย่างน้อย 1 รูปก่อนยืนยันผล"); return; }
     setSaving(true); setMessage("");
     try {
-      await onSave({ lotId, protocolId, versionId, stepId: step.id, status, note, measurements, mediaIds: run?.mediaIds ?? [], evidenceObservationId: run?.evidenceObservationId, observedAt: new Date().toISOString() });
+      await onSave({ lotId, protocolId, versionId, stepId: step.id, status: persistedStatusForSave(mode, status), note, measurements, mediaIds: run?.mediaIds ?? [], evidenceObservationId: run?.evidenceObservationId, observedAt: new Date().toISOString() });
       setMessage(mode === "draft" ? "บันทึกร่างแล้ว คุณกลับมาแก้หรือเพิ่มรูปได้" : "ยืนยันผลขั้นนี้แล้ว");
     } catch (error) { setMessage(error instanceof Error ? error.message : "บันทึกผลไม่สำเร็จ"); }
     finally { setSaving(false); }
@@ -148,13 +152,14 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
         <aside className="guided-recipe-link" role="note">
           <div>
             <strong>สูตรอาหารของ Lot นี้</strong>
-            <p>เปิดตารางส่วนผสมสำหรับ 100, 250, 500 และ 1,000 mL รวม pH และวิธีเจือจาง stock ปริมาตรเล็ก</p>
+            <p>เปิดเครื่องคำนวณตามจำนวนกระปุก พร้อมตารางส่วนผสม pH และวิธีเจือจาง stock ปริมาตรเล็ก</p>
           </div>
           <Link className="primary-button" href={recipeHref} target="_blank" rel="noreferrer">เปิดสูตรอาหารและเครื่องคำนวณ ↗</Link>
         </aside>
       ) : null}
       {step.beginner ? (
         <BeginnerStepGuide
+          key={step.id}
           instruction={step.beginner}
           onReadinessChange={setReadinessConfirmed}
           onUncertainty={(path) => {

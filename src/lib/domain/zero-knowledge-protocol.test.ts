@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { BeginnerInstruction, ProtocolStep } from "./models";
 import {
   beginnerInstructionIssues,
+  describeBeginnerMaterial,
   defaultUncertaintyPaths,
   isBeginnerReadyStep,
 } from "./zero-knowledge-protocol";
@@ -45,6 +46,12 @@ const completeStep: ProtocolStep = {
 };
 
 describe("zero-knowledge protocol contract", () => {
+  it("describes a magnifying glass as an inspection tool, not safety goggles", () => {
+    const material = describeBeginnerMaterial("แว่นขยาย");
+    expect(material.purpose).toContain("ขยายจุดเล็ก");
+    expect(material.appearance).not.toContain("บังด้านหน้าและด้านข้าง");
+  });
+
   it("accepts a step that explains every beginner-facing section", () => {
     expect(beginnerInstructionIssues(completeInstruction)).toEqual([]);
     expect(isBeginnerReadyStep(completeStep)).toBe(true);

@@ -2418,3 +2418,59 @@
   - `npm run build`: ผ่าน
   - `npm run firebase:verify`: ผ่าน 233 tests บน Auth/Firestore emulator
   - `npm run ui:verify`: ผ่านครบ 14 viewport ตั้งแต่ 360 ถึง 1920px รวม auto-scroll assertion
+
+## 2026-07-27 — Beginner end-to-end audit (diagnosis only)
+
+- จำลองผู้ใช้ไม่มีพื้นฐานใน production build local ที่ `http://localhost:3100` และใช้ Demo mode
+- สร้าง Plant Record, เริ่ม Wizard, เลือก Pink Princess + nodal culture + Haiter, กรอก explant 3 ชิ้น/กระปุกเพาะ 3 ใบ และสร้าง Lot `LOT-20260727-052337`
+- อ่านและกรอก Guided Protocol จริงทีละขั้นจนพบ release blockers ต่อไปนี้:
+  - Plant Record ไม่มีช่องอัปโหลดภาพ baseline แม้ขั้นแรกของ Protocol บังคับภาพ
+  - ลิงก์จาก Plant Profile ไป Wizard ส่ง `plantId` มา แต่ Wizard ไม่ hydrate ชื่อ/ชนิด/Taxon และเลือก Generic template เป็นค่าเริ่มต้น
+  - รายการอุปกรณ์ใน Wizard ไม่ครอบคลุม MS salts, sucrose, agar, stock hormone, เครื่องชั่ง, pH, PPE และพื้นที่สะอาด
+  - Summary ของ Wizard ไม่แสดงสูตร 165 mL, จำนวนภาชนะ, pH และค่าตวง Haiter ที่คำนวณแล้ว
+  - Step gate ถูกข้ามได้: เลือก Passed + บันทึกร่างแล้วปุ่มขั้นถัดไปเปิด แม้ยังไม่มีรูปบังคับและยังไม่กด “ยืนยันผลของขั้นนี้”
+  - readiness checkbox ของขั้นก่อนรั่วไปขั้นถัดไป ไม่ reset เมื่อเปลี่ยน step
+  - material matcher แปล “แว่นขยาย” เป็นแว่นนิรภัย (“บังด้านหน้าและด้านข้าง”)
+  - รายการอุปกรณ์จำนวนมากยังใช้ข้อความ generic “1 ชิ้นหรือ 1 ชุด” และ “ตรงกับชื่อนี้” ซึ่งมือใหม่ใช้เลือกของจริงไม่ได้
+  - ขั้นเตรียมอาหารยังอ้าง “ตามสูตร/ตาม Protocol/ตามเงื่อนไข” โดยไม่แสดงค่าของ Lot ในหน้าเดียว
+  - ปุ่ม “เปิดสูตรอาหารและเครื่องคำนวณ” เปิดหน้าที่มีเพียงตาราง 100/250/500/1,000 mL และตัวอย่าง working stock ไม่มี input หรือเครื่องคำนวณ interactive
+  - Dashboard แสดง “6 Protocol steps” ขัดกับ Guided Protocol ของ Lot ที่มี 22 ขั้น
+  - Demo mode ไม่เก็บ Plant/Lot หลัง reload; กลับเข้า URL เดิมแล้วขึ้น “ไม่พบ Lot”
+- สิ่งที่ทำงานถูกต้อง:
+  - Wizard เตือนและบล็อกเมื่อกระปุกเพาะน้อยกว่าจำนวน explant
+  - เมนูหลัก, Plants, Experiments, Protocols, Knowledge, Research และ Dataset Review เปิดได้โดยไม่มี console error
+  - Dataset Review มี empty state และเส้นทางกลับไปเพิ่มรูป
+  - ขั้นเตรียมอาหารระบุถูกว่าต้องถ่ายฉลาก batch/ภาชนะอาหาร ไม่ใช่ต้นไม้
+- ข้อสรุป: ระบบยังไม่พร้อมให้มือใหม่เริ่มทดลองจริงแบบอาศัยหน้าจอเพียงอย่างเดียว จนกว่าจะแก้ required-evidence gate, แสดงค่าคำนวณของ Lot ในขั้นเตรียมอาหาร, ทำ calculator จริง, แก้ Plant→Wizard hydration และแก้คำอธิบายอุปกรณ์
+
+## 2026-07-27 — Beginner audit blocker fixes
+
+- แก้ required-evidence gate:
+  - `บันทึกร่าง` บันทึกสถานะ `Pending` เสมอ ไม่สามารถทำให้ขั้นผ่านหรือเปิดปุ่มขั้นถัดไป
+  - `ยืนยันผลของขั้นนี้` เท่านั้นที่บันทึก `Passed/Needs review/Failed` และยังตรวจ note, measurement, photo และ readiness ตามข้อกำหนด
+- reset Beginner checklist ทุกครั้งที่เปลี่ยนขั้นด้วย step-specific component key ป้องกัน checkbox รั่วข้ามขั้น
+- แก้ Plant → Experiment Wizard:
+  - ใช้ query parameter ผ่าน `useSearchParams` ภายใต้ Suspense
+  - hydrate Plant name, taxon และเลือก Pink Princess/Violin template ที่ตรงกับ Plant ก่อน render Wizard
+- เพิ่ม equipment checklist ของ Haiter และหม้อนึ่งให้ครอบคลุม MS salts, sucrose, agar, stock hormone, เครื่องชั่ง, pH, ภาชนะ, PPE และพื้นที่ทำงาน
+- Summary Wizard แสดงปริมาตรอาหารรวม จำนวนกระปุกแยกประเภท ค่า source/target chlorine และคำสั่งตวง
+- เพิ่มเครื่องคำนวณสูตรจริงใน Taxon monograph:
+  - เลือกระยะ Establishment/Multiplication/Rooting
+  - กรอกกระปุกเพาะ, Blank, สำรอง, mL ต่อกระปุก และ % เผื่อสูญเสีย
+  - คำนวณปริมาตรรวมและส่วนผสมตาม batch จริง
+  - แยกคำเตือนว่าค่าฮอร์โมน mg ต้องแปลงผ่าน stock/working stock ไม่ใช่ตวงเป็น mg โดยตรง
+- แก้ material guidance:
+  - “แว่นขยาย” ไม่ถูกตีความเป็นแว่นนิรภัยแล้ว
+  - เพิ่มคำอธิบายเฉพาะสำหรับ MS basal salts, sucrose, agar, stock hormone, เครื่องชั่ง และ Haiter
+- เพิ่ม regression tests สำหรับ draft status, magnifying glass และ recipe calculator
+- Browser sandbox ยืนยัน:
+  - calculator render พร้อม 5 numeric inputs + recipe selector
+  - ค่าเริ่มต้น 5 กระปุกคำนวณ 138 mL
+  - เปลี่ยนเป็นกระปุกเพาะ 4 ใบแล้วคำนวณใหม่เป็น 165 mL สำหรับ 6 กระปุก
+  - Plant Pink Princess เปิด Wizard แล้วเลือก Pink Princess template และเก็บชื่อ Plant ถูกต้อง
+- Verification:
+  - `npm test -- --run`: ผ่าน 235 tests, skip 10
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: ผ่าน 245 tests บน Auth/Firestore emulator
+  - `npm run ui:verify`: ผ่าน 14 viewport ตั้งแต่ 360 ถึง 1920px

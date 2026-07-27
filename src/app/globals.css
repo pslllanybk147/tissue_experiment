@@ -896,3 +896,12 @@ button:disabled { cursor: not-allowed; }
   .guided-recipe-link { align-items: stretch; flex-direction: column; }
   .guided-recipe-link .primary-button { width: 100%; }
 }
+.media-recipe-calculator {
+  border: 2px solid var(--color-success, #23704a);
+  background: #f4faf6;
+  padding: clamp(1rem, 2vw, 1.5rem);
+}
+
+.media-recipe-calculator .form-grid {
+  margin-block: 1rem;
+}

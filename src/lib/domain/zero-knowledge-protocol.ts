@@ -172,6 +172,16 @@ export function describeBeginnerMaterial(name: string): BeginnerMaterial {
       allowedSubstitutes: [],
     };
   }
+  if (normalized.includes("แว่นขยาย")) {
+    return {
+      name,
+      appearance: "เลนส์ขยายแบบถือหรือมีฐาน ที่ทำให้เห็นข้อ ตาข้าง แมลง และรอยโรคชัดขึ้น",
+      purpose: "ขยายจุดเล็กบนต้นไม้เพื่อแยกตาข้างออกจากรอยแผลหรือสิ่งสกปรก",
+      quantity: "1 อัน",
+      specification: "ภาพชัด ไม่บิดเบี้ยวจนระบุตำแหน่งผิด และมีแสงส่องเพียงพอ",
+      allowedSubstitutes: ["กล้องโทรศัพท์ที่ซูมแล้วโฟกัสจุดเล็กได้ชัด"],
+    };
+  }
   if (normalized.includes("แว่น")) {
     return {
       name,
@@ -210,6 +220,66 @@ export function describeBeginnerMaterial(name: string): BeginnerMaterial {
       quantity: "1 เครื่อง",
       specification: "สอบเทียบหรือมีช่วงตรวจครอบคลุมค่าที่ Protocol กำหนด",
       allowedSubstitutes: ["แถบ pH ช่วงแคบตามที่ Protocol อนุญาต"],
+    };
+  }
+  if (normalized.includes("ms basal") || normalized.includes("ms medium")) {
+    return {
+      name,
+      appearance: "ผงหรือสารละลายสำเร็จรูปที่ฉลากระบุ MS basal salts และอัตราสำหรับ 1 L ชัดเจน",
+      purpose: "ให้ธาตุอาหารหลักและธาตุอาหารรองแก่ชิ้นพืช",
+      quantity: "ตามปริมาตร batch ที่เครื่องคำนวณแสดง",
+      specification: "ชื่อสูตรและอัตราผสมต้องตรงกับฉลาก ห้ามใช้ปุ๋ยปลูกต้นไม้แทน",
+      allowedSubstitutes: [],
+    };
+  }
+  if (normalized.includes("sucrose") || normalized.includes("น้ำตาล")) {
+    return {
+      name,
+      appearance: "ผงผลึกสีขาวที่ฉลากระบุ sucrose",
+      purpose: "เป็นแหล่งพลังงานในอาหารเพาะ",
+      quantity: "ชั่งตามกรัมที่เครื่องคำนวณแสดง",
+      specification: "ใช้ sucrose ตามสูตรและชั่งด้วยเครื่องชั่ง ไม่ใช้ช้อนกะ",
+      allowedSubstitutes: [],
+    };
+  }
+  if (normalized.includes("agar") || normalized.includes("วุ้น")) {
+    return {
+      name,
+      appearance: "ผงวุ้นสำหรับงานเพาะเลี้ยงหรือชนิดที่สูตรระบุ",
+      purpose: "ทำให้อาหารแข็งเพื่อพยุง explant",
+      quantity: "ชั่งตามกรัมที่เครื่องคำนวณแสดง",
+      specification: "ต้องทราบความแรงเจลหรือใช้อัตราที่สูตรระบุ",
+      allowedSubstitutes: [],
+    };
+  }
+  if (normalized.includes("stock hormone") || normalized.includes("สารละลาย stock")) {
+    return {
+      name,
+      appearance: "ขวดติดฉลากชื่อฮอร์โมน ความเข้มข้น หน่วย วันที่เตรียม และตัวทำละลาย",
+      purpose: "เติมฮอร์โมนในปริมาตรที่ตวงได้แม่นยำ",
+      quantity: "ตวงตาม mL หรือ µL ที่คำนวณจากความเข้มข้นบนฉลาก",
+      specification: "ห้ามใช้เมื่อไม่ทราบชื่อ ความเข้มข้น หน่วย หรือตัวทำละลาย",
+      allowedSubstitutes: [],
+    };
+  }
+  if (normalized.includes("เครื่องชั่ง")) {
+    return {
+      name,
+      appearance: "เครื่องชั่งดิจิทัลที่แสดงหน่วย g และมีค่าความละเอียดระบุบนตัวเครื่อง",
+      purpose: "ชั่ง MS น้ำตาล และวุ้นตามค่าที่คำนวณ",
+      quantity: "1 เครื่อง",
+      specification: "ความละเอียดต้องเล็กกว่าหรือเท่ากับค่าที่ต้องชั่ง หากค่าต่ำเกินช่วงให้เตรียม stock",
+      allowedSubstitutes: [],
+    };
+  }
+  if (normalized.includes("haiter") || normalized.includes("ไฮเตอร์")) {
+    return {
+      name,
+      appearance: "ขวดเดิมที่อ่านฉลาก sodium hypochlorite หรือ active chlorine และเปอร์เซ็นต์ได้",
+      purpose: "ใช้ตามวิธีฆ่าเชื้อที่ Lot เลือกและตามปริมาตรที่ระบบคำนวณ",
+      quantity: "ตวงตามคำสั่งของ Lot ไม่ใช้การนับหยด",
+      specification: "ฉลากต้องอ่านเปอร์เซ็นต์ได้และผลิตภัณฑ์ต้องไม่ผสมกลิ่นหรือสารอื่นที่สูตรไม่รองรับ",
+      allowedSubstitutes: [],
     };
   }
   return {
