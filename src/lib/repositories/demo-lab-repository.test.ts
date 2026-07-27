@@ -24,6 +24,6 @@ describe("demo lab repository", () => {
     const final = await repository.completeProtocolStep("demo-owner", "protocol-nodal-v01", 99);
 
     expect(first.activeStepIndex).toBe(3);
-    expect(final.activeStepIndex).toBe(5);
+    expect(final.activeStepIndex).toBe(21);
   });
 });

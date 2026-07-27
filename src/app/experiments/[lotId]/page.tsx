@@ -19,6 +19,7 @@ import { getProtocolRepository } from "@/lib/repositories/protocol-repository-fa
 import { getMediaRepository } from "@/lib/repositories/media-repository-factory";
 import { getStepRunRepository } from "@/lib/repositories/step-run-repository-factory";
 import { composeGuidedSteps, profileById } from "@/lib/domain/sterilization-profiles";
+import { monographForTaxon } from "@/lib/domain/philodendron-knowledge";
 
 export default function ExperimentDetailPage() {
   const params = useParams<{ lotId: string }>();
@@ -57,6 +58,21 @@ export default function ExperimentDetailPage() {
       : lot?.protocolId.includes("violin") || lot?.protocolTitle.toLowerCase().includes("violin")
         ? "/knowledge/taxa/trade-name-violin-variegated#media-recipes"
         : "/knowledge";
+  const recipeSummary = useMemo(() => {
+    if (!lot?.sterilization?.mediumVolumeMl) return [];
+    const taxonId = lot.taxonId
+      ?? (lot.protocolTitle.toLowerCase().includes("pink princess") ? "cultivar-pink-princess"
+        : lot.protocolTitle.toLowerCase().includes("violin") ? "trade-name-violin-variegated" : "");
+    const recipe = monographForTaxon(taxonId)?.tissueCulture.mediaRecipes.find((item) => item.id === "establishment");
+    if (!recipe) return [];
+    const volume = lot.sterilization.mediumVolumeMl;
+    return [
+      ...recipe.ingredients.map((item) => item.unit === "×"
+        ? `${item.name}: ${item.amountPerLiter}× ตามฉลากสำหรับ ${volume} mL`
+        : `${item.name}: ${Number((item.amountPerLiter * volume / 1000).toFixed(4))} ${item.unit.replace("/L", "")}${item.note ? ` · ${item.note}` : ""}`),
+      `ปรับ pH: ${recipe.pH}`,
+    ];
+  }, [lot]);
 
   async function load() {
     const nextLot = await repository.getLot(ownerId, lotId);
@@ -116,7 +132,7 @@ export default function ExperimentDetailPage() {
       {lot.deletedAt && <div className="form-alert" role="status">Lot นี้อยู่ในถังขยะ ข้อมูลยังไม่ถูกลบถาวร</div>}
       <header className="lot-detail-heading"><div><p className="eyebrow">EXPERIMENT LOT</p><h1>{lot.id}</h1><p>{lot.plant} · {lot.protocolTitle}</p></div><div className="route-actions">{lot.deletedAt ? <button className="primary-button" onClick={() => void restoreLot()} type="button">กู้คืน Lot</button> : <button className="quiet-button" onClick={() => void deleteLot()} type="button">เก็บเข้าถังขยะ</button>}<span className={`badge badge-${lot.status.toLowerCase().replaceAll(" ", "-")}`}>{lot.status}</span></div></header>
       <div className="lot-detail-grid">
-        <section className="lot-work-column">{protocolVersion && guidedSteps && <section className="experiment-surface protocol-lot-runner"><div className="timeline-heading"><div><p className="eyebrow">PROTOCOL PROGRESS</p><h2>{lot.protocolTitle}</h2><p className="muted-copy">ทำตามทีละขั้น บันทึกผลจริง แล้วระบบจะเก็บหลักฐานไว้กับ Lot นี้</p></div><Link href={`/protocols/${lot.protocolId}`}>เปิด Protocol</Link></div><GuidedProtocolRunner haiterDefaults={lot.sterilization?.method === "haiter-chemical" ? { labelPercent: lot.sterilization.activeChlorinePercent, targetPercent: lot.sterilization.targetChlorinePercent, mediumVolumeMl: lot.sterilization.mediumVolumeMl } : undefined} lotId={lotId} protocolId={lot.protocolId} versionId={protocolVersion.id} steps={guidedSteps} runs={stepRuns} onSave={saveStepRun} mediaByStep={stepMedia} onMediaUploaded={saveMedia} onMediaDelete={deleteMedia} onMediaRestore={restoreMedia} recipeHref={recipeHref} /></section>}
+        <section className="lot-work-column">{protocolVersion && guidedSteps && <section className="experiment-surface protocol-lot-runner"><div className="timeline-heading"><div><p className="eyebrow">PROTOCOL PROGRESS</p><h2>{lot.protocolTitle}</h2><p className="muted-copy">ทำตามทีละขั้น บันทึกผลจริง แล้วระบบจะเก็บหลักฐานไว้กับ Lot นี้</p></div><Link href={`/protocols/${lot.protocolId}`}>เปิด Protocol</Link></div><GuidedProtocolRunner haiterDefaults={lot.sterilization?.method === "haiter-chemical" ? { labelPercent: lot.sterilization.activeChlorinePercent, targetPercent: lot.sterilization.targetChlorinePercent, mediumVolumeMl: lot.sterilization.mediumVolumeMl } : undefined} lotId={lotId} protocolId={lot.protocolId} versionId={protocolVersion.id} steps={guidedSteps} runs={stepRuns} onSave={saveStepRun} mediaByStep={stepMedia} onMediaUploaded={saveMedia} onMediaDelete={deleteMedia} onMediaRestore={restoreMedia} recipeHref={recipeHref} recipeSummary={recipeSummary} /></section>}
           {protocolVersion && !lot.sterilization && <section className="experiment-surface migration-state" role="alert"><p className="eyebrow">LEGACY LOT</p><h2>Lot นี้ยังไม่ได้เลือกวิธีฆ่าเชื้ออาหาร</h2><p>เพื่อไม่แก้ประวัติเดิม ระบบจะไม่เดาวิธีให้ กรุณาสร้าง Lot รอบใหม่ผ่าน Wizard แล้วเลือก Haiter หรือหม้อนึ่งแรงดันก่อนเริ่ม</p><Link className="primary-button" href={`/experiments/new?plant=${encodeURIComponent(lot.plant)}${lot.taxonId ? `&taxon=${encodeURIComponent(lot.taxonId)}` : ""}`}>สร้าง Lot ใหม่ด้วย Wizard</Link></section>}
           {protocolVersion && lot.sterilization && !guidedSteps && <section className="route-state error" role="alert">ไม่พบ Sterilization Profile version ที่ Lot นี้ใช้ กรุณาตรวจ audit และ profile ID</section>}
           <ObservationForm defaultStage={lot.stage} editing={editing} key={editing?.id ?? "new"} onCancel={() => setEditing(null)} onSubmit={save} />

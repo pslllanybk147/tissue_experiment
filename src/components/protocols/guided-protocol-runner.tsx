@@ -29,6 +29,7 @@ type Props = {
   onMediaRestore?: (observationId: string, mediaId: string) => Promise<void>;
   haiterDefaults?: HaiterDefaults;
   recipeHref?: string;
+  recipeSummary?: string[];
 };
 
 const statuses: GuidedStepStatus[] = ["Passed", "Needs review", "Failed"];
@@ -43,7 +44,7 @@ export function persistedStatusForSave(mode: "draft" | "confirm", status: Guided
   return mode === "draft" ? "Pending" : status;
 }
 
-export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs, onSave, mediaByStep = {}, onMediaUploaded, onMediaDelete, onMediaRestore, haiterDefaults, recipeHref }: Props) {
+export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs, onSave, mediaByStep = {}, onMediaUploaded, onMediaDelete, onMediaRestore, haiterDefaults, recipeHref, recipeSummary = [] }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [stepsOpen, setStepsOpen] = useState(false);
   const [workspaceView, setWorkspaceView] = useState<"manual" | "record">("manual");
@@ -152,7 +153,8 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
         <aside className="guided-recipe-link" role="note">
           <div>
             <strong>สูตรอาหารของ Lot นี้</strong>
-            <p>เปิดเครื่องคำนวณตามจำนวนกระปุก พร้อมตารางส่วนผสม pH และวิธีเจือจาง stock ปริมาตรเล็ก</p>
+            {haiterDefaults?.mediumVolumeMl ? <p><strong>ปริมาตรของ Lot: {haiterDefaults.mediumVolumeMl} mL</strong></p> : null}
+            {recipeSummary.length ? <ul>{recipeSummary.map((item) => <li key={item}>{item}</li>)}</ul> : <p>เปิดเครื่องคำนวณตามจำนวนกระปุก พร้อมตารางส่วนผสม pH และวิธีเจือจาง stock ปริมาตรเล็ก</p>}
           </div>
           <Link className="primary-button" href={recipeHref} target="_blank" rel="noreferrer">เปิดสูตรอาหารและเครื่องคำนวณ ↗</Link>
         </aside>

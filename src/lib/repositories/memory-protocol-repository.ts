@@ -4,6 +4,7 @@ import { createPlaybookDraftInput } from "../domain/approved-claim-gate";
 import { nextDraftVersion } from "../domain/protocol-versioning";
 import { validateProtocolForPublish } from "../domain/protocol-validation";
 import type { ProtocolAuditEvent, ProtocolRepository } from "./protocol-repository";
+import { demoStorageKey, readDemoState, writeDemoState } from "./demo-storage";
 
 const clone = <T,>(value: T): T => structuredClone(value);
 const slugify = (value: string) => value.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "protocol";
@@ -231,6 +232,7 @@ export function createDefaultSeedProtocols(uid: string): { protocol: ProtocolRec
 }
 
 export function createMemoryProtocolRepository(uid: string): ProtocolRepository {
+  const storageKey = demoStorageKey(uid, "protocols");
   const protocols = new Map<string, ProtocolRecord>();
   const versions = new Map<string, ProtocolVersion[]>();
   const audit = new Map<string, ProtocolAuditEvent[]>();
@@ -241,11 +243,17 @@ export function createMemoryProtocolRepository(uid: string): ProtocolRepository 
     protocols.set(seed.protocol.id, seed.protocol);
     versions.set(seed.protocol.id, [seed.version]);
   }
+  const stored = readDemoState<{ protocols: ProtocolRecord[]; versions: Array<[string, ProtocolVersion[]]>; audit: Array<[string, ProtocolAuditEvent[]]> }>(storageKey, { protocols: [], versions: [], audit: [] });
+  for (const protocol of stored.protocols) protocols.set(protocol.id, protocol);
+  for (const [protocolId, items] of stored.versions) versions.set(protocolId, items);
+  for (const [protocolId, items] of stored.audit) audit.set(protocolId, items);
+  const persist = () => writeDemoState(storageKey, { protocols: [...protocols.values()], versions: [...versions.entries()], audit: [...audit.entries()] });
 
   const guard = (ownerId: string) => { if (ownerId !== uid) throw new Error("Owner mismatch"); };
   const event = (protocolId: string, action: ProtocolAuditEvent["action"], before: unknown, after: unknown) => {
     const item: ProtocolAuditEvent = { id: crypto.randomUUID(), protocolId, ownerId: uid, action, occurredAt: new Date().toISOString(), before: before as Record<string, unknown> | null, after: after as Record<string, unknown> | null };
     audit.set(protocolId, [...(audit.get(protocolId) ?? []), item]);
+    persist();
   };
   return {
     async list(ownerId, includeArchived = false) { guard(ownerId); return clone([...protocols.values()].filter(p => includeArchived || p.status !== "Archived")); },

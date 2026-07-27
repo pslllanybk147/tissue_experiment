@@ -2474,3 +2474,39 @@
   - `npm run build`: ผ่าน
   - `npm run firebase:verify`: ผ่าน 245 tests บน Auth/Firestore emulator
   - `npm run ui:verify`: ผ่าน 14 viewport ตั้งแต่ 360 ถึง 1920px
+
+## 2026-07-27 — Close remaining beginner audit findings
+
+- ปิดข้อ 3: ขั้นเตรียมอาหารแสดงสูตรของ Lot ในหน้า Protocol โดยตรง:
+  - ปริมาตรรวมของ Lot
+  - MS strength
+  - sucrose, agar และฮอร์โมนตามปริมาตรจริง
+  - pH เป้าหมาย
+  - ยังมีลิงก์ไปเครื่องคำนวณเพื่อปรับจำนวนกระปุก
+- ปิดข้อ 4: Plant Record มีช่องเพิ่มรูป baseline ทั้งต้น:
+  - รับเฉพาะไฟล์ภาพ
+  - จำกัด 350 KB เพื่อไม่ให้ Firestore document เกินขีดจำกัด
+  - แสดง preview ก่อนบันทึก
+  - เก็บใน `baselineMediaIds` ของ Plant Record
+- ปิดข้อ 9:
+  - เพิ่มคำอธิบายเฉพาะสำหรับพื้นที่สะอาด รูป/ข้อมูลต้นไม้ และภาชนะ
+  - fallback ไม่ใช้ข้อความ “1 ชิ้นหรือ 1 ชุด” อีกต่อไป
+  - fallback บังคับตรวจชื่อ ฉลาก ขนาด หรือช่วงวัด และให้หยุดเมื่อข้อมูลไม่ครบ
+- ปิดข้อ 10: Dashboard แสดง 22 Protocol steps และขอบเขต progress 0–21 ตรงกับ Guided Protocol ปัจจุบัน
+- ปิดข้อ 11: Demo mode ใช้ localStorage persistence สำหรับ:
+  - Plant Records
+  - Experiment Lots, Observations และ audit events
+  - Protocol/versions/audit
+  - Protocol Step Runs
+- Browser sandbox ยืนยัน:
+  - สร้าง Plant `Persistence Audit` แล้ว reload หน้า Plant ยังอยู่
+  - สร้าง Lot `LOT-20260727-060637` แล้ว reload หน้า Lot และ Protocol ยังอยู่
+  - Wizard มี checklist 10 รายการ และ Summary แสดง 110 mL, 4 กระปุก, ฉลาก 6%
+  - ขั้นเตรียมอาหารแสดง 110 mL, sucrose 3.3 g, agar 0.825 g และ pH 5.7–5.8
+  - Dashboard แสดง 22 Protocol steps
+- Verification:
+  - `npm test -- --run`: ผ่าน 237 tests, skip 10
+  - `npm run lint`: ผ่านโดยไม่มี warning
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: ผ่าน 247 tests
+  - `npm run ui:verify`: ผ่าน 14 viewport ตั้งแต่ 360 ถึง 1920px

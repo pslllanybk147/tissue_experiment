@@ -17,7 +17,7 @@ export function createDemoLabRepository(): LabRepository {
   let activeStepIndex = 2;
 
   function protocolFor(ownerId: string): Protocol {
-    return { id: "protocol-nodal-v01", ownerId, title: "Nodal establishment", version: "v0.1", activeStepIndex, stepCount: 6 };
+    return { id: "protocol-nodal-v01", ownerId, title: "Nodal establishment", version: "v0.1", activeStepIndex, stepCount: 22 };
   }
 
   async function listLots(ownerId: string): Promise<ExperimentLot[]> {
@@ -30,7 +30,7 @@ export function createDemoLabRepository(): LabRepository {
 
   async function completeProtocolStep(ownerId: string, protocolId: string, currentIndex: number): Promise<Protocol> {
     if (protocolId !== "protocol-nodal-v01") throw new Error("Unknown protocol");
-    activeStepIndex = Math.min(Math.max(currentIndex + 1, 0), 5);
+    activeStepIndex = Math.min(Math.max(currentIndex + 1, 0), 21);
     return protocolFor(ownerId);
   }
 
@@ -40,7 +40,7 @@ export function createDemoLabRepository(): LabRepository {
 export function createDemoSnapshot(ownerId: string, activeStepIndex = 2): LabSnapshot {
   return {
     lots: lotsFor(ownerId),
-    protocol: { id: "protocol-nodal-v01", ownerId, title: "Nodal establishment", version: "v0.1", activeStepIndex, stepCount: 6 },
+    protocol: { id: "protocol-nodal-v01", ownerId, title: "Nodal establishment", version: "v0.1", activeStepIndex, stepCount: 22 },
     research: research.map((source) => ({ ...source, ownerId })),
   };
 }

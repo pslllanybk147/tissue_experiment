@@ -1,5 +1,6 @@
 import type { AuditEvent, CreateLotInput, ExperimentLot, Observation, ObservationInput } from "@/lib/domain/models";
 import type { ExperimentRepository } from "./experiment-repository";
+import { demoStorageKey, readDemoState, writeDemoState } from "./demo-storage";
 
 type RepositoryOptions = {
   createId?: () => string;
@@ -14,11 +15,15 @@ function clone<T>(value: T): T {
 }
 
 export function createMemoryExperimentRepository(uid: string, options: RepositoryOptions = {}): ExperimentRepository {
-  const lots = new Map((options.lots ?? []).map((lot) => [lot.id, clone(lot)]));
-  const observations = new Map((options.observations ?? []).map((item) => [item.id, clone(item)]));
-  const auditEvents: AuditEvent[] = clone(options.auditEvents ?? []);
+  const storageKey = demoStorageKey(uid, "experiments");
+  const stored = readDemoState<{ lots: ExperimentLot[]; observations: Observation[]; auditEvents: AuditEvent[] }>(storageKey, { lots: [], observations: [], auditEvents: [] });
+  const initialLots = [...(options.lots ?? []), ...stored.lots.filter((item) => !(options.lots ?? []).some((seed) => seed.id === item.id))];
+  const lots = new Map(initialLots.map((lot) => [lot.id, clone(lot)]));
+  const observations = new Map([...(options.observations ?? []), ...stored.observations].map((item) => [item.id, clone(item)]));
+  const auditEvents: AuditEvent[] = clone([...(options.auditEvents ?? []), ...stored.auditEvents]);
   const createId = options.createId ?? (() => crypto.randomUUID());
   const now = options.now ?? (() => new Date().toISOString());
+  const persist = () => writeDemoState(storageKey, { lots: [...lots.values()], observations: [...observations.values()], auditEvents });
 
   function assertOwner(ownerId: string) {
     if (ownerId !== uid) throw new Error("Owner mismatch");
@@ -56,6 +61,7 @@ export function createMemoryExperimentRepository(uid: string, options: Repositor
       before: clone(before),
       after: clone(after),
     });
+    persist();
   }
 
   async function listLots(ownerId: string, includeDeleted = false) {
