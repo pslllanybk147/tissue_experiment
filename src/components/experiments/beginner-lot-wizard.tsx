@@ -9,6 +9,9 @@ import type {
   CreateLotInput,
   ProtocolTemplate,
   SterilizationProfile,
+  WorkspaceApplicator,
+  WorkspaceDisinfectant,
+  WorkspaceType,
 } from "../../lib/domain/models";
 import type { ProtocolOption } from "./lot-form";
 
@@ -64,6 +67,15 @@ export function BeginnerLotWizard({
   const [lossPercent, setLossPercent] = useState("10");
   const [minimumMeasurableMl, setMinimumMeasurableMl] = useState("0.1");
   const [equipmentReady, setEquipmentReady] = useState<Record<string, boolean>>({});
+  const [workspaceType, setWorkspaceType] = useState<WorkspaceType>("still-air-box");
+  const [workspaceDisinfectant, setWorkspaceDisinfectant] = useState<WorkspaceDisinfectant>("alcohol-70");
+  const [workspaceApplicator, setWorkspaceApplicator] = useState<WorkspaceApplicator>("wipe");
+  const [alcoholPercent, setAlcoholPercent] = useState("70");
+  const [surfaceHaiterPercent, setSurfaceHaiterPercent] = useState("");
+  const [surfaceTargetPercent, setSurfaceTargetPercent] = useState("");
+  const [surfaceSolutionVolumeMl, setSurfaceSolutionVolumeMl] = useState("500");
+  const [surfaceContactMinutes, setSurfaceContactMinutes] = useState("");
+  const [customEquipment, setCustomEquipment] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
 
@@ -105,12 +117,32 @@ export function BeginnerLotWizard({
   const equipmentComplete = profile?.equipmentRequirements.every(
     (item) => equipmentReady[item],
   ) ?? false;
+  const surfaceHaiterPlan = useMemo(() => {
+    if (workspaceDisinfectant !== "haiter-label") return null;
+    return createHaiterActionPlan({
+      labelPercent: surfaceHaiterPercent.trim() ? Number(surfaceHaiterPercent) : null,
+      targetPercent: Number(surfaceTargetPercent),
+      mediumVolumeMl: Number(surfaceSolutionVolumeMl),
+      minimumToolVolumeMl: Number(minimumMeasurableMl),
+      permittedDiluent: "น้ำอุณหภูมิห้องตามฉลากผลิตภัณฑ์",
+    });
+  }, [
+    minimumMeasurableMl,
+    surfaceHaiterPercent,
+    surfaceSolutionVolumeMl,
+    surfaceTargetPercent,
+    workspaceDisinfectant,
+  ]);
+  const workspaceComplete = Number(surfaceContactMinutes) > 0
+    && (workspaceDisinfectant === "alcohol-70"
+      ? Number(alcoholPercent) >= 70 && Number(alcoholPercent) <= 90
+      : Boolean(surfaceHaiterPlan && surfaceHaiterPlan.state !== "blocked"));
 
   function canContinue() {
     if (stage === 1) return plant.trim().length > 0;
     if (stage === 2) return Boolean(template);
     if (stage === 3) return Boolean(mediumPlan && !mediumPlan.warnings.length) && (profile?.method === "pressure-sterilization" || haiterPlan?.state === "direct" || haiterPlan?.state === "working-dilution");
-    if (stage === 4) return equipmentComplete;
+    if (stage === 4) return equipmentComplete && workspaceComplete;
     return true;
   }
 
@@ -141,6 +173,21 @@ export function BeginnerLotWizard({
         calculatedDoseMl: profile.method === "haiter-chemical" && haiterPlan && haiterPlan.state !== "blocked"
           ? haiterPlan.directDoseMl
           : undefined,
+        workspace: {
+          workspaceType,
+          disinfectant: workspaceDisinfectant,
+          applicator: workspaceApplicator,
+          alcoholPercent: workspaceDisinfectant === "alcohol-70" ? Number(alcoholPercent) : undefined,
+          haiterSourcePercent: workspaceDisinfectant === "haiter-label" ? Number(surfaceHaiterPercent) : undefined,
+          haiterTargetPercent: workspaceDisinfectant === "haiter-label" ? Number(surfaceTargetPercent) : undefined,
+          solutionVolumeMl: workspaceDisinfectant === "haiter-label" ? Number(surfaceSolutionVolumeMl) : undefined,
+          minimumToolVolumeMl: workspaceDisinfectant === "haiter-label" ? Number(minimumMeasurableMl) : undefined,
+          calculatedHaiterMl: workspaceDisinfectant === "haiter-label" && surfaceHaiterPlan && surfaceHaiterPlan.state !== "blocked"
+            ? surfaceHaiterPlan.directDoseMl
+            : undefined,
+          contactTimeMinutes: Number(surfaceContactMinutes),
+          customEquipment: customEquipment.split(/[\n,]/).map((item) => item.trim()).filter(Boolean),
+        },
       },
     };
     const result = validateLotInput(input);
@@ -296,6 +343,44 @@ export function BeginnerLotWizard({
           <>
             <p className="eyebrow">STEP 4</p>
             <h2 id="wizard-stage-4">ตรวจอุปกรณ์ที่มีจริง</h2>
+            <fieldset className="workspace-planner">
+              <legend>พื้นที่ปลอดเชื้อที่คุณมี</legend>
+              <label className="form-field">
+                <span>พื้นที่ทำงาน</span>
+                <select value={workspaceType} onChange={(event) => setWorkspaceType(event.target.value as WorkspaceType)}>
+                  <option value="still-air-box">Still-Air Box (SAB)</option>
+                  <option value="laminar-flow-cabinet">ตู้ลมสะอาด / laminar-flow cabinet</option>
+                </select>
+              </label>
+              <label className="form-field">
+                <span>สารเช็ดพื้นผิว — เลือกเพียงชนิดเดียวต่อ session</span>
+                <select value={workspaceDisinfectant} onChange={(event) => setWorkspaceDisinfectant(event.target.value as WorkspaceDisinfectant)}>
+                  <option value="alcohol-70">Alcohol 70–90%</option>
+                  <option value="haiter-label">Haiter/bleach เจือจางตามฉลาก</option>
+                </select>
+              </label>
+              <label className="form-field">
+                <span>วิธีนำสารลงบนพื้นผิว</span>
+                <select value={workspaceApplicator} onChange={(event) => setWorkspaceApplicator(event.target.value as WorkspaceApplicator)}>
+                  <option value="wipe">เทใส่ผ้าแล้วเช็ด</option>
+                  <option value="spray-to-wipe">ฉีดใส่ผ้านอก SAB แล้วเช็ด — ห้ามพ่นฟุ้งในกล่อง</option>
+                </select>
+              </label>
+              {workspaceDisinfectant === "alcohol-70" ? (
+                <label className="form-field"><span>% alcohol บนฉลาก</span><input inputMode="decimal" min="70" max="90" onChange={(event) => setAlcoholPercent(event.target.value)} type="number" value={alcoholPercent} /></label>
+              ) : (
+                <div className="workspace-chemical-grid">
+                  <label className="form-field"><span>% Haiter/NaOCl บนฉลาก</span><input inputMode="decimal" min="0" onChange={(event) => setSurfaceHaiterPercent(event.target.value)} placeholder="คัดลอกจากฉลาก" type="number" value={surfaceHaiterPercent} /></label>
+                  <label className="form-field"><span>% เป้าหมายสำหรับพื้นผิวตามฉลาก</span><input inputMode="decimal" min="0" onChange={(event) => setSurfaceTargetPercent(event.target.value)} placeholder="ห้ามใช้ค่าของอาหารแทน" type="number" value={surfaceTargetPercent} /></label>
+                  <label className="form-field"><span>ปริมาตรน้ำยาเช็ดที่จะเตรียม (mL)</span><input inputMode="decimal" min="1" onChange={(event) => setSurfaceSolutionVolumeMl(event.target.value)} type="number" value={surfaceSolutionVolumeMl} /></label>
+                  {surfaceHaiterPlan?.state === "blocked" ? <p className="form-alert" role="alert">{surfaceHaiterPlan.reason} {surfaceHaiterPlan.safeAction}</p> : null}
+                  {surfaceHaiterPlan && surfaceHaiterPlan.state !== "blocked" ? <div className="calculation-result"><strong>{surfaceHaiterPlan.primaryInstruction}</strong><ol>{surfaceHaiterPlan.actions.map((action) => <li key={action}>{action}</li>)}</ol></div> : null}
+                </div>
+              )}
+              <label className="form-field"><span>Contact time บนฉลาก (นาที)</span><input inputMode="decimal" min="0.1" onChange={(event) => setSurfaceContactMinutes(event.target.value)} placeholder="กรอกเวลาที่พื้นผิวต้องเปียกตามฉลาก" type="number" value={surfaceContactMinutes} /></label>
+              <label className="form-field"><span>อุปกรณ์อื่นที่มีจริง (คั่นด้วย comma หรือขึ้นบรรทัดใหม่)</span><textarea onChange={(event) => setCustomEquipment(event.target.value)} placeholder="เช่น ขวดสเปรย์ 500 mL, กระดาษไม่เป็นขุย, timer" rows={3} value={customEquipment} /></label>
+              <p className="wizard-guard"><strong>ห้ามผสมหรือฉีดทับ:</strong> Haiter/bleach กับ alcohol กรด แอมโมเนีย หรือน้ำยาชนิดอื่น และห้ามใช้เปลวไฟใน SAB</p>
+            </fieldset>
             <div className="equipment-checklist">
               {profile.equipmentRequirements.map((item) => (
                 <label key={item}>
@@ -319,6 +404,8 @@ export function BeginnerLotWizard({
               <div><dt>ต้นไม้</dt><dd>{plant}</dd></div>
               <div><dt>คู่มือ</dt><dd>{template?.title}</dd></div>
               <div><dt>การฆ่าเชื้ออาหาร</dt><dd>{profile?.title}</dd></div>
+              <div><dt>พื้นที่ทำงาน</dt><dd>{workspaceType === "still-air-box" ? "Still-Air Box (SAB)" : "Laminar-flow cabinet"} · {workspaceDisinfectant === "alcohol-70" ? `Alcohol ${alcoholPercent}%` : `Haiter ${surfaceHaiterPercent}% → ${surfaceTargetPercent}%`} · contact time {surfaceContactMinutes} นาที</dd></div>
+              {customEquipment.trim() ? <div><dt>อุปกรณ์เพิ่มเติม</dt><dd>{customEquipment}</dd></div> : null}
               {mediumPlan && <div><dt>อาหารที่ต้องเตรียม</dt><dd>{mediumPlan.totalVolumeMl} mL สำหรับ {mediumPlan.totalJarCount} กระปุก (เพาะ {cultureJarCount}, Blank {blankJarCount}, สำรอง {spareJarCount})</dd></div>}
               {profile?.method === "haiter-chemical" && <div><dt>ค่าคลอรีน</dt><dd>ฉลาก {sourcePercent}% → เป้าหมาย {targetPercent}%</dd></div>}
               {haiterPlan && haiterPlan.state !== "blocked" && <div><dt>คำสั่งเตรียม</dt><dd>{haiterPlan.primaryInstruction}</dd></div>}

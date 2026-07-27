@@ -2,6 +2,7 @@ import type {
   ProtocolStep,
   SterilizationProfile,
   SterilizationReadiness,
+  WorkspaceSetupSnapshot,
 } from "./models";
 import { createBeginnerInstruction } from "./zero-knowledge-protocol";
 
@@ -558,9 +559,156 @@ function classifyBaseStep(step: ProtocolStep): ProtocolStep {
   return { ...step, workflowPhase: "culture" };
 }
 
+export function workspaceStepForSetup(
+  baseStep: ProtocolStep,
+  setup?: WorkspaceSetupSnapshot,
+): ProtocolStep {
+  if (!setup) return {
+    ...baseStep,
+    title: "เลือกและเตรียมพื้นที่ทำงานปลอดเชื้อ",
+    instruction: "Lot นี้ยังไม่มีข้อมูล SAB/ตู้ลมและสารเช็ดพื้นผิว กรุณาสร้าง Lot ใหม่ผ่าน Wizard ก่อนเริ่มงาน",
+    evidenceState: "Experimental",
+    requiredEvidence: ["note"],
+    beginner: createBeginnerInstruction({
+      currentAction: "หยุดและบันทึกข้อมูลพื้นที่ทำงาน",
+      actions: ["สร้าง Lot ใหม่ผ่าน Wizard แล้วเลือก Still-Air Box หรือ laminar-flow cabinet พร้อมสารที่ใช้เช็ดพื้นผิว"],
+      materials: ["แบบบันทึก"],
+      doNotDoYet: ["อย่าเปิดอาหาร อย่าตัดต้น และอย่าฉีดสารใดในพื้นที่ที่ยังไม่ได้เลือกวิธี"],
+      whatToFind: ["Lot ใหม่มีชื่อพื้นที่ทำงาน สารเช็ดพื้นผิว และอุปกรณ์ที่มีจริง"],
+      stopConditions: ["ไม่มีข้อมูลพื้นที่ทำงานหรือฉลากสาร"],
+      evidencePrompt: ["บันทึกว่า Lot นี้เป็น legacy และยังไม่มี workspace profile"],
+      readyChecklist: ["สร้าง Lot ใหม่ที่มี workspace profile แล้ว"],
+      scienceNote: "การเตรียมพื้นที่ต้องผูกกับอุปกรณ์และสารที่มีจริง ไม่ใช้คำแนะนำแบบเดา",
+    }),
+  };
+
+  const workspaceName = setup.workspaceType === "still-air-box"
+    ? "Still-Air Box (SAB)"
+    : "ตู้ลมสะอาด/laminar-flow cabinet";
+  const custom = setup.customEquipment.filter(Boolean);
+  const sharedMaterials = [
+    workspaceName,
+    "น้ำยาล้างพื้นผิวหรือสบู่กับน้ำสำหรับกำจัดคราบ",
+    "ผ้าเช็ดแบบใช้ครั้งเดียวหรือกระดาษไม่เป็นขุย",
+    "ถุงมือและแว่นตานิรภัย",
+    "ตัวจับเวลา",
+    ...custom,
+  ];
+  const sharedActions = [
+    `วาง ${workspaceName} บนโต๊ะมั่นคงในห้องที่ไม่มีลมโกรก ปิดพัดลมและหลีกเลี่ยงการเดินผ่าน`,
+    "นำของออกจากพื้นที่ แล้วล้างคราบที่มองเห็นด้วยสบู่/น้ำก่อน เพราะสารฆ่าเชื้อทำงานได้ไม่ดีบนคราบ",
+  ];
+  const finishActions = setup.workspaceType === "still-air-box"
+    ? [
+        "เช็ดด้านในจากส่วนบนลงด้านล่าง: เพดาน ด้านข้าง ด้านหลัง พื้น และขอบช่องสอดแขน โดยใช้ด้านสะอาดของผ้าแต่ละช่วง",
+        "เช็ดด้านนอกของอุปกรณ์ทุกชิ้นก่อนนำเข้า จัดของให้หยิบได้โดยไม่ไขว้มือเหนือภาชนะเปิด",
+        "ปิด SAB และรอให้อากาศนิ่งอย่างน้อย 15 นาทีหลังการเคลื่อนย้ายของครั้งสุดท้าย",
+        "ก่อนสอดมือ ให้ทำความสะอาดถุงมือด้านนอกด้วยวิธีเดียวกันและรอให้แห้ง ห้ามแตะโทรศัพท์ ลูกบิด หรือของนอก SAB แล้วกลับเข้าไปทำงาน",
+      ]
+    : [
+        "เปิดตู้และรอเวลาตามคู่มือผู้ผลิตก่อนเริ่ม ห้ามเดาเวลาการ purge ของ HEPA",
+        "เช็ดพื้นผิวทำงานโดยไม่ฉีดสารเข้าตะแกรงหรือแผ่นกรอง HEPA",
+        "จัดของไม่บังช่องลม และทำงานจากของสะอาดไปของที่ใช้แล้ว",
+      ];
+
+  const alcoholActions = [
+    ...sharedActions,
+    `อ่านฉลากยืนยันว่า alcohol อยู่ในช่วง 70–90%; Lot นี้บันทึก ${setup.alcoholPercent ?? "ไม่ระบุ"}%`,
+    setup.applicator === "spray-to-wipe"
+      ? "นำขวดออกนอก SAB หันหัวฉีดเข้าหาผ้าและฉีดให้ผ้าชื้น ห้ามพ่นเป็นละอองในอากาศหรือพ่นเข้าหาใบหน้า"
+      : "เท alcohol ลงบนผ้าให้ชื้นนอก SAB ห้ามเทหรือฉีดจนเกิดแอ่งภายในกล่อง",
+    "เช็ดให้พื้นผิวเปียกทั่วตามเวลาสัมผัสบนฉลาก แล้วรอจนแห้งสนิทและกลิ่นไอลดลงก่อนนำของเข้า",
+    ...finishActions,
+  ];
+  const haiterActions = [
+    ...sharedActions,
+    `อ่านผลคำนวณสำหรับพื้นผิว: Haiter จากฉลาก ${setup.haiterSourcePercent ?? "ไม่ระบุ"}% → เป้าหมาย ${setup.haiterTargetPercent ?? "ไม่ระบุ"}% ปริมาตรรวม ${setup.solutionVolumeMl ?? "ไม่ระบุ"} mL`,
+    `ตวง Haiter ${setup.calculatedHaiterMl ?? "ยังไม่คำนวณ"} mL แล้วเติมน้ำอุณหภูมิห้องให้ครบ ${setup.solutionVolumeMl ?? "ปริมาตรที่ระบุ"} mL ห้ามผสมกับ alcohol หรือสารทำความสะอาดอื่น`,
+    setup.applicator === "spray-to-wipe"
+      ? "เตรียมสารในที่ระบายอากาศ หันหัวฉีดเข้าหาผ้าแล้วฉีดให้ชื้น ห้ามพ่นละอองใน SAB"
+      : "เทสารที่เจือจางแล้วลงบนผ้าให้ชื้นในที่ระบายอากาศ",
+    "เช็ดให้พื้นผิวเปียกทั่วและคงความเปียกตาม contact time บนฉลาก หากฉลากไม่ระบุเวลา ห้ามเดาและห้ามเริ่มงาน",
+    "รอให้พื้นผิวแห้งและระบายอากาศจนไม่มีกลิ่นฉุนก่อนปิดเพื่อให้อากาศนิ่ง ห้ามเช็ดทับด้วย alcohol ใน session เดียวกัน",
+    ...finishActions,
+  ];
+  const actions = setup.disinfectant === "alcohol-70" ? alcoholActions : haiterActions;
+  const disinfectantName = setup.disinfectant === "alcohol-70"
+    ? `alcohol ${setup.alcoholPercent ?? "ไม่ระบุ"}%`
+    : "Haiter ตามค่าจากฉลาก";
+
+  return {
+    ...baseStep,
+    title: `เตรียม ${workspaceName} ด้วย ${disinfectantName}`,
+    instruction: actions.join(" "),
+    evidenceState: "Experimental",
+    referenceIds: Array.from(new Set([
+      ...baseStep.referenceIds,
+      "source-cdc-bleach-safety",
+      "source-who-alcohol-bleach",
+    ])),
+    materials: sharedMaterials,
+    criticalControls: [
+      "ห้ามผสม Haiter/bleach กับ alcohol กรด แอมโมเนีย หรือสารทำความสะอาดอื่น",
+      "ห้ามใช้เปลวไฟ ความร้อน หรือประกายไฟในหรือใกล้ SAB โดยเฉพาะเมื่อใช้ alcohol",
+      "ห้ามพ่นละอองเข้าหา HEPA หรือพ่นฟุ้งในพื้นที่ปิด",
+    ],
+    safetyNotes: [
+      "เตรียมสารในพื้นที่ระบายอากาศ สวมถุงมือและแว่นตา",
+      "ถ้ามีกลิ่นฉุนผิดปกติ แสบตา ไอ หรือหายใจลำบาก ให้ออกจากพื้นที่ไปสู่อากาศบริสุทธิ์และทำตามฉลาก/ข้อมูลฉุกเฉินของผลิตภัณฑ์",
+    ],
+    expectedResult: `${workspaceName} ไม่มีคราบ พื้นผิวผ่าน contact time แห้งแล้ว อุปกรณ์จัดแยกสะอาด/ใช้แล้ว และไม่มีไอสารสะสม`,
+    passCriteria: [
+      "มีรูปพื้นที่ก่อนและหลังเช็ด",
+      "บันทึกชื่อสาร ความเข้มข้น contact time และเวลาที่เริ่มทำงาน",
+      "พื้นผิวแห้ง ไม่มีแอ่งสาร และไม่มีเปลวไฟ/แหล่งประกาย",
+    ],
+    failCriteria: [
+      "ไม่ทราบความเข้มข้นหรือ contact time จากฉลาก",
+      "มีการใช้ Haiter กับ alcohol ในพื้นที่เดียวกันโดยยังไม่ได้ล้าง/ระบายอากาศ",
+      "ยังมีคราบ แอ่งสาร กลิ่นฉุน หรือลมรบกวนพื้นที่",
+    ],
+    nextActionOnPass: "ตรวจรายการอาหาร ภาชนะ เครื่องมือ และ Blank ก่อนเปิดขั้นตัด",
+    nextActionOnFail: "หยุดงาน ปิดอาหารไว้ แก้รายการที่ไม่ผ่าน แล้วเริ่มการเตรียมพื้นที่ใหม่ตั้งแต่ต้น",
+    requiredEvidence: ["note", "photo"],
+    allowPhoto: true,
+    beginner: createBeginnerInstruction({
+      currentAction: `เตรียม ${workspaceName}`,
+      actions,
+      materials: sharedMaterials,
+      doNotDoYet: [
+        "อย่าเปิดอาหารหรือเริ่มตัดต้นจนกว่าพื้นผิวแห้งและตรวจครบ",
+        "ห้ามผสม Haiter กับ alcohol หรือฉีดทับกัน",
+        "ห้ามจุดไฟใน SAB",
+      ],
+      whatToFind: [
+        "ไม่มีคราบหรือหยดสารค้าง",
+        "อุปกรณ์สะอาดอยู่ด้านหนึ่ง ของใช้แล้วมีพื้นที่แยก",
+        setup.workspaceType === "still-air-box" ? "อากาศในกล่องนิ่งหลังรออย่างน้อย 15 นาที" : "ตู้ทำงานครบเวลาตามคู่มือและช่องลมไม่ถูกบัง",
+      ],
+      stopConditions: [
+        "ฉลากไม่มีความเข้มข้นหรือ contact time",
+        "ยังมีกลิ่นฉุน แสบตา ไอ หรือหายใจไม่สะดวก",
+        "มีเปลวไฟ ประกายไฟ พัดลม หรือลมเป่าเข้าพื้นที่",
+      ],
+      evidencePrompt: [
+        "ถ่ายรูปพื้นที่ว่างก่อนเช็ด",
+        "ถ่ายฉลากสารให้เห็นชื่อ ความเข้มข้น และ contact time",
+        "ถ่ายรูปการจัดอุปกรณ์หลังพื้นผิวแห้ง ไม่ต้องถ่ายต้นไม้",
+      ],
+      readyChecklist: [
+        "ฉันใช้สารเพียงชนิดเดียวและไม่ได้ผสมหรือฉีดทับสารอื่น",
+        "ฉันทำครบ contact time และรอให้พื้นผิวแห้ง",
+        "ฉันจัดอุปกรณ์และรอให้อากาศนิ่ง/ตู้ purge ครบแล้ว",
+      ],
+      scienceNote: "การล้างกำจัดคราบ ส่วนสารฆ่าเชื้อต้องสัมผัสพื้นผิวตามเวลาบนฉลาก; alcohol ติดไฟง่ายและ bleach ห้ามผสมกับสารทำความสะอาดอื่น",
+    }),
+  };
+}
+
 export function composeGuidedSteps(
   baseSteps: ProtocolStep[],
   profile: SterilizationProfile,
+  workspaceSetup?: WorkspaceSetupSnapshot,
 ): ProtocolStep[] {
   const classified = baseSteps.map(classifyBaseStep);
   const beforeCut = classified.filter((step) =>
@@ -572,7 +720,9 @@ export function composeGuidedSteps(
   const remaining = beforeCut.filter((step) => step.workflowPhase === "culture");
   const preparation = beforeCut.filter((step) =>
     step.workflowPhase === "baseline" || step.workflowPhase === "mark-explant");
-  const workspace = beforeCut.filter((step) => step.workflowPhase === "medium-preparation");
+  const workspace = beforeCut
+    .filter((step) => step.workflowPhase === "medium-preparation")
+    .map((step) => workspaceStepForSetup(step, workspaceSetup));
   const composed = [
     ...preparation,
     ...profile.steps

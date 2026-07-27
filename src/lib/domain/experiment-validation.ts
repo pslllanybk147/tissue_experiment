@@ -30,10 +30,18 @@ function positiveNumber(
   }
 }
 
-function cleanUndefined<T extends object>(value: T): T {
-  return Object.fromEntries(
-    Object.entries(value).filter(([, item]) => item !== undefined),
-  ) as T;
+function cleanUndefined<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value.filter((item) => item !== undefined).map(cleanUndefined) as T;
+  }
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value)
+        .filter(([, item]) => item !== undefined)
+        .map(([key, item]) => [key, cleanUndefined(item)]),
+    ) as T;
+  }
+  return value;
 }
 
 export function validateLotInput(input: CreateLotInput): ValidationResult<CreateLotInput> {
@@ -61,6 +69,20 @@ export function validateLotInput(input: CreateLotInput): ValidationResult<Create
       && !input.sterilization.blankSkipReason?.trim()
     ) {
       errors.blankSkipReason = "กรุณาบันทึกเหตุผลที่ข้าม Blank test";
+    }
+    if (input.sterilization.workspace) {
+      positiveNumber(errors, "workspaceContactTime", input.sterilization.workspace.contactTimeMinutes);
+      if (input.sterilization.workspace.disinfectant === "alcohol-70") {
+        const percent = input.sterilization.workspace.alcoholPercent;
+        if (percent === undefined || percent < 70 || percent > 90) {
+          errors.workspaceAlcoholPercent = "Alcohol ต้องอยู่ในช่วง 70–90% ตาม profile นี้";
+        }
+      } else {
+        positiveNumber(errors, "workspaceHaiterSourcePercent", input.sterilization.workspace.haiterSourcePercent);
+        positiveNumber(errors, "workspaceHaiterTargetPercent", input.sterilization.workspace.haiterTargetPercent);
+        positiveNumber(errors, "workspaceSolutionVolumeMl", input.sterilization.workspace.solutionVolumeMl);
+        positiveNumber(errors, "workspaceCalculatedHaiterMl", input.sterilization.workspace.calculatedHaiterMl);
+      }
     }
   }
 

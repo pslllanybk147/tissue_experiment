@@ -66,6 +66,51 @@ describe("validateLotInput", () => {
     }
   });
 
+  it("accepts a SAB setup and removes nested undefined values before Firestore", () => {
+    const result = validateLotInput({
+      ...validLot,
+      sterilization: {
+        ...haiterSnapshot,
+        workspace: {
+          workspaceType: "still-air-box",
+          disinfectant: "alcohol-70",
+          applicator: "spray-to-wipe",
+          alcoholPercent: 70,
+          haiterSourcePercent: undefined,
+          contactTimeMinutes: 1,
+          customEquipment: ["ขวดสเปรย์"],
+        },
+      },
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value.sterilization?.workspace?.alcoholPercent).toBe(70);
+      expect(result.value.sterilization?.workspace).not.toHaveProperty("haiterSourcePercent");
+    }
+  });
+
+  it("rejects a workspace without contact time or valid disinfectant values", () => {
+    const result = validateLotInput({
+      ...validLot,
+      sterilization: {
+        ...haiterSnapshot,
+        workspace: {
+          workspaceType: "still-air-box",
+          disinfectant: "alcohol-70",
+          applicator: "wipe",
+          alcoholPercent: 50,
+          contactTimeMinutes: 0,
+          customEquipment: [],
+        },
+      },
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.errors.workspaceContactTime).toBeDefined();
+      expect(result.errors.workspaceAlcoholPercent).toBeDefined();
+    }
+  });
+
   it("rejects skipped blank without a reason", () => {
     const result = validateLotInput({
       ...validLot,

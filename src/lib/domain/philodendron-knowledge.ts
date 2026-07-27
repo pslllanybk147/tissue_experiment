@@ -49,6 +49,8 @@ export const philodendronSources: ManualSource[] = [
   { id: "source-csup-2012", title: "CSUP technique: sodium hypochlorite sterilization of glassware and culture media", url: "https://doi.org/10.4038/jnsfsr.v40i1.4168", sourceType: "peer-reviewed", accessedAt: "2026-07-27" },
   { id: "source-naocl-vessels-2009", title: "Sterilization of non-autoclavable vessels and culture media by sodium hypochlorite", url: "https://doi.org/10.17660/ActaHortic.2009.839.42", sourceType: "peer-reviewed", accessedAt: "2026-07-27" },
   { id: "source-merck-media-sterilization", title: "Media Sterilization — Plant Tissue Culture Protocol", url: "https://www.merckmillipore.com/AL/en/technical-documents/protocol/cell-culture-and-cell-culture-analysis/cell-culture-media-preparation/media-sterilization", sourceType: "technical-guide", accessedAt: "2026-07-27" },
+  { id: "source-cdc-bleach-safety", title: "CDC — Cleaning and Disinfecting with Bleach", url: "https://www.cdc.gov/hygiene/about/cleaning-and-disinfecting-with-bleach.html", sourceType: "technical-guide", accessedAt: "2026-07-27" },
+  { id: "source-who-alcohol-bleach", title: "WHO — Use of disinfectants: alcohol and bleach", url: "https://www.ncbi.nlm.nih.gov/books/NBK214356/", sourceType: "technical-guide", accessedAt: "2026-07-27" },
 ];
 
 export const philodendronTaxonomySnapshot: TaxonomySnapshot = {

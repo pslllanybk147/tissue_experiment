@@ -725,13 +725,18 @@ button:disabled { cursor: not-allowed; }
 .self-check-outcome { margin: 12px 0; padding: 14px; background: white; }
 .medium-batch-planner { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; padding: 18px; border: 1px solid #aebbb2; }
 .medium-batch-planner legend { padding: 0 8px; font-weight: 800; }
+.workspace-planner { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 0 0 20px; padding: 18px; border: 1px solid #718078; background: #f6f8f5; }
+.workspace-planner legend { padding: 0 8px; font-weight: 800; }
+.workspace-planner .wizard-guard, .workspace-chemical-grid { grid-column: 1 / -1; }
+.workspace-chemical-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .medium-batch-result { grid-column: 1 / -1; padding: 16px; background: #eaf4ed; border-left: 5px solid #2d6a48; }
 .protocol-incomplete-warning { margin: 18px 0; padding: 18px; border: 2px solid #ad3d2d; background: #fff1ee; }
 .protocol-incomplete-warning > strong { font-size: 1.15rem; }
 @media (max-width: 600px) {
   .visual-process-flow { grid-template-columns: 1fr; min-height: 0; }
   .visual-process-flow li:not(:last-child)::after { content: "↓"; right: auto; top: auto; bottom: -28px; }
-  .visual-contamination-grid, .medium-batch-planner { grid-template-columns: 1fr; }
+  .visual-contamination-grid, .medium-batch-planner, .workspace-planner, .workspace-chemical-grid { grid-template-columns: 1fr; }
+  .workspace-planner .wizard-guard, .workspace-chemical-grid { grid-column: auto; }
   .beginner-glossary > div { grid-template-columns: 1fr; gap: 5px; }
 }
 @media (prefers-reduced-motion: reduce) {

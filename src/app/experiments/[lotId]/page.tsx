@@ -46,6 +46,7 @@ export default function ExperimentDetailPage() {
       return composeGuidedSteps(
         protocolVersion.steps,
         profileById(lot.sterilization.profileId),
+        lot.sterilization.workspace,
       );
     } catch {
       return null;

@@ -234,6 +234,9 @@ async function verifyWizard(page, viewportName) {
   assert(!/C1V1|C2V2/.test(dilutionText), `${viewportName} wizard: แสดงสมการในคำสั่งหลัก`);
 
   await page.getByRole("button", { name: "ถัดไป" }).click();
+  await page.getByLabel("วิธีนำสารลงบนพื้นผิว").selectOption("spray-to-wipe");
+  await page.getByLabel("Contact time บนฉลาก (นาที)").fill("1");
+  await page.getByLabel("อุปกรณ์อื่นที่มีจริง (คั่นด้วย comma หรือขึ้นบรรทัดใหม่)").fill("ขวดสเปรย์ 500 mL");
   const checks = page.locator(".equipment-checklist input[type='checkbox']");
   for (let index = 0; index < await checks.count(); index += 1) {
     await checks.nth(index).check();
@@ -267,6 +270,7 @@ async function verifyWizard(page, viewportName) {
   const availableStepCount = await availableSteps.count();
   let visualAidFound = false;
   let recipeLinkFound = false;
+  let workspaceGuidanceFound = false;
   for (let index = 0; index < availableStepCount; index += 1) {
     await availableSteps.nth(index).click();
     await inspectProtocolTypography(
@@ -285,9 +289,14 @@ async function verifyWizard(page, viewportName) {
     if (await recipeLink.isVisible().catch(() => false)) {
       recipeLinkFound = (await recipeLink.getAttribute("href"))?.includes("#media-recipes") ?? false;
     }
+    const guideCopy = await page.locator(".guided-step-content").innerText();
+    if (guideCopy.includes("Still-Air Box") && guideCopy.includes("ขวดสเปรย์ 500 mL")) {
+      workspaceGuidanceFound = guideCopy.includes("ห้ามผสม Haiter") && guideCopy.includes("ห้ามพ่นเป็นละออง");
+    }
   }
   assert(visualAidFound, `${viewportName}: ขั้นเลือก/ตัด explant ไม่มีภาพอ้างอิงในคู่มือ`);
   assert(recipeLinkFound, `${viewportName}: ขั้นเตรียมอาหารไม่มีลิงก์ไปสูตรของ taxon ปัจจุบัน`);
+  assert(workspaceGuidanceFound, `${viewportName}: ข้อมูล SAB/อุปกรณ์จาก Wizard ไม่ถูกนำไปสร้างคู่มือ`);
   const recordButton = page.getByRole("button", { name: "อ่านจบแล้ว ไปบันทึกผลขั้นนี้" });
   await recordButton.scrollIntoViewIfNeeded();
   await recordButton.click();

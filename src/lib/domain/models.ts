@@ -110,6 +110,23 @@ export type ProtocolTemplate = {
 
 export type SterilizationMethod = "haiter-chemical" | "pressure-sterilization";
 export type BlankDecision = "completed" | "skipped";
+export type WorkspaceType = "still-air-box" | "laminar-flow-cabinet";
+export type WorkspaceDisinfectant = "alcohol-70" | "haiter-label";
+export type WorkspaceApplicator = "wipe" | "spray-to-wipe";
+
+export type WorkspaceSetupSnapshot = {
+  workspaceType: WorkspaceType;
+  disinfectant: WorkspaceDisinfectant;
+  applicator: WorkspaceApplicator;
+  alcoholPercent?: number;
+  haiterSourcePercent?: number;
+  haiterTargetPercent?: number;
+  solutionVolumeMl?: number;
+  minimumToolVolumeMl?: number;
+  calculatedHaiterMl?: number;
+  contactTimeMinutes: number;
+  customEquipment: string[];
+};
 
 export type SterilizationProfile = {
   id: string;
@@ -132,6 +149,7 @@ export type LotSterilizationSnapshot = {
   targetChlorinePercent?: number;
   mediumVolumeMl?: number;
   calculatedDoseMl?: number;
+  workspace?: WorkspaceSetupSnapshot;
   blankDecision?: BlankDecision;
   blankSkipReason?: string;
 };

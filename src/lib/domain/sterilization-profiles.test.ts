@@ -5,6 +5,7 @@ import {
   composeGuidedSteps,
   profileById,
   sterilizationProfiles,
+  workspaceStepForSetup,
 } from "./sterilization-profiles";
 import { stepsForTemplate } from "./protocol-templates";
 
@@ -209,5 +210,61 @@ describe("readiness gate", () => {
       blankDecision: "skipped",
       blankSkipReason: "มีอาหารเพียงสามกระปุกและยอมรับความเสี่ยง",
     })).toBe(true);
+  });
+});
+
+describe("workspace setup guidance", () => {
+  const workspaceBase = {
+    ...baseSteps[0],
+    id: "workspace",
+    title: "เตรียมพื้นที่ปลอดเชื้อและอุปกรณ์",
+    referenceIds: [],
+  };
+
+  test("turns SAB plus alcohol inputs into physical beginner actions", () => {
+    const step = workspaceStepForSetup(workspaceBase, {
+      workspaceType: "still-air-box",
+      disinfectant: "alcohol-70",
+      applicator: "spray-to-wipe",
+      alcoholPercent: 70,
+      contactTimeMinutes: 1,
+      customEquipment: ["ขวดสเปรย์ 500 mL"],
+    });
+    const copy = step.beginner?.actions.join(" ") ?? "";
+
+    expect(step.title).toContain("Still-Air Box");
+    expect(copy).toContain("ฉีดให้ผ้าชื้น");
+    expect(copy).toContain("ห้ามพ่นเป็นละออง");
+    expect(copy).toContain("รอให้อากาศนิ่งอย่างน้อย 15 นาที");
+    expect(step.criticalControls?.join(" ")).toContain("ห้ามผสม Haiter/bleach กับ alcohol");
+    expect(step.materials).toContain("ขวดสเปรย์ 500 mL");
+    expect(step.requiredEvidence).toEqual(["note", "photo"]);
+  });
+
+  test("uses the entered Haiter surface calculation without mixing it with alcohol", () => {
+    const step = workspaceStepForSetup(workspaceBase, {
+      workspaceType: "still-air-box",
+      disinfectant: "haiter-label",
+      applicator: "wipe",
+      haiterSourcePercent: 6,
+      haiterTargetPercent: 0.1,
+      solutionVolumeMl: 500,
+      minimumToolVolumeMl: 0.1,
+      calculatedHaiterMl: 8.3333,
+      contactTimeMinutes: 1,
+      customEquipment: [],
+    });
+    const copy = step.beginner?.actions.join(" ") ?? "";
+
+    expect(copy).toContain("Haiter 8.3333 mL");
+    expect(copy).toContain("ห้ามผสมกับ alcohol");
+    expect(copy).toContain("contact time บนฉลาก");
+    expect(copy).not.toContain("จุดไฟ");
+  });
+
+  test("blocks a legacy lot that has no workspace input", () => {
+    const step = workspaceStepForSetup(workspaceBase);
+    expect(step.title).toContain("เลือกและเตรียมพื้นที่");
+    expect(step.beginner?.stopConditions).toContain("ไม่มีข้อมูลพื้นที่ทำงานหรือฉลากสาร");
   });
 });
