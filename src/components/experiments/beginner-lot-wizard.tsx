@@ -3,6 +3,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 
 import { createHaiterActionPlan } from "../../lib/domain/haiter-guidance";
+import { calculateMediumBatchPlan } from "../../lib/domain/medium-batch-calculations";
 import { validateLotInput } from "../../lib/domain/experiment-validation";
 import type {
   CreateLotInput,
@@ -55,7 +56,12 @@ export function BeginnerLotWizard({
   const [profileId, setProfileId] = useState(profiles[0]?.id ?? "");
   const [sourcePercent, setSourcePercent] = useState("");
   const [targetPercent, setTargetPercent] = useState("0.003");
-  const [mediumVolumeMl, setMediumVolumeMl] = useState("1000");
+  const [explantCount, setExplantCount] = useState("1");
+  const [cultureJarCount, setCultureJarCount] = useState("1");
+  const [blankJarCount, setBlankJarCount] = useState("1");
+  const [spareJarCount, setSpareJarCount] = useState("2");
+  const [mediumPerJarMl, setMediumPerJarMl] = useState("25");
+  const [lossPercent, setLossPercent] = useState("10");
   const [minimumMeasurableMl, setMinimumMeasurableMl] = useState("0.1");
   const [equipmentReady, setEquipmentReady] = useState<Record<string, boolean>>({});
   const [pending, setPending] = useState(false);
@@ -64,6 +70,21 @@ export function BeginnerLotWizard({
   const profile = profiles.find((item) => item.id === profileId);
   const template = templates.find((item) => item.id === templateId);
   const protocol = protocolOptions[0];
+  const mediumPlan = useMemo(() => {
+    try {
+      return calculateMediumBatchPlan({
+        explantCount: Number(explantCount),
+        cultureJarCount: Number(cultureJarCount),
+        blankJarCount: Number(blankJarCount),
+        spareJarCount: Number(spareJarCount),
+        mediumPerJarMl: Number(mediumPerJarMl),
+        lossPercent: Number(lossPercent),
+      });
+    } catch {
+      return null;
+    }
+  }, [blankJarCount, cultureJarCount, explantCount, lossPercent, mediumPerJarMl, spareJarCount]);
+  const mediumVolumeMl = String(mediumPlan?.totalVolumeMl ?? 0);
   const haiterPlan = useMemo(() => {
     if (profile?.method !== "haiter-chemical") return null;
     return createHaiterActionPlan({
@@ -88,7 +109,7 @@ export function BeginnerLotWizard({
   function canContinue() {
     if (stage === 1) return plant.trim().length > 0;
     if (stage === 2) return Boolean(template);
-    if (stage === 3) return profile?.method === "pressure-sterilization" || haiterPlan?.state === "direct" || haiterPlan?.state === "working-dilution";
+    if (stage === 3) return Boolean(mediumPlan && !mediumPlan.warnings.length) && (profile?.method === "pressure-sterilization" || haiterPlan?.state === "direct" || haiterPlan?.state === "working-dilution");
     if (stage === 4) return equipmentComplete;
     return true;
   }
@@ -239,7 +260,16 @@ export function BeginnerLotWizard({
               <div className="wizard-calculation">
                 <label className="form-field"><span>ตัวเลขเปอร์เซ็นต์ที่พิมพ์อยู่บนฉลาก</span><input inputMode="decimal" onChange={(event) => setSourcePercent(event.target.value)} placeholder="เช่น 6 — ถ้าหาไม่เจอให้หยุด" value={sourcePercent} /></label>
                 <label className="form-field"><span>% เป้าหมายตาม Protocol</span><input inputMode="decimal" onChange={(event) => setTargetPercent(event.target.value)} value={targetPercent} /></label>
-                <label className="form-field"><span>ปริมาตรอาหารทั้งหมด (mL)</span><input inputMode="decimal" onChange={(event) => setMediumVolumeMl(event.target.value)} value={mediumVolumeMl} /></label>
+                <fieldset className="medium-batch-planner">
+                  <legend>ให้ระบบหาปริมาตรอาหารจากจำนวนกระปุก</legend>
+                  <label className="form-field"><span>จำนวน explant</span><input inputMode="numeric" min="1" onChange={(event) => setExplantCount(event.target.value)} type="number" value={explantCount} /></label>
+                  <label className="form-field"><span>กระปุกเพาะ</span><input inputMode="numeric" min="1" onChange={(event) => setCultureJarCount(event.target.value)} type="number" value={cultureJarCount} /></label>
+                  <label className="form-field"><span>Blank control</span><input inputMode="numeric" min="1" onChange={(event) => setBlankJarCount(event.target.value)} type="number" value={blankJarCount} /></label>
+                  <label className="form-field"><span>กระปุกสำรอง</span><input inputMode="numeric" min="1" onChange={(event) => setSpareJarCount(event.target.value)} type="number" value={spareJarCount} /></label>
+                  <label className="form-field"><span>อาหารต่อกระปุก (mL)</span><input inputMode="decimal" min="1" onChange={(event) => setMediumPerJarMl(event.target.value)} type="number" value={mediumPerJarMl} /></label>
+                  <label className="form-field"><span>เผื่อสูญเสีย (%)</span><input inputMode="decimal" min="0" onChange={(event) => setLossPercent(event.target.value)} type="number" value={lossPercent} /></label>
+                </fieldset>
+                {mediumPlan && <div className="medium-batch-result"><strong>เตรียมอาหารทั้งหมด {mediumPlan.totalVolumeMl} mL</strong><p>{mediumPlan.totalJarCount} กระปุก · ปริมาตรใช้งาน {mediumPlan.baseVolumeMl} mL · เผื่อสูญเสีย {mediumPlan.lossAllowanceMl.toFixed(1)} mL</p>{mediumPlan.warnings.map((warning) => <p className="form-alert" key={warning}>{warning}</p>)}</div>}
                 <label className="form-field"><span>เครื่องมือวัดได้ต่ำสุด (mL)</span><input inputMode="decimal" onChange={(event) => setMinimumMeasurableMl(event.target.value)} value={minimumMeasurableMl} /></label>
                 {haiterPlan?.state === "blocked" && (
                   <div className="calculation-result" role="alert">

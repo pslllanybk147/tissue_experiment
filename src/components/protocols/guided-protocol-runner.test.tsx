@@ -66,7 +66,7 @@ describe("GuidedProtocolRunner photo evidence", () => {
       />,
     );
     expect(html).toContain('aria-label="ผ่าน"');
-    expect(html).toContain('aria-label="ต้องตรวจเพิ่ม"');
+    expect(html).toContain('aria-label="ต้องตรวจซ้ำ"');
     expect(html).toContain('aria-label="ไม่ผ่าน"');
   });
 
@@ -78,7 +78,7 @@ describe("GuidedProtocolRunner photo evidence", () => {
 
   it("does not recommend the next step for Needs review", () => {
     const html = renderToStaticMarkup(<GuidedProtocolRunner lotId="LOT-1" protocolId="P-1" versionId="V-1" steps={[step, { ...step, id: "step-2", title: "ขั้นถัดไป" }]} runs={[{ id: "run-1", ownerId: "owner-1", lotId: "LOT-1", protocolId: "P-1", versionId: "V-1", stepId: "step-1", status: "Needs review", note: "ยังไม่ชัดเจน", measurements: {}, mediaIds: [], observedAt: "2026-07-24T00:00:00.000Z", updatedAt: "2026-07-24T00:00:00.000Z" }]} onSave={vi.fn(async () => undefined)} />);
-    expect(html).toContain("ขั้นนี้ต้องตรวจเพิ่มหรือแก้ไขก่อน");
+    expect(html).toContain("ขั้นนี้ต้องตรวจซ้ำตาม self-check");
     expect(html).toMatch(/disabled=""[^>]*>ไปขั้นถัดไป/);
   });
 

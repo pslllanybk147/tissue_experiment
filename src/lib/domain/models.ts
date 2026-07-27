@@ -5,6 +5,18 @@ export type BeginnerMaterial = {
   name: string;
   appearance: string;
   purpose: string;
+  quantity?: string;
+  specification?: string;
+  allowedSubstitutes?: string[];
+};
+
+export type SelfCheckPlan = {
+  title: string;
+  checks: string[];
+  passCriteria: string[];
+  resolutionAction: string;
+  failAction: string;
+  requiredEvidence: Array<"note" | "photo" | "measurement">;
 };
 
 export type UncertaintyPath = {
@@ -12,16 +24,23 @@ export type UncertaintyPath = {
   label: string;
   safeAction: string;
   blocksCompletion: boolean;
+  selfCheck?: SelfCheckPlan;
 };
 
 export type ProtocolVisualAid = {
   id: string;
-  kind: "node-cut-diagram" | "medium-placement-diagram";
+  kind: "node-cut-diagram" | "medium-placement-diagram" | "process-flow-diagram" | "contamination-diagram";
   title: string;
   caption: string;
   evidenceState: EvidenceState;
   sourceLabel?: string;
   sourceUrl?: string;
+  labels?: string[];
+};
+
+export type BeginnerGlossaryTerm = {
+  term: string;
+  plainMeaning: string;
 };
 
 export type BeginnerInstruction = {
@@ -36,6 +55,7 @@ export type BeginnerInstruction = {
   uncertaintyPaths: UncertaintyPath[];
   scienceNote: string;
   visualAids?: ProtocolVisualAid[];
+  glossary?: BeginnerGlossaryTerm[];
 };
 
 export type ProtocolStep = {

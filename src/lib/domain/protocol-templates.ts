@@ -21,6 +21,14 @@ const mediumPlacementVisual: ProtocolVisualAid = {
   evidenceState: "Adapted",
 };
 
+const contaminationVisual: ProtocolVisualAid = {
+  id: "culture-contamination-comparison",
+  kind: "contamination-diagram",
+  title: "ภาพจำลองเปรียบเทียบภาชนะปกติกับอาการที่ต้องกัก",
+  caption: "ตรวจผ่านผนังภาชนะโดยไม่เปิดฝา ราเป็นเส้นใยหรือปุย แบคทีเรียมักเป็นเมือกหรือฝ้า ส่วน browning คือการเปลี่ยนสีน้ำตาลของชิ้นพืชหรือน้ำอาหาร",
+  evidenceState: "Adapted",
+};
+
 function visualAidsForStep(stepId: string, title: string): ProtocolVisualAid[] | undefined {
   const normalized = `${stepId} ${title}`.toLowerCase();
   if (
@@ -31,6 +39,9 @@ function visualAidsForStep(stepId: string, title: string): ProtocolVisualAid[] |
   ) return [nodeCutVisual];
   if (normalized.includes("initiation") || normalized.includes("ลงอาหารระยะเริ่มต้น")) {
     return [mediumPlacementVisual];
+  }
+  if (normalized.includes("contamination") || normalized.includes("ปนเปื้อน")) {
+    return [contaminationVisual];
   }
   return undefined;
 }
@@ -109,7 +120,7 @@ function detailedStepsForTaxon(taxonId: string): ProtocolStep[] {
       ],
       readyChecklist: step.passCriteria,
       scienceNote: step.objective,
-      uncertaintyAction: "หยุดขั้นตอนนี้ ถ่ายรูปให้เห็นจุดที่สงสัย และขอให้ผู้มีประสบการณ์ตรวจ",
+      uncertaintyAction: "หยุดขั้นตอนนี้ เปิด self-check ถ่ายหรือวัดใหม่ตามรายการ แล้วเทียบกับภาพและเกณฑ์บนหน้าจอ หากยังไม่ผ่านให้ทำตามวิธีแก้ของขั้นนี้",
       visualAids: visualAidsForStep(step.id, step.title),
     }),
   }));

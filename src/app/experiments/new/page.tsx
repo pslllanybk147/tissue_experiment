@@ -15,6 +15,7 @@ import { getProtocolRepository } from "@/lib/repositories/protocol-repository-fa
 import { getPlantRepository } from "@/lib/repositories/plant-repository-factory";
 import { protocolTemplates, stepsForTemplate, templateIdForTaxon } from "@/lib/domain/protocol-templates";
 import { sterilizationProfiles } from "@/lib/domain/sterilization-profiles";
+import { isBeginnerCompleteProtocol } from "@/lib/domain/protocol-validation";
 
 export default function NewExperimentPage() {
   const router = useRouter();
@@ -39,7 +40,9 @@ export default function NewExperimentPage() {
       setProtocolOptions(snapshots.flatMap((snapshot) => {
         if (!snapshot) return [];
         const version = snapshot.versions.find((item) => item.id === snapshot.protocol.currentVersionId);
-        return version ? [{ id: snapshot.protocol.id, title: snapshot.protocol.title, versionId: version.id, version: version.version }] : [];
+        return version && isBeginnerCompleteProtocol(version.steps)
+          ? [{ id: snapshot.protocol.id, title: snapshot.protocol.title, versionId: version.id, version: version.version }]
+          : [];
       }));
       setProtocolsLoaded(true);
     }).catch(() => { if (active) { setProtocolOptions([]); setProtocolsLoaded(true); } });

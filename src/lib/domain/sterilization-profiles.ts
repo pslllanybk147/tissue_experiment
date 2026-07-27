@@ -47,7 +47,7 @@ function guidanceForProfileStep(
     evidencePrompt: ["บันทึกเปอร์เซ็นต์ตามฉลาก", "ถ่ายรูปฉลาก ไม่ต้องถ่ายต้นไม้"],
     readyChecklist: ["ฉันเห็นชื่อสารและตัวเลขเปอร์เซ็นต์ชัด", "ฉันคัดลอกค่าและถ่ายฉลากแล้ว"],
     nextActionOnPass: "กรอกค่าจากฉลากให้ระบบคำนวณปริมาตร",
-    nextActionOnFail: "เปลี่ยนเป็นผลิตภัณฑ์ที่มีฉลากชัดหรือให้ผู้มีประสบการณ์ตรวจ",
+    nextActionOnFail: "งดใช้ผลิตภัณฑ์นี้และเลือกผลิตภัณฑ์ที่ฉลากระบุชื่อสารกับเปอร์เซ็นต์ชัดเจน แล้วเริ่มขั้นอ่านฉลากใหม่",
   };
   if (id === "calculate-haiter-dose") return {
     ...shared,
@@ -178,7 +178,7 @@ function guidanceForProfileStep(
     evidencePrompt: ["บันทึกค่ารอบเครื่องและถ่ายฉลาก batch/ผลตัวบ่งชี้ ไม่ต้องถ่ายต้นไม้"],
     readyChecklist: ["รอบเครื่องครบตาม SOP", "ความดันเป็นศูนย์และภาชนะปลอดภัยต่อการจับ"],
     nextActionOnPass: "ตั้ง Blank และรอตรวจตาม Protocol",
-    nextActionOnFail: "กัก batch และให้ผู้รับผิดชอบเครื่องตรวจสอบ",
+    nextActionOnFail: "กัก batch หยุดใช้เครื่อง และทำตามคู่มือแก้ปัญหาของผู้ผลิต ห้ามเปิดเครื่องหรือเริ่มรอบใหม่จนค่าความดันเป็นศูนย์และเครื่องกลับสู่สถานะพร้อม",
   };
   if (id === "sterilization-readiness-gate") return {
     ...shared,
@@ -222,6 +222,7 @@ function profileStep(
     workflowPhase: "medium-preparation",
     allowNote: true,
     objective: guidance.objective,
+    whyItMatters: `ใช้ลดความผิดพลาดในขั้น “${title}” และทำให้ย้อนตรวจค่าที่ใช้จริงได้`,
     expectedResult: guidance.whatToFind.join("; "),
     passCriteria: guidance.readyChecklist,
     failCriteria: guidance.stopConditions,

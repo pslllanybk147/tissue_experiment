@@ -23,6 +23,8 @@ export function BeginnerStepGuide({
   const [checked, setChecked] = useState<boolean[]>(
     instruction.readyChecklist.map(() => false),
   );
+  const [selectedPath, setSelectedPath] = useState<UncertaintyPath | null>(null);
+  const [selfChecks, setSelfChecks] = useState<boolean[]>([]);
 
   function updateCheck(index: number, value: boolean) {
     const next = checked.map((item, itemIndex) => (
@@ -64,10 +66,20 @@ export function BeginnerStepGuide({
           {instruction.materials.map((material) => (
             <li key={material.name}>
               <strong>{material.name}</strong>
+              <span>{material.quantity || "ตามจำนวนที่วิธีทำระบุ"} · {material.specification || material.appearance}</span>
+              <small>ใช้แทนได้: {material.allowedSubstitutes?.length ? material.allowedSubstitutes.join(", ") : "ไม่มีของทดแทนที่อนุญาต"}</small>
             </li>
           ))}
         </ul>
         <p className="beginner-material-note">ตรวจชื่อบนฉลากหรือรายการอุปกรณ์ให้ตรงกับชื่อนี้ หากไม่แน่ใจอย่าใช้ของที่ดูคล้ายกันแทน</p>
+      </GuideSection>
+
+      <GuideSection title="คำศัพท์ที่ใช้ในขั้นนี้">
+        <dl className="beginner-glossary">
+          {instruction.glossary?.map((item) => (
+            <div key={item.term}><dt>{item.term}</dt><dd>{item.plainMeaning}</dd></div>
+          ))}
+        </dl>
       </GuideSection>
 
       <GuideSection title="วิธีทำ">
@@ -104,12 +116,44 @@ export function BeginnerStepGuide({
           {instruction.uncertaintyPaths.map((path) => (
             <AccessibleAction
               key={path.id}
-              onClick={() => onUncertainty(path)}
+              onClick={() => {
+                setSelectedPath(path);
+                setSelfChecks(path.selfCheck?.checks.map(() => false) ?? []);
+                onUncertainty(path);
+              }}
             >
               {path.label}
             </AccessibleAction>
           ))}
         </div>
+        {selectedPath?.selfCheck ? (
+          <section className="self-check-panel" aria-live="polite">
+            <h5>{selectedPath.selfCheck.title}</h5>
+            <p>ทำรายการนี้ด้วยตนเอง แล้วเทียบกับเกณฑ์ด้านล่าง</p>
+            {selectedPath.selfCheck.checks.map((item, index) => (
+              <label key={item}>
+                <input
+                  checked={selfChecks[index] ?? false}
+                  onChange={(event) => setSelfChecks((current) => current.map((value, itemIndex) => itemIndex === index ? event.target.checked : value))}
+                  type="checkbox"
+                />
+                <span>{item}</span>
+              </label>
+            ))}
+            <div className="self-check-outcome">
+              <strong>ผ่านเมื่อ</strong>
+              <BulletList items={selectedPath.selfCheck.passCriteria} />
+              <strong>ถ้ายังไม่ผ่าน</strong>
+              <p>{selectedPath.selfCheck.failAction}</p>
+            </div>
+            <AccessibleAction
+              disabled={!selfChecks.length || !selfChecks.every(Boolean)}
+              onClick={() => onUncertainty({ ...selectedPath, safeAction: selectedPath.selfCheck!.resolutionAction })}
+            >
+              ตรวจครบแล้ว กลับไปทำขั้นนี้ใหม่
+            </AccessibleAction>
+          </section>
+        ) : null}
       </GuideSection>
 
       <details className="beginner-science">

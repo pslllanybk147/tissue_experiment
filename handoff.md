@@ -2,6 +2,31 @@
 
 # Philodendron Lab — Handoff
 
+## 2026-07-27 — Beginner-Complete Protocol Standard
+
+- ล็อกหลักการว่า Protocol พร้อมใช้ต้องสอนผู้ไม่มีพื้นฐานซึ่งทำงานคนเดียวได้ ระบบห้ามใช้ “ถามผู้มีประสบการณ์”, “ถามผู้เชี่ยวชาญ” หรือ “ถามที่ปรึกษา” เป็นทางแก้
+- ขยาย domain ของแต่ละขั้นให้รองรับจำนวน/ขนาด/ช่วงวัด/ของทดแทนของวัสดุ, glossary มือใหม่, ภาพหรือแผนภาพพร้อมป้ายกำกับ และ self-check เฉพาะกรณี `ฉันหาไม่เจอ`, `ฉันไม่แน่ใจ`, `ฉันไม่มีอุปกรณ์นี้`
+- เพิ่ม Protocol completeness validator ก่อน publish/activate:
+  - ตรวจ objective, rationale, prerequisites, materials, expected result, pass/fail, next actions และ evidence
+  - ขั้น `Verified` ต้องมี reference
+  - ขั้นต้องมีคู่มือมือใหม่ ภาพ/แผนภาพ คำศัพท์ และ self-check ครบ
+  - พบข้อความผลักภาระให้บุคคลภายนอกแล้ว publish ไม่ได้
+- Protocol เก่าหรือร่างที่ไม่ครบยังเปิดดูประวัติได้ แต่หน้า detail แสดง `คู่มือยังไม่สมบูรณ์`; version ดังกล่าวไม่ถูกเสนอให้เริ่ม Lot ใหม่ และ Published version ยังคง immutable
+- เพิ่ม editor สำหรับสร้าง/ปรับโครงขั้น Beginner-Complete และแสดงสาเหตุที่ยัง publish ไม่ได้
+- เปลี่ยนข้อความผลลัพธ์จาก `ต้องตรวจเพิ่ม` เป็น `ต้องตรวจซ้ำ`
+- เพิ่มเครื่องคำนวณอาหารจากจำนวน explant, กระปุกเพาะ, Blank, กระปุกสำรอง, mL ต่อกระปุก และเปอร์เซ็นต์เผื่อสูญเสีย; ค่าเริ่มต้นให้เตรียม 110 mL สำหรับ 4 กระปุก
+- Working dilution แสดงคำสั่งตวง–เติม–ผสมเป็นตัวเลขจริง ไม่ใช้ `C1V1=C2V2` เป็นคำสั่งหลัก และบล็อกเมื่ออุปกรณ์วัดไม่ถึง
+- เพิ่มภาพจำลอง workflow ทั่วไปและภาพเปรียบเทียบ contamination เพื่อให้ทุกขั้นมี visual aid ที่ระบบมีสิทธิ์ใช้
+- ปรับ Guided Runner ให้ self-check เปิดในหน้าเดิม พร้อม checklist และวิธีกลับมาปลดล็อกขั้นตอนโดยไม่ต้องพึ่งบุคคลภายนอก
+- Verification รอบนี้:
+  - `npm test`: ผ่าน 231 tests, skip 10
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: ผ่าน 241 tests บน Auth/Firestore emulator
+  - `npm run ui:verify`: ผ่าน 14 viewport ที่ 360, 375, 390, 412, 428, 600, 744, 768, 820, 834, 1024, 1280, 1440 และ 1920 px
+  - UI sandbox ตรวจ route หลัก/หน้า detail/editor/Wizard/Guided Runner, keyboard, reduced motion, horizontal overflow, touch target, Thai text, reference visual, working dilution, self-check และห้ามข้อความส่งต่อให้ผู้เชี่ยวชาญ
+  - ตรวจภาพ audit ด้วยตาที่ iPhone SE และ iPad 9; mobile/tablet ใช้ hamburger และ step drawer โดยเนื้อหาคู่มือไม่ถูกบีบ
+
 ## 2026-07-27 — แก้การเปลี่ยนขั้น/โหมดแล้วหน้าค้างด้านล่าง
 
 - สาเหตุ: ปุ่มท้ายคู่มือยังครอง focus หลังสลับจาก `อ่านคู่มือ` ไป `บันทึกผลขั้นนี้` เบราว์เซอร์จึงรักษาตำแหน่งปุ่มไว้และดูเหมือนหน้าเด้งลงล่าง

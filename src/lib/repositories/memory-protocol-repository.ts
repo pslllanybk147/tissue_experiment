@@ -2,6 +2,7 @@ import type { ProtocolRecord, ProtocolVersion } from "../domain/models";
 import type { KnowledgeSource, SourceClaim } from "../domain/knowledge-sources";
 import { createPlaybookDraftInput } from "../domain/approved-claim-gate";
 import { nextDraftVersion } from "../domain/protocol-versioning";
+import { validateProtocolForPublish } from "../domain/protocol-validation";
 import type { ProtocolAuditEvent, ProtocolRepository } from "./protocol-repository";
 
 const clone = <T,>(value: T): T => structuredClone(value);
@@ -277,6 +278,7 @@ export function createMemoryProtocolRepository(uid: string): ProtocolRepository 
       guard(ownerId); const protocol = protocols.get(protocolId); const items = versions.get(protocolId) ?? []; const current = items.find(v => v.id === versionId);
       if (!protocol || !current) throw new Error("Protocol not found");
       if (protocol.status === "Active" && protocol.currentVersionId === versionId && current.publishedAt) return clone(protocol);
+      validateProtocolForPublish(current);
       const now = new Date().toISOString(); const activated = { ...protocol, status: "Active" as const, currentVersionId: versionId, updatedAt: now }; versions.set(protocolId, items.map(v => v.id === versionId ? { ...v, publishedAt: now } : v)); protocols.set(protocolId, activated); event(protocolId, "activated", protocol, activated); return clone(activated);
     },
     async archive(ownerId, protocolId) { guard(ownerId); const current = protocols.get(protocolId); if (!current) throw new Error("Protocol not found"); if (current.status === "Archived") return clone(current); const next = { ...current, status: "Archived" as const, updatedAt: new Date().toISOString() }; protocols.set(protocolId, next); event(protocolId, "archived", current, next); return clone(next); },

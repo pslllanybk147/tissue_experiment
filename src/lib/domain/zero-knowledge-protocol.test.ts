@@ -24,6 +24,8 @@ const completeInstruction: BeginnerInstruction = {
   readyChecklist: ["ฉันเห็นลำต้นชัดในรูป", "ฉันยังไม่ได้ตัดต้น"],
   uncertaintyPaths: defaultUncertaintyPaths("ถ่ายรูปใหม่ในที่สว่างกว่าเดิม"),
   scienceNote: "ภาพก่อนเริ่มใช้เปรียบเทียบการเปลี่ยนแปลงภายหลัง",
+  glossary: [{ term: "ข้อ", plainMeaning: "จุดที่ก้านใบต่อกับลำต้น" }],
+  visualAids: [{ id: "baseline", kind: "process-flow-diagram", title: "ภาพลำดับการถ่ายรูป", caption: "ถ่ายทั้งต้นแล้วถ่ายด้านข้าง", evidenceState: "Adapted", labels: ["จัดแสง", "ถ่ายทั้งต้น", "ตรวจภาพ"] }],
 };
 
 const completeStep: ProtocolStep = {
@@ -59,7 +61,7 @@ describe("zero-knowledge protocol contract", () => {
   });
 
   it("provides safe routes that never guess or silently continue", () => {
-    const paths = defaultUncertaintyPaths("ถ่ายรูปเพิ่มแล้วขอให้ตรวจ");
+    const paths = defaultUncertaintyPaths("ถ่ายรูปเพิ่มในที่สว่าง แล้วเทียบกับเกณฑ์บนหน้าจอ");
 
     expect(paths.map((path) => path.label)).toEqual([
       "ฉันหาไม่เจอ",
@@ -68,6 +70,7 @@ describe("zero-knowledge protocol contract", () => {
     ]);
     expect(paths.every((path) => path.blocksCompletion)).toBe(true);
     expect(paths.every((path) => path.safeAction.length > 0)).toBe(true);
+    expect(paths.every((path) => path.selfCheck?.checks.length)).toBe(true);
   });
 
   it("does not classify a legacy step without beginner guidance as ready", () => {

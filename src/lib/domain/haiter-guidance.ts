@@ -43,7 +43,7 @@ export function createHaiterActionPlan(
     return {
       state: "blocked",
       reason: "ยังไม่มีเปอร์เซ็นต์คลอรีนจากฉลาก",
-      safeAction: "หยุดไว้ก่อน ถ่ายรูปฉลากด้านหน้าและด้านหลังให้เห็นตัวเลขเปอร์เซ็นต์ แล้วขอให้ตรวจ",
+      safeAction: "หยุดไว้ก่อน ถ่ายรูปฉลากหน้า–หลัง แล้วค้นคำว่า sodium hypochlorite, NaOCl หรือ active chlorine หากไม่มีตัวเลขเปอร์เซ็นต์ให้งดใช้ผลิตภัณฑ์นี้และเลือกขวดที่มีฉลากระบุชัด",
     };
   }
 
@@ -86,7 +86,7 @@ export function createHaiterActionPlan(
       return {
         state: "blocked",
         reason: "อุปกรณ์ที่ระบุยังตวงปริมาตรในสูตรเจือจางได้ไม่แม่นยำ",
-        safeAction: "หยุดไว้ก่อน ใช้อุปกรณ์ที่ตวงปริมาตรได้น้อยกว่านี้ หรือให้ผู้มีประสบการณ์ออกแบบการเจือจางใหม่",
+        safeAction: `หยุดไว้ก่อน ใช้อุปกรณ์ที่ตวงได้ต่ำกว่า ${formatMl(input.minimumToolVolumeMl)} mL หรือเพิ่มปริมาตรอาหารเป็นอย่างน้อย ${Math.ceil((input.minimumToolVolumeMl * input.labelPercent / input.targetPercent) / 10) * 10} mL แล้วให้ระบบคำนวณใหม่`,
       };
     }
 

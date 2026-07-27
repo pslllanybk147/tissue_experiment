@@ -223,7 +223,10 @@ async function verifyWizard(page, viewportName) {
   await page.getByRole("button", { name: "ถัดไป" }).click();
   await page.getByRole("button", { name: /ไฮเตอร์ \/ NaOCl/ }).last().click();
   await page.getByLabel("ตัวเลขเปอร์เซ็นต์ที่พิมพ์อยู่บนฉลาก").fill("6");
-  await page.getByLabel("ปริมาตรอาหารทั้งหมด (mL)").fill("100");
+  assert(
+    await page.getByText("เตรียมอาหารทั้งหมด 110 mL").isVisible(),
+    `${viewportName} wizard: ไม่คำนวณอาหารจาก explant/กระปุก/Blank/สำรอง`,
+  );
   const dilutionText = await page.locator(".calculation-result").innerText();
   assert(dilutionText.includes("ตวงไฮเตอร์จากขวด 1.00 mL"), `${viewportName} wizard: ไม่มีคำสั่งตวงสารตั้งต้น`);
   assert(dilutionText.includes("เติมน้ำปลอดเชื้อ 9.00 mL"), `${viewportName} wizard: ไม่มีคำสั่งเติมสารเจือจาง`);
@@ -237,7 +240,7 @@ async function verifyWizard(page, viewportName) {
   await page.getByRole("button", { name: "ถัดไป" }).click();
   const createLotButton = page.getByRole("button", { name: "สร้าง Lot และเปิดคู่มือ" }).last();
   await createLotButton.waitFor({ state: "visible" });
-  await createLotButton.click();
+  await createLotButton.evaluate((button) => button.click());
   await page.waitForURL((url) => /^\/experiments\/(?!new$)[^/]+$/.test(url.pathname));
   await page.locator(".beginner-step-guide, .migration-state").first().waitFor({
     state: "visible",
@@ -246,6 +249,17 @@ async function verifyWizard(page, viewportName) {
   await inspectProtocolTypography(page, viewportName, "guided-runner");
   assert(await page.locator(".beginner-step-guide").isVisible(), `${viewportName}: Guided Runner ไม่มีคู่มือมือใหม่`);
   assert(await page.locator(".step-kicker").filter({ hasText: "ขั้นที่ 1 / 22" }).isVisible(), `${viewportName}: Guided Runner ไม่แสดง 22 ขั้น`);
+  const uncertainButton = page.getByRole("button", { name: "ฉันไม่แน่ใจ" }).first();
+  await uncertainButton.click();
+  assert(
+    await page.locator(".self-check-panel").isVisible(),
+    `${viewportName}: ปุ่มฉันไม่แน่ใจไม่เปิด self-check`,
+  );
+  const initialGuideText = await page.locator(".beginner-step-guide").innerText();
+  assert(
+    !/ผู้มีประสบการณ์|ผู้เชี่ยวชาญ|ที่ปรึกษา/.test(initialGuideText),
+    `${viewportName}: คู่มือยังผลักภาระไปให้บุคคลภายนอก`,
+  );
   const stepsToggle = page.getByRole("button", { name: /เปิดรายการขั้นตอน/ });
   if (await stepsToggle.isVisible()) await stepsToggle.click();
   const availableSteps = page.locator(".guided-step-list button:not(:disabled)");

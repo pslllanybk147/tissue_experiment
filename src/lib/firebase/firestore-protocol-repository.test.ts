@@ -4,7 +4,7 @@ import type { ProtocolAuditEvent } from "../repositories/protocol-repository";
 import { stepsForTemplate } from "../domain/protocol-templates";
 import { createFirestoreProtocolRepository, type ProtocolMutation, type ProtocolPersistenceAdapter } from "./firestore-protocol-repository";
 
-const input: ProtocolDraftInput = { title: "Nodal", plantScope: "Philodendron", evidenceState: "Adapted", summary: "Summary", changeNote: "Initial", steps: [{ id: "s1", order: 0, title: "Wash", instruction: "Wash", durationMinutes: 10, criticalControls: [], safetyNotes: [], referenceIds: [], evidenceState: "Adapted" }] };
+const input: ProtocolDraftInput = { title: "Nodal", plantScope: "Philodendron", evidenceState: "Adapted", summary: "Summary", changeNote: "Initial", steps: stepsForTemplate("template-pink-princess-nodal") };
 
 function harness() {
   let protocol: ProtocolRecord | null = null; let versions: ProtocolVersion[] = []; const mutations: ProtocolMutation[] = []; const audits: ProtocolAuditEvent[] = [];

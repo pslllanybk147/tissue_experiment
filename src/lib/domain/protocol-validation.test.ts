@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { validateProtocolDraft } from "./protocol-validation";
+import { isBeginnerCompleteProtocol, protocolCompletenessIssues, validateProtocolDraft, validateProtocolForPublish } from "./protocol-validation";
+import { stepsForTemplate } from "./protocol-templates";
 
 describe("validateProtocolDraft", () => {
   it("requires metadata and at least one step", () => {
@@ -18,6 +19,28 @@ describe("validateProtocolDraft", () => {
     ] });
     expect(errors.steps).toContain("รหัสขั้นตอนซ้ำ");
     expect(errors.stepFields?.s1).toContain("ระยะเวลา");
+  });
+
+  it("accepts the supported guided templates as beginner-complete", () => {
+    for (const templateId of ["template-pink-princess-nodal", "template-violin-nodal", "template-generic-philodendron"]) {
+      expect(protocolCompletenessIssues(stepsForTemplate(templateId))).toEqual({});
+      expect(isBeginnerCompleteProtocol(stepsForTemplate(templateId))).toBe(true);
+    }
+  });
+
+  it("blocks publishing legacy or expert-dependent guidance", () => {
+    const legacy = {
+      id: "legacy",
+      order: 0,
+      title: "ตัด",
+      instruction: "ให้ผู้เชี่ยวชาญตรวจ",
+      durationMinutes: null,
+      criticalControls: [],
+      safetyNotes: [],
+      referenceIds: [],
+      evidenceState: "Adapted" as const,
+    };
+    expect(() => validateProtocolForPublish({ steps: [legacy] })).toThrow("คู่มือยังไม่สมบูรณ์");
   });
 
   it("rejects a beginner protocol step that omits safe physical guidance", () => {

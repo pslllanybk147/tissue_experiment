@@ -22,6 +22,7 @@ const instruction: BeginnerInstruction = {
     label: "ฉันไม่แน่ใจ",
     safeAction: "หยุดและถ่ายรูปเพิ่ม",
     blocksCompletion: true,
+    selfCheck: { title: "ตรวจภาพใหม่", checks: ["เพิ่มแสง", "ถ่ายสองมุม"], passCriteria: ["เห็นลำต้นชัด"], resolutionAction: "กลับไปทำขั้นนี้ใหม่", failAction: "หยุดและถ่ายใหม่", requiredEvidence: ["photo"] },
   }],
   scienceNote: "ภาพนี้ใช้เปรียบเทียบภายหลัง",
   visualAids: [{
@@ -33,6 +34,7 @@ const instruction: BeginnerInstruction = {
     sourceLabel: "แหล่งอ้างอิง",
     sourceUrl: "https://example.com/reference",
   }],
+  glossary: [{ term: "ลำต้น", plainMeaning: "แกนหลักที่ใบและข้อเชื่อมต่ออยู่" }],
 };
 
 describe("BeginnerStepGuide", () => {
@@ -50,7 +52,8 @@ describe("BeginnerStepGuide", () => {
       "ข้อมูลหรือผลที่ต้องตรวจ",
       "ภาพประกอบของขั้นนี้",
       "อุปกรณ์และสารที่ใช้",
-      "วิธีทำ",
+      "คำศัพท์ที่ใช้ในขั้นนี้",
+      "<h4>วิธีทำ</h4>",
       "หยุดและตรวจสอบใหม่เมื่อ",
       "หลักฐานที่ควรบันทึก",
       "ตรวจว่าพร้อมไปต่อหรือยัง",
@@ -78,7 +81,7 @@ describe("BeginnerStepGuide", () => {
     expect(html).toContain("Adapted");
   });
 
-  it("presents equipment as a concise manual without appearance boilerplate", () => {
+  it("presents equipment specifications without the old appearance boilerplate labels", () => {
     const html = renderToStaticMarkup(
       <BeginnerStepGuide
         instruction={instruction}
@@ -91,6 +94,7 @@ describe("BeginnerStepGuide", () => {
     expect(html).not.toContain("หน้าตา:");
     expect(html).not.toContain("ใช้เพื่อ:");
     expect(html).not.toContain("เก็บภาพก่อนเริ่ม");
-    expect(html).not.toContain("เครื่องที่ใช้ถ่ายรูป");
+    expect(html).toContain("เครื่องที่ใช้ถ่ายรูป");
+    expect(html).toContain("ใช้แทนได้");
   });
 });

@@ -2,10 +2,11 @@ import { describe, expect, it } from "vitest";
 import type { ProtocolDraftInput } from "../domain/models";
 import { createMemoryProtocolRepository } from "./memory-protocol-repository";
 import type { KnowledgeSource, SourceClaim } from "../domain/knowledge-sources";
+import { stepsForTemplate } from "../domain/protocol-templates";
 
 const input: ProtocolDraftInput = {
   title: "Nodal establishment", plantScope: "Philodendron", evidenceState: "Adapted",
-  summary: "Establish nodal tissue", changeNote: "Initial", steps: [{ id: "s1", order: 0, title: "Wash", instruction: "Wash explant", durationMinutes: 15, criticalControls: [], safetyNotes: [], referenceIds: [], evidenceState: "Adapted" }],
+  summary: "Establish nodal tissue", changeNote: "Initial", steps: stepsForTemplate("template-pink-princess-nodal"),
 };
 
 describe("memory protocol repository", () => {
