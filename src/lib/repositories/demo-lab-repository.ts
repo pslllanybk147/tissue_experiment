@@ -17,7 +17,7 @@ export function createDemoLabRepository(): LabRepository {
   let activeStepIndex = 2;
 
   function protocolFor(ownerId: string): Protocol {
-    return { id: "protocol-nodal-v01", ownerId, title: "Nodal establishment", version: "v0.1", activeStepIndex, stepCount: 22 };
+    return { id: "protocol-nodal-v01", ownerId, title: "Nodal establishment", version: "v0.1", activeStepIndex, stepCount: 23 };
   }
 
   async function listLots(ownerId: string): Promise<ExperimentLot[]> {
@@ -40,7 +40,7 @@ export function createDemoLabRepository(): LabRepository {
 export function createDemoSnapshot(ownerId: string, activeStepIndex = 2): LabSnapshot {
   return {
     lots: lotsFor(ownerId),
-    protocol: { id: "protocol-nodal-v01", ownerId, title: "Nodal establishment", version: "v0.1", activeStepIndex, stepCount: 22 },
+    protocol: { id: "protocol-nodal-v01", ownerId, title: "Nodal establishment", version: "v0.1", activeStepIndex, stepCount: 23 },
     research: research.map((source) => ({ ...source, ownerId })),
   };
 }

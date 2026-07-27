@@ -43,9 +43,10 @@ function assert(condition, message) {
 async function enterDemo(page) {
   await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
   const demo = page.getByRole("button", { name: "Continue in demo mode" });
-  await demo.waitFor({ state: "visible" });
-  await demo.click();
-  await page.locator(".lab-route-shell:visible").waitFor({ state: "visible" });
+  const shell = page.locator(".lab-route-shell:visible");
+  await shell.or(demo).waitFor({ state: "visible" });
+  if (!await shell.isVisible().catch(() => false)) await demo.click();
+  await shell.waitFor({ state: "visible" });
 }
 
 async function returnToApp(page) {
@@ -248,7 +249,7 @@ async function verifyWizard(page, viewportName) {
   await inspectPage(page, viewportName, "guided-runner");
   await inspectProtocolTypography(page, viewportName, "guided-runner");
   assert(await page.locator(".beginner-step-guide").isVisible(), `${viewportName}: Guided Runner ไม่มีคู่มือมือใหม่`);
-  assert(await page.locator(".step-kicker").filter({ hasText: "ขั้นที่ 1 / 22" }).isVisible(), `${viewportName}: Guided Runner ไม่แสดง 22 ขั้น`);
+  assert(await page.locator(".step-kicker").filter({ hasText: "ขั้นที่ 1 / 23" }).isVisible(), `${viewportName}: Guided Runner ไม่แสดง 23 ขั้น`);
   const uncertainButton = page.getByRole("button", { name: "ฉันไม่แน่ใจ" }).first();
   await uncertainButton.click();
   assert(

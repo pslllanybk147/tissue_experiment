@@ -35,17 +35,17 @@ describe("beginner journey simulation", () => {
     );
   });
 
-  it.each(templateIds)("builds a stable 22-position guided journey: %s", (templateId) => {
+  it.each(templateIds)("builds a stable 23-position guided journey: %s", (templateId) => {
     const journey = composeGuidedSteps(
       stepsForTemplate(templateId),
       profileById("haiter-chemical-v1"),
     );
 
-    expect(journey).toHaveLength(22);
+    expect(journey).toHaveLength(23);
     expect(journey.map((step) => step.order)).toEqual(
-      Array.from({ length: 22 }, (_, index) => index),
+      Array.from({ length: 23 }, (_, index) => index),
     );
-    expect(journey.filter(isBeginnerReadyStep)).toHaveLength(22);
+    expect(journey.filter(isBeginnerReadyStep)).toHaveLength(23);
   });
 
   it("keeps marking before cutting and medium readiness before cutting", () => {

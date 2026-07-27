@@ -132,6 +132,36 @@ describe("sterilization profiles", () => {
     expect(medium?.nextActionOnFail).toContain("ห้ามใช้กับ explant");
   });
 
+  test("teaches vessel and lid sterilization before Haiter medium is dispensed", () => {
+    const profile = profileById("haiter-chemical-v1");
+    const vesselIndex = profile.steps.findIndex((item) => item.id === "sanitize-haiter-vessels");
+    const mediumIndex = profile.steps.findIndex((item) => item.id === "prepare-haiter-medium");
+    const vessel = profile.steps[vesselIndex];
+
+    expect(vesselIndex).toBeGreaterThan(-1);
+    expect(vesselIndex).toBeLessThan(mediumIndex);
+    expect(vessel.beginner?.actions.join(" ")).toContain("5% v/v");
+    expect(vessel.beginner?.actions.join(" ")).toContain("5 mL");
+    expect(vessel.beginner?.actions.join(" ")).toContain("10 นาที");
+    expect(vessel.beginner?.actions.join(" ")).toContain("ขอบปาก");
+    expect(vessel.requiredEvidence).toEqual(["note", "photo"]);
+    expect(vessel.referenceIds).toEqual(expect.arrayContaining([
+      "source-csup-2012",
+      "source-naocl-vessels-2009",
+    ]));
+  });
+
+  test("explains that pressure vessels are cleaned first and sterilized with the medium", () => {
+    const profile = profileById("pressure-sterilization-v1");
+    const vessel = profile.steps.find((item) => item.id === "prepare-pressure-vessels");
+    const pressure = profile.steps.find((item) => item.id === "pressure-sterilize-medium");
+
+    expect(vessel?.beginner?.actions.join(" ")).toContain("ยังไม่ถือว่าภาชนะปลอดเชื้อ");
+    expect(vessel?.beginner?.actions.join(" ")).toContain("121°C");
+    expect(vessel?.nextActionOnPass).toContain("พร้อมกันในรอบหม้อนึ่ง");
+    expect(pressure?.beginner?.actions.join(" ")).toContain("บันทึกเวลา");
+  });
+
   test("does not expose generic placeholder guidance in any sterilization step", () => {
     const visibleGuidance = sterilizationProfiles.flatMap((profile) => (
       profile.steps.flatMap((step) => [

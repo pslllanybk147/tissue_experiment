@@ -3,7 +3,7 @@ import type { TaxonRank, TaxonRecord } from "./knowledge-library";
 import generatedCatalog from "./philodendron-catalog.generated.json";
 
 export type KnowledgeSectionId = "taxonomy" | "biology" | "identification" | "tissue-culture";
-export type ManualSource = { id: string; title: string; url: string; sourceType: "taxonomy" | "peer-reviewed" | "research-gap"; accessedAt: string };
+export type ManualSource = { id: string; title: string; url: string; sourceType: "taxonomy" | "peer-reviewed" | "technical-guide" | "research-gap"; accessedAt: string };
 export type KnowledgeSection = { id: KnowledgeSectionId; title: string; summary: string; claims: KnowledgeClaim[] };
 export type KnowledgeClaim = { id: string; statement: string; evidenceState: EvidenceState; sourceIds: string[]; note?: string };
 export type ManualStep = {
@@ -46,6 +46,9 @@ export const philodendronSources: ManualSource[] = [
   { id: "source-pp-2025", title: "Pink Princess Micropropagation and Genetic Fidelity", url: "https://doi.org/10.3390/horticulturae11091085", sourceType: "peer-reviewed", accessedAt: "2026-07-24" },
   { id: "source-violin-gap", title: "Violin variegated evidence register", url: "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A326132-2", sourceType: "research-gap", accessedAt: "2026-07-24" },
   { id: "source-kew-wcvp-v15", title: "World Checklist of Vascular Plants v15", url: "https://doi.org/10.15468/6h8ucr", sourceType: "taxonomy", accessedAt: "2026-07-24" },
+  { id: "source-csup-2012", title: "CSUP technique: sodium hypochlorite sterilization of glassware and culture media", url: "https://doi.org/10.4038/jnsfsr.v40i1.4168", sourceType: "peer-reviewed", accessedAt: "2026-07-27" },
+  { id: "source-naocl-vessels-2009", title: "Sterilization of non-autoclavable vessels and culture media by sodium hypochlorite", url: "https://doi.org/10.17660/ActaHortic.2009.839.42", sourceType: "peer-reviewed", accessedAt: "2026-07-27" },
+  { id: "source-merck-media-sterilization", title: "Media Sterilization — Plant Tissue Culture Protocol", url: "https://www.merckmillipore.com/AL/en/technical-documents/protocol/cell-culture-and-cell-culture-analysis/cell-culture-media-preparation/media-sterilization", sourceType: "technical-guide", accessedAt: "2026-07-27" },
 ];
 
 export const philodendronTaxonomySnapshot: TaxonomySnapshot = {
