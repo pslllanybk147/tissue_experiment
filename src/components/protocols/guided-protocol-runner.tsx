@@ -73,6 +73,23 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
     : undefined;
   const readinessPassed = readinessIndex < 0 || readinessRun?.status === "Passed";
 
+  function focusStepTop() {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "auto"
+          : "smooth";
+        contentRef.current?.focus({ preventScroll: true });
+        contentRef.current?.scrollIntoView({ behavior, block: "start" });
+      });
+    });
+  }
+
+  function switchWorkspace(view: "manual" | "record") {
+    setWorkspaceView(view);
+    focusStepTop();
+  }
+
   function select(index: number) {
     const next = steps[index];
     const nextRun = runs.find((item) => item.stepId === next?.id);
@@ -85,13 +102,7 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
         }
       : nextRun?.measurements ?? {};
     setActiveIndex(index); setWorkspaceView("manual"); setStatus(nextRun?.status ?? "Pending"); setNote(nextRun?.note ?? ""); setMeasurements(nextMeasurements); setReadinessConfirmed(false); setMessage("");
-    requestAnimationFrame(() => {
-      const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-        ? "auto"
-        : "smooth";
-      contentRef.current?.scrollIntoView({ behavior, block: "start" });
-      contentRef.current?.focus({ preventScroll: true });
-    });
+    focusStepTop();
   }
 
   async function save(mode: "draft" | "confirm") {
@@ -123,8 +134,8 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
       <div className="guided-step-heading"><div><span className="step-kicker">ขั้นที่ {activeIndex + 1} / {steps.length}</span><h3>{step.title}</h3></div><span className={`evidence-label evidence-${step.evidenceState.toLowerCase().replaceAll(" ", "-")}`}>{step.evidenceState}</span></div>
       {!readinessPassed && activeIndex <= readinessIndex && <div className="guided-readiness-warning" role="note"><strong>อย่าเพิ่งตัดต้นไม้</strong><span>ขั้นตัดจะเปิดเมื่ออาหารและพื้นที่พร้อม และบันทึก Blank test หรือเหตุผลที่ข้ามแล้ว</span></div>}
       <div className="guided-workspace-tabs" role="tablist" aria-label="คู่มือและแบบบันทึก">
-        <button aria-selected={workspaceView === "manual"} className={workspaceView === "manual" ? "active" : ""} onClick={() => setWorkspaceView("manual")} role="tab" type="button">1. อ่านคู่มือ</button>
-        <button aria-selected={workspaceView === "record"} className={workspaceView === "record" ? "active" : ""} onClick={() => setWorkspaceView("record")} role="tab" type="button">2. บันทึกผลขั้นนี้</button>
+        <button aria-selected={workspaceView === "manual"} className={workspaceView === "manual" ? "active" : ""} onClick={() => switchWorkspace("manual")} role="tab" type="button">1. อ่านคู่มือ</button>
+        <button aria-selected={workspaceView === "record"} className={workspaceView === "record" ? "active" : ""} onClick={() => switchWorkspace("record")} role="tab" type="button">2. บันทึกผลขั้นนี้</button>
       </div>
       <div className="guided-manual-pane" hidden={workspaceView !== "manual"} role="tabpanel">
       {step.beginner ? (
@@ -143,13 +154,13 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
           <p>หยุดไว้ก่อนและสร้าง Lot จาก Wizard ด้วย Protocol เวอร์ชันล่าสุด</p>
         </div>
       )}
-      <button className="accessible-action accessible-action-primary guided-next-pane" onClick={() => setWorkspaceView("record")} type="button">อ่านจบแล้ว ไปบันทึกผลขั้นนี้</button>
+      <button className="accessible-action accessible-action-primary guided-next-pane" onClick={() => switchWorkspace("record")} type="button">อ่านจบแล้ว ไปบันทึกผลขั้นนี้</button>
       </div>
       <div className="guided-record-pane" hidden={workspaceView !== "record"} role="tabpanel">
       <div className="guided-record-intro">
         <strong>แบบบันทึกขั้นที่ {activeIndex + 1}</strong>
         <p>กรอกเฉพาะสิ่งที่ทำและเห็นจริง หากจำวิธีทำไม่ได้ให้กลับไปอ่านคู่มือก่อน</p>
-        <button className="secondary-button" onClick={() => setWorkspaceView("manual")} type="button">ย้อนกลับไปอ่านคู่มือ</button>
+        <button className="secondary-button" onClick={() => switchWorkspace("manual")} type="button">ย้อนกลับไปอ่านคู่มือ</button>
       </div>
       {(step.measurements?.length ?? 0) > 0 && <div className={`guided-measurements${isHaiterCalculation ? " haiter-inline-calculator" : ""}`}><h4>{isHaiterCalculation ? "กรอกตัวเลข 3 ช่องนี้" : "ค่าที่ต้องวัด"}</h4>{isHaiterCalculation && <p className="muted-copy">ใช้ตัวเลขที่เห็นจริง ระบบใช้ค่าคลอรีนเป้าหมาย {haiterDefaults?.targetPercent ?? 0.003}% ตาม Protocol นี้</p>}{step.measurements?.map((item) => <label className="form-field" key={item.id}><span>{item.label} ({item.unit}){item.required ? " *" : ""}</span><input min={item.min} max={item.max} onChange={(event) => setMeasurements((current) => ({ ...current, [item.id]: event.target.value === "" ? null : Number(event.target.value) }))} type="number" value={measurements[item.id] ?? ""} /></label>)}{haiterPlan && <div className={`haiter-plan haiter-plan-${haiterPlan.state}`} role="status">{haiterPlan.state === "blocked" ? <><strong>ยังคำนวณไม่ได้</strong><p>{haiterPlan.reason}</p><p>{haiterPlan.safeAction}</p></> : <><strong>{haiterPlan.primaryInstruction}</strong><ol>{haiterPlan.actions.map((action) => <li key={action}>{action}</li>)}</ol></>}</div>}</div>}
       <label className="form-field guided-note"><span>บันทึก note {step.requiredEvidence?.includes("note") ? "*" : ""}</span><textarea onChange={(event) => setNote(event.target.value)} rows={4} value={note} placeholder="เขียนสิ่งที่พบจริง เช่น สี เนื้อเยื่อ กลิ่น หรือปัญหา" /></label>

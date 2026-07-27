@@ -267,6 +267,18 @@ async function verifyWizard(page, viewportName) {
     }
   }
   assert(visualAidFound, `${viewportName}: ขั้นเลือก/ตัด explant ไม่มีภาพอ้างอิงในคู่มือ`);
+  const recordButton = page.getByRole("button", { name: "อ่านจบแล้ว ไปบันทึกผลขั้นนี้" });
+  await recordButton.scrollIntoViewIfNeeded();
+  await recordButton.click();
+  await page.waitForTimeout(500);
+  const recordTop = await page.locator(".guided-step-content").evaluate(
+    (element) => Math.round(element.getBoundingClientRect().top),
+  );
+  assert(
+    recordTop >= 0 && recordTop <= 180,
+    `${viewportName}: กดไปบันทึกผลแล้วไม่เลื่อนกลับหัวขั้นตอน (top ${recordTop}px)`,
+  );
+  await page.getByRole("tab", { name: "1. อ่านคู่มือ" }).click();
   await page.getByRole("button", { name: /ให้ระบบหาปริมาตร Haiter ที่ต้องใช้/ }).click();
   await page.waitForTimeout(80);
   const guidedContentTop = await page.locator(".guided-step-content").evaluate(
