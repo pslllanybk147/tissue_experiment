@@ -68,6 +68,7 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
     || step?.id.includes("prepare-haiter-medium")
     || step?.id.includes("prepare-pressure-medium")
     || step?.id.includes("medium-preparation");
+  const workingStockHref = recipeHref ? `${recipeHref.split("#")[0]}#working-stock-calculator` : undefined;
   const haiterPlan = useMemo(() => {
     if (!isHaiterCalculation) return null;
     return createHaiterActionPlan({
@@ -156,7 +157,10 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
             {haiterDefaults?.mediumVolumeMl ? <p><strong>ปริมาตรของ Lot: {haiterDefaults.mediumVolumeMl} mL</strong></p> : null}
             {recipeSummary.length ? <ul>{recipeSummary.map((item) => <li key={item}>{item}</li>)}</ul> : <p>เปิดเครื่องคำนวณตามจำนวนกระปุก พร้อมตารางส่วนผสม pH และวิธีเจือจาง stock ปริมาตรเล็ก</p>}
           </div>
-          <Link className="primary-button" href={recipeHref} target="_blank" rel="noreferrer">เปิดสูตรอาหารและเครื่องคำนวณ ↗</Link>
+          <div className="guided-recipe-actions">
+            <Link className="primary-button" href={recipeHref} target="_blank" rel="noreferrer">เปิดสูตรอาหารและเครื่องคำนวณ ↗</Link>
+            {workingStockHref ? <Link className="secondary-button" href={workingStockHref} target="_blank" rel="noreferrer">คำนวณ working stock ปริมาตรเล็ก ↗</Link> : null}
+          </div>
         </aside>
       ) : null}
       {step.beginner ? (

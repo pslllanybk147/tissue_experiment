@@ -906,6 +906,17 @@ button:disabled { cursor: not-allowed; }
   margin-block: 1rem;
 }
 
+.working-stock-calculator { scroll-margin-top: 24px; }
+.working-stock-calculator .haiter-plan { margin-top: 18px; }
+.working-stock-calculator .haiter-plan ol { margin: 12px 0 0; padding-left: 24px; }
+.working-stock-calculator .haiter-plan li { margin: 8px 0; line-height: 1.65; }
+.guided-recipe-actions { display: grid; gap: 10px; min-width: min(280px, 100%); }
+.guided-recipe-actions a { width: 100%; text-align: center; }
+
+@media (max-width: 700px) {
+  .guided-recipe-actions { width: 100%; }
+}
+
 .plant-baseline-preview {
   display: block;
   width: min(100%, 28rem);

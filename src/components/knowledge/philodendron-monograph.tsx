@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { philodendronSources, type PhilodendronMonograph as Monograph } from "../../lib/domain/philodendron-knowledge";
 import { MediaRecipeCalculator } from "./media-recipe-calculator";
+import { WorkingStockCalculator } from "./working-stock-calculator";
 
 function evidenceClass(value: string) { return `evidence-label evidence-${value.toLowerCase().replaceAll(" ", "-")}`; }
 function scaledAmount(amountPerLiter: number, unit: string, volume: number) {
@@ -34,6 +35,7 @@ export function PhilodendronMonograph({ monograph }: { monograph: Monograph }) {
           <p className="muted-copy">{recipe.note} ปรับ pH ก่อนทำให้วุ้นแข็ง และบันทึก batch ID ทุกครั้ง</p>
         </article>)}
       </div>
+      <WorkingStockCalculator />
       <section className="experiment-surface medium-dilution-guide" aria-labelledby="medium-dilution-title">
         <div className="knowledge-detail-heading"><div><p className="eyebrow">SMALL-VOLUME STOCK GUIDE</p><h3 id="medium-dilution-title">เมื่อปริมาตรฮอร์โมนน้อยเกินกว่าจะตวง</h3></div><span>สูตร C1V1 = C2V2</span></div>
         <p>ถ้าปริมาตรสารตั้งต้นที่ต้องเติมน้อยจนหลอดดูดของคุณดูดไม่ได้อย่างแม่นยำ ให้เจือจางสารนั้นเป็นขวดเล็กอีกขวดก่อน ขวดเล็กนี้เรียกว่า <strong>working stock</strong> แล้วจึงตวง working stock ในปริมาตรที่มากขึ้นลงในอาหาร ห้ามเดาปริมาตรหรือเติมน้ำเพิ่มโดยไม่คำนวณใหม่</p>
