@@ -128,6 +128,19 @@ export type WorkspaceSetupSnapshot = {
   customEquipment: string[];
 };
 
+export type MediumBatchSnapshot = {
+  explantCount: number;
+  cultureJarCount: number;
+  blankJarCount: number;
+  spareJarCount: number;
+  totalJarCount: number;
+  mediumPerJarMl: number;
+  lossPercent: number;
+  baseVolumeMl: number;
+  lossAllowanceMl: number;
+  totalVolumeMl: number;
+};
+
 export type SterilizationProfile = {
   id: string;
   title: string;
@@ -148,7 +161,9 @@ export type LotSterilizationSnapshot = {
   activeChlorinePercent?: number;
   targetChlorinePercent?: number;
   mediumVolumeMl?: number;
+  minimumToolVolumeMl?: number;
   calculatedDoseMl?: number;
+  mediumBatch?: MediumBatchSnapshot;
   workspace?: WorkspaceSetupSnapshot;
   blankDecision?: BlankDecision;
   blankSkipReason?: string;

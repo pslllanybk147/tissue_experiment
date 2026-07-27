@@ -730,12 +730,26 @@ button:disabled { cursor: not-allowed; }
 .workspace-planner .wizard-guard, .workspace-chemical-grid { grid-column: 1 / -1; }
 .workspace-chemical-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .medium-batch-result { grid-column: 1 / -1; padding: 16px; background: #eaf4ed; border-left: 5px solid #2d6a48; }
+.guided-inline-recipe { display: grid; gap: 18px; margin-bottom: 18px; padding: clamp(18px, 3vw, 28px); border: 2px solid #2d6a48; background: #eef7f1; }
+.guided-inline-recipe > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
+.guided-inline-recipe h4, .inline-stock-card h5 { margin: 4px 0 8px; }
+.inline-recipe-table-wrap { max-width: 100%; overflow-x: auto; }
+.inline-recipe-table { width: 100%; border-collapse: collapse; background: #fff; }
+.inline-recipe-table th, .inline-recipe-table td { padding: 12px; border: 1px solid #b8c4bc; text-align: left; vertical-align: top; }
+.inline-stock-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.inline-stock-card { display: grid; gap: 12px; min-width: 0; padding: 16px; border: 1px solid #94a69a; background: #fff; }
+.calculation-placeholder, .guided-reference-only { margin: 0; padding: 12px; border-left: 4px solid #63766a; background: #f5f6f5; }
 .protocol-incomplete-warning { margin: 18px 0; padding: 18px; border: 2px solid #ad3d2d; background: #fff1ee; }
 .protocol-incomplete-warning > strong { font-size: 1.15rem; }
 @media (max-width: 600px) {
   .visual-process-flow { grid-template-columns: 1fr; min-height: 0; }
   .visual-process-flow li:not(:last-child)::after { content: "↓"; right: auto; top: auto; bottom: -28px; }
-  .visual-contamination-grid, .medium-batch-planner, .workspace-planner, .workspace-chemical-grid { grid-template-columns: 1fr; }
+  .visual-contamination-grid, .medium-batch-planner, .workspace-planner, .workspace-chemical-grid, .inline-stock-grid { grid-template-columns: 1fr; }
+  .guided-inline-recipe > header { flex-direction: column; }
+  .inline-recipe-table, .inline-recipe-table tbody, .inline-recipe-table tr, .inline-recipe-table th, .inline-recipe-table td { display: block; width: 100%; }
+  .inline-recipe-table thead { display: none; }
+  .inline-recipe-table tr { border-bottom: 2px solid #83968a; }
+  .inline-recipe-table th, .inline-recipe-table td { border-bottom: 0; }
   .workspace-planner .wizard-guard, .workspace-chemical-grid { grid-column: auto; }
   .beginner-glossary > div { grid-template-columns: 1fr; gap: 5px; }
 }

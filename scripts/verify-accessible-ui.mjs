@@ -7,7 +7,7 @@ const executablePath = process.env.CHROME_PATH
   ?? (process.platform === "win32"
     ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
     : undefined);
-const viewports = [
+const allViewports = [
   { name: "android-360", width: 360, height: 800 },
   { name: "iphone-se", width: 375, height: 667 },
   { name: "iphone-12", width: 390, height: 844 },
@@ -23,6 +23,9 @@ const viewports = [
   { name: "desktop", width: 1440, height: 1000 },
   { name: "wide-desktop", width: 1920, height: 1080 },
 ];
+const viewports = process.env.UI_VIEWPORT
+  ? allViewports.filter((viewport) => viewport.name === process.env.UI_VIEWPORT)
+  : allViewports;
 const routes = [
   { href: "/", label: "เริ่มต้น" },
   { href: "/plants", label: "ต้นไม้ของฉัน" },
@@ -269,8 +272,9 @@ async function verifyWizard(page, viewportName) {
   const availableSteps = page.locator(".guided-step-list button:not(:disabled)");
   const availableStepCount = await availableSteps.count();
   let visualAidFound = false;
-  let recipeLinkFound = false;
+  let inlineRecipeFound = false;
   let workspaceGuidanceFound = false;
+  let workspaceDiagnostic = "";
   for (let index = 0; index < availableStepCount; index += 1) {
     await availableSteps.nth(index).click();
     await inspectProtocolTypography(
@@ -285,18 +289,25 @@ async function verifyWizard(page, viewportName) {
         fullPage: true,
       });
     }
-    const recipeLink = page.getByRole("link", { name: /เปิดสูตรอาหารและเครื่องคำนวณ/ });
-    if (await recipeLink.isVisible().catch(() => false)) {
-      recipeLinkFound = (await recipeLink.getAttribute("href"))?.includes("#media-recipes") ?? false;
+    const inlineRecipe = page.locator(".guided-inline-recipe");
+    if (await inlineRecipe.isVisible().catch(() => false)) {
+      const recipeCopy = await inlineRecipe.innerText();
+      inlineRecipeFound = recipeCopy.includes("Establishment")
+        && recipeCopy.includes("110 mL")
+        && recipeCopy.includes("BAP")
+        && recipeCopy.includes("กรอกความเข้มข้น stock");
     }
     const guideCopy = await page.locator(".guided-step-content").innerText();
+    if (guideCopy.includes("Still-Air Box") || guideCopy.includes("ขวดสเปรย์ 500 mL")) {
+      workspaceDiagnostic = guideCopy.slice(0, 1200);
+    }
     if (guideCopy.includes("Still-Air Box") && guideCopy.includes("ขวดสเปรย์ 500 mL")) {
       workspaceGuidanceFound = guideCopy.includes("ห้ามผสม Haiter") && guideCopy.includes("ห้ามพ่นเป็นละออง");
     }
   }
   assert(visualAidFound, `${viewportName}: ขั้นเลือก/ตัด explant ไม่มีภาพอ้างอิงในคู่มือ`);
-  assert(recipeLinkFound, `${viewportName}: ขั้นเตรียมอาหารไม่มีลิงก์ไปสูตรของ taxon ปัจจุบัน`);
-  assert(workspaceGuidanceFound, `${viewportName}: ข้อมูล SAB/อุปกรณ์จาก Wizard ไม่ถูกนำไปสร้างคู่มือ`);
+  assert(inlineRecipeFound, `${viewportName}: ขั้นเตรียมอาหารไม่แสดงสูตร/ปริมาตร/เครื่องคำนวณ stock ของ Lot ในหน้าเดียว`);
+  assert(workspaceGuidanceFound, `${viewportName}: ข้อมูล SAB/อุปกรณ์จาก Wizard ไม่ถูกนำไปสร้างคู่มือ (${workspaceDiagnostic || "ไม่พบข้อความ SAB"})`);
   const recordButton = page.getByRole("button", { name: "อ่านจบแล้ว ไปบันทึกผลขั้นนี้" });
   await recordButton.scrollIntoViewIfNeeded();
   await recordButton.click();

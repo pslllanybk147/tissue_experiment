@@ -8,6 +8,7 @@ import { MediaUploader } from "../media/media-uploader";
 import { AccessibleAction } from "../common/accessible-action";
 import { BeginnerStepGuide } from "./beginner-step-guide";
 import { createHaiterActionPlan } from "../../lib/domain/haiter-guidance";
+import { InlineLotRecipe, type LotRecipePlan } from "./inline-lot-recipe";
 
 type HaiterDefaults = {
   labelPercent?: number;
@@ -29,7 +30,7 @@ type Props = {
   onMediaRestore?: (observationId: string, mediaId: string) => Promise<void>;
   haiterDefaults?: HaiterDefaults;
   recipeHref?: string;
-  recipeSummary?: string[];
+  recipePlan?: LotRecipePlan;
 };
 
 const statuses: GuidedStepStatus[] = ["Passed", "Needs review", "Failed"];
@@ -44,7 +45,7 @@ export function persistedStatusForSave(mode: "draft" | "confirm", status: Guided
   return mode === "draft" ? "Pending" : status;
 }
 
-export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs, onSave, mediaByStep = {}, onMediaUploaded, onMediaDelete, onMediaRestore, haiterDefaults, recipeHref, recipeSummary = [] }: Props) {
+export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs, onSave, mediaByStep = {}, onMediaUploaded, onMediaDelete, onMediaRestore, haiterDefaults, recipeHref, recipePlan }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [stepsOpen, setStepsOpen] = useState(false);
   const [workspaceView, setWorkspaceView] = useState<"manual" | "record">("manual");
@@ -64,11 +65,9 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
     ...(run?.measurements ?? {}),
   });
   const isHaiterCalculation = step?.id === "calculate-haiter-dose";
-  const isMediumPreparation = step?.workflowPhase === "medium-preparation"
-    || step?.id.includes("prepare-haiter-medium")
+  const isMediumPreparation = step?.id.includes("prepare-haiter-medium")
     || step?.id.includes("prepare-pressure-medium")
-    || step?.id.includes("medium-preparation");
-  const workingStockHref = recipeHref ? `${recipeHref.split("#")[0]}#working-stock-calculator` : undefined;
+    || step?.id === "medium-preparation";
   const haiterPlan = useMemo(() => {
     if (!isHaiterCalculation) return null;
     return createHaiterActionPlan({
@@ -150,19 +149,8 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
         <button aria-selected={workspaceView === "record"} className={workspaceView === "record" ? "active" : ""} onClick={() => switchWorkspace("record")} role="tab" type="button">2. บันทึกผลขั้นนี้</button>
       </div>
       <div className="guided-manual-pane" hidden={workspaceView !== "manual"} role="tabpanel">
-      {isMediumPreparation && recipeHref ? (
-        <aside className="guided-recipe-link" role="note">
-          <div>
-            <strong>สูตรอาหารของ Lot นี้</strong>
-            {haiterDefaults?.mediumVolumeMl ? <p><strong>ปริมาตรของ Lot: {haiterDefaults.mediumVolumeMl} mL</strong></p> : null}
-            {recipeSummary.length ? <ul>{recipeSummary.map((item) => <li key={item}>{item}</li>)}</ul> : <p>เปิดเครื่องคำนวณตามจำนวนกระปุก พร้อมตารางส่วนผสม pH และวิธีเจือจาง stock ปริมาตรเล็ก</p>}
-          </div>
-          <div className="guided-recipe-actions">
-            <Link className="primary-button" href={recipeHref} target="_blank" rel="noreferrer">เปิดสูตรอาหารและเครื่องคำนวณ ↗</Link>
-            {workingStockHref ? <Link className="secondary-button" href={workingStockHref} target="_blank" rel="noreferrer">คำนวณ working stock ปริมาตรเล็ก ↗</Link> : null}
-          </div>
-        </aside>
-      ) : null}
+      {isMediumPreparation && recipePlan ? <InlineLotRecipe plan={recipePlan} /> : null}
+      {isMediumPreparation && recipeHref ? <p className="guided-reference-only">ต้องการอ่านที่มาของสูตร? <Link href={recipeHref} target="_blank" rel="noreferrer">เปิดเอกสารอ้างอิงสูตร ↗</Link></p> : null}
       {step.beginner ? (
         <BeginnerStepGuide
           key={step.id}

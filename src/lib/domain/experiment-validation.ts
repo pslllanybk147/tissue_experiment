@@ -64,6 +64,20 @@ export function validateLotInput(input: CreateLotInput): ValidationResult<Create
       positiveNumber(errors, "mediumVolumeMl", input.sterilization.mediumVolumeMl);
       positiveNumber(errors, "calculatedDoseMl", input.sterilization.calculatedDoseMl);
     }
+    if (input.sterilization.mediumBatch) {
+      const batch = input.sterilization.mediumBatch;
+      const expectedJarCount = batch.cultureJarCount + batch.blankJarCount + batch.spareJarCount;
+      const expectedBaseVolume = batch.totalJarCount * batch.mediumPerJarMl;
+      if (batch.totalJarCount !== expectedJarCount) {
+        errors.mediumBatchJarCount = "จำนวนกระปุกรวมไม่ตรงกับกระปุกเพาะ Blank และสำรอง";
+      }
+      if (Math.abs(batch.baseVolumeMl - expectedBaseVolume) > 0.001) {
+        errors.mediumBatchBaseVolume = "ปริมาตรใช้งานไม่ตรงกับจำนวนกระปุก";
+      }
+      if (input.sterilization.mediumVolumeMl !== batch.totalVolumeMl) {
+        errors.mediumBatchTotalVolume = "ปริมาตร Lot ต้องตรงกับ batch ที่คำนวณ";
+      }
+    }
     if (
       input.sterilization.blankDecision === "skipped"
       && !input.sterilization.blankSkipReason?.trim()

@@ -128,19 +128,34 @@ describe("GuidedProtocolRunner photo evidence", () => {
     expect(html).toContain("เตรียมสารไฮเตอร์เจือจาง 10 เท่าก่อน");
   });
 
-  it("links a medium-preparation instruction to the current taxon recipe", () => {
+  it("renders the saved Lot recipe and stock calculator inline", () => {
     const html = renderToStaticMarkup(
       <GuidedProtocolRunner
         lotId="LOT-1"
         protocolId="protocol-pink-princess-nodal"
         recipeHref="/knowledge/taxa/cultivar-pink-princess#media-recipes"
+        recipePlan={{
+          title: "Establishment · ตั้งต้น",
+          evidenceState: "Adapted",
+          volumeMl: 110,
+          pH: "5.7–5.8",
+          jarSummary: "4 กระปุก",
+          minimumToolVolumeMl: 0.1,
+          ingredients: [
+            { name: "Sucrose", amount: 3.3, unit: "g" },
+            { name: "BAP", amount: 0.055, unit: "mg" },
+          ],
+        }}
         versionId="V-1"
         steps={[{ ...step, id: "prepare-haiter-medium", workflowPhase: "medium-preparation", title: "เตรียมอาหารแบบ Haiter" }]}
         runs={[]}
         onSave={vi.fn(async () => undefined)}
       />,
     );
-    expect(html).toContain("เปิดสูตรอาหารและเครื่องคำนวณ");
+    expect(html).toContain("สูตรที่ใช้จริงใน LOT นี้");
+    expect(html).toContain("เตรียมทั้งหมด 110 mL");
+    expect(html).toContain("คำนวณ BAP จากขวด stock");
+    expect(html).toContain("เปิดเอกสารอ้างอิงสูตร");
     expect(html).toContain("/knowledge/taxa/cultivar-pink-princess#media-recipes");
   });
 });

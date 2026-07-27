@@ -111,6 +111,54 @@ describe("validateLotInput", () => {
     }
   });
 
+  it("preserves one consistent medium batch snapshot", () => {
+    const result = validateLotInput({
+      ...validLot,
+      sterilization: {
+        ...haiterSnapshot,
+        mediumVolumeMl: 110,
+        mediumBatch: {
+          explantCount: 1,
+          cultureJarCount: 1,
+          blankJarCount: 1,
+          spareJarCount: 2,
+          totalJarCount: 4,
+          mediumPerJarMl: 25,
+          lossPercent: 10,
+          baseVolumeMl: 100,
+          lossAllowanceMl: 10,
+          totalVolumeMl: 110,
+        },
+      },
+    });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.sterilization?.mediumBatch?.totalVolumeMl).toBe(110);
+  });
+
+  it("rejects a medium snapshot that disagrees with the Lot volume", () => {
+    const result = validateLotInput({
+      ...validLot,
+      sterilization: {
+        ...haiterSnapshot,
+        mediumVolumeMl: 138,
+        mediumBatch: {
+          explantCount: 1,
+          cultureJarCount: 1,
+          blankJarCount: 1,
+          spareJarCount: 2,
+          totalJarCount: 4,
+          mediumPerJarMl: 25,
+          lossPercent: 10,
+          baseVolumeMl: 100,
+          lossAllowanceMl: 10,
+          totalVolumeMl: 110,
+        },
+      },
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.errors.mediumBatchTotalVolume).toBeDefined();
+  });
+
   it("rejects skipped blank without a reason", () => {
     const result = validateLotInput({
       ...validLot,
