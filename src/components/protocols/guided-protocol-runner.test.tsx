@@ -122,4 +122,20 @@ describe("GuidedProtocolRunner photo evidence", () => {
     expect(html).toContain("ปริมาตรต่ำสุดที่อุปกรณ์ตวงได้");
     expect(html).toContain("เตรียมสารไฮเตอร์เจือจาง 10 เท่าก่อน");
   });
+
+  it("links a medium-preparation instruction to the current taxon recipe", () => {
+    const html = renderToStaticMarkup(
+      <GuidedProtocolRunner
+        lotId="LOT-1"
+        protocolId="protocol-pink-princess-nodal"
+        recipeHref="/knowledge/taxa/cultivar-pink-princess#media-recipes"
+        versionId="V-1"
+        steps={[{ ...step, id: "prepare-haiter-medium", workflowPhase: "medium-preparation", title: "เตรียมอาหารแบบ Haiter" }]}
+        runs={[]}
+        onSave={vi.fn(async () => undefined)}
+      />,
+    );
+    expect(html).toContain("เปิดสูตรอาหารและเครื่องคำนวณ");
+    expect(html).toContain("/knowledge/taxa/cultivar-pink-princess#media-recipes");
+  });
 });

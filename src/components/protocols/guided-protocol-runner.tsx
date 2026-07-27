@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import type { GuidedStepStatus, ObservationMedia, ProtocolStep, ProtocolStepRun } from "@/lib/domain/models";
 import { MediaStrip } from "../media/media-strip";
@@ -27,6 +28,7 @@ type Props = {
   onMediaDelete?: (observationId: string, mediaId: string) => Promise<void>;
   onMediaRestore?: (observationId: string, mediaId: string) => Promise<void>;
   haiterDefaults?: HaiterDefaults;
+  recipeHref?: string;
 };
 
 const statuses: GuidedStepStatus[] = ["Passed", "Needs review", "Failed"];
@@ -37,7 +39,7 @@ const statusLabels: Record<GuidedStepStatus, string> = {
   Failed: "ไม่ผ่าน",
 };
 
-export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs, onSave, mediaByStep = {}, onMediaUploaded, onMediaDelete, onMediaRestore, haiterDefaults }: Props) {
+export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs, onSave, mediaByStep = {}, onMediaUploaded, onMediaDelete, onMediaRestore, haiterDefaults, recipeHref }: Props) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [stepsOpen, setStepsOpen] = useState(false);
   const [workspaceView, setWorkspaceView] = useState<"manual" | "record">("manual");
@@ -57,6 +59,10 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
     ...(run?.measurements ?? {}),
   });
   const isHaiterCalculation = step?.id === "calculate-haiter-dose";
+  const isMediumPreparation = step?.workflowPhase === "medium-preparation"
+    || step?.id.includes("prepare-haiter-medium")
+    || step?.id.includes("prepare-pressure-medium")
+    || step?.id.includes("medium-preparation");
   const haiterPlan = useMemo(() => {
     if (!isHaiterCalculation) return null;
     return createHaiterActionPlan({
@@ -138,6 +144,15 @@ export function GuidedProtocolRunner({ lotId, protocolId, versionId, steps, runs
         <button aria-selected={workspaceView === "record"} className={workspaceView === "record" ? "active" : ""} onClick={() => switchWorkspace("record")} role="tab" type="button">2. บันทึกผลขั้นนี้</button>
       </div>
       <div className="guided-manual-pane" hidden={workspaceView !== "manual"} role="tabpanel">
+      {isMediumPreparation && recipeHref ? (
+        <aside className="guided-recipe-link" role="note">
+          <div>
+            <strong>สูตรอาหารของ Lot นี้</strong>
+            <p>เปิดตารางส่วนผสมสำหรับ 100, 250, 500 และ 1,000 mL รวม pH และวิธีเจือจาง stock ปริมาตรเล็ก</p>
+          </div>
+          <Link className="primary-button" href={recipeHref} target="_blank" rel="noreferrer">เปิดสูตรอาหารและเครื่องคำนวณ ↗</Link>
+        </aside>
+      ) : null}
       {step.beginner ? (
         <BeginnerStepGuide
           instruction={step.beginner}

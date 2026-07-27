@@ -265,6 +265,7 @@ async function verifyWizard(page, viewportName) {
   const availableSteps = page.locator(".guided-step-list button:not(:disabled)");
   const availableStepCount = await availableSteps.count();
   let visualAidFound = false;
+  let recipeLinkFound = false;
   for (let index = 0; index < availableStepCount; index += 1) {
     await availableSteps.nth(index).click();
     await inspectProtocolTypography(
@@ -279,8 +280,13 @@ async function verifyWizard(page, viewportName) {
         fullPage: true,
       });
     }
+    const recipeLink = page.getByRole("link", { name: /เปิดสูตรอาหารและเครื่องคำนวณ/ });
+    if (await recipeLink.isVisible().catch(() => false)) {
+      recipeLinkFound = (await recipeLink.getAttribute("href"))?.includes("#media-recipes") ?? false;
+    }
   }
   assert(visualAidFound, `${viewportName}: ขั้นเลือก/ตัด explant ไม่มีภาพอ้างอิงในคู่มือ`);
+  assert(recipeLinkFound, `${viewportName}: ขั้นเตรียมอาหารไม่มีลิงก์ไปสูตรของ taxon ปัจจุบัน`);
   const recordButton = page.getByRole("button", { name: "อ่านจบแล้ว ไปบันทึกผลขั้นนี้" });
   await recordButton.scrollIntoViewIfNeeded();
   await recordButton.click();
