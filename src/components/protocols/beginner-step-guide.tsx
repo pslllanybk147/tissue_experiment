@@ -6,6 +6,7 @@ import type {
   BeginnerInstruction,
   UncertaintyPath,
 } from "@/lib/domain/models";
+import { describeBeginnerMaterial } from "../../lib/domain/zero-knowledge-protocol";
 import { AccessibleAction } from "../common/accessible-action";
 import { ProtocolReferenceVisual } from "./protocol-reference-visual";
 
@@ -63,13 +64,20 @@ export function BeginnerStepGuide({
 
       <GuideSection title="อุปกรณ์และสารที่ใช้">
         <ul className="beginner-materials">
-          {instruction.materials.map((material) => (
-            <li key={material.name}>
-              <strong>{material.name}</strong>
-              <span>{material.quantity || "ตามจำนวนที่วิธีทำระบุ"} · {material.specification || material.appearance}</span>
-              <small>ใช้แทนได้: {material.allowedSubstitutes?.length ? material.allowedSubstitutes.join(", ") : "ไม่มีของทดแทนที่อนุญาต"}</small>
-            </li>
-          ))}
+          {instruction.materials.map((material) => {
+            const fallback = describeBeginnerMaterial(material.name);
+            const quantity = material.quantity?.trim() || fallback.quantity;
+            const specification = material.specification?.trim() || fallback.specification;
+            const substitutes = material.allowedSubstitutes ?? fallback.allowedSubstitutes;
+            return (
+              <li key={material.name}>
+                <strong>{material.name}</strong>
+                <span><b>เตรียม:</b> {quantity}</span>
+                <span><b>ต้องเป็นแบบนี้:</b> {specification}</span>
+                <small>{substitutes?.length ? `ใช้แทนได้เฉพาะ: ${substitutes.join(", ")}` : "ขั้นนี้ไม่อนุญาตให้ใช้ของอื่นแทน"}</small>
+              </li>
+            );
+          })}
         </ul>
         <p className="beginner-material-note">ตรวจชื่อบนฉลากหรือรายการอุปกรณ์ให้ตรงกับชื่อนี้ หากไม่แน่ใจอย่าใช้ของที่ดูคล้ายกันแทน</p>
       </GuideSection>

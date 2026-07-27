@@ -98,6 +98,11 @@ export function beginnerInstructionIssues(
   if (!instruction.scienceNote.trim()) issues.push("ต้องมีเหตุผลทางวิทยาศาสตร์");
   if (!instruction.glossary?.length) issues.push("ต้องอธิบายคำศัพท์สำหรับมือใหม่");
   if (!instruction.visualAids?.length) issues.push("ต้องมีภาพประกอบหรือภาพจำลอง");
+  for (const material of instruction.materials) {
+    if (!material.quantity?.trim()) issues.push(`อุปกรณ์ “${material.name}” ต้องระบุจำนวน`);
+    if (!material.specification?.trim()) issues.push(`อุปกรณ์ “${material.name}” ต้องระบุขนาด ช่วงวัด หรือคุณสมบัติ`);
+    if (!Array.isArray(material.allowedSubstitutes)) issues.push(`อุปกรณ์ “${material.name}” ต้องระบุของทดแทนที่อนุญาตหรือยืนยันว่าห้ามทดแทน`);
+  }
   for (const path of instruction.uncertaintyPaths) {
     if (!path.selfCheck?.checks.length || !path.selfCheck.passCriteria.length || !path.selfCheck.failAction.trim()) {
       issues.push(`ทางเลือก “${path.label}” ต้องมีขั้นตรวจซ้ำและเกณฑ์ตัดสิน`);
@@ -115,13 +120,13 @@ export function isBeginnerReadyStep(step: ProtocolStep): boolean {
   );
 }
 
-function describeMaterial(name: string): BeginnerMaterial {
+export function describeBeginnerMaterial(name: string): BeginnerMaterial {
   const normalized = name.toLowerCase();
   if (normalized.includes("โทรศัพท์") || normalized.includes("กล้อง")) {
     return {
       name,
       appearance: "โทรศัพท์หรือกล้องที่เปิดดูภาพหลังถ่ายได้ และเลนส์ไม่เปื้อน",
-      purpose: "ถ่ายหลักฐานให้เห็นต้นไม้และตำแหน่งที่กำลังทำงาน",
+      purpose: "ถ่ายหลักฐานตามรายการของขั้นนี้ เช่น ต้นไม้ ฉลาก ภาชนะ หรือผลที่สังเกต",
       quantity: "1 เครื่อง",
       specification: "กล้องโฟกัสได้และดูภาพหลังถ่ายได้",
       allowedSubstitutes: ["กล้องดิจิทัล"],
@@ -211,7 +216,7 @@ function describeMaterial(name: string): BeginnerMaterial {
     name,
     appearance: `มองหาของที่มีชื่อว่า “${name}” บนฉลากหรือรายการอุปกรณ์ ถ้าไม่แน่ใจให้ถ่ายรูปก่อนใช้`,
     purpose: `ใช้สำหรับงาน “${name}” ตามคำแนะนำของขั้นนี้ ห้ามเลือกของคล้ายกันมาแทนเอง`,
-    quantity: "ตามจำนวนที่ระบุในวิธีทำ",
+    quantity: "1 ชิ้นหรือ 1 ชุดสำหรับ Lot นี้ เว้นแต่ขั้นตอนระบุตัวเลขอื่น",
     specification: `ต้องมีชื่อหรือคุณสมบัติตรงกับ “${name}”`,
     allowedSubstitutes: [],
   };
@@ -267,7 +272,7 @@ export function createBeginnerInstruction(input: {
       ? input.whatToFind
       : ["มองหาผลที่ระบุในหัวข้อ “ตรวจว่าพร้อมไปต่อหรือยัง”"],
     materials: (input.materials?.length ? input.materials : ["โทรศัพท์หรือแบบบันทึก"])
-      .map(describeMaterial),
+      .map(describeBeginnerMaterial),
     actions: input.actions.length
       ? input.actions
       : ["อ่านคำแนะนำทั้งหมดหนึ่งรอบก่อนเริ่ม", "ทำตามลำดับโดยไม่ข้ามข้อ"],

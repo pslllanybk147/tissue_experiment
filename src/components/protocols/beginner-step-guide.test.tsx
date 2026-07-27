@@ -94,7 +94,9 @@ describe("BeginnerStepGuide", () => {
     expect(html).not.toContain("หน้าตา:");
     expect(html).not.toContain("ใช้เพื่อ:");
     expect(html).not.toContain("เก็บภาพก่อนเริ่ม");
-    expect(html).toContain("เครื่องที่ใช้ถ่ายรูป");
-    expect(html).toContain("ใช้แทนได้");
+    expect(html).toContain("เตรียม:");
+    expect(html).toContain("1 เครื่อง");
+    expect(html).toContain("ต้องเป็นแบบนี้:");
+    expect(html).toContain("ใช้แทนได้เฉพาะ");
   });
 });
