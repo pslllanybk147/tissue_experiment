@@ -57,6 +57,20 @@ const baseSteps: ProtocolStep[] = [
 ];
 
 describe("sterilization profiles", () => {
+  test("does not delegate agar dissolution to an undefined room method", () => {
+    const haiter = sterilizationProfiles.find((profile) => profile.method === "haiter-chemical");
+    const medium = haiter?.steps.find((step) => step.id === "prepare-haiter-medium");
+    const copy = [
+      medium?.instruction,
+      ...(medium?.beginner?.actions ?? []),
+      ...(medium?.materials ?? []),
+    ].join(" ");
+    expect(copy).not.toContain("วิธีของห้อง");
+    expect(copy).toContain("คนต่อเนื่อง");
+    expect(copy).toContain("55–60°C");
+    expect(copy).toContain("เทอร์โมมิเตอร์");
+  });
+
   test("provides Haiter and pressure profiles with explicit versions", () => {
     expect(sterilizationProfiles.map((profile) => profile.method)).toEqual([
       "haiter-chemical",
