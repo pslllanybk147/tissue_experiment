@@ -15,4 +15,23 @@ describe("Firestore step-run serialization", () => {
       measurements: { pH: 5.7 },
     });
   });
+
+  it("preserves retrospective audit fields while removing absent optional values", () => {
+    expect(removeUndefinedStepRunFields({
+      stepId: "step-1",
+      completionMode: "retrospective",
+      retrospectiveRecordedAt: "2026-07-31T09:00:00.000Z",
+      timerStartedAt: "2026-07-29T08:00:00.000Z",
+      timerEndsAt: "2026-07-31T08:00:00.000Z",
+      completedAt: "2026-07-31T08:00:00.000Z",
+      evidenceObservationId: undefined,
+    })).toEqual({
+      stepId: "step-1",
+      completionMode: "retrospective",
+      retrospectiveRecordedAt: "2026-07-31T09:00:00.000Z",
+      timerStartedAt: "2026-07-29T08:00:00.000Z",
+      timerEndsAt: "2026-07-31T08:00:00.000Z",
+      completedAt: "2026-07-31T08:00:00.000Z",
+    });
+  });
 });

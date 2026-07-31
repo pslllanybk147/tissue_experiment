@@ -797,7 +797,7 @@ button:disabled { cursor: not-allowed; }
 .linear-step-list button[aria-current="step"] { border-color: #195c3b; background: #edf6f0; }
 .linear-step-list button:disabled { color: #758078; }
 .linear-step-list button span { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 50%; background: #173026; color: #fff; }
-.linear-guide-block, .linear-timer, .linear-problem, .linear-evidence-details {
+.linear-guide-block, .linear-timer, .linear-problem, .linear-retrospective, .linear-evidence-details {
   padding: clamp(18px, 3vw, 28px);
   border: 1px solid #aeb8b1;
   border-left: 7px solid #2d6a48;
@@ -817,8 +817,18 @@ button:disabled { cursor: not-allowed; }
 .linear-checks input { width: 26px; height: 26px; }
 .linear-problem { display: grid; gap: 14px; border-color: #b42318; border-left-color: #b42318; background: #fff3f1; }
 .linear-problem ul { margin: 0; padding-left: 24px; }
+.linear-retrospective {
+  display: grid;
+  gap: 18px;
+  border-left-color: #245c78;
+  background: #f3f8fb;
+}
+.linear-retrospective h3, .linear-retrospective p { margin: 0; }
+.retrospective-timer-help { padding: 14px; border: 1px solid #8aa7b7; background: #fff; }
+.retrospective-actions { display: grid; grid-template-columns: 1fr 1.4fr; gap: 12px; }
+.retrospective-actions > * { width: 100%; min-height: 56px; }
 .linear-evidence-details summary { min-height: 48px; cursor: pointer; font-weight: 700; }
-.linear-step-actions { display: grid; grid-template-columns: 1fr 1.4fr; gap: 12px; }
+.linear-step-actions { display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: 12px; }
 .linear-step-actions > * { width: 100%; min-height: 56px; }
 .read-only-label { margin: 0 0 12px; color: var(--muted); font-weight: 650; }
 .observation-media-readonly { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
@@ -830,6 +840,7 @@ button:disabled { cursor: not-allowed; }
   .linear-actions li { grid-template-columns: 40px minmax(0, 1fr); gap: 10px; }
   .linear-actions li > span { width: 38px; height: 38px; }
   .linear-step-actions { grid-template-columns: 1fr; }
+  .retrospective-actions { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

@@ -43,6 +43,12 @@ function assert(condition, message) {
   if (!condition) failures.push(message);
 }
 
+function localDateTime(minutesAgo) {
+  const date = new Date(Date.now() - minutesAgo * 60_000);
+  const localTimestamp = date.getTime() - date.getTimezoneOffset() * 60_000;
+  return new Date(localTimestamp).toISOString().slice(0, 16);
+}
+
 async function enterDemo(page) {
   await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
   const demo = page.getByRole("button", { name: "Continue in demo mode" });
@@ -266,6 +272,7 @@ async function verifyWizard(page, viewportName) {
   );
   assert(!/C1V1|C2V2|ตามคำแนะนำ|ตาม Protocol|ตามวิธีของห้อง/.test(initialGuideText), `${viewportName}: คู่มือ v2 ยังมีศัพท์หรือคำสั่งคลุมเครือ`);
   assert(await page.getByRole("button", { name: "ฉันพบปัญหา" }).isVisible(), `${viewportName}: ไม่มีทางหยุดเมื่อพบปัญหา`);
+  assert(await page.getByRole("button", { name: "ฉันทำขั้นนี้ไว้แล้ว" }).isVisible(), `${viewportName}: ไม่มีทางบันทึกงานที่ทำไปแล้ว`);
   assert(await page.getByRole("button", { name: "ทำขั้นนี้เสร็จแล้ว" }).isVisible(), `${viewportName}: ไม่มีปุ่มจบขั้น`);
   assert(await page.locator("input[type='file']").count() === 0, `${viewportName}: Protocol v2 ยังบังคับบันทึกรูป`);
   assert(await page.getByRole("radio").count() === 0, `${viewportName}: Protocol v2 ยังใช้ผลลัพธ์แบบ radio รุ่นเก่า`);
@@ -290,9 +297,15 @@ async function verifyWizard(page, viewportName) {
   for (let index = 0; index < await readiness.count(); index += 1) {
     await readiness.nth(index).check();
   }
-  const finish = page.getByRole("button", { name: "ทำขั้นนี้เสร็จแล้ว" });
-  await finish.click();
-  await page.getByText("บันทึกว่าทำขั้นนี้เสร็จแล้ว").waitFor({ state: "visible" });
+  await page.getByRole("button", { name: "ฉันทำขั้นนี้ไว้แล้ว" }).click();
+  const retrospective = page.getByRole("region", { name: "บันทึกขั้นที่ทำไปแล้ว" });
+  await retrospective.waitFor({ state: "visible" });
+  assert(await retrospective.locator("input[type='file']").count() === 0, `${viewportName}: บันทึกย้อนหลังยังขอรูป`);
+  await page.getByLabel("วันที่และเวลาที่เริ่มทำจริง *").fill(localDateTime(20));
+  await page.getByLabel("วันที่และเวลาที่ทำเสร็จจริง *").fill(localDateTime(10));
+  await page.getByLabel("บันทึกสั้น ๆ ว่าทำอะไรและเห็นผลอย่างไร *").fill("ทำขั้นนี้จริงก่อนเปิดคู่มือและตรวจผลแล้ว");
+  await page.getByRole("button", { name: "บันทึกตามเวลาจริง" }).click();
+  await page.getByText("บันทึกย้อนหลังแล้ว ขั้นนี้ผ่านตามวันที่และเวลาจริง").waitFor({ state: "visible" });
   const next = page.getByRole("button", { name: "ไปขั้นถัดไป" });
   await next.click();
   await page.waitForTimeout(250);

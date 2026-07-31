@@ -36,7 +36,15 @@ function adapter(db: Firestore, uid: string): StepRunRepository {
       await setDoc(doc(runs(input.lotId), input.stepId), item, { merge: true });
       await setDoc(doc(db, "users", uid, "lots", input.lotId, "auditEvents", `progress-${input.stepId}`), {
         id: `progress-${input.stepId}`, ownerId: uid, lotId: input.lotId, entityType: "protocol-progress", entityId: input.stepId,
-        action: input.status === "Passed" ? "completed" : "updated", occurredAt: timestamp, after: item,
+        action: input.status === "Passed"
+          ? input.completionMode === "retrospective"
+            ? "completed_retrospectively"
+            : "completed"
+          : input.completionMode === "retrospective"
+            ? "recorded_retrospectively"
+            : "updated",
+        occurredAt: timestamp,
+        after: item,
       }, { merge: true });
       return item;
     },

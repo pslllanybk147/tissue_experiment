@@ -31,7 +31,7 @@
 - Produces: `planRetrospectiveCompletion(input): RetrospectiveCompletionPlan`
 - Produces fields `completionMode` and `retrospectiveRecordedAt` on `ProtocolStepRun`
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 ```ts
 expect(planRetrospectiveCompletion({
@@ -47,15 +47,15 @@ expect(planRetrospectiveCompletion({
 })).toMatchObject({ state: "waiting" });
 ```
 
-- [ ] **Step 2: Run the test and confirm failure because the module is missing**
+- [x] **Step 2: Run the test and confirm failure because the module is missing**
 
 Run: `npm test -- --run src/lib/domain/retrospective-step-completion.test.ts`
 
-- [ ] **Step 3: Implement validation and timing calculation**
+- [x] **Step 3: Implement validation and timing calculation**
 
 The function rejects invalid/future dates, computes `timerEndsAt`, and returns `complete` only when `now >= timerEndsAt`.
 
-- [ ] **Step 4: Run the targeted test**
+- [x] **Step 4: Run the targeted test**
 
 Run: `npm test -- --run src/lib/domain/retrospective-step-completion.test.ts`
 
@@ -70,23 +70,23 @@ Run: `npm test -- --run src/lib/domain/retrospective-step-completion.test.ts`
 - Consumes: `planRetrospectiveCompletion`
 - Saves: existing `onSave()` with `completionMode: "retrospective"` and `retrospectiveRecordedAt`
 
-- [ ] **Step 1: Write failing rendering tests**
+- [x] **Step 1: Write failing rendering tests**
 
 Assert that every step shows `ฉันทำขั้นนี้ไว้แล้ว`, the form contains a datetime input, and photo/file inputs are absent.
 
-- [ ] **Step 2: Run test and confirm the button is missing**
+- [x] **Step 2: Run test and confirm the button is missing**
 
 Run: `npm test -- --run src/components/protocols/linear-protocol-runner-v2.test.tsx`
 
-- [ ] **Step 3: Implement the inline retrospective panel**
+- [x] **Step 3: Implement the inline retrospective panel**
 
 For untimed steps request start/completion time. For timed steps request start time, show calculated end time, and save either `Passed` or `Pending`. Reuse readiness and measurement gates.
 
-- [ ] **Step 4: Add accessible responsive styles**
+- [x] **Step 4: Add accessible responsive styles**
 
 Keep minimum 48px controls, visible focus, single-column mobile layout, and status text in `aria-live`.
 
-- [ ] **Step 5: Run targeted tests**
+- [x] **Step 5: Run targeted tests**
 
 Run: `npm test -- --run src/components/protocols/linear-protocol-runner-v2.test.tsx`
 
@@ -101,15 +101,15 @@ Run: `npm test -- --run src/components/protocols/linear-protocol-runner-v2.test.
 - Audit event `after` includes `completionMode: "retrospective"`
 - Existing Firestore undefined-field sanitizer remains the write boundary
 
-- [ ] **Step 1: Add repository regression assertion**
+- [x] **Step 1: Add repository regression assertion**
 
 Verify retrospective fields survive sanitization and no optional `undefined` reaches Firestore.
 
-- [ ] **Step 2: Update browser verification**
+- [x] **Step 2: Update browser verification**
 
 Create a Pink Princess v2 Lot, complete step 1 retrospectively, verify step 2 unlocks, and verify a timed retrospective plan shows complete/waiting correctly.
 
-- [ ] **Step 3: Run complete verification**
+- [x] **Step 3: Run complete verification**
 
 Run:
 
@@ -121,10 +121,10 @@ npm run firebase:verify
 npm run ui:verify
 ```
 
-- [ ] **Step 4: Update `handoff.md`**
+- [x] **Step 4: Update `handoff.md`**
 
 Record behavior, migration impact, exact verification counts, commit, and production deployment.
 
-- [ ] **Step 5: Commit and push**
+- [x] **Step 5: Commit and push**
 
 Commit the implementation and push `master`, then wait for Vercel Production to become `READY`.

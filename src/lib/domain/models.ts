@@ -193,6 +193,8 @@ export type ProtocolStepRun = {
   timerStartedAt?: string;
   timerEndsAt?: string;
   completedAt?: string;
+  completionMode?: "live" | "retrospective";
+  retrospectiveRecordedAt?: string;
   observedAt: string;
   updatedAt: string;
 };

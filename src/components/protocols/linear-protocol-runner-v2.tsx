@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { ProtocolStep, ProtocolStepRun } from "@/lib/domain/models";
+import { planRetrospectiveCompletion } from "../../lib/domain/retrospective-step-completion";
 import { AccessibleAction } from "../common/accessible-action";
 import { InlineLotRecipe, type LotRecipePlan } from "./inline-lot-recipe";
 
@@ -52,6 +53,9 @@ export function LinearProtocolRunnerV2({
   const [activeIndex, setActiveIndex] = useState(0);
   const [showSteps, setShowSteps] = useState(false);
   const [problemOpen, setProblemOpen] = useState(false);
+  const [retrospectiveOpen, setRetrospectiveOpen] = useState(false);
+  const [retrospectiveStartedAt, setRetrospectiveStartedAt] = useState("");
+  const [retrospectiveCompletedAt, setRetrospectiveCompletedAt] = useState("");
   const [note, setNote] = useState("");
   const [measurements, setMeasurements] = useState<Record<string, number | null>>({});
   const [checked, setChecked] = useState<Record<string, boolean>>({});
@@ -96,6 +100,9 @@ export function LinearProtocolRunnerV2({
     const nextRun = runs.find((candidate) => candidate.stepId === next?.id);
     setActiveIndex(index);
     setProblemOpen(false);
+    setRetrospectiveOpen(false);
+    setRetrospectiveStartedAt("");
+    setRetrospectiveCompletedAt("");
     setNote(nextRun?.note ?? "");
     setMeasurements(nextRun?.measurements ?? {});
     setChecked({});
@@ -122,6 +129,7 @@ export function LinearProtocolRunnerV2({
         mediaIds: [],
         timerStartedAt,
         timerEndsAt,
+        completionMode: "live",
         observedAt: timerStartedAt,
       });
       setNow(Date.now());
@@ -162,11 +170,77 @@ export function LinearProtocolRunnerV2({
         timerStartedAt: run?.timerStartedAt,
         timerEndsAt: run?.timerEndsAt,
         completedAt,
+        completionMode: "live",
         observedAt: new Date().toISOString(),
       });
       setMessage(status === "Passed" ? "บันทึกว่าทำขั้นนี้เสร็จแล้ว" : "บันทึกปัญหาแล้ว ขั้นถัดไปยังล็อกอยู่");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "บันทึกไม่สำเร็จ");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function saveRetrospectiveResult() {
+    if (!step) return;
+    if (!retrospectiveStartedAt) {
+      setMessage("กรอกวันที่และเวลาที่เริ่มทำจริง");
+      return;
+    }
+    if (!step.durationMinutes && !retrospectiveCompletedAt) {
+      setMessage("กรอกวันที่และเวลาที่ทำเสร็จจริง");
+      return;
+    }
+    if (!note.trim()) {
+      setMessage("เขียนบันทึกสั้น ๆ ว่าทำอะไรไปแล้วและเห็นผลอย่างไร");
+      return;
+    }
+
+    const plan = planRetrospectiveCompletion({
+      startedAt: retrospectiveStartedAt,
+      completedAt: retrospectiveCompletedAt || undefined,
+      durationMinutes: step.durationMinutes,
+    });
+    if (plan.state === "invalid") {
+      setMessage(plan.reason);
+      return;
+    }
+    if (
+      plan.state === "complete"
+      && (!readinessComplete || !measurementsComplete)
+    ) {
+      setMessage("ตรวจรายการความพร้อมและกรอกค่าที่มีเครื่องหมาย * ให้ครบก่อนยืนยันว่าขั้นนี้เสร็จแล้ว");
+      return;
+    }
+
+    const recordedAt = new Date().toISOString();
+    setSaving(true);
+    try {
+      await onSave({
+        lotId,
+        protocolId,
+        versionId,
+        stepId: step.id,
+        status: plan.state === "complete" ? "Passed" : "Pending",
+        note,
+        measurements,
+        mediaIds: [],
+        timerStartedAt: "timerStartedAt" in plan ? plan.timerStartedAt : undefined,
+        timerEndsAt: "timerEndsAt" in plan ? plan.timerEndsAt : undefined,
+        completedAt: plan.state === "complete" ? plan.completedAt : undefined,
+        completionMode: "retrospective",
+        retrospectiveRecordedAt: recordedAt,
+        observedAt: recordedAt,
+      });
+      setRetrospectiveOpen(false);
+      setMessage(
+        plan.state === "complete"
+          ? "บันทึกย้อนหลังแล้ว ขั้นนี้ผ่านตามวันที่และเวลาจริง"
+          : `บันทึกย้อนหลังแล้ว ยังเหลือประมาณ ${timerLabel(plan.remainingMinutes)}`,
+      );
+      setNow(Date.now());
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "บันทึกย้อนหลังไม่สำเร็จ");
     } finally {
       setSaving(false);
     }
@@ -312,6 +386,70 @@ export function LinearProtocolRunnerV2({
         </section>
       ) : null}
 
+      {retrospectiveOpen ? (
+        <section
+          aria-label="บันทึกขั้นที่ทำไปแล้ว"
+          className="linear-retrospective"
+          role="region"
+        >
+          <div>
+            <h3>บันทึกขั้นที่ทำไปแล้ว</h3>
+            <p>
+              ใช้เวลาที่เกิดขึ้นจริง ระบบจะไม่เริ่มนับใหม่
+              {step.durationMinutes
+                ? " ถ้ายังไม่ครบ ระบบจะนับเฉพาะเวลาที่เหลือ"
+                : ""}
+            </p>
+          </div>
+          <label className="form-field">
+            <span>วันที่และเวลาที่เริ่มทำจริง *</span>
+            <input
+              onChange={(event) => setRetrospectiveStartedAt(event.target.value)}
+              type="datetime-local"
+              value={retrospectiveStartedAt}
+            />
+          </label>
+          {!step.durationMinutes ? (
+            <label className="form-field">
+              <span>วันที่และเวลาที่ทำเสร็จจริง *</span>
+              <input
+                onChange={(event) => setRetrospectiveCompletedAt(event.target.value)}
+                type="datetime-local"
+                value={retrospectiveCompletedAt}
+              />
+            </label>
+          ) : (
+            <p className="retrospective-timer-help">
+              ขั้นนี้กำหนดเวลา {timerLabel(step.durationMinutes)}
+              ระบบจะคำนวณเวลาสิ้นสุดจากเวลาเริ่มให้เอง
+            </p>
+          )}
+          <label className="form-field">
+            <span>บันทึกสั้น ๆ ว่าทำอะไรและเห็นผลอย่างไร *</span>
+            <textarea
+              onChange={(event) => setNote(event.target.value)}
+              rows={3}
+              value={note}
+            />
+          </label>
+          <div className="retrospective-actions">
+            <AccessibleAction
+              disabled={saving}
+              onClick={() => setRetrospectiveOpen(false)}
+            >
+              ยกเลิก
+            </AccessibleAction>
+            <AccessibleAction
+              disabled={saving}
+              intent="primary"
+              onClick={() => void saveRetrospectiveResult()}
+            >
+              บันทึกตามเวลาจริง
+            </AccessibleAction>
+          </div>
+        </section>
+      ) : null}
+
       <details className="linear-evidence-details">
         <summary>ที่มาของคำแนะนำและข้อจำกัด</summary>
         <p>{step.whyItMatters}</p>
@@ -324,6 +462,16 @@ export function LinearProtocolRunnerV2({
       <div className="linear-step-actions">
         <AccessibleAction onClick={() => setProblemOpen((value) => !value)}>
           ฉันพบปัญหา
+        </AccessibleAction>
+        <AccessibleAction
+          aria-expanded={retrospectiveOpen}
+          onClick={() => {
+            setProblemOpen(false);
+            setRetrospectiveOpen((value) => !value);
+            setMessage("");
+          }}
+        >
+          ฉันทำขั้นนี้ไว้แล้ว
         </AccessibleAction>
         <AccessibleAction disabled={saving || !canComplete} intent="primary" onClick={() => void saveResult("Passed")}>
           ทำขั้นนี้เสร็จแล้ว

@@ -65,10 +65,12 @@ describe("LinearProtocolRunnerV2", () => {
     expect(html).toContain("ทำตามนี้ทีละข้อ");
     expect(html).toContain("ฉันพบปัญหา");
     expect(html).toContain("ทำขั้นนี้เสร็จแล้ว");
+    expect(html).toContain("ฉันทำขั้นนี้ไว้แล้ว");
     expect(html).not.toContain("อ่านคู่มือ");
     expect(html).not.toContain("บันทึกผลขั้นนี้");
     expect(html).not.toContain("หลักฐานภาพ");
     expect(html).not.toContain('type="radio"');
+    expect(html).not.toContain('type="file"');
     expect(html).toContain('aria-expanded="false"');
     expect(html).toMatch(/<ol[^>]*hidden=""[^>]*id="linear-step-list"/);
   });
