@@ -316,6 +316,42 @@ async function verifyWizard(page, viewportName) {
     await page.locator(".step-kicker").filter({ hasText: "ขั้นที่ 9 จาก 14" }).isVisible(),
     `${viewportName}: รีเฟรชแล้วไม่กลับมาที่ขั้นแรกที่ยังไม่ได้ทำ`,
   );
+
+  const finalCatchUpButton = page.getByRole("button", { name: "ตั้งจุดเริ่มต่อ" });
+  await finalCatchUpButton.click();
+  await page.getByLabel("ฉันจะเริ่มทำต่อจาก").selectOption({ index: 13 });
+  const finalTimerConfirmation = page.getByLabel("ฉันยืนยันว่าครบเวลาที่กำหนดแล้ว");
+  if (await finalTimerConfirmation.isVisible()) await finalTimerConfirmation.check();
+  await page.getByRole("button", { name: "ยืนยันและเริ่มต่อจากขั้นนี้" }).click();
+  await page.locator(".step-kicker").filter({ hasText: "ขั้นที่ 14 จาก 14" }).waitFor({ state: "visible" });
+
+  for (let index = 0; index < 14; index += 1) {
+    const showAll = page.getByRole("button", { name: "ดูทุกขั้น" });
+    if (await showAll.isVisible().catch(() => false)) await showAll.click();
+    const stepButtons = page.locator("#linear-step-list button");
+    await stepButtons.nth(index).click();
+    await page.locator(".step-kicker").filter({ hasText: `ขั้นที่ ${index + 1} จาก 14` }).waitFor({ state: "visible" });
+    const stepText = await page.locator(".linear-protocol-v2").innerText();
+    assert(
+      !/Wizard คำนวณ|เตรียม 1 รายการต่อ Lot|มองหาของที่มีชื่อว่า|ใช้สำหรับงาน/.test(stepText),
+      `${viewportName}: ขั้น ${index + 1} ยังมีข้อความวัสดุสำเร็จรูปผิดบริบท`,
+    );
+    if (index === 2) {
+      assert(
+        stepText.includes("รวม 4 กระปุก: เพาะ 1, Blank 1, สำรอง 2"),
+        `${viewportName}: ขั้นกำหนด batch ไม่แสดงจำนวนกระปุกจริงของ Lot`,
+      );
+    }
+    if (index === 3) {
+      assert(
+        stepText.includes("3 ภาชนะ")
+          && stepText.includes("น้ำล้าง 1")
+          && stepText.includes("น้ำล้าง 2")
+          && stepText.includes("น้ำล้าง 3"),
+        `${viewportName}: ขั้นเตรียมน้ำไม่แยกน้ำล้าง 3 ภาชนะอย่างชัดเจน`,
+      );
+    }
+  }
 }
 
 async function verifyDirectRoutes(page, viewportName) {

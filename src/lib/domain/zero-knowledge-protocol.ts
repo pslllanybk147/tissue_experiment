@@ -15,6 +15,21 @@ const prohibitedEscalationTerms = [
   "ให้ช่วยตรวจ",
 ];
 
+export const genericMaterialPhrases = [
+  "มองหาของที่มีชื่อว่า",
+  "ใช้สำหรับงาน",
+  "เตรียม 1 รายการต่อ Lot",
+  "ตามจำนวนชิ้น/ภาชนะที่ขั้นนี้ระบุ",
+  "Wizard คำนวณ",
+];
+
+export function beginnerMaterialSemanticIssues(material: BeginnerMaterial): string[] {
+  const text = [material.appearance, material.purpose, material.quantity, material.specification].join(" ");
+  return genericMaterialPhrases.some((phrase) => text.includes(phrase))
+    ? [`อุปกรณ์ “${material.name}” ยังใช้ข้อความกว้างเกินไปสำหรับคู่มือพร้อมใช้`]
+    : [];
+}
+
 export function containsProhibitedEscalation(value: string): boolean {
   return prohibitedEscalationTerms.some((term) => value.includes(term));
 }
@@ -122,6 +137,16 @@ export function isBeginnerReadyStep(step: ProtocolStep): boolean {
 
 export function describeBeginnerMaterial(name: string): BeginnerMaterial {
   const normalized = name.toLowerCase();
+  if (normalized.includes("ภาชนะล้าง") || normalized.includes("น้ำล้างปลอดเชื้อ")) {
+    return {
+      name,
+      appearance: "ภาชนะสะอาดมีฝาปิด 3 ใบ แยกจากกระปุกเพาะ และติดป้ายเลข 1, 2, 3 ชัดเจน",
+      purpose: "ใส่น้ำปลอดเชื้อสำหรับล้างสารฟอกออกจากชิ้นพืชทีละรอบโดยไม่นำน้ำเดิมกลับมาใช้",
+      quantity: "3 ภาชนะ แยกหนึ่งภาชนะต่อการล้างหนึ่งรอบ",
+      specification: "แต่ละใบต้องมีน้ำปลอดเชื้อมากพอให้ชิ้นพืชทุกชิ้นจมทั้งหมด และติดป้าย น้ำล้าง 1, 2 และ 3",
+      allowedSubstitutes: [],
+    };
+  }
   if (normalized.includes("โทรศัพท์") || normalized.includes("กล้อง")) {
     return {
       name,
@@ -344,7 +369,7 @@ function glossaryFor(text: string): BeginnerGlossaryTerm[] {
 export function createBeginnerInstruction(input: {
   currentAction: string;
   actions: string[];
-  materials?: string[];
+  materials?: Array<string | BeginnerMaterial>;
   doNotDoYet?: string[];
   whatToFind?: string[];
   stopConditions?: string[];
@@ -358,7 +383,7 @@ export function createBeginnerInstruction(input: {
   const combinedText = [
     input.currentAction,
     ...input.actions,
-    ...(input.materials ?? []),
+    ...(input.materials ?? []).map((material) => typeof material === "string" ? material : material.name),
     ...(input.whatToFind ?? []),
   ].join(" ");
   const safeUncertaintyAction = input.uncertaintyAction
@@ -372,7 +397,7 @@ export function createBeginnerInstruction(input: {
       ? input.whatToFind
       : ["มองหาผลที่ระบุในหัวข้อ “ตรวจว่าพร้อมไปต่อหรือยัง”"],
     materials: (input.materials?.length ? input.materials : ["โทรศัพท์หรือแบบบันทึก"])
-      .map(describeBeginnerMaterial),
+      .map((material) => typeof material === "string" ? describeBeginnerMaterial(material) : material),
     actions: input.actions.length
       ? input.actions
       : ["อ่านคำแนะนำทั้งหมดหนึ่งรอบก่อนเริ่ม", "ทำตามลำดับโดยไม่ข้ามข้อ"],

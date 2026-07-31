@@ -1,12 +1,17 @@
 import type {
   BeginnerInstruction,
+  BeginnerMaterial,
   EvidenceState,
   ExperimentLot,
   ProtocolStep,
   StepMeasurement,
 } from "./models";
 import { calculateHaiterDose, planHaiterWorkingDilution } from "./haiter-calculations";
-import { createBeginnerInstruction } from "./zero-knowledge-protocol";
+import {
+  beginnerInstructionIssues,
+  beginnerMaterialSemanticIssues,
+  createBeginnerInstruction,
+} from "./zero-knowledge-protocol";
 
 const vaguePatterns = [
   /ตามคำแนะนำ/i,
@@ -21,6 +26,18 @@ export function containsVagueInstruction(text: string): boolean {
   return vaguePatterns.some((pattern) => pattern.test(text));
 }
 
+export function guidedProtocolV2SemanticIssues(steps: ProtocolStep[]): string[] {
+  return steps.flatMap((protocolStep) => {
+    if (!protocolStep.beginner) return [`${protocolStep.id}: ไม่มีคู่มือสำหรับมือใหม่`];
+    const structural = beginnerInstructionIssues(protocolStep.beginner);
+    const materials = protocolStep.beginner.materials.flatMap(beginnerMaterialSemanticIssues);
+    const vague = [protocolStep.instruction, ...protocolStep.beginner.actions]
+      .filter(containsVagueInstruction)
+      .map((value) => `มีคำสั่งคลุมเครือ: ${value}`);
+    return [...structural, ...materials, ...vague].map((issue) => `${protocolStep.id}: ${issue}`);
+  });
+}
+
 export function canRunGuidedProtocolV2(lot: ExperimentLot): boolean {
   return lot.workflowVersion === "v2"
     && lot.taxonId === "cultivar-pink-princess"
@@ -32,7 +49,7 @@ type StepInput = {
   title: string;
   objective: string;
   actions: string[];
-  materials: string[];
+  materials: Array<string | BeginnerMaterial>;
   checks: string[];
   stop: string[];
   evidenceState?: EvidenceState;
@@ -42,10 +59,13 @@ type StepInput = {
 };
 
 function step(order: number, input: StepInput): ProtocolStep {
+  const materialDetails = input.materials.map((item) => (
+    typeof item === "string" ? (() => { throw new Error(`Material was not enriched: ${item}`); })() : item
+  ));
   const beginner: BeginnerInstruction = createBeginnerInstruction({
     currentAction: input.objective,
     actions: input.actions,
-    materials: input.materials,
+    materials: materialDetails,
     whatToFind: input.checks,
     stopConditions: input.stop,
     evidencePrompt: ["บันทึกเฉพาะค่าที่ระบบถามในขั้นนี้"],
@@ -64,7 +84,7 @@ function step(order: number, input: StepInput): ProtocolStep {
     evidenceState: input.evidenceState ?? "Adapted",
     objective: input.objective,
     whyItMatters: input.objective,
-    materials: input.materials,
+    materials: materialDetails.map((item) => item.name),
     measurements: input.measurements,
     expectedResult: input.checks.join(" "),
     passCriteria: input.checks,
@@ -84,6 +104,77 @@ function jarSummary(lot: ExperimentLot): string {
   const batch = lot.sterilization?.mediumBatch;
   if (!batch) return "ใช้จำนวนกระปุกที่บันทึกไว้ใน Lot นี้";
   return `${batch.totalJarCount} กระปุก: เพาะ ${batch.cultureJarCount}, Blank ${batch.blankJarCount}, สำรอง ${batch.spareJarCount}`;
+}
+
+function material(
+  name: string,
+  appearance: string,
+  purpose: string,
+  quantity: string,
+  specification: string,
+  allowedSubstitutes: string[] = [],
+): BeginnerMaterial {
+  return { name, appearance, purpose, quantity, specification, allowedSubstitutes };
+}
+
+function guidedMaterial(name: string, lot: ExperimentLot): BeginnerMaterial {
+  const batch = lot.sterilization?.mediumBatch;
+  const totalJars = batch?.totalJarCount ?? 0;
+  const cultureJars = batch?.cultureJarCount ?? 0;
+  const blankJars = batch?.blankJarCount ?? 0;
+  const spareJars = batch?.spareJarCount ?? 0;
+  const volume = lot.sterilization?.mediumVolumeMl ?? 0;
+  const source = lot.sterilization?.activeChlorinePercent ?? 0;
+  const common: Record<string, BeginnerMaterial> = {
+    "ต้นแม่": material("ต้นแม่", "ต้น Pink Princess ที่มีรหัสตรงกับ Plant Record และ Lot นี้", "ตรวจสุขภาพ หา node และตัด explant จากต้นเดียวกับที่บันทึก", "1 ต้น", "รหัสต้นต้องตรงกับ Lot และต้องยังไม่พบเน่าหรือแมลง", []),
+    "แว่นขยาย": material("แว่นขยาย", "เลนส์ขยายที่ทำให้เห็นตาข้างและแมลงจุดเล็กได้ชัด", "ตรวจตาข้าง แมลง และรอยโรคโดยไม่เดาจากสายตา", "1 อัน", "ภาพชัด มีแสงพอ และไม่บิดเบี้ยว", ["กล้องโทรศัพท์ที่ซูมและโฟกัสตาข้างได้ชัด"]),
+    "ไม้บรรทัด": material("ไม้บรรทัด", "ไม้บรรทัดที่มีขีดมิลลิเมตรและเซนติเมตรอ่านชัด", "วัดระยะเหนือและใต้ node ก่อนตัด", "1 อัน", "อ่านได้อย่างน้อยถึง 1 mm และเช็ดพื้นผิวได้", []),
+    "ป้ายรหัส Lot": material("ป้ายรหัส Lot", "ป้ายหรือเทปที่เขียนรหัส Lot แล้วไม่เลือนเมื่อเปียก", "ป้องกันการสลับต้นและวัสดุ", "1 ป้ายสำหรับต้นแม่", "ต้องอ่านรหัส Lot ได้ครบ", ["เทปเขียนฉลากชนิดทนน้ำ"]),
+    "ป้ายหมายเลขข้อ": material("ป้ายหมายเลขข้อ", "ป้ายเล็กที่เขียนเลข node และติดใกล้ตำแหน่งโดยไม่บังตาข้าง", "จำตำแหน่ง node ที่เลือกก่อนตัด", "อย่างน้อย 1 ป้ายต่อ node ที่เลือก", "ทนน้ำ อ่านเลขได้ และไม่รัดลำต้น", ["เชือกสีอ่อนพร้อมป้ายทนน้ำ"]),
+    "รายการ batch ของ Lot": material("รายการ batch ของ Lot", "กล่องสรุปบนหน้าจอที่แสดงจำนวน explant กระปุกแต่ละชนิด และปริมาตรอาหาร", "ใช้ตรวจจำนวนจริงก่อนติดฉลาก", "1 รายการของ Lot นี้", `ต้องแสดงปริมาตร ${volume} mL และจำนวนรวม ${totalJars || "ที่บันทึกไว้"} กระปุก`, []),
+    "ป้ายรหัสกระปุก": material("ป้ายรหัสกระปุก", "เทปหรือป้ายทนน้ำที่เขียน Lot ชนิดกระปุก และเลขลำดับ", "แยกกระปุกเพาะ Blank และสำรอง", `อย่างน้อย ${totalJars || "หนึ่งป้ายต่อกระปุก"} ป้าย`, "หนึ่งป้ายต่อหนึ่งกระปุกและอ่านได้หลังเปียก", []),
+    "กระปุกเพาะ Blank และสำรอง": material("กระปุกเพาะ Blank และสำรอง", "กระปุกใสไม่มีรอยแตก ฝาปิดสนิท และแยกป้าย เพาะ, Blank, สำรอง", "กำหนดจำนวนภาชนะจริงก่อนคำนวณอาหาร", `รวม ${totalJars || "ตามรายการ Lot"} กระปุก: เพาะ ${cultureJars}, Blank ${blankJars}, สำรอง ${spareJars}`, `แต่ละกระปุกรองรับอาหาร ${batch?.mediumPerJarMl ?? "ตามรายการ"} mL และปิดฝาได้สนิท`, []),
+    "น้ำปลอดเชื้อ": material("น้ำปลอดเชื้อและภาชนะน้ำล้าง", "น้ำใสในภาชนะสะอาดมีฝาปิด 3 ใบ ติดป้าย น้ำล้าง 1, 2, 3", "ล้างสารฟอกออกจาก explant สามรอบโดยไม่ใช้น้ำเดิมซ้ำ", "3 ภาชนะ แยกหนึ่งภาชนะต่อหนึ่งรอบล้าง", "แต่ละใบมีน้ำมากพอให้ explant ทุกชิ้นจม และติดป้าย น้ำล้าง 1, 2 และ 3", []),
+    "Haiter ที่ฉลากอ่านเปอร์เซ็นต์ได้": material("Haiter ที่ฉลากอ่านเปอร์เซ็นต์ได้", `ขวดเดิมที่ฉลากอ่าน sodium hypochlorite หรือ active chlorine ${source}% ได้`, "เตรียมสารฆ่าเชื้ออาหารและสารฟอกผิวตามตัวเลขของ Lot", "1 ขวดเดิมที่ยังไม่หมดอายุ", `ฉลากต้องอ่าน ${source}% ได้และต้องไม่ผสมน้ำหอมหรือสารทำความสะอาดอื่น`, []),
+    "สารละลายฮอร์โมนที่มีฉลาก": material("สารละลายฮอร์โมนที่มีฉลาก", "ขวดแยก BAP และ NAA ที่ระบุชื่อ ความเข้มข้น หน่วย วันที่ และตัวทำละลาย", "ใช้คำนวณปริมาตรฮอร์โมนสำหรับอาหาร", "BAP 1 ขวด และ NAA 1 ขวด", "ฉลากต้องมีชื่อ ความเข้มข้น mg/mL หน่วย และวันที่เตรียมครบ", []),
+    "อุปกรณ์ตวง": material("อุปกรณ์ตวง", "ปิเปตหรือกระบอกตวงที่มีสเกล mL และอ่านค่าต่ำสุดได้", "ตวง Haiter น้ำ และ stock ตามตัวเลขบนหน้าจอ", "อย่างน้อย 1 ชุดที่ครอบคลุมทุกปริมาตร", `ค่าต่ำสุดต้องไม่มากกว่า ${lot.sterilization?.minimumToolVolumeMl ?? 0.1} mL; ถ้าตวงต่ำกว่านี้ให้ใช้ working dilution ที่ระบบคำนวณ`, []),
+    "กระปุกและฝา": material("กระปุกเพาะและฝา", "กระปุกใสไม่มีรอยแตก ฝาปิดสนิท และติดป้ายได้", "บรรจุอาหาร แยก Blank และเพาะ explant", `รวม ${totalJars || "ตามรายการ Lot"} กระปุก: เพาะ ${cultureJars}, Blank ${blankJars}, สำรอง ${spareJars}`, `แต่ละกระปุกรองรับอาหาร ${batch?.mediumPerJarMl ?? "ตามรายการ"} mL และฝาไม่รั่ว`, []),
+    "Haiter": material("Haiter", `ขวดเดิมที่อ่าน active chlorine ${source}% ได้`, "เตรียมสารฆ่าเชื้อตามตัวเลขของขั้นนี้", "1 ขวด", "ไม่มีกลิ่นหรือสารเติมแต่งที่สูตรไม่อนุญาต และยังไม่หมดอายุ", []),
+    "น้ำกลั่น": material("น้ำกลั่น", "น้ำใสในขวดปิดที่ฉลากระบุน้ำกลั่น", "เจือจาง Haiter สำหรับล้างกระปุกและฝา", "อย่างน้อย 95 mL สำหรับสาร 100 mL และมีสำรองสำหรับการตวง", "ไม่มีตะกอนและไม่ใช้แทนน้ำล้างปลอดเชื้อของ explant", []),
+    "ถาดพัก": material("ถาดพัก", "ถาดผิวเรียบ ขนาดวางกระปุกและฝาทั้งหมดได้โดยไม่ซ้อนกัน", "พักกระปุกหลังสารสัมผัสครบทุกด้าน", "1 ถาด", `วางกระปุก ${totalJars || "ทั้งหมด"} ใบได้โดยไม่ซ้อนและเช็ดทำความสะอาดได้`, []),
+    "ตัวจับเวลา": material("ตัวจับเวลา", "นาฬิกาหรือโทรศัพท์ที่ตั้งนับถอยหลังและมีเสียงเตือนได้", "จับเวลาสัมผัสสารและเวลารอให้ครบ ไม่กะด้วยความรู้สึก", "1 เครื่อง", "ตั้งได้เป็นนาทีและชั่วโมงโดยไม่ดับระหว่างทำงาน", ["ตัวจับเวลาของระบบ"]),
+    "MS basal salts": material("MS basal salts", "ผลิตภัณฑ์ที่ฉลากระบุ MS basal salts และอัตราสำหรับ 1 L", "ให้ธาตุอาหารแก่ explant", `ปริมาณสำหรับอาหาร ${volume} mL ตามฉลากและกล่องสูตรของ Lot`, "ชื่อสูตรต้องตรงกับกล่องสูตร ห้ามใช้ปุ๋ยต้นไม้แทน", []),
+    "sucrose": material("sucrose", "ผลึกสีขาวที่ภาชนะระบุ sucrose", "เป็นแหล่งพลังงานในอาหารเพาะ", `${(volume * 0.03).toFixed(3).replace(/0+$/, "").replace(/\.$/, "")} g`, "ชั่งด้วยเครื่องชั่ง ไม่ใช้ช้อนกะ", []),
+    "agar": material("agar", "ผงวุ้นที่ฉลากระบุ agar และความแรงเจล", "ทำให้อาหารแข็งพอรองรับ explant", `${(volume * 0.0075).toFixed(4).replace(/0+$/, "").replace(/\.$/, "")} g`, "ใช้ชนิดและอัตราเดียวกับสูตร Lot", []),
+    "สารละลายฮอร์โมน": material("สารละลายฮอร์โมน BAP และ NAA", "ขวด BAP และ NAA แยกกันพร้อมฉลากความเข้มข้น mg/mL", "เติมฮอร์โมนให้ได้ BAP 0.5 mg/L และ NAA 0.05 mg/L", "ตวงตามผลคำนวณ working stock บนหน้าจอของ Lot", "ถ้าปริมาตรต่ำกว่าค่าต่ำสุดของอุปกรณ์ ต้องทำ working dilution ก่อน", []),
+    "เครื่องชั่ง": material("เครื่องชั่ง", "เครื่องชั่งดิจิทัลที่แสดงกรัมและค่าความละเอียด", "ชั่ง MS sucrose และ agar", "1 เครื่อง", "ความละเอียดต้องเพียงพอกับค่าน้อยที่สุดที่ต้องชั่ง และตั้งศูนย์พร้อมภาชนะได้", []),
+    "เครื่องวัด pH": material("เครื่องวัด pH", "เครื่องที่แสดงค่า pH เป็นตัวเลขและมีสารสอบเทียบ", "ปรับอาหารให้อยู่ในช่วง 5.7–5.8", "1 เครื่อง", "สอบเทียบก่อนใช้และอ่านละเอียดอย่างน้อย 0.1 pH", ["แถบ pH ช่วงแคบ 5–7 เมื่อ Protocol version อนุญาต"]),
+    "เตาและแท่งแก้ว": material("เตาให้ความร้อนและแท่งคน", "เตาที่ปรับความร้อนได้และแท่งแก้วสะอาดยาวพ้นปากภาชนะ", "ให้ agar ละลายโดยคนต่อเนื่อง", "เตา 1 เครื่อง และแท่งคน 1 แท่ง", `ภาชนะให้ความร้อนต้องจุเกิน ${volume} mL และทนความร้อน`, []),
+    "อาหารที่อุณหภูมิ 55–60°C": material("อาหารที่อุณหภูมิ 55–60°C", "อาหารที่ผสมครบและวัดอุณหภูมิได้ 55–60°C", "รับ Haiter โดยไม่ร้อนเกินเงื่อนไขทดลอง", `${volume} mL`, "ต้องวัดด้วยเทอร์โมมิเตอร์ ไม่ใช้มือแตะหรือกะ", []),
+    "ถุงมือ": material("ถุงมือใช้ครั้งเดียว", "ถุงมือพอดีมือ ไม่มีรูหรือรอยขาด", "ลดการสัมผัสสารและสิ่งสกปรกจากมือ", "1 คู่ต่อรอบงาน และเปลี่ยนเมื่อขาดหรือเปื้อน", "พอดีมือและทนสารที่ใช้", []),
+    "แว่นตา": material("แว่นตานิรภัย", "แว่นที่บังด้านหน้าและด้านข้างดวงตา", "ป้องกัน Haiter กระเด็นเข้าตา", "1 อัน", "ไม่แตกร้าวและมองเห็นสเกลตวงได้ชัด", []),
+    "กระปุก Blank ที่ปิดฝา": material("กระปุก Blank ที่ปิดฝา", "กระปุกอาหารไม่มี explant ปิดฝาและติดคำว่า Blank", "ตรวจการปนเปื้อนจากอาหารและภาชนะก่อนตัดต้น", `${blankJars || 1} กระปุก`, "ฝาปิดสนิท รหัสตรงกับ Lot และห้ามเปิดระหว่างรอ", []),
+    "ตัวจับเวลาของระบบ": material("ตัวจับเวลาของระบบ", "ปุ่มจับเวลา 48 ชั่วโมงในขั้นนี้", "บันทึกเวลาเริ่มและครบกำหนดโดยไม่เริ่มนับใหม่เมื่อเปิดหน้า", "1 ตัวจับเวลาของ Lot", "ใช้เวลาเดิมได้หากเริ่มรอไปแล้ว หรือบันทึกเวลาจริงย้อนหลัง", []),
+    "น้ำสะอาด": material("น้ำสะอาด", "น้ำไหลใส ไม่มีตะกอนและไม่มีกลิ่นผิดปกติ", "ล้างดินและเศษอินทรีย์จากภายนอกต้นก่อนเข้า SAB", "น้ำไหลต่อเนื่องจนไม่เห็นดินติดบริเวณ node", "ใช้เฉพาะล้างภายนอกต้น ไม่ใช่น้ำล้างหลังฟอก", []),
+    "ภาชนะล้าง": material("ถาดล้างต้นแม่", "ถาดสะอาดที่รองยอดและน้ำล้างได้โดยไม่แตะพื้นหรืออ่างโดยตรง", "รองต้นระหว่างล้างภายนอกก่อนเข้า SAB", "1 ถาด", "ใหญ่พอรองส่วนยอดและ node ที่เลือกโดยไม่พับหรือกดตาข้าง", []),
+    "ป้ายรหัส": material("ป้ายรหัส", "ป้ายทนน้ำที่อ่านรหัส Lot ได้", "ป้องกันการสลับต้นระหว่างล้าง", "1 ป้ายติดกับถาดล้าง", "อ่านรหัสได้หลังเปียก", []),
+    "Still-Air Box": material("Still-Air Box (SAB)", "กล่องใสมีช่องสอดมือ ผิวด้านในเรียบและปิดด้านบนทุกด้าน", "ลดอากาศเคลื่อนและฝุ่นตกบนเครื่องมือหรือ explant", "1 กล่อง", "วางอุปกรณ์ทั้งหมดได้โดยมือไม่ชนผนัง และไม่มีพัดลมในกล่อง", []),
+    "สารเช็ดพื้นผิวที่ Lot บันทึก": material("สารเช็ดพื้นผิว", "ขวดฉลากชัดตรงกับชนิดและความเข้มข้นที่บันทึกใน Lot", "เช็ดคราบบนโต๊ะ SAB และด้านนอกอุปกรณ์", "ปริมาณพอให้ผิวเปียกทั่วโดยไม่เกิดแอ่ง", "ห้ามฉีดพ่นเป็นละอองใน SAB ขณะมีเปลวไฟ และห้ามผสม Haiter กับกรด แอมโมเนีย หรือแอลกอฮอล์", []),
+    "คีม": material("คีมปลายเรียว", "คีมโลหะปลายตรง จับ explant ได้โดยไม่ลื่น", "ย้าย explant ระหว่างสารฟอก น้ำล้าง และอาหาร", "อย่างน้อย 1 อัน", "ปลายประกบสนิท ไม่มีสนิม และผ่านวิธีทำให้ปลอดเชื้อของ Lot", []),
+    "มีด": material("มีดผ่าตัดหรือใบมีด", "ใบมีดคม ไม่มีสนิม และติดด้ามแน่น", "ตัด explant ให้แผลเรียบและไม่ช้ำ", "อย่างน้อย 1 ใบ พร้อมใบสำรอง 1 ใบ", "ผ่านวิธีทำให้ปลอดเชื้อของ Lot และไม่ใช้ใบมีดทื่อ", []),
+    "มีดหรือกรรไกรสะอาด": material("มีดหรือกรรไกรสะอาด", "คม ไม่มีสนิม และจับได้มั่นคง", "ตัดชิ้นจากต้นแม่ตามระยะที่วัด", "1 ชิ้น", "เช็ดทำความสะอาดและแห้งก่อนตัด", ["มีดผ่าตัดที่สะอาด"]),
+    "ภาชนะติดรหัส": material("ภาชนะรับ explant", "ภาชนะสะอาดมีฝาปิดและป้ายรหัส Lot", "รับชิ้นที่ตัดจากต้นแม่ก่อนเริ่มฟอก", `1 ภาชนะสำหรับ explant ${batch?.explantCount ?? 1} ชิ้น`, "จุชิ้นทั้งหมดได้โดยไม่งอหรือกดตาข้าง", []),
+    "สารละลาย active chlorine 0.6%": material("สารฟอกผิว active chlorine 0.6%", "สารใสในภาชนะปิดที่ติดฉลาก 0.6% พร้อมวันและเวลา", "ลดเชื้อบนผิว explant เป็นเวลา 8 นาที", "100 mL เตรียมใหม่สำหรับรอบนี้", `เตรียมจาก Haiter ${source}% ตามตัวเลขที่ขั้นนี้คำนวณ ห้ามใช้เมื่อฉลากไม่ครบ`, []),
+    "น้ำล้างปลอดเชื้อ 1–3": material("น้ำล้างปลอดเชื้อ 1–3", "ภาชนะมีฝาปิด 3 ใบ ติดป้าย น้ำล้าง 1, 2 และ 3", "ล้างสารฟอกออกสามรอบโดยไม่ใช้น้ำซ้ำ", "3 ภาชนะ แยกหนึ่งภาชนะต่อหนึ่งรอบล้าง", "แต่ละใบมีน้ำปลอดเชื้อมากพอให้ explant ทุกชิ้นจมทั้งหมด", []),
+    "SAB ที่เตรียมแล้ว": material("SAB ที่เตรียมแล้ว", "SAB ที่เช็ดแล้ว ปิดไว้ครบ 15 นาที และไม่มีแอ่งสาร", "เป็นพื้นที่เปิดกระปุกและตัดแต่ง explant", "1 กล่อง", "อากาศนิ่ง อุปกรณ์ครบ และแยกด้านสะอาดจากของใช้แล้ว", []),
+    "มีดและคีม": material("มีดและคีมปลอดเชื้อ", "มีดคมและคีมปลายประกบที่ผ่านวิธีทำให้ปลอดเชื้อของ Lot", "ตัดแผลภายนอกและวาง explant ลงอาหาร", "มีดอย่างน้อย 1 ใบและคีม 1 อัน", "ไม่มีสนิม ไม่สัมผัสพื้นหรือผนัง SAB หลังทำให้ปลอดเชื้อ", []),
+    "กระปุกอาหารติดรหัส": material("กระปุกอาหารติดรหัส", "กระปุกอาหารที่ปิดฝา ฉลาก Lot และเลขกระปุกอ่านชัด", "รับ explant หนึ่งชิ้นต่อกระปุก", `${cultureJars || batch?.explantCount || 1} กระปุกเพาะ`, `อาหาร ${batch?.mediumPerJarMl ?? "ตาม Lot"} mL ต่อกระปุก ฝาปิดสนิทและ Blank ไม่ถูกนำมาใช้`, []),
+    "ภาชนะเพาะที่ปิดฝา": material("ภาชนะเพาะที่ปิดฝา", "กระปุกเพาะใส มองผ่านด้านข้างได้ ฉลากยังอ่านชัด และฝาปิดสนิท", "ตรวจเชื้อและการตั้งตัวโดยไม่เปิดฝา", `${cultureJars || "กระปุกเพาะทั้งหมด"} กระปุกเพาะ`, "ตรวจได้รอบด้านโดยไม่ยกฝา และแยกจาก Blank", []),
+    "พื้นที่กักภาชนะผิดปกติ": material("พื้นที่กักภาชนะผิดปกติ", "กล่องหรือชั้นที่มีป้าย กัก แยกจากกระปุกปกติ", "แยกกระปุกที่สงสัยปนเปื้อนโดยไม่เปิดฝา", "1 จุดที่วางกระปุกผิดปกติทั้งหมดได้", "อยู่ห่างจากกระปุกปกติ ไม่ถูกแดด และปิดกั้นการล้ม", []),
+  };
+  const found = common[name];
+  if (!found) throw new Error(`Guided Protocol v2 material is not defined: ${name}`);
+  return found;
 }
 
 function haiterFoodActions(lot: ExperimentLot): string[] {
@@ -186,7 +277,7 @@ export function buildPinkPrincessHaiterProtocolV2(lot: ExperimentLot): ProtocolS
       id: "batch-size",
       title: "กำหนดจำนวนชิ้นพืชและกระปุก",
       objective: "ยืนยันจำนวนชิ้นพืช กระปุกเพาะ Blank และกระปุกสำรอง",
-      materials: ["รายการ batch ของ Lot", "ป้ายรหัสกระปุก"],
+      materials: ["รายการ batch ของ Lot", "กระปุกเพาะ Blank และสำรอง", "ป้ายรหัสกระปุก"],
       actions: [
         `อ่านจำนวนที่บันทึกไว้: ${jarSummary(lot)}`,
         "เขียนรหัสบนป้ายทุกกระปุกก่อนเตรียมอาหาร",
@@ -355,5 +446,15 @@ export function buildPinkPrincessHaiterProtocolV2(lot: ExperimentLot): ProtocolS
       ],
     },
   ];
-  return inputs.map((input, index) => step(index, input));
+  const steps = inputs.map((input, index) => step(index, {
+    ...input,
+    materials: input.materials.map((item) => (
+      typeof item === "string" ? guidedMaterial(item, lot) : item
+    )),
+  }));
+  const semanticIssues = guidedProtocolV2SemanticIssues(steps);
+  if (semanticIssues.length) {
+    throw new Error(`Pink Princess Haiter Protocol v2 ยังไม่สมบูรณ์: ${semanticIssues.join(" · ")}`);
+  }
+  return steps;
 }

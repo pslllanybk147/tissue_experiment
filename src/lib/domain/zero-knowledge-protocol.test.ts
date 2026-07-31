@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { BeginnerInstruction, ProtocolStep } from "./models";
 import {
   beginnerInstructionIssues,
+  beginnerMaterialSemanticIssues,
   describeBeginnerMaterial,
   defaultUncertaintyPaths,
   isBeginnerReadyStep,
@@ -50,6 +51,26 @@ describe("zero-knowledge protocol contract", () => {
     const material = describeBeginnerMaterial("แว่นขยาย");
     expect(material.purpose).toContain("ขยายจุดเล็ก");
     expect(material.appearance).not.toContain("บังด้านหน้าและด้านข้าง");
+  });
+
+  it("never describes a rinse container as a culture jar from the Wizard", () => {
+    const material = describeBeginnerMaterial("ภาชนะล้าง");
+
+    expect(material.quantity).toContain("3");
+    expect(material.quantity).not.toContain("Wizard");
+    expect(material.purpose).toContain("ล้าง");
+    expect(material.specification).toContain("จม");
+  });
+
+  it("rejects generic placeholder material copy as incomplete", () => {
+    const incomplete = {
+      ...completeInstruction,
+      materials: [describeBeginnerMaterial("ของที่ไม่รู้จัก")],
+    };
+
+    expect(beginnerMaterialSemanticIssues(incomplete.materials[0])).toContain(
+      "อุปกรณ์ “ของที่ไม่รู้จัก” ยังใช้ข้อความกว้างเกินไปสำหรับคู่มือพร้อมใช้",
+    );
   });
 
   it("accepts a step that explains every beginner-facing section", () => {

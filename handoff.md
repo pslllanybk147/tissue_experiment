@@ -2739,6 +2739,28 @@
 - push เข้า `master` แล้ว และ Vercel Production deployment `dpl_F7mrHCcXSvedVc9XKHnPBbEywPUC` ขึ้น `READY`
 - Production URL ตอบกลับ HTTP 200: `https://tissue-experiment-93.vercel.app/`
 
+## 2026-07-31 — แก้ความถูกต้องเชิงความหมายของวัสดุ Protocol v2 ครบ 14 ขั้น
+
+- Root cause: `describeBeginnerMaterial()` ใช้ keyword `ภาชนะ` แบบกว้าง ทำให้ภาชนะล้าง ภาชนะรับ explant และภาชนะเพาะได้รับข้อความจำนวนกระปุกจาก Wizard เหมือนกัน ทั้งที่ทำหน้าที่และมีจำนวนต่างกัน
+- ตัวตรวจเดิมตรวจเพียงว่าช่อง quantity/specification ไม่ว่าง จึงไม่สามารถจับข้อความที่มีโครงสร้างครบแต่ความหมายผิดบริบทได้
+- เพิ่ม explicit material contract สำหรับ Pink Princess Haiter Protocol v2 ครบทั้ง 14 ขั้น ทุกชิ้นระบุชื่อ ลักษณะ หน้าที่ จำนวน ข้อกำหนด และของทดแทนที่อนุญาต
+- แยกภาชนะสำคัญชัดเจน:
+  - ถาดล้างต้นแม่: 1 ถาด ขนาดรองรับยอดและ node โดยไม่กดตาข้าง
+  - น้ำล้างปลอดเชื้อหลังฟอก: 3 ภาชนะ แยกป้าย น้ำล้าง 1, 2, 3 และมีน้ำพอให้ explant จม
+  - กระปุกเพาะ/Blank/สำรอง: ใช้จำนวน exact snapshot จาก `mediumBatch` ของ Lot
+  - ภาชนะรับ explant: 1 ภาชนะต่อชุดชิ้นพืชของ Lot ไม่ผูกกับจำนวนกระปุกเพาะ
+- เพิ่ม `guidedProtocolV2SemanticIssues()` และบังคับ builder ไม่สร้างคู่มือ v2 หากยังมีข้อความกว้าง เช่น `Wizard คำนวณ`, `เตรียม 1 รายการต่อ Lot`, `มองหาของที่มีชื่อว่า`, หรือคำสั่งคลุมเครือ
+- แยก semantic validator ของ v2 ออกจาก legacy protocol เพื่อไม่ทำลาย published history เดิม คู่มือเก่ายังอ่านย้อนหลังได้ตามข้อกำหนด ส่วน v2 พร้อมใช้ต้องผ่านกฎเข้มก่อน render
+- เพิ่ม unit tests สำหรับบัคภาชนะล้าง จำนวนกระปุก exact จาก Lot และการปฏิเสธ generic material copy
+- ขยาย browser sandbox: ทุก viewport สร้าง Pink Princess + Haiter Lot จริง ตั้งจุดเริ่มต่อเพื่อปลดล็อก และเปิดตรวจเนื้อหาครบขั้น 1–14 ไม่ได้ตรวจเฉพาะขั้นแรก
+- Verification รอบส่งงาน:
+  - `npm test -- --run`: ผ่าน 287 tests และ skip 10 เมื่อไม่เปิด emulator
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: ผ่าน 297 tests ทั้งหมด
+  - `npm run ui:verify`: ผ่านครบ 14 viewport 360, 375, 390, 412, 428, 600, 744, 768, 820, 834, 1024, 1280, 1440 และ 1920px พร้อมอ่านครบ 14 ขั้นทุก viewport
+- แผนและเหตุผลเชิงเทคนิคบันทึกที่ `docs/superpowers/plans/2026-07-31-protocol-semantic-completeness.md`
+
 ## 2026-07-31 — ตั้งจุดเริ่มต่อโดยไม่บันทึกย้อนหลังทีละขั้น
 
 - เพิ่มปุ่ม `ตั้งจุดเริ่มต่อ` ใน Protocol v2 สำหรับกรณีที่ผู้ใช้ทำงานจริงไปแล้วหลายขั้นก่อนเปิดระบบ

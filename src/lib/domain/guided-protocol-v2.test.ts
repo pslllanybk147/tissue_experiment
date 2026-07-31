@@ -6,6 +6,7 @@ import {
   canRunGuidedProtocolV2,
   containsVagueInstruction,
 } from "./guided-protocol-v2";
+import { beginnerInstructionIssues, beginnerMaterialSemanticIssues } from "./zero-knowledge-protocol";
 
 const lot: ExperimentLot = {
   id: "LOT-V2-1",
@@ -28,6 +29,18 @@ const lot: ExperimentLot = {
     targetChlorinePercent: 0.003,
     mediumVolumeMl: 110,
     minimumToolVolumeMl: 0.1,
+    mediumBatch: {
+      explantCount: 1,
+      cultureJarCount: 1,
+      blankJarCount: 1,
+      spareJarCount: 2,
+      totalJarCount: 4,
+      mediumPerJarMl: 25,
+      lossPercent: 10,
+      baseVolumeMl: 100,
+      allowanceVolumeMl: 10,
+      totalVolumeMl: 110,
+    },
   },
   workflowVersion: "v2",
 };
@@ -69,6 +82,34 @@ describe("Pink Princess Haiter beginner protocol v2", () => {
     ]);
 
     expect(instructions.filter(containsVagueInstruction)).toEqual([]);
+  });
+
+  it("gives every step specific material descriptions instead of generic placeholders", () => {
+    const steps = buildPinkPrincessHaiterProtocolV2(lot);
+    const materialText = JSON.stringify(steps.flatMap((step) => step.beginner?.materials ?? []));
+
+    expect(materialText).not.toContain("Wizard");
+    expect(materialText).not.toContain("เตรียม 1 รายการต่อ Lot");
+    expect(materialText).not.toContain("มองหาของที่มีชื่อว่า");
+    expect(steps.flatMap((step) => beginnerInstructionIssues(step.beginner!))).toEqual([]);
+    expect(steps.flatMap((step) => (
+      step.beginner?.materials.flatMap(beginnerMaterialSemanticIssues) ?? []
+    ))).toEqual([]);
+  });
+
+  it("separates the three rinse vessels from the four saved culture jars", () => {
+    const steps = buildPinkPrincessHaiterProtocolV2(lot);
+    const rinseMaterials = steps.find((step) => step.id === "v2-liquids-stocks")?.beginner?.materials ?? [];
+    const jarMaterials = steps.find((step) => step.id === "v2-batch-size")?.beginner?.materials ?? [];
+    const rinse = rinseMaterials.find((material) => material.name.includes("น้ำล้าง"));
+    const jars = jarMaterials.find((material) => material.name === "กระปุกเพาะ Blank และสำรอง");
+
+    expect(rinse?.quantity).toContain("3 ภาชนะ");
+    expect(rinse?.specification).toContain("น้ำล้าง 1, 2 และ 3");
+    expect(jars?.quantity).toContain("รวม 4 กระปุก");
+    expect(jars?.quantity).toContain("เพาะ 1");
+    expect(jars?.quantity).toContain("Blank 1");
+    expect(jars?.quantity).toContain("สำรอง 2");
   });
 
   it("uses the saved Lot values in the chemical-food steps", () => {
