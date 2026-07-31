@@ -19,5 +19,8 @@ export function normalizeExperimentLot(input: LegacyLot, now = new Date()): Expe
     ...(input.templateId ? { templateId: input.templateId } : {}),
     ...(input.method ? { method: input.method } : {}),
     ...(input.sterilization ? { sterilization: input.sterilization } : {}),
+    ...(input.workflowVersion === "v1" || input.workflowVersion === "v2"
+      ? { workflowVersion: input.workflowVersion }
+      : {}),
   };
 }

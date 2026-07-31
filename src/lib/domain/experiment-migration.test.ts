@@ -40,4 +40,20 @@ describe("normalizeExperimentLot", () => {
       calculatedDoseMl: 0.5,
     });
   });
+
+  it("preserves the guided workflow version when Firebase reads a v2 lot", () => {
+    const lot = normalizeExperimentLot({
+      id: "LOT-V2",
+      ownerId: "u1",
+      plant: "Pink Princess",
+      protocolId: "protocol-1",
+      protocolTitle: "Pink Princess · Nodal culture",
+      stage: "Establishment",
+      status: "Healthy",
+      taxonId: "cultivar-pink-princess",
+      workflowVersion: "v2",
+    });
+
+    expect(lot.workflowVersion).toBe("v2");
+  });
 });

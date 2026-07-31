@@ -2701,3 +2701,17 @@
   - `npm run build`: ผ่าน
   - `npm run firebase:verify`: ผ่าน 274 tests ทั้งหมด
   - `npm run ui:verify`: ผ่าน 14 viewport ได้แก่ 360, 375, 390, 412, 428, 600, 744, 768, 820, 834, 1024, 1280, 1440 และ 1920px
+
+## 2026-07-31 — Hotfix: Firebase อ่าน Lot v2 เป็น Lot รุ่นเก่า
+
+- อาการ production: สร้าง Pink Princess + Haiter Lot ใหม่แล้วหน้า Lot แสดง `Lot นี้ใช้คู่มือรุ่นเดิม`
+- Root cause: Wizard และ Firestore write บันทึก `workflowVersion: "v2"` ถูกต้อง แต่ `normalizeExperimentLot()` ไม่ส่ง field นี้กลับเมื่ออ่านเอกสารจาก Firestore
+- เหตุที่ชุดตรวจเดิมพลาด: browser sandbox ใช้ Demo memory repository ซึ่งไม่ผ่าน normalizer ของ Firestore
+- แก้ `normalizeExperimentLot()` ให้คงเฉพาะค่า workflow ที่อนุญาต (`v1` หรือ `v2`)
+- เพิ่ม regression test ยืนยันว่าข้อมูล Lot v2 ที่อ่านผ่าน normalizer ยังคงเป็น v2
+- Lot ที่สร้างก่อน hotfix ไม่ต้องสร้างใหม่ เพราะค่าเดิมอยู่ใน Firestore; เมื่อ deploy แล้ว reload หน้าเดิมจะเปิดคู่มือ v2
+- Verification:
+  - `npm test`: ผ่าน 265 tests, skip 10 เมื่อไม่เปิด emulator
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: ผ่าน 275 tests ทั้งหมด
