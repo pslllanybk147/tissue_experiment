@@ -2760,6 +2760,11 @@
   - `npm run firebase:verify`: ผ่าน 297 tests ทั้งหมด
   - `npm run ui:verify`: ผ่านครบ 14 viewport 360, 375, 390, 412, 428, 600, 744, 768, 820, 834, 1024, 1280, 1440 และ 1920px พร้อมอ่านครบ 14 ขั้นทุก viewport
 - แผนและเหตุผลเชิงเทคนิคบันทึกที่ `docs/superpowers/plans/2026-07-31-protocol-semantic-completeness.md`
+- Implementation commit: `f43a27d` (`Validate protocol material semantics`)
+- push เข้า `master` แล้ว
+- Vercel Production deployment `dpl_EQyHS4RoELHaaFzBmw6jyK6GqPro` ขึ้น `READY`
+- Production URL ตอบกลับ HTTP 200: `https://tissue-experiment-93.vercel.app/`
+- Production smoke ผ่าน HTTP; browser automation แบบ demo ใช้กับ Production ไม่ได้เพราะ Production บังคับ Firebase login จึงใช้ sandbox local ที่สร้าง Lot จริงและตรวจครบ 14 viewport/14 ขั้นเป็นหลักฐาน UI
 
 ## 2026-07-31 — ตั้งจุดเริ่มต่อโดยไม่บันทึกย้อนหลังทีละขั้น
 
