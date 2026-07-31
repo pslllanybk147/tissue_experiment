@@ -40,6 +40,20 @@ export function createSuggestedLotId(now = new Date()) {
   return `LOT-${timestamp.slice(0, 8)}-${timestamp.slice(9, 15)}`;
 }
 
+export function resolveTaxonIdForTemplate(
+  taxonId: string | undefined,
+  templateId: string,
+): string | undefined {
+  if (taxonId) return taxonId;
+  if (templateId === "template-pink-princess-nodal") {
+    return "cultivar-pink-princess";
+  }
+  if (templateId === "template-violin-nodal") {
+    return "trade-name-violin-variegated";
+  }
+  return undefined;
+}
+
 export function BeginnerLotWizard({
   onSubmit,
   protocolOptions,
@@ -149,16 +163,21 @@ export function BeginnerLotWizard({
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!profile || !template) return;
+    const resolvedTaxonId = resolveTaxonIdForTemplate(initialTaxonId, template.id);
     const input: CreateLotInput = {
       id: createSuggestedLotId(),
       plant: plant.trim(),
       plantId: initialPlantId,
-      taxonId: initialTaxonId,
+      taxonId: resolvedTaxonId,
       templateId: template.id,
       method: template.method,
       protocolId: protocol?.id ?? template.protocolId ?? "protocol-guided-template",
       protocolTitle: protocol?.title ?? template.title,
       protocolVersionId: protocol?.versionId,
+      workflowVersion: profile.method === "haiter-chemical"
+        && resolvedTaxonId === "cultivar-pink-princess"
+        ? "v2"
+        : "v1",
       stage: "Establishment",
       status: "Healthy",
       startedAt: new Date().toISOString().slice(0, 10),

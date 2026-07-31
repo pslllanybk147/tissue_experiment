@@ -249,95 +249,69 @@ async function verifyWizard(page, viewportName) {
   await createLotButton.waitFor({ state: "visible" });
   await createLotButton.evaluate((button) => button.click());
   await page.waitForURL((url) => /^\/experiments\/(?!new$)[^/]+$/.test(url.pathname));
-  await page.locator(".beginner-step-guide, .migration-state").first().waitFor({
+  await page.locator(".linear-protocol-v2, .migration-state").first().waitFor({
     state: "visible",
   });
   await inspectPage(page, viewportName, "guided-runner");
   await inspectProtocolTypography(page, viewportName, "guided-runner");
-  assert(await page.locator(".beginner-step-guide").isVisible(), `${viewportName}: Guided Runner ไม่มีคู่มือมือใหม่`);
-  assert(await page.locator(".step-kicker").filter({ hasText: "ขั้นที่ 1 / 23" }).isVisible(), `${viewportName}: Guided Runner ไม่แสดง 23 ขั้น`);
-  const uncertainButton = page.getByRole("button", { name: "ฉันไม่แน่ใจ" }).first();
-  await uncertainButton.click();
+  assert(await page.locator(".linear-protocol-v2").isVisible(), `${viewportName}: ไม่เปิด Protocol v2 สำหรับ Lot ใหม่`);
   assert(
-    await page.locator(".self-check-panel").isVisible(),
-    `${viewportName}: ปุ่มฉันไม่แน่ใจไม่เปิด self-check`,
+    await page.locator(".step-kicker").filter({ hasText: "ขั้นที่ 1 จาก 14" }).isVisible(),
+    `${viewportName}: Protocol v2 ไม่แสดง 14 ขั้น`,
   );
-  const initialGuideText = await page.locator(".beginner-step-guide").innerText();
+  const initialGuideText = await page.locator(".linear-protocol-v2").innerText();
   assert(
     !/ผู้มีประสบการณ์|ผู้เชี่ยวชาญ|ที่ปรึกษา/.test(initialGuideText),
     `${viewportName}: คู่มือยังผลักภาระไปให้บุคคลภายนอก`,
   );
-  const stepsToggle = page.getByRole("button", { name: /เปิดรายการขั้นตอน/ });
-  if (await stepsToggle.isVisible()) await stepsToggle.click();
-  const availableSteps = page.locator(".guided-step-list button:not(:disabled)");
-  const availableStepCount = await availableSteps.count();
-  let visualAidFound = false;
-  let inlineRecipeFound = false;
-  let workspaceGuidanceFound = false;
-  let workspaceDiagnostic = "";
-  for (let index = 0; index < availableStepCount; index += 1) {
-    await availableSteps.nth(index).click();
-    await inspectProtocolTypography(
-      page,
-      viewportName,
-      `guided-runner step ${index + 1}`,
-    );
-    if (await page.locator(".protocol-visual-aid").isVisible().catch(() => false)) {
-      visualAidFound = true;
-      await page.screenshot({
-        path: path.join(screenshotRoot, `${viewportName}-guided-reference-image.png`),
-        fullPage: true,
-      });
-    }
-    const inlineRecipe = page.locator(".guided-inline-recipe");
-    if (await inlineRecipe.isVisible().catch(() => false)) {
-      const recipeCopy = await inlineRecipe.innerText();
-      inlineRecipeFound = recipeCopy.includes("Establishment")
-        && recipeCopy.includes("110 mL")
-        && recipeCopy.includes("BAP")
-        && recipeCopy.includes("กรอกความเข้มข้น stock");
-    }
-    const guideCopy = await page.locator(".guided-step-content").innerText();
-    if (guideCopy.includes("Still-Air Box") || guideCopy.includes("ขวดสเปรย์ 500 mL")) {
-      workspaceDiagnostic = guideCopy.slice(0, 1200);
-    }
-    if (guideCopy.includes("Still-Air Box") && guideCopy.includes("ขวดสเปรย์ 500 mL")) {
-      workspaceGuidanceFound = guideCopy.includes("ห้ามผสม Haiter") && guideCopy.includes("ห้ามพ่นเป็นละออง");
-    }
+  assert(!/C1V1|C2V2|ตามคำแนะนำ|ตาม Protocol|ตามวิธีของห้อง/.test(initialGuideText), `${viewportName}: คู่มือ v2 ยังมีศัพท์หรือคำสั่งคลุมเครือ`);
+  assert(await page.getByRole("button", { name: "ฉันพบปัญหา" }).isVisible(), `${viewportName}: ไม่มีทางหยุดเมื่อพบปัญหา`);
+  assert(await page.getByRole("button", { name: "ทำขั้นนี้เสร็จแล้ว" }).isVisible(), `${viewportName}: ไม่มีปุ่มจบขั้น`);
+  assert(await page.locator("input[type='file']").count() === 0, `${viewportName}: Protocol v2 ยังบังคับบันทึกรูป`);
+  assert(await page.getByRole("radio").count() === 0, `${viewportName}: Protocol v2 ยังใช้ผลลัพธ์แบบ radio รุ่นเก่า`);
+
+  const stepsToggle = page.getByRole("button", { name: "ดูทุกขั้น" });
+  assert(await stepsToggle.getAttribute("aria-expanded") === "false", `${viewportName}: รายการ 14 ขั้นต้องย่อไว้ก่อน`);
+  await stepsToggle.click();
+  assert(await page.locator("#linear-step-list li").count() === 14, `${viewportName}: รายการขั้นไม่ครบ 14 ขั้น`);
+  assert(
+    await page.locator("#linear-step-list button:disabled").count() === 13,
+    `${viewportName}: ขั้นถัดไปต้องล็อกจนกว่าขั้นปัจจุบันเสร็จ`,
+  );
+  await page.getByRole("button", { name: "ซ่อนรายการขั้น" }).click();
+
+  await page.getByRole("button", { name: "ฉันพบปัญหา" }).click();
+  assert(await page.getByRole("region", { name: "บันทึกปัญหา" }).isVisible(), `${viewportName}: ปุ่มพบปัญหาไม่เปิดแบบบันทึก`);
+  await page.getByLabel("เขียนสิ่งที่เห็นจริง *").fill("ตรวจ UI เท่านั้น");
+  await page.getByRole("button", { name: "บันทึกปัญหาและหยุดขั้นนี้" }).click();
+  await page.getByText("บันทึกปัญหาแล้ว ขั้นถัดไปยังล็อกอยู่").waitFor({ state: "visible" });
+
+  const readiness = page.locator(".linear-checks input[type='checkbox']");
+  for (let index = 0; index < await readiness.count(); index += 1) {
+    await readiness.nth(index).check();
   }
-  assert(visualAidFound, `${viewportName}: ขั้นเลือก/ตัด explant ไม่มีภาพอ้างอิงในคู่มือ`);
-  assert(inlineRecipeFound, `${viewportName}: ขั้นเตรียมอาหารไม่แสดงสูตร/ปริมาตร/เครื่องคำนวณ stock ของ Lot ในหน้าเดียว`);
-  assert(workspaceGuidanceFound, `${viewportName}: ข้อมูล SAB/อุปกรณ์จาก Wizard ไม่ถูกนำไปสร้างคู่มือ (${workspaceDiagnostic || "ไม่พบข้อความ SAB"})`);
-  const recordButton = page.getByRole("button", { name: "อ่านจบแล้ว ไปบันทึกผลขั้นนี้" });
-  await recordButton.scrollIntoViewIfNeeded();
-  await recordButton.click();
-  await page.waitForTimeout(500);
-  const recordTop = await page.locator(".guided-step-content").evaluate(
+  const finish = page.getByRole("button", { name: "ทำขั้นนี้เสร็จแล้ว" });
+  await finish.click();
+  await page.getByText("บันทึกว่าทำขั้นนี้เสร็จแล้ว").waitFor({ state: "visible" });
+  const next = page.getByRole("button", { name: "ไปขั้นถัดไป" });
+  await next.click();
+  await page.waitForTimeout(250);
+  const recordTop = await page.locator(".linear-protocol-v2").evaluate(
     (element) => Math.round(element.getBoundingClientRect().top),
   );
   assert(
     recordTop >= 0 && recordTop <= 180,
-    `${viewportName}: กดไปบันทึกผลแล้วไม่เลื่อนกลับหัวขั้นตอน (top ${recordTop}px)`,
-  );
-  await page.getByRole("tab", { name: "1. อ่านคู่มือ" }).click();
-  await page.getByRole("button", { name: /ให้ระบบหาปริมาตร Haiter ที่ต้องใช้/ }).click();
-  await page.waitForTimeout(80);
-  const guidedContentTop = await page.locator(".guided-step-content").evaluate(
-    (element) => Math.round(element.getBoundingClientRect().top),
+    `${viewportName}: ไปขั้นถัดไปแล้วไม่เลื่อนกลับหัวขั้นตอน (top ${recordTop}px)`,
   );
   assert(
-    guidedContentTop >= 0 && guidedContentTop <= 180,
-    `${viewportName}: เปลี่ยนขั้นแล้วไม่เลื่อนกลับหัวคู่มือ (top ${guidedContentTop}px)`,
+    await page.locator(".step-kicker").filter({ hasText: "ขั้นที่ 2 จาก 14" }).isVisible(),
+    `${viewportName}: จบขั้นแรกแล้วไม่เปิดขั้น 2`,
   );
-  await page.getByRole("tab", { name: "2. บันทึกผลขั้นนี้" }).click();
-  await page.getByLabel("ปริมาตรต่ำสุดที่อุปกรณ์ตวงได้ (mL) *").fill("0.1");
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await page.locator(".linear-protocol-v2").waitFor({ state: "visible" });
   assert(
-    await page.getByText("กรอกตัวเลข 3 ช่องนี้").isVisible(),
-    `${viewportName}: ขั้นคำนวณ Haiter ไม่มีฟอร์มกรอกข้อมูล`,
-  );
-  assert(
-    (await page.locator(".haiter-plan").innerText()).includes("เตรียมสารไฮเตอร์เจือจาง 10 เท่าก่อน"),
-    `${viewportName}: Guided Runner ไม่แสดงคำสั่ง working dilution`,
+    await page.locator(".step-kicker").filter({ hasText: "ขั้นที่ 1 จาก 14" }).isVisible(),
+    `${viewportName}: รีเฟรชแล้ว Protocol v2 โหลดไม่ได้`,
   );
 }
 

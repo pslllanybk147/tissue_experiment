@@ -190,6 +190,9 @@ export type ProtocolStepRun = {
   measurements: Record<string, number | null>;
   mediaIds: string[];
   evidenceObservationId?: string;
+  timerStartedAt?: string;
+  timerEndsAt?: string;
+  completedAt?: string;
   observedAt: string;
   updatedAt: string;
 };
@@ -243,6 +246,7 @@ export type ExperimentLot = {
   templateId?: string;
   method?: "shoot-tip" | "nodal" | "generic";
   sterilization?: LotSterilizationSnapshot;
+  workflowVersion?: "v1" | "v2";
 };
 
 export type CreateLotInput = Omit<ExperimentLot, "ownerId" | "createdAt" | "updatedAt">;

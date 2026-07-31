@@ -14,4 +14,19 @@ describe("ObservationTimeline", () => {
     expect(html).toContain("กู้คืน");
   });
   it("renders observation-specific media controls",()=>{const html=renderToStaticMarkup(<ObservationTimeline observations={[item]} onDelete={async()=>{}} onEdit={()=>{}} onRestore={async()=>{}} renderMedia={observation=><div>media-{observation.id}</div>}/>);expect(html).toContain("media-o1")});
+  it("keeps historical observations read-only for protocol v2", () => {
+    const html = renderToStaticMarkup(
+      <ObservationTimeline
+        observations={[item]}
+        onDelete={async () => undefined}
+        onEdit={() => undefined}
+        onRestore={async () => undefined}
+        readOnly
+      />,
+    );
+    expect(html).toContain("ประวัติเดิม · อ่านอย่างเดียว");
+    expect(html).not.toContain("แก้ไข");
+    expect(html).not.toContain("ลบ");
+    expect(html).not.toContain("กู้คืน");
+  });
 });

@@ -3,7 +3,11 @@ import { describe, expect, test } from "vitest";
 
 import { protocolTemplates } from "../../lib/domain/protocol-templates";
 import { sterilizationProfiles } from "../../lib/domain/sterilization-profiles";
-import { BeginnerLotWizard, createSuggestedLotId } from "./beginner-lot-wizard";
+import {
+  BeginnerLotWizard,
+  createSuggestedLotId,
+  resolveTaxonIdForTemplate,
+} from "./beginner-lot-wizard";
 
 describe("BeginnerLotWizard", () => {
   test("suggests a timestamped lot id so same-day lots do not collide", () => {
@@ -13,6 +17,12 @@ describe("BeginnerLotWizard", () => {
     expect(createSuggestedLotId(new Date("2026-07-25T08:09:11.000Z"))).not.toBe(
       createSuggestedLotId(new Date("2026-07-25T08:09:10.000Z")),
     );
+  });
+
+  test("links Pink Princess template to its taxon when the wizard started without a Plant record", () => {
+    expect(
+      resolveTaxonIdForTemplate(undefined, "template-pink-princess-nodal"),
+    ).toBe("cultivar-pink-princess");
   });
 
   test("shows the five-stage beginner journey and starts with plant context", () => {
