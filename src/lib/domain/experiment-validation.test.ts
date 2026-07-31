@@ -189,6 +189,54 @@ describe("validateLotInput", () => {
     const result = validateLotInput(validLot);
     expect(result.ok).toBe(true);
   });
+
+  it("blocks a new v2 Lot until the sterile rinse-water source is recorded", () => {
+    const result = validateLotInput({
+      ...validLot,
+      workflowVersion: "v2" as const,
+      sterilization: haiterSnapshot,
+    });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.errors.rinseWaterMethod).toContain("น้ำล้างปลอดเชื้อ");
+  });
+
+  it("accepts a v2 Lot with three pressure-sterilized rinse-water containers", () => {
+    const result = validateLotInput({
+      ...validLot,
+      workflowVersion: "v2" as const,
+      sterilization: {
+        ...haiterSnapshot,
+        rinseWater: {
+          method: "pressure-steam" as const,
+          containerCount: 3,
+          volumePerContainerMl: 50,
+        },
+      },
+    });
+
+    expect(result.ok).toBe(true);
+  });
+
+  it("accepts the no-autoclave low-dose Haiter rinse-water method", () => {
+    const result = validateLotInput({
+      ...validLot,
+      workflowVersion: "v2" as const,
+      sterilization: {
+        ...haiterSnapshot,
+        rinseWater: {
+          method: "low-dose-hypochlorite" as const,
+          containerCount: 3,
+          volumePerContainerMl: 50,
+          preparationVolumeMl: 1000,
+          targetChlorinePercent: 0.003,
+          minimumWaitMinutes: 60,
+        },
+      },
+    });
+
+    expect(result.ok).toBe(true);
+  });
 });
 
 describe("validateObservationInput", () => {

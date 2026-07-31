@@ -7,6 +7,7 @@ import type {
   StepMeasurement,
 } from "./models";
 import { calculateHaiterDose, planHaiterWorkingDilution } from "./haiter-calculations";
+import { minimumPressureSteamMinutes, rinseWaterTotalMl } from "./rinse-water-planning";
 import {
   beginnerInstructionIssues,
   beginnerMaterialSemanticIssues,
@@ -117,6 +118,64 @@ function material(
   return { name, appearance, purpose, quantity, specification, allowedSubstitutes };
 }
 
+function sterileRinsePreparationActions(lot: ExperimentLot): string[] {
+  const plan = lot.sterilization?.rinseWater;
+  if (!plan) {
+    return [
+      "หยุดขั้นนี้: Lot ยังไม่ได้บันทึกแหล่งน้ำล้างปลอดเชื้อ ห้ามใช้น้ำกลั่นจากร้านหรือน้ำต้มแทนโดยเดาเอง",
+    ];
+  }
+  const each = plan.volumePerContainerMl;
+  if (plan.method === "low-dose-hypochlorite") {
+    const preparationVolume = plan.preparationVolumeMl ?? 1000;
+    const target = plan.targetChlorinePercent ?? 0.003;
+    const source = lot.sterilization?.activeChlorinePercent ?? 0;
+    const minimum = lot.sterilization?.minimumToolVolumeMl ?? 0.1;
+    if (source <= 0) {
+      return ["หยุดขั้นนี้: อ่านเปอร์เซ็นต์ active chlorine หรือ sodium hypochlorite จากฉลาก Haiter แล้วบันทึกใน Lot ก่อน"];
+    }
+    const dose = calculateHaiterDose({
+      sourcePercent: source,
+      targetPercent: target,
+      finalVolumeMl: preparationVolume,
+      minimumMeasurableMl: minimum,
+    });
+    if (dose.needsWorkingDilution) {
+      return [
+        `หยุดขั้นนี้: ปริมาตร Haiter ${dose.sourceVolumeMl.toFixed(3)} mL ต่ำกว่าที่อุปกรณ์ตวงได้ ${minimum} mL`,
+        "เปิดเครื่องคำนวณ working dilution ของ Lot แล้วทำสารเจือจางก่อน ห้ามกะด้วยหยด",
+      ];
+    }
+    return [
+      `เตรียมน้ำสะอาด ${preparationVolume.toLocaleString("th-TH")} mL ในภาชนะสะอาดที่มีฝาปิด`,
+      `ตวง Haiter จากขวด ${dose.sourceVolumeMl.toFixed(3)} mL เติมลงในน้ำ เพื่อให้ได้ active chlorine ${target}%`,
+      "ปิดฝาแล้วกลับภาชนะขึ้นลงช้า ๆ 10 รอบให้ผสมทั่ว ห้ามเขย่าจนเกิดฟองมาก",
+      `พักภาชนะปิดไว้อย่างน้อย ${plan.minimumWaitMinutes ?? 60} นาที`,
+      "เตรียม 3 ภาชนะปลอดเชื้อ แล้วติดป้ายว่า น้ำล้าง 1, น้ำล้าง 2 และน้ำล้าง 3",
+      `แบ่งน้ำภาชนะละ ${each} mL รวม ${rinseWaterTotalMl(each)} mL แล้วปิดฝาทันที`,
+      "ใช้ภายในรอบงานนี้และไม่เทน้ำที่ใช้แล้วกลับภาชนะเดิม",
+    ];
+  }
+  if (plan.method === "commercial-sterile") {
+    return [
+      "ตรวจฉลากภาชนะเดิม ต้องมีคำว่า sterile water และระบุว่าเหมาะกับงาน cell culture หรือ tissue culture",
+      `ตรวจว่ามีน้ำสำหรับล้างอย่างน้อย ${rinseWaterTotalMl(each)} mL โดยภาชนะเดิมยังไม่ถูกเปิดและยังไม่หมดอายุ`,
+      "เตรียมภาชนะปลอดเชื้อ 3 ใบ ติดป้าย น้ำล้าง 1, น้ำล้าง 2 และน้ำล้าง 3",
+      `เมื่อ SAB พร้อมแล้วจึงเปิดน้ำ และแบ่งภาชนะละ ${each} mL จากนั้นปิดฝาทันที`,
+      "ห้ามเติม Haiter ลงในน้ำล้างทั้งสามภาชนะ",
+    ];
+  }
+  const minutes = minimumPressureSteamMinutes(each);
+  return [
+    "ใช้น้ำกลั่นหรือน้ำ DI; น้ำกลั่นที่ยังไม่ผ่านขั้นตอนนี้ยังไม่ถือว่าปลอดเชื้อ",
+    "เตรียมภาชนะทนแรงดัน 3 ใบ ติดป้าย น้ำล้าง 1, น้ำล้าง 2 และน้ำล้าง 3",
+    `เติมน้ำภาชนะละ ${each} mL รวม ${rinseWaterTotalMl(each)} mL แล้วคลายฝาแต่ละใบครึ่งรอบ ห้ามปิดแน่นก่อนนึ่ง`,
+    `ใช้ liquid cycle ที่ตรวจยืนยันว่าได้ 121°C และ 15 psi อย่างน้อย ${minutes} นาทีสำหรับปริมาตร ${each} mL ต่อภาชนะ`,
+    "ปล่อยให้เย็นถึงอุณหภูมิห้องโดยไม่เปิดฝา แล้วปิดฝาให้แน่นก่อนย้ายออกจากเครื่อง",
+    "เก็บภาชนะปิดไว้จน SAB พร้อม ห้ามเติม Haiter ลงในน้ำล้าง",
+  ];
+}
+
 function guidedMaterial(name: string, lot: ExperimentLot): BeginnerMaterial {
   const batch = lot.sterilization?.mediumBatch;
   const totalJars = batch?.totalJarCount ?? 0;
@@ -134,7 +193,27 @@ function guidedMaterial(name: string, lot: ExperimentLot): BeginnerMaterial {
     "รายการ batch ของ Lot": material("รายการ batch ของ Lot", "กล่องสรุปบนหน้าจอที่แสดงจำนวน explant กระปุกแต่ละชนิด และปริมาตรอาหาร", "ใช้ตรวจจำนวนจริงก่อนติดฉลาก", "1 รายการของ Lot นี้", `ต้องแสดงปริมาตร ${volume} mL และจำนวนรวม ${totalJars || "ที่บันทึกไว้"} กระปุก`, []),
     "ป้ายรหัสกระปุก": material("ป้ายรหัสกระปุก", "เทปหรือป้ายทนน้ำที่เขียน Lot ชนิดกระปุก และเลขลำดับ", "แยกกระปุกเพาะ Blank และสำรอง", `อย่างน้อย ${totalJars || "หนึ่งป้ายต่อกระปุก"} ป้าย`, "หนึ่งป้ายต่อหนึ่งกระปุกและอ่านได้หลังเปียก", []),
     "กระปุกเพาะ Blank และสำรอง": material("กระปุกเพาะ Blank และสำรอง", "กระปุกใสไม่มีรอยแตก ฝาปิดสนิท และแยกป้าย เพาะ, Blank, สำรอง", "กำหนดจำนวนภาชนะจริงก่อนคำนวณอาหาร", `รวม ${totalJars || "ตามรายการ Lot"} กระปุก: เพาะ ${cultureJars}, Blank ${blankJars}, สำรอง ${spareJars}`, `แต่ละกระปุกรองรับอาหาร ${batch?.mediumPerJarMl ?? "ตามรายการ"} mL และปิดฝาได้สนิท`, []),
-    "น้ำปลอดเชื้อ": material("น้ำปลอดเชื้อและภาชนะน้ำล้าง", "น้ำใสในภาชนะสะอาดมีฝาปิด 3 ใบ ติดป้าย น้ำล้าง 1, 2, 3", "ล้างสารฟอกออกจาก explant สามรอบโดยไม่ใช้น้ำเดิมซ้ำ", "3 ภาชนะ แยกหนึ่งภาชนะต่อหนึ่งรอบล้าง", "แต่ละใบมีน้ำมากพอให้ explant ทุกชิ้นจม และติดป้าย น้ำล้าง 1, 2 และ 3", []),
+    "น้ำปลอดเชื้อ": (() => {
+      const rinse = lot.sterilization?.rinseWater;
+      const each = rinse?.volumePerContainerMl ?? 0;
+      const sourceDescription = rinse?.method === "low-dose-hypochlorite"
+        ? `น้ำสะอาดที่เติม Haiter ให้ได้ active chlorine ${rinse.targetChlorinePercent ?? 0.003}% และพัก ${rinse.minimumWaitMinutes ?? 60} นาที`
+        : rinse?.method === "commercial-sterile"
+        ? "น้ำปลอดเชื้อในภาชนะเดิมที่ยังไม่เปิด ฉลากระบุ sterile water สำหรับ cell/tissue culture"
+        : rinse?.method === "pressure-steam"
+          ? "น้ำกลั่นหรือน้ำ DI แบ่งในภาชนะทนแรงดัน แล้วผ่าน liquid cycle ที่ยืนยันได้"
+          : "Lot นี้ยังไม่บันทึกแหล่งน้ำล้างปลอดเชื้อ";
+      return material(
+        "น้ำล้างปลอดเชื้อและภาชนะน้ำล้าง",
+        sourceDescription,
+        "ล้างสารฟอกออกจาก explant สามรอบโดยไม่ใช้น้ำเดิมซ้ำ",
+        rinse ? `3 ภาชนะ ภาชนะละ ${each} mL รวม ${rinseWaterTotalMl(each)} mL` : "ยังคำนวณไม่ได้จนกว่าจะเลือกแหล่งน้ำล้าง",
+        rinse?.method === "low-dose-hypochlorite"
+          ? `ติดป้าย น้ำล้าง 1, 2 และ 3; active chlorine ${rinse.targetChlorinePercent ?? 0.003}% และน้ำต้องท่วม explant`
+          : "ติดป้าย น้ำล้าง 1, 2 และ 3; น้ำต้องมากพอให้ explant ทุกชิ้นจม",
+        [],
+      );
+    })(),
     "Haiter ที่ฉลากอ่านเปอร์เซ็นต์ได้": material("Haiter ที่ฉลากอ่านเปอร์เซ็นต์ได้", `ขวดเดิมที่ฉลากอ่าน sodium hypochlorite หรือ active chlorine ${source}% ได้`, "เตรียมสารฆ่าเชื้ออาหารและสารฟอกผิวตามตัวเลขของ Lot", "1 ขวดเดิมที่ยังไม่หมดอายุ", `ฉลากต้องอ่าน ${source}% ได้และต้องไม่ผสมน้ำหอมหรือสารทำความสะอาดอื่น`, []),
     "สารละลายฮอร์โมนที่มีฉลาก": material("สารละลายฮอร์โมนที่มีฉลาก", "ขวดแยก BAP และ NAA ที่ระบุชื่อ ความเข้มข้น หน่วย วันที่ และตัวทำละลาย", "ใช้คำนวณปริมาตรฮอร์โมนสำหรับอาหาร", "BAP 1 ขวด และ NAA 1 ขวด", "ฉลากต้องมีชื่อ ความเข้มข้น mg/mL หน่วย และวันที่เตรียมครบ", []),
     "อุปกรณ์ตวง": material("อุปกรณ์ตวง", "ปิเปตหรือกระบอกตวงที่มีสเกล mL และอ่านค่าต่ำสุดได้", "ตวง Haiter น้ำ และ stock ตามตัวเลขบนหน้าจอ", "อย่างน้อย 1 ชุดที่ครอบคลุมทุกปริมาตร", `ค่าต่ำสุดต้องไม่มากกว่า ${lot.sterilization?.minimumToolVolumeMl ?? 0.1} mL; ถ้าตวงต่ำกว่านี้ให้ใช้ working dilution ที่ระบบคำนวณ`, []),
@@ -220,7 +299,8 @@ function haiterFoodActions(lot: ExperimentLot): string[] {
   ];
 }
 
-function surfaceSterilizationActions(sourcePercent: number): string[] {
+function surfaceSterilizationActions(lot: ExperimentLot): string[] {
+  const sourcePercent = lot.sterilization?.activeChlorinePercent ?? 0;
   const targetPercent = 0.6;
   if (sourcePercent < targetPercent) {
     return [
@@ -236,6 +316,9 @@ function surfaceSterilizationActions(sourcePercent: number): string[] {
     "ปิดฝาและเขียนฉลาก “สารฟอกชิ้นพืช 0.6% — ใช้รอบนี้”",
     "ใช้คีมคีบชิ้นพืชลงในสารฟอกให้จมทั้งหมด แล้วปิดฝา",
     "กดเริ่มจับเวลา 8 นาทีทันที",
+    lot.sterilization?.rinseWater?.method === "low-dose-hypochlorite"
+      ? `ตรวจว่าน้ำล้าง 1, 2 และ 3 เป็นน้ำที่เตรียมไว้และมี active chlorine ${lot.sterilization.rinseWater.targetChlorinePercent ?? 0.003}%`
+      : "ตรวจว่าน้ำล้าง 1, 2 และ 3 เป็นน้ำปลอดเชื้อจากแหล่งที่บันทึกไว้ใน Lot",
     "เมื่อครบ 8 นาที ย้ายชิ้นพืชลงน้ำล้าง 1 แล้วแกว่งคีมช้า ๆ 10 รอบ",
     "ย้ายไปน้ำล้าง 2 แล้วแกว่งคีมช้า ๆ 10 รอบ",
     "ย้ายไปน้ำล้าง 3 แล้วแกว่งคีมช้า ๆ 10 รอบ",
@@ -294,10 +377,12 @@ export function buildPinkPrincessHaiterProtocolV2(lot: ExperimentLot): ProtocolS
       actions: [
         `อ่านฉลาก Haiter และยืนยันตัวเลข ${source}% อยู่ติดกับคำว่า sodium hypochlorite หรือ active chlorine`,
         "ตรวจฉลากสารละลายฮอร์โมนให้มีชื่อ ความเข้มข้น หน่วย และวันที่เตรียม",
-        "จัดน้ำล้างปลอดเชื้อสามภาชนะและติดป้าย น้ำล้าง 1, น้ำล้าง 2 และน้ำล้าง 3",
+        ...sterileRinsePreparationActions(lot),
       ],
-      checks: ["ฉลากทุกขวดอ่านชื่อ ความเข้มข้น และหน่วยได้", "มีน้ำล้างครบสามภาชนะ"],
-      stop: ["หยุดเมื่อฉลากลบ ไม่มีเปอร์เซ็นต์ หรือไม่ทราบความเข้มข้นของสารละลายฮอร์โมน"],
+      checks: ["ฉลากทุกขวดอ่านชื่อ ความเข้มข้น และหน่วยได้", "มีน้ำล้างปลอดเชื้อครบสามภาชนะและปริมาตรตรงกับ Lot"],
+      stop: ["หยุดเมื่อฉลากลบ ไม่มีเปอร์เซ็นต์ ไม่ทราบความเข้มข้นของสารละลายฮอร์โมน หรือยังยืนยันแหล่งน้ำล้างปลอดเชื้อไม่ได้"],
+      evidenceState: "Experimental",
+      referenceIds: ["source-mini-rose-2020", "source-cmru-rose-video-2020"],
     },
     {
       id: "sanitize-vessels",
@@ -405,11 +490,12 @@ export function buildPinkPrincessHaiterProtocolV2(lot: ExperimentLot): ProtocolS
       title: "ฟอกผิวชิ้นพืชและล้าง",
       objective: "ลดเชื้อบนผิวชิ้นพืชด้วย trial เริ่มต้นที่ระบุชัด",
       materials: ["สารละลาย active chlorine 0.6%", "น้ำล้างปลอดเชื้อ 1–3", "คีม", "ตัวจับเวลา"],
-      actions: surfaceSterilizationActions(source),
+      actions: surfaceSterilizationActions(lot),
       checks: ["ครบเวลาฟอก 8 นาที", "ล้างครบสามภาชนะ", "ตาข้างยังไม่ขาวซีดหรือเละ"],
       stop: ["หยุดเมื่อชิ้นพืชขาวซีด เละ มีกลิ่นผิดปกติ หรือภาชนะล้างหก"],
       evidenceState: "Experimental",
       durationMinutes: 8,
+      referenceIds: ["source-mini-rose-2020", "source-cmru-rose-video-2020"],
     },
     {
       id: "trim-place",

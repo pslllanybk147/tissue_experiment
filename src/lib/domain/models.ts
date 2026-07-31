@@ -109,6 +109,7 @@ export type ProtocolTemplate = {
 };
 
 export type SterilizationMethod = "haiter-chemical" | "pressure-sterilization";
+export type RinseWaterMethod = "low-dose-hypochlorite" | "commercial-sterile" | "pressure-steam";
 export type BlankDecision = "completed" | "skipped";
 export type WorkspaceType = "still-air-box" | "laminar-flow-cabinet";
 export type WorkspaceDisinfectant = "alcohol-70" | "haiter-label";
@@ -141,6 +142,15 @@ export type MediumBatchSnapshot = {
   totalVolumeMl: number;
 };
 
+export type RinseWaterSnapshot = {
+  method: RinseWaterMethod;
+  containerCount: 3;
+  volumePerContainerMl: number;
+  preparationVolumeMl?: number;
+  targetChlorinePercent?: number;
+  minimumWaitMinutes?: number;
+};
+
 export type SterilizationProfile = {
   id: string;
   title: string;
@@ -164,6 +174,7 @@ export type LotSterilizationSnapshot = {
   minimumToolVolumeMl?: number;
   calculatedDoseMl?: number;
   mediumBatch?: MediumBatchSnapshot;
+  rinseWater?: RinseWaterSnapshot;
   workspace?: WorkspaceSetupSnapshot;
   blankDecision?: BlankDecision;
   blankSkipReason?: string;

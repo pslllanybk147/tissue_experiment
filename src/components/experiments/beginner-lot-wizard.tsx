@@ -4,10 +4,12 @@ import { useMemo, useState, type FormEvent } from "react";
 
 import { createHaiterActionPlan } from "../../lib/domain/haiter-guidance";
 import { calculateMediumBatchPlan } from "../../lib/domain/medium-batch-calculations";
+import { minimumPressureSteamMinutes, rinseWaterTotalMl } from "../../lib/domain/rinse-water-planning";
 import { validateLotInput } from "../../lib/domain/experiment-validation";
 import type {
   CreateLotInput,
   ProtocolTemplate,
+  RinseWaterMethod,
   SterilizationProfile,
   WorkspaceApplicator,
   WorkspaceDisinfectant,
@@ -80,6 +82,8 @@ export function BeginnerLotWizard({
   const [mediumPerJarMl, setMediumPerJarMl] = useState("25");
   const [lossPercent, setLossPercent] = useState("10");
   const [minimumMeasurableMl, setMinimumMeasurableMl] = useState("0.1");
+  const [rinseWaterMethod, setRinseWaterMethod] = useState<"" | RinseWaterMethod>("");
+  const [rinseWaterVolumePerContainerMl, setRinseWaterVolumePerContainerMl] = useState("50");
   const [equipmentReady, setEquipmentReady] = useState<Record<string, boolean>>({});
   const [workspaceType, setWorkspaceType] = useState<WorkspaceType>("still-air-box");
   const [workspaceDisinfectant, setWorkspaceDisinfectant] = useState<WorkspaceDisinfectant>("alcohol-70");
@@ -127,6 +131,16 @@ export function BeginnerLotWizard({
     sourcePercent,
     targetPercent,
   ]);
+  const lowDoseRinsePlan = useMemo(() => {
+    if (rinseWaterMethod !== "low-dose-hypochlorite") return null;
+    return createHaiterActionPlan({
+      labelPercent: sourcePercent.trim() ? Number(sourcePercent) : null,
+      targetPercent: Number(targetPercent),
+      mediumVolumeMl: 1000,
+      minimumToolVolumeMl: Number(minimumMeasurableMl),
+      permittedDiluent: "น้ำสะอาด",
+    });
+  }, [minimumMeasurableMl, rinseWaterMethod, sourcePercent, targetPercent]);
 
   const equipmentComplete = profile?.equipmentRequirements.every(
     (item) => equipmentReady[item],
@@ -155,7 +169,17 @@ export function BeginnerLotWizard({
   function canContinue() {
     if (stage === 1) return plant.trim().length > 0;
     if (stage === 2) return Boolean(template);
-    if (stage === 3) return Boolean(mediumPlan && !mediumPlan.warnings.length) && (profile?.method === "pressure-sterilization" || haiterPlan?.state === "direct" || haiterPlan?.state === "working-dilution");
+    if (stage === 3) {
+      const rinseWaterReady = profile?.method !== "haiter-chemical"
+        || (Boolean(rinseWaterMethod)
+          && Number(rinseWaterVolumePerContainerMl) > 0
+          && (rinseWaterMethod !== "low-dose-hypochlorite"
+            || lowDoseRinsePlan?.state === "direct"
+            || lowDoseRinsePlan?.state === "working-dilution"));
+      return Boolean(mediumPlan && !mediumPlan.warnings.length)
+        && rinseWaterReady
+        && (profile?.method === "pressure-sterilization" || haiterPlan?.state === "direct" || haiterPlan?.state === "working-dilution");
+    }
     if (stage === 4) return equipmentComplete && workspaceComplete;
     return true;
   }
@@ -205,6 +229,16 @@ export function BeginnerLotWizard({
           lossAllowanceMl: mediumPlan.lossAllowanceMl,
           totalVolumeMl: mediumPlan.totalVolumeMl,
         } : undefined,
+        rinseWater: profile.method === "haiter-chemical" && rinseWaterMethod
+          ? {
+              method: rinseWaterMethod,
+              containerCount: 3,
+              volumePerContainerMl: Number(rinseWaterVolumePerContainerMl),
+              preparationVolumeMl: rinseWaterMethod === "low-dose-hypochlorite" ? 1000 : undefined,
+              targetChlorinePercent: rinseWaterMethod === "low-dose-hypochlorite" ? Number(targetPercent) : undefined,
+              minimumWaitMinutes: rinseWaterMethod === "low-dose-hypochlorite" ? 60 : undefined,
+            }
+          : undefined,
         workspace: {
           workspaceType,
           disinfectant: workspaceDisinfectant,
@@ -366,6 +400,70 @@ export function BeginnerLotWizard({
                     </details>
                   </div>
                 )}
+                <fieldset className="sterile-rinse-planner">
+                  <legend>น้ำล้างปลอดเชื้อจะมาจากไหน</legend>
+                  <p>
+                    น้ำกลั่นที่ขายทั่วไปยังไม่ถือว่าปลอดเชื้อ เลือกวิธีที่คุณทำได้จริงก่อนสร้าง Lot
+                  </p>
+                  <label className="form-field">
+                    <span>แหล่งน้ำล้างสำหรับล้างชิ้นพืช 3 รอบ</span>
+                    <select
+                      onChange={(event) => setRinseWaterMethod(event.target.value as "" | RinseWaterMethod)}
+                      value={rinseWaterMethod}
+                    >
+                      <option value="">— กรุณาเลือก —</option>
+                      <option value="low-dose-hypochlorite">ไม่มีหม้อ: น้ำสะอาด + Haiter ระดับต่ำ 0.003% (วิธีทดลอง)</option>
+                      <option value="commercial-sterile">น้ำปลอดเชื้อสำหรับ tissue culture บรรจุปิดจากผู้ผลิต</option>
+                      <option value="pressure-steam">เตรียมจากน้ำกลั่น/DI ด้วยเครื่องไอน้ำแรงดันที่ตรวจยืนยันได้</option>
+                    </select>
+                  </label>
+                  <label className="form-field">
+                    <span>ปริมาตรต่อภาชนะล้าง (mL)</span>
+                    <input
+                      inputMode="decimal"
+                      min="1"
+                      onChange={(event) => setRinseWaterVolumePerContainerMl(event.target.value)}
+                      type="number"
+                      value={rinseWaterVolumePerContainerMl}
+                    />
+                    <small>เลือกให้มากพอจนชิ้นพืชทุกชิ้นจมได้ทั้งชิ้น</small>
+                  </label>
+                  {rinseWaterMethod ? (
+                    <div className="calculation-result">
+                      <strong>
+                        เตรียม 3 ภาชนะ ภาชนะละ {rinseWaterVolumePerContainerMl || "0"} mL · รวม {rinseWaterTotalMl(Number(rinseWaterVolumePerContainerMl) || 0)} mL
+                      </strong>
+                      {rinseWaterMethod === "low-dose-hypochlorite" ? (
+                        <ol>
+                          <li>เตรียมน้ำสะอาดให้ครบ 1,000 mL ในภาชนะที่มีฝาปิด</li>
+                          <li>{lowDoseRinsePlan?.state === "blocked" ? lowDoseRinsePlan.safeAction : lowDoseRinsePlan?.primaryInstruction ?? "กรอกเปอร์เซ็นต์บนฉลากก่อน ระบบจึงจะบอกปริมาตร Haiter"}</li>
+                          <li>ปิดฝา คนให้ทั่ว แล้วพักอย่างน้อย 60 นาที</li>
+                          <li>แบ่งภาชนะละ {rinseWaterVolumePerContainerMl || "0"} mL เป็นน้ำล้าง 1–3 และใช้ใหม่ในรอบนี้</li>
+                        </ol>
+                      ) : rinseWaterMethod === "commercial-sterile" ? (
+                        <ol>
+                          <li>ฉลากต้องระบุว่าเป็น sterile water และเหมาะกับงานเพาะเลี้ยงเซลล์หรือเนื้อเยื่อ</li>
+                          <li>เก็บภาชนะเดิมปิดไว้จนพื้นที่ SAB พร้อม แล้วจึงแบ่งลงภาชนะปลอดเชื้อที่ติดป้าย น้ำล้าง 1–3</li>
+                        </ol>
+                      ) : (
+                        <ol>
+                          <li>ใช้น้ำกลั่นหรือน้ำ DI ในภาชนะทนแรงดัน 3 ใบ และคลายฝาครึ่งรอบ</li>
+                          <li>
+                            ใช้ liquid cycle ที่ยืนยันว่าได้ 121°C และ 15 psi อย่างน้อย {(() => {
+                              try { return minimumPressureSteamMinutes(Number(rinseWaterVolumePerContainerMl)); } catch { return "—"; }
+                            })()} นาที
+                          </li>
+                          <li>ปล่อยให้เย็นโดยไม่เปิดฝา แล้วเก็บปิดจนพร้อมใช้ใน SAB</li>
+                        </ol>
+                      )}
+                      {rinseWaterMethod === "low-dose-hypochlorite" ? (
+                        <p><strong>นี่เป็นวิธีไม่ใช้หม้อแบบทดลอง</strong> หลักฐานมาจากกุหลาบหนู ไม่ใช่ Pink Princess โดยตรง</p>
+                      ) : (
+                        <p><strong>วิธีนี้ไม่เติม Haiter ลงในน้ำล้าง</strong></p>
+                      )}
+                    </div>
+                  ) : null}
+                </fieldset>
               </div>
             )}
           </>
@@ -440,6 +538,12 @@ export function BeginnerLotWizard({
               {customEquipment.trim() ? <div><dt>อุปกรณ์เพิ่มเติม</dt><dd>{customEquipment}</dd></div> : null}
               {mediumPlan && <div><dt>อาหารที่ต้องเตรียม</dt><dd>{mediumPlan.totalVolumeMl} mL สำหรับ {mediumPlan.totalJarCount} กระปุก (เพาะ {cultureJarCount}, Blank {blankJarCount}, สำรอง {spareJarCount})</dd></div>}
               {profile?.method === "haiter-chemical" && <div><dt>ค่าคลอรีน</dt><dd>ฉลาก {sourcePercent}% → เป้าหมาย {targetPercent}%</dd></div>}
+              {profile?.method === "haiter-chemical" && rinseWaterMethod ? (
+                <div>
+                  <dt>น้ำล้างปลอดเชื้อ</dt>
+                  <dd>{rinseWaterMethod === "low-dose-hypochlorite" ? `น้ำสะอาด + Haiter ${targetPercent}% พัก 60 นาที` : rinseWaterMethod === "commercial-sterile" ? "บรรจุปิดจากผู้ผลิต" : "น้ำกลั่น/DI ผ่านไอน้ำแรงดัน"} · 3 ภาชนะ ภาชนะละ {rinseWaterVolumePerContainerMl} mL</dd>
+                </div>
+              ) : null}
               {haiterPlan && haiterPlan.state !== "blocked" && <div><dt>คำสั่งเตรียม</dt><dd>{haiterPlan.primaryInstruction}</dd></div>}
             </dl>
             <p className="wizard-guard"><strong>ยังไม่ต้องตัดต้น</strong> หลังสร้าง Lot ระบบจะเริ่มจากการเตรียมอาหารและ readiness gate</p>

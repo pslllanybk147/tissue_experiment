@@ -2739,6 +2739,32 @@
 - push เข้า `master` แล้ว และ Vercel Production deployment `dpl_F7mrHCcXSvedVc9XKHnPBbEywPUC` ขึ้น `READY`
 - Production URL ตอบกลับ HTTP 200: `https://tissue-experiment-93.vercel.app/`
 
+## 2026-07-31 — แหล่งน้ำล้างสำหรับวิธี Haiter แบบไม่ใช้หม้อนึ่ง
+
+- Root cause: Protocol v2 แสดงเพียง `น้ำล้างปลอดเชื้อ 1–3` แต่ไม่บอกว่าน้ำมาจากไหน ทำให้ผู้ใช้ที่ไม่มี autoclave ทำต่อไม่ได้
+- ตรวจ transcript วิดีโอ `การเพาะเลี้ยงเนื้อเยื่อกุหลาบอย่างง่าย` ช่วง 14:12–17:38 พบว่าวิธีต้นทางใช้น้ำสะอาด 1,000 mL เติม Haiter 0.5 mL แบ่งเป็นน้ำล้าง 3 ขวด ขวดละ 50 mL และพักอย่างน้อย 1 ชั่วโมง ไม่ได้ใช้น้ำจากหม้อนึ่ง
+- พบงาน peer-reviewed `การเพาะเลี้ยงเนื้อเยื่อกุหลาบหนูโดยอาหารเพาะเลี้ยงเนื้อเยื่อพืชอย่างง่าย` ซึ่งระบุการล้าง 3 ครั้งด้วยน้ำที่ฆ่าเชื้อโดย Haiter สูตรมาตรฐาน 0.5 mL/L จึงยืนยันว่ามี chemical/no-autoclave rinse-water protocol จริง
+- เพิ่ม source records:
+  - `source-mini-rose-2020`: https://ph03.tci-thaijo.org/index.php/ajsas/article/view/4003
+  - `source-cmru-rose-video-2020`: https://www.youtube.com/watch?v=QI9bWN1IkOs
+- เพิ่ม `RinseWaterSnapshot` ใน Lot และบังคับ Lot v2 บันทึกแหล่งน้ำล้าง จำนวน 3 ภาชนะ และปริมาตรต่อภาชนะ
+- Wizard ให้เลือก 3 วิธี:
+  - `low-dose-hypochlorite`: น้ำสะอาด + Haiter ให้ได้ active chlorine 0.003% พักอย่างน้อย 60 นาที; ไม่ใช้หม้อนึ่ง
+  - `commercial-sterile`: sterile water บรรจุปิดสำหรับ cell/tissue culture
+  - `pressure-steam`: น้ำกลั่น/DI ผ่าน liquid cycle ที่ยืนยัน 121°C และ 15 psi
+- สำหรับวิธี low-dose ระบบอ่านเปอร์เซ็นต์จากฉลาก คำนวณปริมาตร Haiter สำหรับน้ำ 1,000 mL และห้ามผ่านขั้นหากค่าตวงต่ำกว่าอุปกรณ์จริง
+- Guided Protocol ขั้น 4 แสดงคำสั่งจริงของ Lot: น้ำกี่ mL, Haiter กี่ mL, ผสมอย่างไร, พักกี่นาที, แบ่งภาชนะละกี่ mL และป้าย `น้ำล้าง 1–3`
+- ขั้นฟอกตรวจว่าชนิดน้ำล้างตรงกับ Lot; ไม่ใช้ข้อความเหมารวม `ห้ามเติม Haiter` เมื่อ Lot เลือก chemical rinse
+- วิธี low-dose สำหรับ Pink Princess ต้องแสดง `Experimental` เพราะหลักฐานตรงเป็นกุหลาบหนู/กุหลาบ ไม่ใช่ Philodendron
+- เพิ่ม tests สำหรับ validation แหล่งน้ำล้าง, วิธี no-autoclave, ตาราง liquid-cycle และการแสดงคำสั่งตัวเลขใน Protocol
+- Verification รอบส่งงาน:
+  - `npm test`: ผ่าน 299 tests และ skip 10 เมื่อไม่เปิด emulator
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: ผ่าน 309 tests ทั้งหมด
+  - `npm run ui:verify`: ผ่านครบ 14 viewport 360, 375, 390, 412, 428, 600, 744, 768, 820, 834, 1024, 1280, 1440 และ 1920px โดยสร้าง Lot แบบ Haiter + น้ำล้าง no-autoclave และตรวจ Protocol 14 ขั้นจริง
+- Deployment ID และสถานะ Production ให้เติมหลัง push `master`
+
 ## 2026-07-31 — แก้ความถูกต้องเชิงความหมายของวัสดุ Protocol v2 ครบ 14 ขั้น
 
 - Root cause: `describeBeginnerMaterial()` ใช้ keyword `ภาชนะ` แบบกว้าง ทำให้ภาชนะล้าง ภาชนะรับ explant และภาชนะเพาะได้รับข้อความจำนวนกระปุกจาก Wizard เหมือนกัน ทั้งที่ทำหน้าที่และมีจำนวนต่างกัน

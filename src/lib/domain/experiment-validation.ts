@@ -63,6 +63,25 @@ export function validateLotInput(input: CreateLotInput): ValidationResult<Create
       positiveNumber(errors, "targetChlorinePercent", input.sterilization.targetChlorinePercent);
       positiveNumber(errors, "mediumVolumeMl", input.sterilization.mediumVolumeMl);
       positiveNumber(errors, "calculatedDoseMl", input.sterilization.calculatedDoseMl);
+      if (input.workflowVersion === "v2") {
+        const rinseWater = input.sterilization.rinseWater;
+        if (!rinseWater) {
+          errors.rinseWaterMethod = "กรุณาเลือกว่าน้ำล้างปลอดเชื้อมาจากไหน";
+        } else {
+          if (!["low-dose-hypochlorite", "commercial-sterile", "pressure-steam"].includes(rinseWater.method)) {
+            errors.rinseWaterMethod = "แหล่งน้ำล้างปลอดเชื้อไม่ถูกต้อง";
+          }
+          if (rinseWater.containerCount !== 3) {
+            errors.rinseWaterContainerCount = "ต้องเตรียมน้ำล้างแยก 3 ภาชนะสำหรับล้าง 3 รอบ";
+          }
+          positiveNumber(errors, "rinseWaterVolumePerContainerMl", rinseWater.volumePerContainerMl);
+          if (rinseWater.method === "low-dose-hypochlorite") {
+            positiveNumber(errors, "rinseWaterPreparationVolumeMl", rinseWater.preparationVolumeMl);
+            positiveNumber(errors, "rinseWaterTargetChlorinePercent", rinseWater.targetChlorinePercent);
+            positiveNumber(errors, "rinseWaterMinimumWaitMinutes", rinseWater.minimumWaitMinutes);
+          }
+        }
+      }
     }
     if (input.sterilization.mediumBatch) {
       const batch = input.sterilization.mediumBatch;

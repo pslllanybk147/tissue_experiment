@@ -227,11 +227,15 @@ async function verifyWizard(page, viewportName) {
   await page.getByRole("button", { name: "ถัดไป" }).click();
   await page.getByRole("button", { name: /ไฮเตอร์ \/ NaOCl/ }).last().click();
   await page.getByLabel("ตัวเลขเปอร์เซ็นต์ที่พิมพ์อยู่บนฉลาก").fill("6");
+  await page.getByLabel("แหล่งน้ำล้างสำหรับล้างชิ้นพืช 3 รอบ").selectOption("low-dose-hypochlorite");
+  const rinsePlanText = await page.locator(".sterile-rinse-planner").innerText();
+  assert(rinsePlanText.includes("ตวงไฮเตอร์จากขวด 0.50 mL"), `${viewportName} wizard: น้ำล้างแบบไม่ใช้หม้อไม่มีคำสั่งตวง Haiter`);
+  assert(rinsePlanText.includes("พักอย่างน้อย 60 นาที"), `${viewportName} wizard: น้ำล้างแบบไม่ใช้หม้อไม่มีเวลาพัก`);
   assert(
     await page.getByText("เตรียมอาหารทั้งหมด 110 mL").isVisible(),
     `${viewportName} wizard: ไม่คำนวณอาหารจาก explant/กระปุก/Blank/สำรอง`,
   );
-  const dilutionText = await page.locator(".calculation-result").innerText();
+  const dilutionText = await page.locator(".wizard-calculation > .calculation-result").innerText();
   assert(dilutionText.includes("ตวงไฮเตอร์จากขวด 1.00 mL"), `${viewportName} wizard: ไม่มีคำสั่งตวงสารตั้งต้น`);
   assert(dilutionText.includes("เติมน้ำปลอดเชื้อ 9.00 mL"), `${viewportName} wizard: ไม่มีคำสั่งเติมสารเจือจาง`);
   assert(!/C1V1|C2V2/.test(dilutionText), `${viewportName} wizard: แสดงสมการในคำสั่งหลัก`);

@@ -41,6 +41,14 @@ const lot: ExperimentLot = {
       allowanceVolumeMl: 10,
       totalVolumeMl: 110,
     },
+    rinseWater: {
+      method: "low-dose-hypochlorite",
+      containerCount: 3,
+      volumePerContainerMl: 50,
+      preparationVolumeMl: 1000,
+      targetChlorinePercent: 0.003,
+      minimumWaitMinutes: 60,
+    },
   },
   workflowVersion: "v2",
 };
@@ -110,6 +118,20 @@ describe("Pink Princess Haiter beginner protocol v2", () => {
     expect(jars?.quantity).toContain("เพาะ 1");
     expect(jars?.quantity).toContain("Blank 1");
     expect(jars?.quantity).toContain("สำรอง 2");
+  });
+
+  it("explains where sterile rinse water comes from before the explant is cut", () => {
+    const steps = buildPinkPrincessHaiterProtocolV2(lot);
+    const preparation = steps.find((step) => step.id === "v2-liquids-stocks")?.beginner?.actions.join(" ") ?? "";
+    const rinse = steps.find((step) => step.id === "v2-surface-sterilize")?.beginner?.actions.join(" ") ?? "";
+
+    expect(preparation).toContain("น้ำสะอาด 1,000 mL");
+    expect(preparation).toContain("3 ภาชนะ");
+    expect(preparation).toContain("50 mL");
+    expect(preparation).toContain("0.500 mL");
+    expect(preparation).toContain("60 นาที");
+    expect(rinse).toContain("น้ำล้าง 1");
+    expect(rinse).toContain("active chlorine 0.003%");
   });
 
   it("uses the saved Lot values in the chemical-food steps", () => {
