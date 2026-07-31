@@ -34,4 +34,20 @@ describe("Firestore step-run serialization", () => {
       completedAt: "2026-07-31T08:00:00.000Z",
     });
   });
+
+  it("preserves carried-forward metadata without inventing completion time", () => {
+    expect(removeUndefinedStepRunFields({
+      stepId: "step-8",
+      completionMode: "carried-forward",
+      carryForwardRecordedAt: "2026-07-31T10:00:00.000Z",
+      carryForwardTargetStepId: "step-9",
+      carryForwardApproximateDate: undefined,
+      completedAt: undefined,
+    })).toEqual({
+      stepId: "step-8",
+      completionMode: "carried-forward",
+      carryForwardRecordedAt: "2026-07-31T10:00:00.000Z",
+      carryForwardTargetStepId: "step-9",
+    });
+  });
 });

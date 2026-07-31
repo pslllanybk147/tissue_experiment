@@ -18,4 +18,32 @@ describe("guided workflow repositories", () => {
     expect(runs).toHaveLength(1);
     expect(runs[0]).toMatchObject({ status: "Passed", measurements: { "medium-ph": 5.7 } });
   });
+
+  it("saves a catch-up group in one repository operation", async () => {
+    const repository = createMemoryStepRunRepository("owner-a");
+    const base = {
+      lotId: "LOT-1",
+      protocolId: "protocol-1",
+      versionId: "version-1",
+      status: "Passed" as const,
+      note: "",
+      measurements: {},
+      mediaIds: [],
+      completionMode: "carried-forward" as const,
+      carryForwardRecordedAt: "2026-07-31T10:00:00.000Z",
+      carryForwardTargetStepId: "step-3",
+      observedAt: "2026-07-31T10:00:00.000Z",
+    };
+
+    const saved = await repository.saveMany("owner-a", [
+      { ...base, stepId: "step-1" },
+      { ...base, stepId: "step-2" },
+    ]);
+
+    expect(saved.map((item) => item.stepId)).toEqual(["step-1", "step-2"]);
+    expect(await repository.list("owner-a", "LOT-1")).toHaveLength(2);
+    await expect(repository.saveMany("owner-b", [
+      { ...base, stepId: "step-3" },
+    ])).rejects.toThrow("Owner mismatch");
+  });
 });

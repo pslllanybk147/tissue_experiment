@@ -8,5 +8,25 @@ export function createMemoryStepRunRepository(uid: string): StepRunRepository {
   return {
     async list(ownerId, lotId) { guard(ownerId); return structuredClone([...records.values()].filter((item) => item.lotId === lotId)); },
     async save(ownerId, input) { guard(ownerId); const id = input.lotId + ":" + input.stepId; const item: ProtocolStepRun = { ...structuredClone(input), id, ownerId: uid, updatedAt: new Date().toISOString() }; records.set(id, item); writeDemoState(storageKey, [...records.values()]); return structuredClone(item); },
+    async saveMany(ownerId, inputs) {
+      guard(ownerId);
+      const timestamp = new Date().toISOString();
+      const nextRecords = new Map(records);
+      const items = inputs.map((input) => {
+        const id = input.lotId + ":" + input.stepId;
+        const item: ProtocolStepRun = {
+          ...structuredClone(input),
+          id,
+          ownerId: uid,
+          updatedAt: timestamp,
+        };
+        nextRecords.set(id, item);
+        return item;
+      });
+      records.clear();
+      nextRecords.forEach((item, id) => records.set(id, item));
+      writeDemoState(storageKey, [...records.values()]);
+      return structuredClone(items);
+    },
   };
 }
