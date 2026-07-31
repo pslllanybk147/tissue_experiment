@@ -99,6 +99,10 @@ export default function ExperimentDetailPage() {
     await stepRunRepository.save(ownerId, input);
     setStepRuns(await stepRunRepository.list(ownerId, lotId));
   }
+  async function saveStepRunsV2(inputs: Array<Omit<ProtocolStepRun, "id" | "ownerId" | "updatedAt">>) {
+    await stepRunRepository.saveMany(ownerId, inputs);
+    setStepRuns(await stepRunRepository.list(ownerId, lotId));
+  }
 
   return <AuthGate><LabShell onSignOut={() => void signOut()} section="Experiments" sessionLabel={session.status === "authenticated" ? "FIREBASE" : "DEMO"}>
     <Link className="route-back" href="/experiments">← Experiment Lots</Link>
@@ -110,7 +114,7 @@ export default function ExperimentDetailPage() {
       <header className="lot-detail-heading"><div><p className="eyebrow">EXPERIMENT LOT</p><h1>{lot.id}</h1><p>{lot.plant} · {lot.protocolTitle}</p></div><div className="route-actions">{lot.deletedAt ? <button className="primary-button" onClick={() => void restoreLot()} type="button">กู้คืน Lot</button> : <button className="quiet-button" onClick={() => void deleteLot()} type="button">เก็บเข้าถังขยะ</button>}<span className={`badge badge-${lot.status.toLowerCase().replaceAll(" ", "-")}`}>{lot.status}</span></div></header>
       <div className="lot-detail-grid">
         <section className="lot-work-column">
-          {protocolVersion && guidedStepsV2 && <section className="experiment-surface protocol-lot-runner protocol-lot-runner-v2"><LinearProtocolRunnerV2 lotId={lotId} protocolId={lot.protocolId} versionId={protocolVersion.id} steps={guidedStepsV2} runs={stepRuns} onSave={saveStepRunV2} recipePlan={recipePlan} /></section>}
+          {protocolVersion && guidedStepsV2 && <section className="experiment-surface protocol-lot-runner protocol-lot-runner-v2"><LinearProtocolRunnerV2 lotId={lotId} protocolId={lot.protocolId} versionId={protocolVersion.id} steps={guidedStepsV2} runs={stepRuns} onSave={saveStepRunV2} onSaveMany={saveStepRunsV2} recipePlan={recipePlan} /></section>}
           {!guidedStepsV2 && <section className="experiment-surface migration-state" role="alert"><p className="eyebrow">ประวัติ LOT</p><h2>Lot นี้ใช้คู่มือรุ่นเดิม</h2><p>ระบบเก็บข้อมูลเดิมไว้อ่านอย่างเดียวและจะไม่เดาหรือย้ายสถานะขั้นเก่าเข้าคู่มือใหม่</p><Link className="primary-button" href={`/experiments/new?plant=${encodeURIComponent(lot.plant)}${lot.taxonId ? `&taxon=${encodeURIComponent(lot.taxonId)}` : ""}`}>สร้าง Lot v2 ใหม่</Link></section>}
           <div className="timeline-heading"><div><p className="eyebrow">LOT HISTORY</p><h2>ประวัติเดิม</h2></div><label><input checked={showDeleted} onChange={(e) => setShowDeleted(e.target.checked)} type="checkbox" /> แสดงรายการที่ลบ</label></div>
           <ObservationTimeline observations={observations.filter((item) => item.kind !== "protocol-step-evidence")} onDelete={async () => undefined} onEdit={() => undefined} onRestore={async () => undefined} readOnly renderMedia={item=><div className="observation-media-readonly">{(media[item.id]??[]).filter((mediaItem) => showDeleted || !mediaItem.deletedAt).map((mediaItem) => <a href={mediaItem.secureUrl} key={mediaItem.id} rel="noreferrer" target="_blank"><Image alt={mediaItem.caption || "ภาพจากประวัติ Lot"} height={120} src={mediaItem.secureUrl} unoptimized width={160} /></a>)}</div>} />

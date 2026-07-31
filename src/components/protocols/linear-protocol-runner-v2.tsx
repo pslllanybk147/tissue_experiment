@@ -3,9 +3,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { ProtocolStep, ProtocolStepRun } from "@/lib/domain/models";
+import { planProtocolCatchUp } from "../../lib/domain/protocol-catch-up";
 import { planRetrospectiveCompletion } from "../../lib/domain/retrospective-step-completion";
 import { AccessibleAction } from "../common/accessible-action";
 import { InlineLotRecipe, type LotRecipePlan } from "./inline-lot-recipe";
+import {
+  ProtocolCatchUpPanel,
+  type ProtocolCatchUpSelection,
+} from "./protocol-catch-up-panel";
 
 type Props = {
   lotId: string;
@@ -16,6 +21,9 @@ type Props = {
   recipePlan?: LotRecipePlan;
   onSave: (
     run: Omit<ProtocolStepRun, "id" | "ownerId" | "updatedAt">,
+  ) => Promise<void>;
+  onSaveMany: (
+    runs: Array<Omit<ProtocolStepRun, "id" | "ownerId" | "updatedAt">>,
   ) => Promise<void>;
 };
 
@@ -49,13 +57,20 @@ export function LinearProtocolRunnerV2({
   runs,
   recipePlan,
   onSave,
+  onSaveMany,
 }: Props) {
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(() => {
+    const firstUnfinished = steps.findIndex((candidate) => (
+      runs.find((run) => run.stepId === candidate.id)?.status !== "Passed"
+    ));
+    return firstUnfinished >= 0 ? firstUnfinished : Math.max(0, steps.length - 1);
+  });
   const [showSteps, setShowSteps] = useState(false);
   const [problemOpen, setProblemOpen] = useState(false);
   const [retrospectiveOpen, setRetrospectiveOpen] = useState(false);
-  const [retrospectiveStartedAt, setRetrospectiveStartedAt] = useState("");
-  const [retrospectiveCompletedAt, setRetrospectiveCompletedAt] = useState("");
+  const [catchUpOpen, setCatchUpOpen] = useState(false);
+  const [retrospectiveApproximateDate, setRetrospectiveApproximateDate] = useState("");
+  const [retrospectiveTimerConfirmed, setRetrospectiveTimerConfirmed] = useState(false);
   const [note, setNote] = useState("");
   const [measurements, setMeasurements] = useState<Record<string, number | null>>({});
   const [checked, setChecked] = useState<Record<string, boolean>>({});
@@ -101,8 +116,8 @@ export function LinearProtocolRunnerV2({
     setActiveIndex(index);
     setProblemOpen(false);
     setRetrospectiveOpen(false);
-    setRetrospectiveStartedAt("");
-    setRetrospectiveCompletedAt("");
+    setRetrospectiveApproximateDate("");
+    setRetrospectiveTimerConfirmed(false);
     setNote(nextRun?.note ?? "");
     setMeasurements(nextRun?.measurements ?? {});
     setChecked({});
@@ -183,23 +198,17 @@ export function LinearProtocolRunnerV2({
 
   async function saveRetrospectiveResult() {
     if (!step) return;
-    if (!retrospectiveStartedAt) {
-      setMessage("กรอกวันที่และเวลาที่เริ่มทำจริง");
-      return;
-    }
-    if (!step.durationMinutes && !retrospectiveCompletedAt) {
-      setMessage("กรอกวันที่และเวลาที่ทำเสร็จจริง");
-      return;
-    }
-    if (!note.trim()) {
-      setMessage("เขียนบันทึกสั้น ๆ ว่าทำอะไรไปแล้วและเห็นผลอย่างไร");
+    if (step.durationMinutes && !retrospectiveTimerConfirmed) {
+      setMessage("ยืนยันก่อนว่าขั้นนี้ครบเวลาที่กำหนดแล้ว หรือใช้ตัวจับเวลาปกติ");
       return;
     }
 
     const plan = planRetrospectiveCompletion({
-      startedAt: retrospectiveStartedAt,
-      completedAt: retrospectiveCompletedAt || undefined,
+      completedAt: !step.durationMinutes && retrospectiveApproximateDate
+        ? retrospectiveApproximateDate
+        : undefined,
       durationMinutes: step.durationMinutes,
+      elapsedConfirmed: retrospectiveTimerConfirmed,
     });
     if (plan.state === "invalid") {
       setMessage(plan.reason);
@@ -230,6 +239,7 @@ export function LinearProtocolRunnerV2({
         completedAt: plan.state === "complete" ? plan.completedAt : undefined,
         completionMode: "retrospective",
         retrospectiveRecordedAt: recordedAt,
+        retrospectiveApproximateDate: retrospectiveApproximateDate || undefined,
         observedAt: recordedAt,
       });
       setRetrospectiveOpen(false);
@@ -246,6 +256,30 @@ export function LinearProtocolRunnerV2({
     }
   }
 
+  async function confirmCatchUp(selection: ProtocolCatchUpSelection) {
+    const recordedAt = new Date().toISOString();
+    const plan = planProtocolCatchUp({
+      lotId,
+      protocolId,
+      versionId,
+      steps,
+      runs,
+      targetStepId: selection.targetStepId,
+      confirmedTimedStepIds: selection.confirmedTimedStepIds,
+      recordedAt,
+      approximateDate: selection.approximateDate,
+    });
+    if (plan.state !== "ready") throw new Error(plan.reason);
+    await onSaveMany(plan.runs);
+    setCatchUpOpen(false);
+    select(plan.targetIndex);
+    setMessage(
+      plan.runs.length > 0
+        ? `ปิดย้อนหลัง ${plan.runs.length} ขั้นแล้ว เริ่มต่อจากขั้น ${plan.targetIndex + 1}`
+        : `เปิดขั้น ${plan.targetIndex + 1} แล้ว`,
+    );
+  }
+
   if (!step) return <p className="route-state">ยังไม่มีขั้นตอนใน Protocol v2</p>;
 
   return (
@@ -256,20 +290,40 @@ export function LinearProtocolRunnerV2({
           <h2>{step.title}</h2>
           <p>{step.objective}</p>
         </div>
-        <button
-          aria-controls="linear-step-list"
-          aria-expanded={showSteps}
-          className="secondary-button"
-          onClick={() => setShowSteps((value) => !value)}
-          type="button"
-        >
-          {showSteps ? "ซ่อนรายการขั้น" : "ดูทุกขั้น"}
-        </button>
+        <div className="linear-header-actions">
+          <button
+            aria-expanded={catchUpOpen}
+            className="secondary-button"
+            onClick={() => setCatchUpOpen((value) => !value)}
+            type="button"
+          >
+            ตั้งจุดเริ่มต่อ
+          </button>
+          <button
+            aria-controls="linear-step-list"
+            aria-expanded={showSteps}
+            className="secondary-button"
+            onClick={() => setShowSteps((value) => !value)}
+            type="button"
+          >
+            {showSteps ? "ซ่อนรายการขั้น" : "ดูทุกขั้น"}
+          </button>
+        </div>
       </header>
 
       <div className="linear-progress" aria-label={`ทำเสร็จ ${runs.filter((item) => item.status === "Passed").length} จาก ${steps.length} ขั้น`}>
         <span style={{ width: `${(runs.filter((item) => item.status === "Passed").length / steps.length) * 100}%` }} />
       </div>
+
+      {catchUpOpen ? (
+        <ProtocolCatchUpPanel
+          initialTargetStepId={step.id}
+          onCancel={() => setCatchUpOpen(false)}
+          onConfirm={confirmCatchUp}
+          runs={runs}
+          steps={steps}
+        />
+      ) : null}
 
       <ol className="linear-step-list" hidden={!showSteps} id="linear-step-list">
         {steps.map((item, index) => {
@@ -395,41 +449,28 @@ export function LinearProtocolRunnerV2({
           <div>
             <h3>บันทึกขั้นที่ทำไปแล้ว</h3>
             <p>
-              ใช้เวลาที่เกิดขึ้นจริง ระบบจะไม่เริ่มนับใหม่
-              {step.durationMinutes
-                ? " ถ้ายังไม่ครบ ระบบจะนับเฉพาะเวลาที่เหลือ"
-                : ""}
+              ไม่ต้องเขียนบันทึกหรือกรอกเวลาหลายช่อง
             </p>
           </div>
-          <label className="form-field">
-            <span>วันที่และเวลาที่เริ่มทำจริง *</span>
-            <input
-              onChange={(event) => setRetrospectiveStartedAt(event.target.value)}
-              type="datetime-local"
-              value={retrospectiveStartedAt}
-            />
-          </label>
-          {!step.durationMinutes ? (
-            <label className="form-field">
-              <span>วันที่และเวลาที่ทำเสร็จจริง *</span>
+          {step.durationMinutes ? (
+            <label className="catch-up-timer-confirmation">
               <input
-                onChange={(event) => setRetrospectiveCompletedAt(event.target.value)}
-                type="datetime-local"
-                value={retrospectiveCompletedAt}
+                checked={retrospectiveTimerConfirmed}
+                onChange={(event) => setRetrospectiveTimerConfirmed(event.target.checked)}
+                type="checkbox"
               />
+              <span>
+                <strong>ฉันยืนยันว่าครบเวลา {timerLabel(step.durationMinutes)} แล้ว</strong>
+                <small>ถ้ายังไม่ครบ ให้ยกเลิกและใช้ตัวจับเวลาปกติ</small>
+              </span>
             </label>
-          ) : (
-            <p className="retrospective-timer-help">
-              ขั้นนี้กำหนดเวลา {timerLabel(step.durationMinutes)}
-              ระบบจะคำนวณเวลาสิ้นสุดจากเวลาเริ่มให้เอง
-            </p>
-          )}
+          ) : null}
           <label className="form-field">
-            <span>บันทึกสั้น ๆ ว่าทำอะไรและเห็นผลอย่างไร *</span>
-            <textarea
-              onChange={(event) => setNote(event.target.value)}
-              rows={3}
-              value={note}
+            <span>วันที่โดยประมาณ (ไม่บังคับ)</span>
+            <input
+              onChange={(event) => setRetrospectiveApproximateDate(event.target.value)}
+              type="date"
+              value={retrospectiveApproximateDate}
             />
           </label>
           <div className="retrospective-actions">

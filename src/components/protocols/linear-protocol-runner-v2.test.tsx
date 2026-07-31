@@ -58,6 +58,7 @@ describe("LinearProtocolRunnerV2", () => {
         steps={[step]}
         runs={[]}
         onSave={vi.fn(async () => undefined)}
+        onSaveMany={vi.fn(async () => undefined)}
       />,
     );
 
@@ -66,6 +67,7 @@ describe("LinearProtocolRunnerV2", () => {
     expect(html).toContain("ฉันพบปัญหา");
     expect(html).toContain("ทำขั้นนี้เสร็จแล้ว");
     expect(html).toContain("ฉันทำขั้นนี้ไว้แล้ว");
+    expect(html).toContain("ตั้งจุดเริ่มต่อ");
     expect(html).not.toContain("อ่านคู่มือ");
     expect(html).not.toContain("บันทึกผลขั้นนี้");
     expect(html).not.toContain("หลักฐานภาพ");
@@ -84,6 +86,7 @@ describe("LinearProtocolRunnerV2", () => {
         steps={[step]}
         runs={[]}
         onSave={vi.fn(async () => undefined)}
+        onSaveMany={vi.fn(async () => undefined)}
       />,
     );
 
@@ -91,7 +94,7 @@ describe("LinearProtocolRunnerV2", () => {
     expect(html).toContain("ยังทำขั้นนี้เสร็จไม่ได้จนกว่า Timer จะครบ");
   });
 
-  it("unlocks the next step only after the current run is completed", () => {
+  it("resumes at the first unfinished step when earlier work is already complete", () => {
     const html = renderToStaticMarkup(
       <LinearProtocolRunnerV2
         lotId="LOT-1"
@@ -100,11 +103,12 @@ describe("LinearProtocolRunnerV2", () => {
         steps={[step, { ...step, id: "v2-next", order: 8, title: "ขั้นถัดไป", durationMinutes: null }]}
         runs={[passedRun]}
         onSave={vi.fn(async () => undefined)}
+        onSaveMany={vi.fn(async () => undefined)}
       />,
     );
 
-    expect(html).toContain("ไปขั้นถัดไป");
-    expect(html).not.toMatch(/disabled=""[^>]*>ไปขั้นถัดไป/);
+    expect(html).toContain("ขั้นที่ 2 จาก 2");
+    expect(html).toContain("ขั้นถัดไป");
   });
 
   it("keeps evidence details collapsed and out of the action copy", () => {
@@ -116,6 +120,7 @@ describe("LinearProtocolRunnerV2", () => {
         steps={[step]}
         runs={[]}
         onSave={vi.fn(async () => undefined)}
+        onSaveMany={vi.fn(async () => undefined)}
       />,
     );
 
@@ -133,6 +138,7 @@ describe("LinearProtocolRunnerV2", () => {
         steps={[{ ...step, id: "v2-prepare-medium", title: "เตรียมอาหาร", durationMinutes: null }]}
         runs={[]}
         onSave={vi.fn(async () => undefined)}
+        onSaveMany={vi.fn(async () => undefined)}
         recipePlan={{
           title: "Establishment · ตั้งต้น",
           evidenceState: "Adapted",

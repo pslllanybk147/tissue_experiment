@@ -61,4 +61,18 @@ describe("planRetrospectiveCompletion", () => {
       reason: "เวลาที่ทำเสร็จต้องอยู่หลังเวลาเริ่ม",
     });
   });
+
+  it("accepts a user-confirmed elapsed timer without inventing timestamps", () => {
+    expect(planRetrospectiveCompletion({
+      durationMinutes: 2880,
+      elapsedConfirmed: true,
+      now: "2026-07-31T09:00:00.000Z",
+    })).toEqual({ state: "complete" });
+  });
+
+  it("accepts an untimed historical step without requiring dates", () => {
+    expect(planRetrospectiveCompletion({
+      now: "2026-07-31T09:00:00.000Z",
+    })).toEqual({ state: "complete" });
+  });
 });

@@ -13,13 +13,14 @@ export type RetrospectiveCompletionPlan =
       state: "complete";
       timerStartedAt?: string;
       timerEndsAt?: string;
-      completedAt: string;
+      completedAt?: string;
     };
 
 type RetrospectiveCompletionInput = {
-  startedAt: string;
+  startedAt?: string;
   completedAt?: string;
   durationMinutes?: number | null;
+  elapsedConfirmed?: boolean;
   now?: string;
 };
 
@@ -32,12 +33,35 @@ export function planRetrospectiveCompletion({
   startedAt,
   completedAt,
   durationMinutes,
+  elapsedConfirmed = false,
   now = new Date().toISOString(),
 }: RetrospectiveCompletionInput): RetrospectiveCompletionPlan {
   const nowTimestamp = validDate(now);
-  const startedTimestamp = validDate(startedAt);
-  if (nowTimestamp == null || startedTimestamp == null) {
+  if (nowTimestamp == null) {
     return { state: "invalid", reason: "วันที่หรือเวลาไม่ถูกต้อง" };
+  }
+  if (durationMinutes != null && durationMinutes > 0 && elapsedConfirmed) {
+    return { state: "complete" };
+  }
+  if (!durationMinutes && !startedAt && !completedAt) {
+    return { state: "complete" };
+  }
+  if (!startedAt && completedAt) {
+    const completedTimestamp = validDate(completedAt);
+    if (completedTimestamp == null) {
+      return { state: "invalid", reason: "วันที่หรือเวลาไม่ถูกต้อง" };
+    }
+    if (completedTimestamp > nowTimestamp) {
+      return { state: "invalid", reason: "เวลาที่ทำเสร็จต้องไม่อยู่ในอนาคต" };
+    }
+    return {
+      state: "complete",
+      completedAt: new Date(completedTimestamp).toISOString(),
+    };
+  }
+  const startedTimestamp = startedAt ? validDate(startedAt) : null;
+  if (startedTimestamp == null) {
+    return { state: "invalid", reason: "กรอกเวลาที่เริ่มทำจริง" };
   }
   if (startedTimestamp > nowTimestamp) {
     return { state: "invalid", reason: "เวลาเริ่มต้องไม่อยู่ในอนาคต" };

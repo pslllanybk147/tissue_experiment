@@ -779,6 +779,33 @@ button:disabled { cursor: not-allowed; }
 .linear-step-header p { margin: 0; }
 .linear-progress { height: 10px; overflow: hidden; border-radius: 999px; background: #e4e9e5; }
 .linear-progress span { display: block; height: 100%; border-radius: inherit; background: #195c3b; transition: width .2s ease; }
+.linear-header-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: start; }
+.protocol-catch-up-panel {
+  display: grid;
+  gap: 18px;
+  padding: clamp(18px, 3vw, 28px);
+  border: 2px solid #245c78;
+  border-left-width: 8px;
+  background: #f3f8fb;
+}
+.protocol-catch-up-panel h3, .protocol-catch-up-panel p { margin: 0; }
+.catch-up-summary { display: grid; gap: 10px; padding: 16px; border: 1px solid #8aa7b7; background: #fff; }
+.catch-up-summary ol { display: grid; gap: 6px; margin: 0; padding-left: 24px; }
+.catch-up-timer-confirmation {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 12px;
+  min-height: 64px;
+  align-items: center;
+  padding: 14px;
+  border: 2px solid #9a5a1c;
+  background: #fff8ec;
+}
+.catch-up-timer-confirmation input { width: 26px; height: 26px; }
+.catch-up-timer-confirmation span { display: grid; gap: 4px; }
+.catch-up-timer-confirmation small { color: var(--muted); }
+.catch-up-actions { display: grid; grid-template-columns: 1fr 1.6fr; gap: 12px; }
+.catch-up-actions > * { width: 100%; min-height: 56px; }
 .linear-step-list { display: grid; gap: 8px; margin: 0; padding: 14px; border: 1px solid var(--line); background: #f7f8f6; list-style: none; }
 .linear-step-list[hidden] { display: none; }
 .linear-step-list button {
@@ -837,10 +864,12 @@ button:disabled { cursor: not-allowed; }
   .protocol-lot-runner-v2 { padding: 14px; }
   .linear-step-header { display: grid; }
   .linear-step-header .secondary-button { width: 100%; }
+  .linear-header-actions { display: grid; grid-template-columns: 1fr; width: 100%; }
   .linear-actions li { grid-template-columns: 40px minmax(0, 1fr); gap: 10px; }
   .linear-actions li > span { width: 38px; height: 38px; }
   .linear-step-actions { grid-template-columns: 1fr; }
   .retrospective-actions { grid-template-columns: 1fr; }
+  .catch-up-actions { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

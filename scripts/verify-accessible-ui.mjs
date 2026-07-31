@@ -43,12 +43,6 @@ function assert(condition, message) {
   if (!condition) failures.push(message);
 }
 
-function localDateTime(minutesAgo) {
-  const date = new Date(Date.now() - minutesAgo * 60_000);
-  const localTimestamp = date.getTime() - date.getTimezoneOffset() * 60_000;
-  return new Date(localTimestamp).toISOString().slice(0, 16);
-}
-
 async function enterDemo(page) {
   await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
   const demo = page.getByRole("button", { name: "Continue in demo mode" });
@@ -273,6 +267,7 @@ async function verifyWizard(page, viewportName) {
   assert(!/C1V1|C2V2|ตามคำแนะนำ|ตาม Protocol|ตามวิธีของห้อง/.test(initialGuideText), `${viewportName}: คู่มือ v2 ยังมีศัพท์หรือคำสั่งคลุมเครือ`);
   assert(await page.getByRole("button", { name: "ฉันพบปัญหา" }).isVisible(), `${viewportName}: ไม่มีทางหยุดเมื่อพบปัญหา`);
   assert(await page.getByRole("button", { name: "ฉันทำขั้นนี้ไว้แล้ว" }).isVisible(), `${viewportName}: ไม่มีทางบันทึกงานที่ทำไปแล้ว`);
+  assert(await page.getByRole("button", { name: "ตั้งจุดเริ่มต่อ" }).isVisible(), `${viewportName}: ไม่มีทางข้ามงานเดิมหลายขั้นในครั้งเดียว`);
   assert(await page.getByRole("button", { name: "ทำขั้นนี้เสร็จแล้ว" }).isVisible(), `${viewportName}: ไม่มีปุ่มจบขั้น`);
   assert(await page.locator("input[type='file']").count() === 0, `${viewportName}: Protocol v2 ยังบังคับบันทึกรูป`);
   assert(await page.getByRole("radio").count() === 0, `${viewportName}: Protocol v2 ยังใช้ผลลัพธ์แบบ radio รุ่นเก่า`);
@@ -287,27 +282,19 @@ async function verifyWizard(page, viewportName) {
   );
   await page.getByRole("button", { name: "ซ่อนรายการขั้น" }).click();
 
-  await page.getByRole("button", { name: "ฉันพบปัญหา" }).click();
-  assert(await page.getByRole("region", { name: "บันทึกปัญหา" }).isVisible(), `${viewportName}: ปุ่มพบปัญหาไม่เปิดแบบบันทึก`);
-  await page.getByLabel("เขียนสิ่งที่เห็นจริง *").fill("ตรวจ UI เท่านั้น");
-  await page.getByRole("button", { name: "บันทึกปัญหาและหยุดขั้นนี้" }).click();
-  await page.getByText("บันทึกปัญหาแล้ว ขั้นถัดไปยังล็อกอยู่").waitFor({ state: "visible" });
-
-  const readiness = page.locator(".linear-checks input[type='checkbox']");
-  for (let index = 0; index < await readiness.count(); index += 1) {
-    await readiness.nth(index).check();
-  }
-  await page.getByRole("button", { name: "ฉันทำขั้นนี้ไว้แล้ว" }).click();
-  const retrospective = page.getByRole("region", { name: "บันทึกขั้นที่ทำไปแล้ว" });
-  await retrospective.waitFor({ state: "visible" });
-  assert(await retrospective.locator("input[type='file']").count() === 0, `${viewportName}: บันทึกย้อนหลังยังขอรูป`);
-  await page.getByLabel("วันที่และเวลาที่เริ่มทำจริง *").fill(localDateTime(20));
-  await page.getByLabel("วันที่และเวลาที่ทำเสร็จจริง *").fill(localDateTime(10));
-  await page.getByLabel("บันทึกสั้น ๆ ว่าทำอะไรและเห็นผลอย่างไร *").fill("ทำขั้นนี้จริงก่อนเปิดคู่มือและตรวจผลแล้ว");
-  await page.getByRole("button", { name: "บันทึกตามเวลาจริง" }).click();
-  await page.getByText("บันทึกย้อนหลังแล้ว ขั้นนี้ผ่านตามวันที่และเวลาจริง").waitFor({ state: "visible" });
-  const next = page.getByRole("button", { name: "ไปขั้นถัดไป" });
-  await next.click();
+  const catchUpButton = page.getByRole("button", { name: "ตั้งจุดเริ่มต่อ" });
+  await catchUpButton.evaluate((button) => button.click());
+  assert(await catchUpButton.getAttribute("aria-expanded") === "true", `${viewportName}: ปุ่มตั้งจุดเริ่มต่อไม่เปลี่ยนสถานะ`);
+  const catchUp = page.locator(".protocol-catch-up-panel");
+  await catchUp.waitFor({ state: "visible" });
+  assert(await catchUp.getAttribute("role") === "region", `${viewportName}: แผงตั้งจุดเริ่มต่อไม่มี region สำหรับโปรแกรมอ่านหน้าจอ`);
+  assert(await catchUp.getAttribute("aria-label") === "ตั้งจุดเริ่มต่อ", `${viewportName}: แผงตั้งจุดเริ่มต่อไม่มีชื่อสำหรับโปรแกรมอ่านหน้าจอ`);
+  assert(await catchUp.locator("textarea").count() === 0, `${viewportName}: การข้ามงานเดิมยังบังคับเขียนบันทึก`);
+  assert(await catchUp.locator("input[type='file']").count() === 0, `${viewportName}: การข้ามงานเดิมยังบังคับแนบรูป`);
+  await page.getByLabel("ฉันจะเริ่มทำต่อจาก").selectOption({ index: 8 });
+  const timerConfirmation = page.getByLabel("ฉันยืนยันว่าครบเวลาที่กำหนดแล้ว");
+  if (await timerConfirmation.isVisible()) await timerConfirmation.check();
+  await page.getByRole("button", { name: "ยืนยันและเริ่มต่อจากขั้นนี้" }).click();
   await page.waitForTimeout(250);
   const recordTop = await page.locator(".linear-protocol-v2").evaluate(
     (element) => Math.round(element.getBoundingClientRect().top),
@@ -317,14 +304,17 @@ async function verifyWizard(page, viewportName) {
     `${viewportName}: ไปขั้นถัดไปแล้วไม่เลื่อนกลับหัวขั้นตอน (top ${recordTop}px)`,
   );
   assert(
-    await page.locator(".step-kicker").filter({ hasText: "ขั้นที่ 2 จาก 14" }).isVisible(),
-    `${viewportName}: จบขั้นแรกแล้วไม่เปิดขั้น 2`,
+    await page.locator(".step-kicker").filter({ hasText: "ขั้นที่ 9 จาก 14" }).isVisible(),
+    `${viewportName}: ตั้งจุดเริ่มต่อแล้วไม่เปิดขั้น 9`,
   );
+  await page.getByRole("button", { name: "ดูทุกขั้น" }).click();
+  const carriedSteps = page.locator("#linear-step-list li").filter({ hasText: "✓" });
+  assert(await carriedSteps.count() === 8, `${viewportName}: ขั้นที่ทำไปแล้วไม่ได้ปิดครบ 8 ขั้น`);
   await page.reload({ waitUntil: "domcontentloaded" });
   await page.locator(".linear-protocol-v2").waitFor({ state: "visible" });
   assert(
-    await page.locator(".step-kicker").filter({ hasText: "ขั้นที่ 1 จาก 14" }).isVisible(),
-    `${viewportName}: รีเฟรชแล้ว Protocol v2 โหลดไม่ได้`,
+    await page.locator(".step-kicker").filter({ hasText: "ขั้นที่ 9 จาก 14" }).isVisible(),
+    `${viewportName}: รีเฟรชแล้วไม่กลับมาที่ขั้นแรกที่ยังไม่ได้ทำ`,
   );
 }
 

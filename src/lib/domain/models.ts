@@ -195,6 +195,7 @@ export type ProtocolStepRun = {
   completedAt?: string;
   completionMode?: "live" | "retrospective" | "carried-forward";
   retrospectiveRecordedAt?: string;
+  retrospectiveApproximateDate?: string;
   carryForwardRecordedAt?: string;
   carryForwardTargetStepId?: string;
   carryForwardApproximateDate?: string;
@@ -286,7 +287,7 @@ export type AuditEvent = {
   ownerId: string;
   entityType: "lot" | "observation" | "media" | "protocol-progress" | "protocol" | "plant";
   entityId: string;
-  action: "created" | "updated" | "deleted" | "restored" | "completed" | "dataset_queued";
+  action: "created" | "updated" | "deleted" | "restored" | "completed" | "dataset_queued" | "carried_forward";
   actorId: string;
   occurredAt: string;
   before: Record<string, unknown> | null;
