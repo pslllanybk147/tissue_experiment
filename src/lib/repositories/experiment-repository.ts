@@ -1,9 +1,10 @@
-import type { AuditEvent, CreateLotInput, ExperimentLot, Observation, ObservationInput } from "@/lib/domain/models";
+import type { AuditEvent, CreateLotInput, ExperimentLot, Observation, ObservationInput, RinseWaterSnapshot } from "@/lib/domain/models";
 
 export interface ExperimentRepository {
   listLots(ownerId: string, includeDeleted?: boolean): Promise<ExperimentLot[]>;
   getLot(ownerId: string, lotId: string): Promise<ExperimentLot | null>;
   createLot(ownerId: string, input: CreateLotInput): Promise<ExperimentLot>;
+  updateRinseWater(ownerId: string, lotId: string, rinseWater: RinseWaterSnapshot): Promise<ExperimentLot>;
   softDeleteLot(ownerId: string, lotId: string): Promise<ExperimentLot>;
   restoreLot(ownerId: string, lotId: string): Promise<ExperimentLot>;
   listObservations(ownerId: string, lotId: string, includeDeleted?: boolean): Promise<Observation[]>;

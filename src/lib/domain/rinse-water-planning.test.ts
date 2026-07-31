@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { minimumPressureSteamMinutes, rinseWaterTotalMl } from "./rinse-water-planning";
+import {
+  buildLowDoseRinseWaterSnapshot,
+  minimumPressureSteamMinutes,
+  rinseWaterTotalMl,
+} from "./rinse-water-planning";
 
 describe("sterile rinse-water planning", () => {
   it.each([
@@ -21,5 +25,16 @@ describe("sterile rinse-water planning", () => {
 
   it("calculates three separate rinse vessels", () => {
     expect(rinseWaterTotalMl(50)).toBe(150);
+  });
+
+  it("locks the no-pressure Haiter rinse to 0.003% independently from the 0.6% explant soak", () => {
+    expect(buildLowDoseRinseWaterSnapshot(50)).toEqual({
+      method: "low-dose-hypochlorite",
+      containerCount: 3,
+      volumePerContainerMl: 50,
+      preparationVolumeMl: 1000,
+      targetChlorinePercent: 0.003,
+      minimumWaitMinutes: 60,
+    });
   });
 });

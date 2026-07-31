@@ -4,7 +4,12 @@ import { useMemo, useState, type FormEvent } from "react";
 
 import { createHaiterActionPlan } from "../../lib/domain/haiter-guidance";
 import { calculateMediumBatchPlan } from "../../lib/domain/medium-batch-calculations";
-import { minimumPressureSteamMinutes, rinseWaterTotalMl } from "../../lib/domain/rinse-water-planning";
+import {
+  buildLowDoseRinseWaterSnapshot,
+  LOW_DOSE_RINSE_TARGET_PERCENT,
+  minimumPressureSteamMinutes,
+  rinseWaterTotalMl,
+} from "../../lib/domain/rinse-water-planning";
 import { validateLotInput } from "../../lib/domain/experiment-validation";
 import type {
   CreateLotInput,
@@ -135,12 +140,12 @@ export function BeginnerLotWizard({
     if (rinseWaterMethod !== "low-dose-hypochlorite") return null;
     return createHaiterActionPlan({
       labelPercent: sourcePercent.trim() ? Number(sourcePercent) : null,
-      targetPercent: Number(targetPercent),
+      targetPercent: LOW_DOSE_RINSE_TARGET_PERCENT,
       mediumVolumeMl: 1000,
       minimumToolVolumeMl: Number(minimumMeasurableMl),
       permittedDiluent: "น้ำสะอาด",
     });
-  }, [minimumMeasurableMl, rinseWaterMethod, sourcePercent, targetPercent]);
+  }, [minimumMeasurableMl, rinseWaterMethod, sourcePercent]);
 
   const equipmentComplete = profile?.equipmentRequirements.every(
     (item) => equipmentReady[item],
@@ -230,14 +235,13 @@ export function BeginnerLotWizard({
           totalVolumeMl: mediumPlan.totalVolumeMl,
         } : undefined,
         rinseWater: profile.method === "haiter-chemical" && rinseWaterMethod
-          ? {
-              method: rinseWaterMethod,
-              containerCount: 3,
-              volumePerContainerMl: Number(rinseWaterVolumePerContainerMl),
-              preparationVolumeMl: rinseWaterMethod === "low-dose-hypochlorite" ? 1000 : undefined,
-              targetChlorinePercent: rinseWaterMethod === "low-dose-hypochlorite" ? Number(targetPercent) : undefined,
-              minimumWaitMinutes: rinseWaterMethod === "low-dose-hypochlorite" ? 60 : undefined,
-            }
+          ? rinseWaterMethod === "low-dose-hypochlorite"
+            ? buildLowDoseRinseWaterSnapshot(Number(rinseWaterVolumePerContainerMl))
+            : {
+                method: rinseWaterMethod,
+                containerCount: 3,
+                volumePerContainerMl: Number(rinseWaterVolumePerContainerMl),
+              }
           : undefined,
         workspace: {
           workspaceType,
@@ -541,7 +545,7 @@ export function BeginnerLotWizard({
               {profile?.method === "haiter-chemical" && rinseWaterMethod ? (
                 <div>
                   <dt>น้ำล้างปลอดเชื้อ</dt>
-                  <dd>{rinseWaterMethod === "low-dose-hypochlorite" ? `น้ำสะอาด + Haiter ${targetPercent}% พัก 60 นาที` : rinseWaterMethod === "commercial-sterile" ? "บรรจุปิดจากผู้ผลิต" : "น้ำกลั่น/DI ผ่านไอน้ำแรงดัน"} · 3 ภาชนะ ภาชนะละ {rinseWaterVolumePerContainerMl} mL</dd>
+                  <dd>{rinseWaterMethod === "low-dose-hypochlorite" ? `น้ำสะอาด + Haiter ${LOW_DOSE_RINSE_TARGET_PERCENT}% พัก 60 นาที` : rinseWaterMethod === "commercial-sterile" ? "บรรจุปิดจากผู้ผลิต" : "น้ำกลั่น/DI ผ่านไอน้ำแรงดัน"} · 3 ภาชนะ ภาชนะละ {rinseWaterVolumePerContainerMl} mL</dd>
                 </div>
               ) : null}
               {haiterPlan && haiterPlan.state !== "blocked" && <div><dt>คำสั่งเตรียม</dt><dd>{haiterPlan.primaryInstruction}</dd></div>}

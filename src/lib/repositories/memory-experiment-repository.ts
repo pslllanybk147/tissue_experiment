@@ -1,4 +1,4 @@
-import type { AuditEvent, CreateLotInput, ExperimentLot, Observation, ObservationInput } from "@/lib/domain/models";
+import type { AuditEvent, CreateLotInput, ExperimentLot, Observation, ObservationInput, RinseWaterSnapshot } from "@/lib/domain/models";
 import type { ExperimentRepository } from "./experiment-repository";
 import { demoStorageKey, readDemoState, writeDemoState } from "./demo-storage";
 
@@ -96,6 +96,20 @@ export function createMemoryExperimentRepository(uid: string, options: Repositor
     return clone(updated);
   }
 
+  async function updateRinseWater(ownerId: string, lotId: string, rinseWater: RinseWaterSnapshot) {
+    assertOwner(ownerId);
+    const current = requireLot(lotId);
+    if (!current.sterilization) throw new Error("Lot has no sterilization profile");
+    const updated: ExperimentLot = {
+      ...current,
+      sterilization: { ...current.sterilization, rinseWater: clone(rinseWater) },
+      updatedAt: now(),
+    };
+    lots.set(lotId, updated);
+    addAudit(lotId, "lot", lotId, "updated", current as unknown as Record<string, unknown>, updated as unknown as Record<string, unknown>);
+    return clone(updated);
+  }
+
   async function restoreLot(ownerId: string, lotId: string) {
     assertOwner(ownerId);
     const current = requireLot(lotId);
@@ -177,6 +191,7 @@ export function createMemoryExperimentRepository(uid: string, options: Repositor
     listLots,
     getLot,
     createLot,
+    updateRinseWater,
     softDeleteLot,
     restoreLot,
     listObservations,

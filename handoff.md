@@ -2739,6 +2739,28 @@
 - push เข้า `master` แล้ว และ Vercel Production deployment `dpl_F7mrHCcXSvedVc9XKHnPBbEywPUC` ขึ้น `READY`
 - Production URL ตอบกลับ HTTP 200: `https://tissue-experiment-93.vercel.app/`
 
+## 2026-07-31 — แก้ Lot ไม่แสดงน้ำล้าง Haiter 0.003%
+
+- Root cause มีสองชั้น:
+  - Lot v2 ที่สร้างก่อนเพิ่ม `rinseWater` ไม่มี snapshot วิธีเตรียมน้ำล้าง จึงตกไปใช้ข้อความกว้าง ๆ ว่า `น้ำล้างปลอดเชื้อจากแหล่งที่บันทึกไว้` แม้โค้ดสำหรับ Lot ใหม่จะมี 0.003% แล้ว
+  - Wizard ใช้ state เปอร์เซ็นต์เดียวกันเป็นฐานให้ทั้งการฆ่าเชื้ออาหารและน้ำล้าง ทำให้มีโอกาสผูกค่าน้ำล้างกับค่าขั้นอื่นในอนาคต แม้ label จะเขียน 0.003%
+- แยกค่าคงที่น้ำล้าง no-autoclave เป็น `LOW_DOSE_RINSE_TARGET_PERCENT = 0.003` และสร้าง snapshot ผ่าน `buildLowDoseRinseWaterSnapshot()` เท่านั้น
+- Lot ใหม่บันทึกน้ำล้างเป็น active chlorine 0.003%, ปริมาตรเตรียม 1,000 mL, 3 ภาชนะ และพัก 60 นาที โดยไม่ใช้ค่าของสารฟอกชิ้นพืช 0.6%
+- เพิ่มแผงซ่อมข้อมูลในหน้า Lot เดิมที่ไม่มี `rinseWater`:
+  - แสดงเหตุผลว่า Lot สร้างก่อนมี field นี้
+  - คำนวณ Haiter จากเปอร์เซ็นต์ฉลากที่บันทึกใน Lot
+  - บันทึกน้ำล้าง 0.003% เข้า Lot เดิมโดยไม่สร้าง Lot ใหม่และไม่ทำขั้นเดิมซ้ำ
+  - หลังบันทึก Guided Protocol สร้างใหม่จาก snapshot และแสดงคำสั่ง 0.003%
+- เพิ่ม repository mutation `updateRinseWater` ทั้ง memory และ Firestore พร้อม audit action `updated`
+- เพิ่ม regression tests ครอบคลุม snapshot 0.003%, การซ่อม Lot เดิม, Firestore persistence และแผง UI
+- เพิ่ม sandbox assertion ให้สร้าง Lot ผ่าน Wizard จริงทุก viewport แล้วตรวจว่าขั้นเตรียมน้ำแสดง `active chlorine 0.003%` และ `Haiter จากขวด 0.500 mL`
+- Verification รอบนี้:
+  - `npm test`: ผ่าน 304 tests, skip 10 เมื่อไม่เปิด emulator
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+  - `npm run firebase:verify`: ผ่าน 314 tests ทั้งหมด
+  - `npm run ui:verify`: ผ่าน 14 viewport 360–1920px พร้อมสร้าง Lot และตรวจคำสั่งน้ำล้าง 0.003% ใน Protocol จริง
+
 ## 2026-07-31 — แหล่งน้ำล้างสำหรับวิธี Haiter แบบไม่ใช้หม้อนึ่ง
 
 - Root cause: Protocol v2 แสดงเพียง `น้ำล้างปลอดเชื้อ 1–3` แต่ไม่บอกว่าน้ำมาจากไหน ทำให้ผู้ใช้ที่ไม่มี autoclave ทำต่อไม่ได้

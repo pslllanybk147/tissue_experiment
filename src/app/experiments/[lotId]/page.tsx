@@ -9,6 +9,7 @@ import { AuthGate } from "@/components/auth/auth-gate";
 import { useAuth } from "@/components/auth/auth-provider";
 import { AuditHistory } from "@/components/experiments/audit-history";
 import { ObservationTimeline } from "@/components/experiments/observation-timeline";
+import { RinseWaterRepairPanel } from "@/components/experiments/rinse-water-repair-panel";
 import { LabShell } from "@/components/lab/lab-shell";
 import { LinearProtocolRunnerV2 } from "@/components/protocols/linear-protocol-runner-v2";
 import type { LotRecipePlan } from "@/components/protocols/inline-lot-recipe";
@@ -95,6 +96,11 @@ export default function ExperimentDetailPage() {
   useEffect(()=>{let active=true;Promise.all(observations.map(async item=>[item.id,await mediaRepository.list(ownerId,lotId,item.id,true)]as const)).then(entries=>{if(active)setMedia(Object.fromEntries(entries))}).catch(()=>undefined);return()=>{active=false}},[observations,lotId,mediaRepository,ownerId,showDeleted]);
   async function deleteLot() { if (!lot || !window.confirm(`เก็บ Lot ${lot.id} เข้าถังขยะ? ข้อมูลจะยังอยู่และกู้คืนได้`)) return; await repository.softDeleteLot(ownerId, lotId); await load(); }
   async function restoreLot() { await repository.restoreLot(ownerId, lotId); await load(); }
+  async function saveRinseWater(rinseWater: NonNullable<ExperimentLot["sterilization"]>["rinseWater"]) {
+    if (!rinseWater) return;
+    await repository.updateRinseWater(ownerId, lotId, rinseWater);
+    await load();
+  }
   async function saveStepRunV2(input: Omit<ProtocolStepRun, "id" | "ownerId" | "updatedAt">) {
     await stepRunRepository.save(ownerId, input);
     setStepRuns(await stepRunRepository.list(ownerId, lotId));
@@ -114,6 +120,7 @@ export default function ExperimentDetailPage() {
       <header className="lot-detail-heading"><div><p className="eyebrow">EXPERIMENT LOT</p><h1>{lot.id}</h1><p>{lot.plant} · {lot.protocolTitle}</p></div><div className="route-actions">{lot.deletedAt ? <button className="primary-button" onClick={() => void restoreLot()} type="button">กู้คืน Lot</button> : <button className="quiet-button" onClick={() => void deleteLot()} type="button">เก็บเข้าถังขยะ</button>}<span className={`badge badge-${lot.status.toLowerCase().replaceAll(" ", "-")}`}>{lot.status}</span></div></header>
       <div className="lot-detail-grid">
         <section className="lot-work-column">
+          <RinseWaterRepairPanel lot={lot} onSave={saveRinseWater} />
           {protocolVersion && guidedStepsV2 && <section className="experiment-surface protocol-lot-runner protocol-lot-runner-v2"><LinearProtocolRunnerV2 lotId={lotId} protocolId={lot.protocolId} versionId={protocolVersion.id} steps={guidedStepsV2} runs={stepRuns} onSave={saveStepRunV2} onSaveMany={saveStepRunsV2} recipePlan={recipePlan} /></section>}
           {!guidedStepsV2 && <section className="experiment-surface migration-state" role="alert"><p className="eyebrow">ประวัติ LOT</p><h2>Lot นี้ใช้คู่มือรุ่นเดิม</h2><p>ระบบเก็บข้อมูลเดิมไว้อ่านอย่างเดียวและจะไม่เดาหรือย้ายสถานะขั้นเก่าเข้าคู่มือใหม่</p><Link className="primary-button" href={`/experiments/new?plant=${encodeURIComponent(lot.plant)}${lot.taxonId ? `&taxon=${encodeURIComponent(lot.taxonId)}` : ""}`}>สร้าง Lot v2 ใหม่</Link></section>}
           <div className="timeline-heading"><div><p className="eyebrow">LOT HISTORY</p><h2>ประวัติเดิม</h2></div><label><input checked={showDeleted} onChange={(e) => setShowDeleted(e.target.checked)} type="checkbox" /> แสดงรายการที่ลบ</label></div>

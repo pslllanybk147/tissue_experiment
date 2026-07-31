@@ -1,6 +1,6 @@
 import { collection, doc, getDoc, getDocs, writeBatch, type Firestore } from "firebase/firestore";
 
-import type { AuditEvent, CreateLotInput, ExperimentLot, Observation, ObservationInput } from "@/lib/domain/models";
+import type { AuditEvent, CreateLotInput, ExperimentLot, Observation, ObservationInput, RinseWaterSnapshot } from "@/lib/domain/models";
 import { normalizeExperimentLot } from "../domain/experiment-migration";
 import type { ExperimentRepository } from "@/lib/repositories/experiment-repository";
 import { getFirebaseServices } from "./client";
@@ -148,6 +148,19 @@ export function createFirestoreExperimentRepository(uid: string, options: Reposi
     return lot;
   }
 
+  async function updateRinseWater(ownerId: string, lotId: string, rinseWater: RinseWaterSnapshot) {
+    assertOwner(ownerId);
+    const before = await requireLot(lotId);
+    if (!before.sterilization) throw new Error("Lot has no sterilization profile");
+    const lot = removeUndefined<ExperimentLot>({
+      ...before,
+      sterilization: { ...before.sterilization, rinseWater },
+      updatedAt: now(),
+    });
+    await adapter.commitLotMutation(lot, audit(lotId, "lot", lotId, "updated", snapshot(before), snapshot(lot)));
+    return lot;
+  }
+
   async function restoreLot(ownerId: string, lotId: string) {
     assertOwner(ownerId);
     const before = await requireLot(lotId);
@@ -235,6 +248,7 @@ export function createFirestoreExperimentRepository(uid: string, options: Reposi
     listLots,
     getLot,
     createLot,
+    updateRinseWater,
     softDeleteLot,
     restoreLot,
     listObservations,

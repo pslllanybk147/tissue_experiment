@@ -354,6 +354,11 @@ async function verifyWizard(page, viewportName) {
           && stepText.includes("น้ำล้าง 3"),
         `${viewportName}: ขั้นเตรียมน้ำไม่แยกน้ำล้าง 3 ภาชนะอย่างชัดเจน`,
       );
+      assert(
+        stepText.includes("active chlorine 0.003%")
+          && stepText.includes("Haiter จากขวด 0.500 mL"),
+        `${viewportName}: Lot ใหม่ไม่ได้แยกน้ำล้าง 0.003% ออกจากสารฟอกชิ้นพืช`,
+      );
     }
   }
 }

@@ -15,6 +15,14 @@ const lotInput: CreateLotInput = {
   stage: "Establishment",
   status: "Healthy",
   startedAt: "2026-07-22",
+  workflowVersion: "v2",
+  sterilization: {
+    profileId: "haiter-no-pressure-v1",
+    profileVersion: "1.0.0",
+    method: "haiter-chemical",
+    activeChlorinePercent: 6,
+    targetChlorinePercent: 0.003,
+  },
 };
 
 const observationInput: ObservationInput = {
@@ -79,6 +87,20 @@ describe("Firestore experiment repository contract", () => {
     const restored = await repository.restoreLot("owner-1", "PPP-001");
     expect(restored.deletedAt).toBeNull();
     expect((await repository.listLots("owner-1"))[0].id).toBe("PPP-001");
+  });
+
+  it("persists a rinse-water repair for an existing lot", async () => {
+    const { repository, audits } = harness();
+    const updated = await repository.updateRinseWater("owner-1", "PPP-001", {
+      method: "low-dose-hypochlorite",
+      containerCount: 3,
+      volumePerContainerMl: 50,
+      preparationVolumeMl: 1000,
+      targetChlorinePercent: 0.003,
+      minimumWaitMinutes: 60,
+    });
+    expect(updated.sterilization?.rinseWater?.targetChlorinePercent).toBe(0.003);
+    expect(audits.at(-1)).toMatchObject({ action: "updated", after: { id: "PPP-001" } });
   });
 
   it("pairs created observation and audit in one adapter mutation", async () => {

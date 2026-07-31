@@ -11,6 +11,14 @@ const lot: CreateLotInput = {
   stage: "Establishment",
   status: "Healthy",
   startedAt: "2026-07-22",
+  workflowVersion: "v2",
+  sterilization: {
+    profileId: "haiter-no-pressure-v1",
+    profileVersion: "1.0.0",
+    method: "haiter-chemical",
+    activeChlorinePercent: 6,
+    targetChlorinePercent: 0.003,
+  },
 };
 
 const observation: ObservationInput = {
@@ -57,6 +65,22 @@ describe("memory experiment repository", () => {
     const restored = await repo.restoreLot("owner-1", lot.id);
     expect(restored.deletedAt).toBeNull();
     expect((await repo.listLots("owner-1"))[0].id).toBe(lot.id);
+  });
+
+  it("adds a missing rinse-water plan to an existing lot without recreating it", async () => {
+    const repo = repository();
+    await repo.createLot("owner-1", lot);
+    const updated = await repo.updateRinseWater("owner-1", lot.id, {
+      method: "low-dose-hypochlorite",
+      containerCount: 3,
+      volumePerContainerMl: 50,
+      preparationVolumeMl: 1000,
+      targetChlorinePercent: 0.003,
+      minimumWaitMinutes: 60,
+    });
+    expect(updated.sterilization?.rinseWater?.targetChlorinePercent).toBe(0.003);
+    expect((await repo.getLot("owner-1", lot.id))?.sterilization?.rinseWater?.method).toBe("low-dose-hypochlorite");
+    expect((await repo.listAuditEvents("owner-1", lot.id)).at(-1)).toMatchObject({ action: "updated" });
   });
 
   it("creates an observation and matching audit event", async () => {
