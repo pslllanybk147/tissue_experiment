@@ -2763,7 +2763,10 @@
   - `npm run build`: ผ่าน
   - `npm run firebase:verify`: ผ่าน 309 tests ทั้งหมด
   - `npm run ui:verify`: ผ่านครบ 14 viewport 360, 375, 390, 412, 428, 600, 744, 768, 820, 834, 1024, 1280, 1440 และ 1920px โดยสร้าง Lot แบบ Haiter + น้ำล้าง no-autoclave และตรวจ Protocol 14 ขั้นจริง
-- Deployment ID และสถานะ Production ให้เติมหลัง push `master`
+- Implementation commit: `29a674b` (`Add no-autoclave rinse water workflow`)
+- push เข้า `master` แล้ว
+- GitHub/Vercel Production deployment `5693655558` ขึ้น `success`; deployment URL `https://tissue-experiment-93-p6y2yaiz1-pslllanybk-2845s-projects.vercel.app`
+- Production URL ตอบกลับ HTTP 200: `https://tissue-experiment-93.vercel.app/`
 
 ## 2026-07-31 — แก้ความถูกต้องเชิงความหมายของวัสดุ Protocol v2 ครบ 14 ขั้น
 
