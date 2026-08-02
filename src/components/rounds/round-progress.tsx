@@ -29,6 +29,10 @@ export function RoundProgress({ view }: { view: RoundView }) {
         {view.steps.map((step) => {
           const number = step.order + 1;
           const isCurrent = number === view.currentStepNumber;
+          // แสดงชื่อที่ผู้ใช้อ่านออก ไม่ใช่ id ภายในของช่องวัด
+          const recorded = step.measurements
+            .filter((measurement) => step.state.measurements[measurement.id] != null)
+            .map((measurement) => `${measurement.label} ${step.state.measurements[measurement.id]} ${measurement.unit}`);
           return (
             <li key={step.id}>
               <Link
@@ -50,11 +54,9 @@ export function RoundProgress({ view }: { view: RoundView }) {
                     {step.state.note}
                   </p>
                 ) : null}
-                {Object.entries(step.state.measurements).length > 0 ? (
+                {recorded.length > 0 ? (
                   <p className="pl-mono" style={{ marginTop: "6px", color: isCurrent ? "var(--pl-chip-ink)" : undefined }}>
-                    {Object.entries(step.state.measurements)
-                      .map(([id, value]) => `${id} ${value ?? "ไม่ได้บันทึก"}`)
-                      .join(" · ")}
+                    {recorded.join(" · ")}
                   </p>
                 ) : null}
                 {!isCurrent ? (

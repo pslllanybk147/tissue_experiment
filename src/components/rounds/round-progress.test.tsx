@@ -64,4 +64,16 @@ describe("RoundProgress", () => {
 
     expect(html).toContain("ถ่ายรูปครบแล้ว");
   });
+
+  it("แสดงค่าที่วัดด้วยชื่อที่คนอ่านออก ไม่ใช่ id ภายใน", () => {
+    const withMeasurement = buildRoundView(
+      lot,
+      [{ ...passedReceive, stepId: "sterilize", measurements: { "sterilize-minutes": 12 } }],
+      manual,
+    );
+    const html = renderToStaticMarkup(<RoundProgress view={withMeasurement} />);
+
+    expect(html).toContain("เวลาฟอกที่ใช้จริง 12 min");
+    expect(html).not.toContain("sterilize-minutes");
+  });
 });

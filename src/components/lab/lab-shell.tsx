@@ -28,7 +28,7 @@ export function LabShell({ children, section, sessionLabel, onSignOut }: LabShel
   return (
     <div className={`lab-route-shell${menuOpen ? " menu-open" : ""}`}>
       <aside className="lab-route-sidebar">
-        <Link className="lab-route-brand" href="/"><span>PL</span><strong>Philodendron Lab</strong></Link>
+        <Link className="lab-route-brand" href="/"><span>PL</span><strong>Plantlover Lab</strong></Link>
         <nav aria-label="เมนูหลัก" className="lab-route-nav">
           {destinations.map((item) => <Link aria-current={section === item.label ? "page" : undefined} className={section === item.label ? "active" : ""} href={item.href} key={item.href}>{item.text}</Link>)}
         </nav>
@@ -37,7 +37,7 @@ export function LabShell({ children, section, sessionLabel, onSignOut }: LabShel
       <div className="lab-route-workspace">
         <header className="lab-route-topbar">
           <button aria-controls="lab-route-mobile-nav" aria-expanded={menuOpen} aria-label={menuOpen ? "ปิดเมนูหลัก" : "เปิดเมนูหลัก"} className="lab-route-menu-toggle" onClick={() => setMenuOpen((open) => !open)} type="button"><span aria-hidden="true" /><span aria-hidden="true" /><span aria-hidden="true" /></button>
-          <Link className="lab-route-mobile-brand" href="/">PL <span>Philodendron Lab</span></Link>
+          <Link className="lab-route-mobile-brand" href="/">PL <span>Plantlover Lab</span></Link>
           <span className={`session-chip ${sessionLabel === "DEMO" ? "demo" : "authenticated"}`}>{sessionLabel}</span>
           <button className="mobile-sign-out" type="button" onClick={onSignOut}>ออก</button>
         </header>
