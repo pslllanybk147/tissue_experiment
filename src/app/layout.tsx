@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, IBM_Plex_Mono, IBM_Plex_Sans_Thai, Noto_Sans_Thai } from "next/font/google";
 import { AuthProvider } from "@/components/auth/auth-provider";
+import { ThemeScript } from "@/components/guide/theme-script";
 import "./globals.css";
 import "./guide.css";
 
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="th" className={fontVars} suppressHydrationWarning>
       <body>
+        <ThemeScript />
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
