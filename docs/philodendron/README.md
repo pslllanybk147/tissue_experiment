@@ -30,3 +30,5 @@
 - [Violin variegated](./violin-variegated.md)
 
 เนื้อหาฉบับเดียวกันในเว็บอยู่ที่ `/knowledge` และ `/knowledge/taxa/{taxonId}`
+
+แหล่งความจริงของเนื้อหาคู่มือคือ `src/lib/manual/` เอกสารในโฟลเดอร์นี้เป็นบทสรุปสำหรับอ่าน ไม่ใช่ต้นฉบับ ตรวจคู่มือที่ประกอบเสร็จแล้วได้ที่ `/admin/manual/{slug}`
