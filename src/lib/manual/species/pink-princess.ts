@@ -36,15 +36,15 @@ export const pinkPrincessPack: PlantPack = {
     multiply: {
       evidence: {
         level: "species-direct",
-        sourceIds: ["source-pp-2023"],
-        note: "BAP 1.0 mg/L เดี่ยวให้ยอดมากที่สุด รายงาน 11.2 ยอดต่อชิ้นในอาหารเหลว",
+        sourceIds: ["source-pp-2023", "source-pp-thai-2023"],
+        note: "งานปี 2023 รายงานว่า BAP 1.0 mg/L เดี่ยวให้ยอดมากที่สุด คือ 11.2 ยอดต่อชิ้นในอาหารเหลว และงานไทยได้ผลไปทางเดียวกันคือ BA 1 ถึง 2 mg/L ให้ยอดมากที่สุด สองงานนี้จึงยืนยันกันเอง",
       },
     },
     root: {
       evidence: {
         level: "species-direct",
-        sourceIds: ["source-pp-2023"],
-        note: "IBA 3.0 mg/L ให้ 3.2 รากต่อชิ้น และรากยาว 1.9 เซนติเมตร",
+        sourceIds: ["source-pp-2023", "source-pp-thai-2023"],
+        note: "สองงานใช้ออกซินคนละตัว งานปี 2023 ใช้ IBA 3.0 mg/L ได้ 3.2 รากต่อชิ้น รากยาว 1.9 เซนติเมตร ส่วนงานไทยใช้ NAA 4.0 mg/L ระบบเก็บไว้ทั้งสองสูตรและยังไม่ตัดสินว่าอันไหนดีกว่า ให้เลือกตามสารที่มีแล้วบันทึกผลจริง",
       },
     },
     monitor: {
@@ -96,8 +96,24 @@ export const pinkPrincessPack: PlantPack = {
       ],
       evidence: { level: "species-direct", sourceIds: ["source-pp-2023"] },
     },
+    {
+      id: "rooting-naa",
+      title: "ระยะออกราก ทางเลือกที่ใช้ NAA",
+      pH: "5.7 ถึง 5.8",
+      ingredients: [
+        { name: "MS basal salts", amountPerLiter: 1, unit: "×" },
+        { name: "Sucrose", amountPerLiter: 30, unit: "g/L" },
+        { name: "Agar", amountPerLiter: 7.5, unit: "g/L" },
+        { name: "NAA", amountPerLiter: 4, unit: "mg/L", note: "ใช้น้ำยาแม่" },
+      ],
+      evidence: {
+        level: "species-direct",
+        sourceIds: ["source-pp-thai-2023"],
+        note: "งานไทยพบว่า NAA 4 mg/L ให้จำนวนรากมากที่สุดในการทดสอบของเขา เป็นคนละสารกับ IBA ที่งานปี 2023 ใช้ ยังไม่มีงานใดเปรียบเทียบสองสารนี้โดยตรง",
+      },
+    },
   ],
-  sourceIds: ["source-pp-2023", "source-pp-2025", "source-kew-philodendron"],
+  sourceIds: ["source-pp-2023", "source-pp-2025", "source-pp-thai-2023", "source-kew-philodendron"],
 };
 
 export { fullSequence as standardSequence };

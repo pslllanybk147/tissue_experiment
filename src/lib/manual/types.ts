@@ -32,6 +32,18 @@ export type MediaRecipe = {
   evidence: EvidenceRef;
 };
 
+/** อาการที่ผู้ใช้อาจเจอในขั้นหนึ่ง พร้อมวิธีแยกสาเหตุและสิ่งที่ต้องทำต่อ
+ *  เก็บในคลังกลางเพราะอาการส่วนใหญ่ไม่ผูกกับชนิดพืช */
+export type TroubleshootingEntry = {
+  id: string;
+  symptom: string;
+  likelyCause: string;
+  /** วิธีแยกจากอาการอื่นที่หน้าตาคล้ายกันแต่วิธีแก้ต่างกัน */
+  distinguish?: string;
+  actions: string[];
+  evidence: EvidenceRef;
+};
+
 export type ManualStepDef = {
   id: string;
   title: string;
@@ -45,6 +57,8 @@ export type ManualStepDef = {
   measurements: Measurement[];
   evidence: EvidenceRef;
   illustrationId?: string;
+  /** อ้างถึงคลังอาการกลาง resolve ตอน render เหมือนที่ sourceIds ทำ */
+  troubleshootingIds?: string[];
   durationMinutes: number | null;
 };
 

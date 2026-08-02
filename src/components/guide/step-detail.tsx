@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { sourceById } from "@/lib/manual/sources";
+import { troubleshootingById } from "@/lib/manual/troubleshooting";
 import type { ResolvedManual, ResolvedStep } from "@/lib/manual/types";
 import { EvidenceBadge } from "./evidence-badge";
 import { Illustration } from "./illustrations";
@@ -12,6 +13,35 @@ function List({ title, items }: { title: string; items: string[] }) {
       <ul style={{ margin: "8px 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "6px" }}>
         {items.map((item) => <li key={item}>{item}</li>)}
       </ul>
+    </section>
+  );
+}
+
+function Troubleshooting({ ids }: { ids: string[] }) {
+  const entries = ids.map((id) => troubleshootingById(id)).filter((entry) => entry !== null);
+  if (entries.length === 0) return null;
+
+  return (
+    <section style={{ marginTop: "26px" }}>
+      <h2 className="pl-h2">ถ้าเจออาการแบบนี้</h2>
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "10px" }}>
+        {entries.map((entry) => (
+          <article className="pl-card" key={entry.id} style={{ background: "var(--pl-sunk)" }}>
+            <p style={{ margin: 0, fontWeight: 700 }}>{entry.symptom}</p>
+            <p className="pl-lede" style={{ marginTop: "8px" }}>{entry.likelyCause}</p>
+            {entry.distinguish ? (
+              <p className="pl-lede" style={{ marginTop: "8px" }}>
+                <strong>วิธีแยกจากอาการที่คล้ายกัน</strong> {entry.distinguish}
+              </p>
+            ) : null}
+            <h3 className="pl-mono" style={{ marginTop: "12px" }}>ทำอะไรต่อ</h3>
+            <ol style={{ margin: "6px 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "6px" }}>
+              {entry.actions.map((action) => <li key={action}>{action}</li>)}
+            </ol>
+            <p style={{ marginTop: "12px" }}><EvidenceBadge level={entry.evidence.level} /></p>
+          </article>
+        ))}
+      </div>
     </section>
   );
 }
@@ -59,6 +89,8 @@ export function StepDetail({ manual, step }: { manual: ResolvedManual; step: Res
 
       <List title="ผ่านเมื่อ" items={step.passCriteria} />
       <List title="หยุดทันทีถ้า" items={step.stopConditions} />
+
+      <Troubleshooting ids={step.troubleshootingIds ?? []} />
 
       {step.evidence.note ? (
         <section style={{ marginTop: "18px" }}>

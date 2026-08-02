@@ -95,6 +95,7 @@ export const coreSteps: Record<string, ManualStepDef> = {
     measurements: [{ id: "explant-length", label: "ความยาวชิ้นพืช", unit: "count", required: true, min: 1 }],
     evidence: { level: "adapted", sourceIds: ["source-uf-shoot-cultures"] },
     illustrationId: "cut-explant",
+    troubleshootingIds: ["browning-phenolic"],
     durationMinutes: 20,
   },
   "prep-media": {
@@ -127,6 +128,7 @@ export const coreSteps: Record<string, ManualStepDef> = {
     why: "ฟอกอ่อนไปจะมีเชื้อขึ้นในกระปุก ฟอกแรงไปเนื้อเยื่อจะตาย จุดสมดุลต่างกันตามชนิดและความสดของชิ้นพืช",
     materials: ["สารฟอกตามที่ระบบจัดให้", "น้ำปลอดเชื้อสำหรับล้าง", "ภาชนะแช่", "ตัวจับเวลา"],
     actions: [
+      "อ่านฉลากว่าน้ำยามีโซเดียมไฮโปคลอไรต์กี่เปอร์เซ็นต์ แล้วคำนวณให้ได้คลอรีนออกฤทธิ์ 0.5 ถึง 1.0 เปอร์เซ็นต์",
       "เทสารฟอกที่เจือจางแล้วลงภาชนะ ใส่ชิ้นพืชให้จมทั้งหมด",
       "เริ่มจับเวลาหลังใส่ชิ้นสุดท้ายลงไปแล้วเท่านั้น",
       "ครบเวลาแล้วล้างด้วยน้ำปลอดเชื้อ 3 รอบ รอบละประมาณหนึ่งนาที",
@@ -136,14 +138,21 @@ export const coreSteps: Record<string, ManualStepDef> = {
     stopConditions: ["ชิ้นพืชเปลี่ยนเป็นสีขาวซีด", "ชิ้นพืชเปื่อยยุ่ยจนจับไม่ได้"],
     safetyNotes: [
       "ห้ามผสมสารฟอกกับกรด แอมโมเนีย หรือแอลกอฮอล์ เพราะเกิดแก๊สพิษ",
+      "ถ้าจะใช้สารต้านการเกิดสีน้ำตาลต่อ ต้องล้างสารฟอกออกให้หมดก่อน เพราะสารเหล่านั้นเป็นกรดและจะทำปฏิกิริยากับสารฟอกที่ค้างอยู่",
       "ทำในที่อากาศถ่ายเท และสวมแว่นตานิรภัย",
     ],
     measurements: [
+      { id: "active-chlorine-percent", label: "คลอรีนออกฤทธิ์ที่ใช้จริง", unit: "%", required: true, min: 0.05, max: 5 },
       { id: "sterilize-minutes", label: "เวลาฟอกที่ใช้จริง", unit: "min", required: true, min: 1 },
       { id: "sterile-rinses", label: "จำนวนรอบที่ล้าง", unit: "count", required: true, min: 1 },
     ],
-    evidence: { level: "unsupported", sourceIds: [], note: "เวลาและความเข้มข้นต้องมาจากแผ่นเสริมรายชนิด แกนกลางไม่ให้ตัวเลข" },
+    evidence: {
+      level: "adapted",
+      sourceIds: ["source-sigma-explant-sterilization", "source-anthurium-review-2010"],
+      note: "ช่วงคลอรีนออกฤทธิ์ 0.5 ถึง 1.0 เปอร์เซ็นต์ เป็นจุดตั้งต้นจากคู่มือมาตรฐานและจากงานในวงศ์ Araceae ที่ใช้น้ำยาฟอกขาวเชิงพาณิชย์ 20 เปอร์เซ็นต์ v/v ซึ่งมี NaOCl 5 เปอร์เซ็นต์ นาน 12 นาที ตัวเลขที่แน่นอนของแต่ละพันธุ์ต้องมาจากแผ่นเสริม",
+    },
     illustrationId: "sterilize-timer",
+    troubleshootingIds: ["browning-bleach-damage", "browning-phenolic"],
     durationMinutes: 30,
   },
   initiate: {
@@ -187,6 +196,7 @@ export const coreSteps: Record<string, ManualStepDef> = {
     ],
     evidence: { level: "adapted", sourceIds: ["source-merck-media-sterilization"] },
     illustrationId: "contamination-compare",
+    troubleshootingIds: ["contamination-fungal", "contamination-bacterial", "browning-phenolic"],
     durationMinutes: 10080,
   },
   multiply: {

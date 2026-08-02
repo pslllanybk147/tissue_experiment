@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { coreSteps } from "./core-steps";
+import { troubleshootingById } from "./troubleshooting";
 
 describe("coreSteps", () => {
   it("มีขั้นครบ 14 ขั้นตามลำดับมาตรฐาน", () => {
@@ -50,5 +51,31 @@ describe("coreSteps", () => {
 
     expect(sterilize.safetyNotes.join(" ")).toContain("แอมโมเนีย");
     expect(sterilize.measurements.some((item) => item.id === "sterilize-minutes" && item.required)).toBe(true);
+  });
+
+  it("ขั้นที่ตัดหรือฟอกหรือตรวจเชื้อ ต้องมีอาการผูกไว้ให้ผู้ใช้วินิจฉัยต่อได้", () => {
+    for (const id of ["cut", "sterilize", "check-contamination"]) {
+      expect(coreSteps[id].troubleshootingIds?.length, `${id} ต้องมีอาการผูกไว้`).toBeGreaterThan(0);
+    }
+  });
+
+  it("ทุก troubleshootingId ที่อ้างถึงต้องมีอยู่จริงในคลังกลาง", () => {
+    for (const [id, step] of Object.entries(coreSteps)) {
+      for (const entryId of step.troubleshootingIds ?? []) {
+        expect(troubleshootingById(entryId), `${id} อ้าง ${entryId} ที่ไม่มีในคลัง`).not.toBeNull();
+      }
+    }
+  });
+
+  it("ขั้นฟอกบันทึกคลอรีนออกฤทธิ์เป็นเปอร์เซ็นต์ ไม่ใช่สัดส่วนน้ำยาลอย ๆ", () => {
+    const measurement = coreSteps.sterilize.measurements.find((item) => item.id === "active-chlorine-percent");
+
+    expect(measurement, "ต้องมีช่องบันทึกคลอรีนออกฤทธิ์").toBeDefined();
+    expect(measurement!.unit).toBe("%");
+    expect(coreSteps.sterilize.actions.join(" ")).toContain("คลอรีนออกฤทธิ์");
+  });
+
+  it("เตือนไม่ให้ใช้สารต้านออกซิเดชันซึ่งเป็นกรดต่อจากสารฟอกโดยไม่ล้าง", () => {
+    expect(coreSteps.sterilize.safetyNotes.join(" ")).toContain("กรด");
   });
 });

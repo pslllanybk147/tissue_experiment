@@ -243,7 +243,28 @@ function CloseRound() {
   );
 }
 
+function BrowningCompare() {
+  return (
+    <Frame tone="var(--pl-sunk)">
+      {/* ซ้าย ฟอกแรงเกิน ชิ้นซีดขาวและขอบละลาย */}
+      <rect x="26" y="34" width="122" height="88" rx="10" fill="var(--pl-card)" />
+      <path d="M87 104V70" />
+      <path d="M87 82c-14 0-21-8-21-16 12-3 21 5 21 16z" fill="var(--pl-card)" strokeDasharray="5 5" />
+      <path d="M46 58h20M112 58h20" strokeWidth="2.5" />
+      {/* ขวา ฟีนอลิก รอยตัดดำและลามลงวุ้น */}
+      <rect x="172" y="34" width="122" height="88" rx="10" fill="var(--pl-card)" />
+      <rect x="180" y="96" width="106" height="18" rx="4" fill="var(--pl-leaf)" />
+      <path d="M233 96V70" />
+      <path d="M233 82c-14 0-21-8-21-16 12-3 21 5 21 16z" fill="var(--pl-leaf)" />
+      <circle cx="233" cy="96" r="11" fill="var(--pl-ink)" stroke="none" />
+      <circle cx="233" cy="96" r="11" />
+      <path d="M160 58v40" strokeDasharray="6 7" />
+    </Frame>
+  );
+}
+
 export const illustrations: Record<string, () => ReactElement> = {
+  "browning-compare": BrowningCompare,
   "receive-baseline": ReceiveBaseline,
   "quarantine-check": QuarantineCheck,
   "identify-compare": IdentifyCompare,
