@@ -1,0 +1,227 @@
+:root {
+  --pl-paper: #fdf6e8;
+  --pl-card: #ffffff;
+  --pl-sunk: #f3ecdc;
+  --pl-ink: #1d1a15;
+  --pl-ink-2: #4d463a;
+  --pl-ink-3: #7b7263;
+  --pl-line: #1d1a15;
+  --pl-shadow: #1d1a15;
+  --pl-chip-ink: #1d1a15;
+  --pl-yellow: #ffd23f;
+  --pl-green: #65c893;
+  --pl-pink: #e39ec4;
+  --pl-sky: #cfe8f5;
+  --pl-red: #e8705a;
+  --pl-stop: #ffdcd5;
+  --pl-leaf: #6f9a52;
+  --pl-agar: #a8e6c1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --pl-paper: #17150f;
+    --pl-card: #221e17;
+    --pl-sunk: #2b261d;
+    --pl-ink: #f4efe3;
+    --pl-ink-2: #c6bda9;
+    --pl-ink-3: #948b79;
+    --pl-line: #f4efe3;
+    --pl-shadow: #000000;
+    --pl-chip-ink: #1d1a15;
+    --pl-yellow: #e0b52e;
+    --pl-green: #4fa877;
+    --pl-pink: #c47ba2;
+    --pl-sky: #2f4d5e;
+    --pl-red: #e08b76;
+    --pl-stop: #3d1f18;
+    --pl-leaf: #7ca85e;
+    --pl-agar: #3f7a58;
+  }
+}
+
+:root[data-theme="dark"] {
+  --pl-paper: #17150f;
+  --pl-card: #221e17;
+  --pl-sunk: #2b261d;
+  --pl-ink: #f4efe3;
+  --pl-ink-2: #c6bda9;
+  --pl-ink-3: #948b79;
+  --pl-line: #f4efe3;
+  --pl-shadow: #000000;
+  --pl-chip-ink: #1d1a15;
+  --pl-yellow: #e0b52e;
+  --pl-green: #4fa877;
+  --pl-pink: #c47ba2;
+  --pl-sky: #2f4d5e;
+  --pl-red: #e08b76;
+  --pl-stop: #3d1f18;
+  --pl-leaf: #7ca85e;
+  --pl-agar: #3f7a58;
+}
+
+:root[data-theme="light"] {
+  --pl-paper: #fdf6e8;
+  --pl-card: #ffffff;
+  --pl-sunk: #f3ecdc;
+  --pl-ink: #1d1a15;
+  --pl-ink-2: #4d463a;
+  --pl-ink-3: #7b7263;
+  --pl-line: #1d1a15;
+  --pl-shadow: #1d1a15;
+  --pl-chip-ink: #1d1a15;
+  --pl-yellow: #ffd23f;
+  --pl-green: #65c893;
+  --pl-pink: #e39ec4;
+  --pl-sky: #cfe8f5;
+  --pl-red: #e8705a;
+  --pl-stop: #ffdcd5;
+  --pl-leaf: #6f9a52;
+  --pl-agar: #a8e6c1;
+}
+
+.pl-root {
+  min-height: 100vh;
+  background: var(--pl-paper);
+  color: var(--pl-ink);
+  font-family: var(--font-plex), "Noto Sans Thai", Tahoma, sans-serif;
+  line-height: 1.6;
+}
+
+.pl-skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--pl-yellow);
+  color: var(--pl-chip-ink);
+  padding: 10px 16px;
+  border: 2.5px solid var(--pl-line);
+  border-radius: 10px;
+  font-weight: 700;
+  z-index: 10;
+}
+
+.pl-skip:focus {
+  left: 12px;
+  top: 12px;
+}
+
+.pl-wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0 18px 72px;
+}
+
+.pl-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 0 22px;
+}
+
+.pl-brand {
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+  color: var(--pl-ink);
+  text-decoration: none;
+}
+
+.pl-bar-spacer {
+  margin-left: auto;
+}
+
+.pl-card {
+  background: var(--pl-card);
+  border: 2.5px solid var(--pl-line);
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 5px 5px 0 var(--pl-shadow);
+}
+
+.pl-chip {
+  display: inline-block;
+  border: 2.5px solid var(--pl-line);
+  border-radius: 20px;
+  padding: 3px 11px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--pl-chip-ink);
+  box-shadow: 2px 2px 0 var(--pl-shadow);
+}
+
+.pl-chip-direct {
+  background: var(--pl-green);
+}
+
+.pl-chip-adapted {
+  background: var(--pl-yellow);
+}
+
+.pl-chip-unsupported {
+  background: var(--pl-red);
+}
+
+.pl-h1 {
+  font-size: clamp(26px, 5vw, 38px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin: 0 0 8px;
+  text-wrap: balance;
+}
+
+.pl-h2 {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+}
+
+.pl-lede {
+  color: var(--pl-ink-2);
+  margin: 0;
+}
+
+.pl-meta {
+  color: var(--pl-ink-3);
+  font-size: 13px;
+  margin: 0;
+}
+
+/* ป้ายกำกับขนาดเล็ก ตั้งใจไม่ใช้ letter-spacing และไม่ใช้ uppercase
+   เพราะภาษาไทยมีสระบนล่าง การถ่างอักษรทำให้อ่านยากและ uppercase ไม่มีผลกับไทย */
+.pl-mono {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pl-ink-3);
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+
+.pl-when-light { display: inline; }
+.pl-when-dark { display: none; }
+
+@media (prefers-color-scheme: dark) {
+  .pl-when-light { display: none; }
+  .pl-when-dark { display: inline; }
+}
+
+:root[data-theme="dark"] .pl-when-light { display: none; }
+:root[data-theme="dark"] .pl-when-dark { display: inline; }
+:root[data-theme="light"] .pl-when-light { display: inline; }
+:root[data-theme="light"] .pl-when-dark { display: none; }
+
+.pl-link:focus-visible,
+.pl-skip:focus-visible,
+.pl-toggle:focus-visible {
+  outline: 3px solid var(--pl-ink);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

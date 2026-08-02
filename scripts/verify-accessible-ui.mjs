@@ -43,8 +43,11 @@ function assert(condition, message) {
   if (!condition) failures.push(message);
 }
 
+// หน้าแอปที่ต้องล็อกอินย้ายจาก / ไป /my แล้ว รากของเว็บเป็นคู่มือสาธารณะ
+const appUrl = `${baseUrl}/my`;
+
 async function enterDemo(page) {
-  await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
+  await page.goto(appUrl, { waitUntil: "domcontentloaded" });
   const demo = page.getByRole("button", { name: "Continue in demo mode" });
   const shell = page.locator(".lab-route-shell:visible");
   await shell.or(demo).waitFor({ state: "visible" });
@@ -53,7 +56,7 @@ async function enterDemo(page) {
 }
 
 async function returnToApp(page) {
-  await page.goto(baseUrl, { waitUntil: "domcontentloaded" });
+  await page.goto(appUrl, { waitUntil: "domcontentloaded" });
   const shell = page.locator(".lab-route-shell:visible");
   const demo = page.getByRole("button", { name: "Continue in demo mode" });
   await shell.or(demo).waitFor({ state: "visible", timeout: 10_000 });
@@ -363,6 +366,16 @@ async function verifyWizard(page, viewportName) {
   }
 }
 
+async function verifyPublicGuide(page, viewportName) {
+  // หน้าคู่มือสาธารณะอ่านได้โดยไม่ล็อกอิน จึงตรวจแยกจากเส้นทางที่ผ่าน enterDemo
+  const routes = ["/", "/guide/pink-princess", "/guide/pink-princess/step/7"];
+  for (const route of routes) {
+    await page.goto(`${baseUrl}${route}`, { waitUntil: "domcontentloaded" });
+    await page.locator("main").first().waitFor({ state: "visible" });
+    await inspectPage(page, viewportName, `public:${route}`);
+  }
+}
+
 async function verifyDirectRoutes(page, viewportName) {
   const routes = [
     "/plants/new",
@@ -431,6 +444,7 @@ try {
     await returnToApp(page);
     await verifyProtocolPages(page, viewport.name);
     await verifyWizard(page, viewport.name);
+    await verifyPublicGuide(page, viewport.name);
     assert(
       consoleErrors.length === 0,
       `${viewport.name}: console errors: ${consoleErrors.join(" | ")}`,
