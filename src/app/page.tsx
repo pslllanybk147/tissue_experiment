@@ -1,1 +1,22 @@
-"use client";import{useEffect,useMemo,useState}from"react";import{AuthGate}from"@/components/auth/auth-gate";import{useAuth}from"@/components/auth/auth-provider";import{DashboardSummary}from"@/components/lab/dashboard-summary";import{LabShell}from"@/components/lab/lab-shell";import{createFirestoreLabRepository}from"@/lib/firebase/firestore-lab-repository";import type{LabSnapshot}from"@/lib/repositories/lab-repository";import{createDemoLabRepository}from"@/lib/repositories/demo-lab-repository";export default function Home(){const{session,signOut}=useAuth(),ownerId=session.user?.uid??"demo-owner",repository=useMemo(()=>session.status==="authenticated"?createFirestoreLabRepository(ownerId):createDemoLabRepository(),[ownerId,session.status]),[snapshot,setSnapshot]=useState<LabSnapshot|null>(null),[error,setError]=useState(false);useEffect(()=>{if(!["demo","authenticated"].includes(session.status))return;let active=true;repository.getSnapshot(ownerId).then(value=>{if(active)setSnapshot(value)}).catch(()=>{if(active)setError(true)});return()=>{active=false}},[ownerId,repository,session.status]);return<AuthGate><LabShell section="Overview" sessionLabel={session.status==="authenticated"?"FIREBASE":"DEMO"} onSignOut={()=>void signOut()}>{error&&<div className="route-state error">โหลด Dashboard ไม่สำเร็จ</div>}{snapshot?<DashboardSummary snapshot={snapshot}/>:!error&&<div className="route-state">กำลังโหลด Dashboard…</div>}</LabShell></AuthGate>}
+import { GuideShell } from "@/components/guide/guide-shell";
+import { PlantPicker, type PlantPickerItem } from "@/components/guide/plant-picker";
+import { ThemeToggle } from "@/components/guide/theme-toggle";
+import { plantPacks } from "@/lib/manual/registry";
+import { manualSummary } from "@/lib/manual/summary";
+
+export default function HomePage() {
+  const plants: PlantPickerItem[] = plantPacks.map((pack) => ({
+    slug: pack.slug,
+    scientificName: pack.scientificName,
+    commonName: pack.commonName,
+    summary: pack.summary,
+    stepCount: manualSummary(pack.slug)?.stepCount ?? 0,
+    durationLabel: pack.durationLabel,
+  }));
+
+  return (
+    <GuideShell action={<ThemeToggle />}>
+      <PlantPicker plants={plants} />
+    </GuideShell>
+  );
+}

@@ -198,6 +198,19 @@
   margin: 0;
 }
 
+.pl-when-light { display: inline; }
+.pl-when-dark { display: none; }
+
+@media (prefers-color-scheme: dark) {
+  .pl-when-light { display: none; }
+  .pl-when-dark { display: inline; }
+}
+
+:root[data-theme="dark"] .pl-when-light { display: none; }
+:root[data-theme="dark"] .pl-when-dark { display: inline; }
+:root[data-theme="light"] .pl-when-light { display: inline; }
+:root[data-theme="light"] .pl-when-dark { display: none; }
+
 .pl-link:focus-visible,
 .pl-skip:focus-visible,
 .pl-toggle:focus-visible {
