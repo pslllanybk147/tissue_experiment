@@ -15,6 +15,10 @@ export type EvidenceRef = {
   level: EvidenceLevel;
   sourceIds: string[];
   note?: string;
+  /** บังคับเมื่อ level เป็น unsupported เพื่อให้ตรวจย้อนได้ว่าช่องว่างนั้นจริง
+   *  หรือแค่ค้นไม่พอ และเพื่อให้รู้ว่าควรกลับไปค้นใหม่เมื่อไหร่ */
+  searchedAt?: string;
+  searchQueries?: string[];
 };
 
 export type MediaIngredient = {

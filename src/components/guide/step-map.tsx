@@ -44,6 +44,23 @@ export function StepMap({ manual }: { manual: ResolvedManual }) {
         ))}
       </ol>
 
+      <div className="pl-card" style={{ marginTop: "22px", background: "var(--pl-sunk)" }}>
+        <p className="pl-h2">พร้อมลงมือแล้วหรือยัง</p>
+        <p className="pl-lede" style={{ marginTop: "6px" }}>
+          อ่านให้จบก่อนเริ่มจะดีที่สุด พอกดเริ่มแล้วระบบจะจำให้ว่าทำถึงขั้นไหนและบันทึกค่าที่วัดได้ไว้ให้
+        </p>
+        <p style={{ marginTop: "14px" }}>
+          <Link
+            className="pl-chip pl-link"
+            href={`/my/rounds/new?slug=${manual.slug}`}
+            style={{ background: "var(--pl-yellow)", textDecoration: "none", fontSize: "14px", padding: "8px 16px" }}
+          >
+            เริ่มรอบเพาะของฉัน
+          </Link>
+        </p>
+        <p className="pl-meta" style={{ marginTop: "10px" }}>ต้องล็อกอินตอนกดปุ่มนี้ เพื่อเก็บบันทึกไว้ให้คุณ</p>
+      </div>
+
       <p className="pl-meta" style={{ marginTop: "20px" }}>
         คำอธิบายระดับหลักฐาน · {evidenceLabel["species-direct"]} คือมีงานวิจัยที่ทำกับพันธุ์นี้โดยตรง ·{" "}
         {evidenceLabel.adapted} คือมีงานรองรับแต่ทำกับพืชอื่น · {evidenceLabel.unsupported} คือยังไม่มีงานตีพิมพ์รองรับ

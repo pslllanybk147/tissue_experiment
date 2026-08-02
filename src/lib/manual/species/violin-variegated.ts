@@ -11,13 +11,13 @@ export const violinVariegatedPack: PlantPack = {
   sequence: [...standardSequence],
   overrides: {
     sterilize: {
-      evidence: { level: "unsupported", sourceIds: [], note: "ยังไม่มีงานฟอกผิวตรงพันธุ์นี้" },
+      evidence: { level: "unsupported", sourceIds: [], searchedAt: "2026-08-02", searchQueries: ["Philodendron bipennifolium Violin variegated micropropagation in vitro", "Philodendron bipennifolium tissue culture explant", "การเพาะเลี้ยงเนื้อเยื่อ ฟิโลเดนดรอน ไวโอลิน ด่าง"], note: "ยังไม่มีงานฟอกผิวตรงพันธุ์นี้" },
     },
     multiply: {
-      evidence: { level: "unsupported", sourceIds: [], note: "ยังไม่มีงานเพิ่มจำนวนตรงพันธุ์นี้ ให้เริ่มจากค่ากลางของสกุลแล้วเปลี่ยนทีละตัวแปร" },
+      evidence: { level: "unsupported", sourceIds: [], searchedAt: "2026-08-02", searchQueries: ["Philodendron bipennifolium Violin variegated micropropagation in vitro", "Philodendron bipennifolium tissue culture explant", "การเพาะเลี้ยงเนื้อเยื่อ ฟิโลเดนดรอน ไวโอลิน ด่าง"], note: "ยังไม่มีงานเพิ่มจำนวนตรงพันธุ์นี้ ให้เริ่มจากค่ากลางของสกุลแล้วเปลี่ยนทีละตัวแปร" },
     },
     root: {
-      evidence: { level: "unsupported", sourceIds: [], note: "ยังไม่มีงานออกรากตรงพันธุ์นี้" },
+      evidence: { level: "unsupported", sourceIds: [], searchedAt: "2026-08-02", searchQueries: ["Philodendron bipennifolium Violin variegated micropropagation in vitro", "Philodendron bipennifolium tissue culture explant", "การเพาะเลี้ยงเนื้อเยื่อ ฟิโลเดนดรอน ไวโอลิน ด่าง"], note: "ยังไม่มีงานออกรากตรงพันธุ์นี้" },
     },
     acclimatize: {
       evidence: { level: "adapted", sourceIds: ["source-kew-philodendron"], note: "ใช้หลักการปรับสภาพทั่วไปของสกุล" },
@@ -36,7 +36,7 @@ export const violinVariegatedPack: PlantPack = {
         { name: "Sucrose", amountPerLiter: 30, unit: "g/L" },
         { name: "Agar", amountPerLiter: 7.5, unit: "g/L" },
       ],
-      evidence: { level: "unsupported", sourceIds: [], note: "อาหารพื้นฐานที่ยังไม่ใส่ฮอร์โมน" },
+      evidence: { level: "unsupported", sourceIds: [], searchedAt: "2026-08-02", searchQueries: ["Philodendron bipennifolium Violin variegated micropropagation in vitro", "Philodendron bipennifolium tissue culture explant", "การเพาะเลี้ยงเนื้อเยื่อ ฟิโลเดนดรอน ไวโอลิน ด่าง"], note: "อาหารพื้นฐานที่ยังไม่ใส่ฮอร์โมน" },
     },
   ],
   sourceIds: ["source-violin-gap", "source-kew-philodendron"],
