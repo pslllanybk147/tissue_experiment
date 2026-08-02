@@ -1,6 +1,8 @@
-# Philodendron Lab
+# Plantlover Lab
 
-Evidence-led tissue culture research workspace built with Next.js, Firebase Auth and Firestore.
+คู่มือเพาะเลี้ยงเนื้อเยื่อพืชแบบทีละขั้น พร้อมระดับหลักฐานของทุกคำแนะนำ สร้างด้วย Next.js, Firebase Auth และ Firestore
+
+คู่มืออ่านได้โดยไม่ต้องล็อกอินที่ `/` และ `/guide/{slug}` ส่วนการบันทึกรอบเพาะต้องล็อกอิน
 
 ## Local preview without Firebase
 
