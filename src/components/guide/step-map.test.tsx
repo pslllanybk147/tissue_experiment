@@ -21,6 +21,14 @@ describe("StepMap", () => {
     expect(html).not.toContain('href="/guide/pink-princess/step/0"');
   });
 
+  it("มีทางเข้าไปเริ่มรอบเพาะ และบอกว่าต้องล็อกอินตอนกด", () => {
+    const html = renderToStaticMarkup(<StepMap manual={manual} />);
+
+    expect(html).toContain("เริ่มรอบเพาะของฉัน");
+    expect(html).toContain('href="/my/rounds/new?slug=pink-princess"');
+    expect(html).toContain("ล็อกอิน");
+  });
+
   it("เตือนไว้บนหัวคู่มือเมื่อมีขั้นที่ยังไม่มีงานรองรับ", () => {
     const html = renderToStaticMarkup(<StepMap manual={manual} />);
 
