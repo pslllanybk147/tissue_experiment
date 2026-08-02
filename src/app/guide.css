@@ -33,7 +33,7 @@
     --pl-green: #4fa877;
     --pl-pink: #c47ba2;
     --pl-sky: #2f4d5e;
-    --pl-red: #c25b46;
+    --pl-red: #e08b76;
     --pl-stop: #3d1f18;
     --pl-leaf: #7ca85e;
     --pl-agar: #3f7a58;
@@ -54,7 +54,7 @@
   --pl-green: #4fa877;
   --pl-pink: #c47ba2;
   --pl-sky: #2f4d5e;
-  --pl-red: #c25b46;
+  --pl-red: #e08b76;
   --pl-stop: #3d1f18;
   --pl-leaf: #7ca85e;
   --pl-agar: #3f7a58;
@@ -189,12 +189,13 @@
   margin: 0;
 }
 
+/* ป้ายกำกับขนาดเล็ก ตั้งใจไม่ใช้ letter-spacing และไม่ใช้ uppercase
+   เพราะภาษาไทยมีสระบนล่าง การถ่างอักษรทำให้อ่านยากและ uppercase ไม่มีผลกับไทย */
 .pl-mono {
-  font-family: var(--font-plex-mono), ui-monospace, monospace;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--pl-ink-3);
+  font-variant-numeric: tabular-nums;
   margin: 0;
 }
 
