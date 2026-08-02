@@ -50,6 +50,24 @@ describe("manual registry", () => {
     expect(rooting!.evidence.level).toBe("species-direct");
   });
 
+  it("ขั้นเพิ่มยอดอ้างงานตรงพันธุ์สองชิ้นที่ให้ผลสอดคล้องกัน", () => {
+    const multiply = resolveBySlug("pink-princess")!.steps.find((item) => item.id === "multiply");
+
+    expect(multiply!.evidence.sourceIds).toContain("source-pp-2023");
+    expect(multiply!.evidence.sourceIds).toContain("source-pp-thai-2023");
+  });
+
+  it("เก็บสูตรออกรากไว้ทั้งสองทางเมื่อสองงานใช้ออกซินคนละตัว", () => {
+    const recipes = resolveBySlug("pink-princess")!.mediaRecipes;
+    const iba = recipes.find((item) => item.id === "rooting");
+    const naa = recipes.find((item) => item.id === "rooting-naa");
+
+    expect(iba!.ingredients.some((item) => item.name === "IBA")).toBe(true);
+    expect(naa, "ต้องเก็บทางเลือก NAA ไว้ ไม่ใช่เลือกข้างเงียบ ๆ").toBeDefined();
+    expect(naa!.ingredients.find((item) => item.name === "NAA")!.amountPerLiter).toBe(4);
+    expect(naa!.evidence.sourceIds).toContain("source-pp-thai-2023");
+  });
+
   it("Violin ไม่มีขั้นใดที่อ้างว่าตรงพันธุ์", () => {
     const manual = resolveBySlug("violin-variegated")!;
 

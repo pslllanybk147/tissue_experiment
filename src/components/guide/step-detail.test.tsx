@@ -37,6 +37,22 @@ describe("StepDetail", () => {
     expect(html).toContain("<svg");
   });
 
+  it("แสดงอาการที่อาจเจอ พร้อมวิธีแยกสาเหตุและสิ่งที่ต้องทำต่อ", () => {
+    const html = renderToStaticMarkup(<StepDetail manual={manual} step={sterilize} />);
+
+    expect(html).toContain("ถ้าเจออาการแบบนี้");
+    expect(html).toContain("วิธีแยกจากอาการที่คล้ายกัน");
+    expect(html).toContain("ซีดขาว");
+    expect(html).toContain("ควิโนน");
+  });
+
+  it("ไม่แสดงหัวข้ออาการในขั้นที่ไม่มีอาการผูกไว้", () => {
+    const receive = manual.steps.find((step) => step.id === "receive")!;
+    const html = renderToStaticMarkup(<StepDetail manual={manual} step={receive} />);
+
+    expect(html).not.toContain("ถ้าเจออาการแบบนี้");
+  });
+
   it("ไม่มีปุ่มย้อนกลับที่ขั้นแรก และไม่มีปุ่มถัดไปที่ขั้นสุดท้าย", () => {
     const firstHtml = renderToStaticMarkup(<StepDetail manual={manual} step={first} />);
     const lastHtml = renderToStaticMarkup(<StepDetail manual={manual} step={last} />);
