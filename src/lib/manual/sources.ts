@@ -53,8 +53,15 @@ export const manualSources: ManualSourceRecord[] = [
   },
   {
     id: "source-kew-philodendron",
-    title: "Plants of the World Online — Philodendron Schott",
+    title: "Plants of the World Online — Philodendron Schott (ระดับสกุล)",
     url: "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A326132-2",
+    kind: "taxonomy",
+    accessedAt: "2026-08-02",
+  },
+  {
+    id: "source-kew-erubescens",
+    title: "Plants of the World Online — Philodendron erubescens K.Koch & Augustin (ระดับสปีชีส์)",
+    url: "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A87759-1",
     kind: "taxonomy",
     accessedAt: "2026-08-02",
   },

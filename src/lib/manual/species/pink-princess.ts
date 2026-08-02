@@ -29,7 +29,7 @@ export const pinkPrincessPack: PlantPack = {
     sterilize: {
       evidence: {
         level: "unsupported",
-        sourceIds: [],
+        sourceIds: [], searchedAt: "2026-08-02", searchQueries: ["Philodendron erubescens Pink Princess micropropagation explant nodal", "Philodendron erubescens synonyms POWO accepted name", "Philodendron erubescens sibling cultivars Red Emerald Burgundy micropropagation", "การขยายพันธุ์ ฟิโลเดนดรอน พิงค์ปริ๊นเซส เพาะเลี้ยงเนื้อเยื่อ"],
         note: "งานปี 2023 เริ่มจาก protocorm-like bodies และงานปี 2025 เพิ่มจำนวนจากยอดที่อยู่ในขวด ทั้งสองงานจึงเริ่มจากเนื้อเยื่อที่ปลอดเชื้ออยู่แล้ว ไม่มีขั้นฟอกผิวจากต้นแม่ให้อ้างอิง",
       },
     },
@@ -68,7 +68,7 @@ export const pinkPrincessPack: PlantPack = {
       ],
       evidence: {
         level: "unsupported",
-        sourceIds: [],
+        sourceIds: [], searchedAt: "2026-08-02", searchQueries: ["Philodendron erubescens Pink Princess micropropagation explant nodal", "Philodendron erubescens synonyms POWO accepted name", "Philodendron erubescens sibling cultivars Red Emerald Burgundy micropropagation", "การขยายพันธุ์ ฟิโลเดนดรอน พิงค์ปริ๊นเซส เพาะเลี้ยงเนื้อเยื่อ"],
         note: "งานต้นทางไม่ได้รายงานสูตรตั้งต้นจากต้นแม่ เพราะเริ่มจากเนื้อเยื่อที่อยู่ในขวดแล้ว สูตรนี้จึงเป็นอาหารพื้นฐานที่ยังไม่ใส่ฮอร์โมน",
       },
     },
@@ -113,7 +113,7 @@ export const pinkPrincessPack: PlantPack = {
       },
     },
   ],
-  sourceIds: ["source-pp-2023", "source-pp-2025", "source-pp-thai-2023", "source-kew-philodendron"],
+  sourceIds: ["source-pp-2023", "source-pp-2025", "source-pp-thai-2023", "source-kew-erubescens"],
 };
 
 export { fullSequence as standardSequence };

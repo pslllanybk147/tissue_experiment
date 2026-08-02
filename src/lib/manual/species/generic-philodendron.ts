@@ -15,13 +15,13 @@ export const genericPhilodendronPack: PlantPack = {
       evidence: { level: "adapted", sourceIds: ["source-kew-wcvp-v15"], note: "ใช้เส้นทางกลางเมื่อยังระบุชนิดไม่ได้" },
     },
     sterilize: {
-      evidence: { level: "unsupported", sourceIds: [], note: "ยังไม่ทราบชนิด จึงไม่มีงานตรงพันธุ์ให้อ้างอิง" },
+      evidence: { level: "unsupported", sourceIds: [], searchedAt: "2026-08-02", searchQueries: ["Philodendron micropropagation nodal explant surface sterilization", "Araceae explant sterilization sodium hypochlorite concentration", "การเพาะเลี้ยงเนื้อเยื่อ ฟิโลเดนดรอน ฟอกฆ่าเชื้อ"], note: "ยังไม่ทราบชนิด จึงไม่มีงานตรงพันธุ์ให้อ้างอิง" },
     },
     multiply: {
-      evidence: { level: "unsupported", sourceIds: [], note: "ยังไม่ทราบชนิด ให้เริ่มจากค่าต่ำแล้วเพิ่มทีละขั้น" },
+      evidence: { level: "unsupported", sourceIds: [], searchedAt: "2026-08-02", searchQueries: ["Philodendron micropropagation nodal explant surface sterilization", "Araceae explant sterilization sodium hypochlorite concentration", "การเพาะเลี้ยงเนื้อเยื่อ ฟิโลเดนดรอน ฟอกฆ่าเชื้อ"], note: "ยังไม่ทราบชนิด ให้เริ่มจากค่าต่ำแล้วเพิ่มทีละขั้น" },
     },
     root: {
-      evidence: { level: "unsupported", sourceIds: [], note: "ยังไม่ทราบชนิด" },
+      evidence: { level: "unsupported", sourceIds: [], searchedAt: "2026-08-02", searchQueries: ["Philodendron micropropagation nodal explant surface sterilization", "Araceae explant sterilization sodium hypochlorite concentration", "การเพาะเลี้ยงเนื้อเยื่อ ฟิโลเดนดรอน ฟอกฆ่าเชื้อ"], note: "ยังไม่ทราบชนิด" },
     },
     acclimatize: {
       evidence: { level: "adapted", sourceIds: ["source-kew-philodendron"], note: "ใช้หลักการปรับสภาพทั่วไปของสกุล" },
@@ -40,7 +40,7 @@ export const genericPhilodendronPack: PlantPack = {
         { name: "Sucrose", amountPerLiter: 30, unit: "g/L" },
         { name: "Agar", amountPerLiter: 7.5, unit: "g/L" },
       ],
-      evidence: { level: "unsupported", sourceIds: [], note: "อาหารพื้นฐานที่ยังไม่ใส่ฮอร์โมน" },
+      evidence: { level: "unsupported", sourceIds: [], searchedAt: "2026-08-02", searchQueries: ["Philodendron micropropagation nodal explant surface sterilization", "Araceae explant sterilization sodium hypochlorite concentration", "การเพาะเลี้ยงเนื้อเยื่อ ฟิโลเดนดรอน ฟอกฆ่าเชื้อ"], note: "อาหารพื้นฐานที่ยังไม่ใส่ฮอร์โมน" },
     },
   ],
   sourceIds: ["source-kew-philodendron", "source-kew-wcvp-v15"],
