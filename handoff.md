@@ -3045,3 +3045,27 @@ runner อีกสามตัวยังอยู่ เพราะหน้
 
 เทสต์ 398 ผ่าน 10 skip ระหว่างทางต้องแก้เทสต์ห้าจุดที่ยังคาดหวังเส้นทางและข้อความเดิม
 ซึ่งเป็นสัญญาณที่ดีว่าเทสต์จับการเปลี่ยนแปลงได้จริง
+
+## 2026-08-03 ลบโค้ดตายชุดใหญ่ 3,928 บรรทัด
+
+พบว่า `createPlaybookFromClaim` ในหน้า `/admin/knowledge` สร้าง protocol แล้วสั่งไปที่
+`/protocols/<id>` ซึ่งเป็นเส้นทางที่ลบไปแล้ว **กดแล้วเด้ง 404** เป็นฟีเจอร์ที่พังอยู่จริง
+ไม่ใช่ของที่ยังใช้ได้ ตัดปุ่มนั้นออก แล้วสาย protocol ทั้งเส้นก็หลุดตามไป
+
+ลบ repository ของ protocol และ protocol progress ทั้งชุด ทั้ง memory, firestore, factory
+และ `protocol-templates.ts`
+
+จากนั้นสแกนหาโมดูลใน `src/lib/domain` ที่ไม่มีใครใช้ ยืนยันด้วยสองวิธีที่ให้ผลตรงกัน
+แล้วลบไป 12 โมดูลพร้อมเทสต์ ได้แก่ `approved-claim-gate`, `experiment-query`,
+`experiment-validation`, `guided-protocol-v2`, `haiter-guidance`, `medium-calculations`,
+`protocol-catch-up`, `protocol-validation`, `protocol-versioning`,
+`retrospective-step-completion`, `sterilization-profiles` และ `beginner-simulation`
+
+`sterilization-profiles.ts` ยาว 757 บรรทัด ถูกแทนที่ด้วย `src/lib/equipment/capabilities.ts`
+ที่สั้นกว่าและผูกหลักฐานกับคู่ พันธุ์ × วิธี ตามที่ออกแบบไว้
+
+**ระวัง** โมดูลคำนวณที่ยังใช้อยู่ไม่ได้ถูกลบ ได้แก่ `medium-batch-calculations`,
+`working-stock-calculator` และ `haiter-calculations` ตรวจแล้วว่ายังมีผู้ใช้จริง
+
+เทสต์ลดจาก 398 เหลือ 293 เพราะเทสต์ของโค้ดที่ลบหายไปด้วย ไม่ใช่เพราะมีอะไรพัง
+ตรวจ 8 เส้นทางบน production build คืน 200 ทั้งหมด
