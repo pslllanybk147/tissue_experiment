@@ -26,6 +26,14 @@ const sterilize = view.steps.find((step) => step.id === "sterilize")!;
 const receive = view.steps[0];
 const noop = async () => {};
 
+const photos = {
+  observationId: "obs-1",
+  media: [],
+  canAttach: true,
+  reason: "",
+  onUploaded: noop,
+};
+
 describe("StepRunner", () => {
   it("แสดงเนื้อหาของขั้นเหมือนที่คู่มือแสดง", () => {
     const html = renderToStaticMarkup(<StepRunner view={view} step={sterilize} onSave={noop} />);
@@ -58,10 +66,23 @@ describe("StepRunner", () => {
     expect(html).toContain("ติดปัญหา");
   });
 
-  it("ไม่มีปุ่มถ่ายรูปในรุ่นนี้ เพื่อไม่ให้มีปุ่มที่กดแล้วไม่ทำงาน", () => {
-    const html = renderToStaticMarkup(<StepRunner view={view} step={sterilize} onSave={noop} />);
+  it("แสดงส่วนหลักฐานภาพของขั้น", () => {
+    const html = renderToStaticMarkup(<StepRunner view={view} step={sterilize} onSave={noop} photos={photos} />);
 
-    expect(html).not.toContain("ถ่ายรูป");
+    expect(html).toContain("หลักฐานภาพของขั้นนี้");
+  });
+
+  it("เมื่อแนบรูปไม่ได้ ต้องอธิบายเหตุผล ไม่ใช่ซ่อนไปเฉย ๆ", () => {
+    const html = renderToStaticMarkup(
+      <StepRunner
+        view={view}
+        step={sterilize}
+        onSave={noop}
+        photos={{ ...photos, canAttach: false, reason: "ตอนนี้ออฟไลน์จึงแนบรูปไม่ได้" }}
+      />,
+    );
+
+    expect(html).toContain("ตอนนี้ออฟไลน์จึงแนบรูปไม่ได้");
     expect(html).not.toContain('type="file"');
   });
 

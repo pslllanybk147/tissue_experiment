@@ -6,8 +6,18 @@ import { EvidenceBadge } from "@/components/guide/evidence-badge";
 import { Illustration } from "@/components/guide/illustrations";
 import { troubleshootingById } from "@/lib/manual/troubleshooting";
 import type { GuidedStepStatus } from "@/lib/domain/models";
+import type { ObservationMedia } from "@/lib/domain/models";
 import type { RoundStep, RoundView } from "@/lib/rounds/round-adapter";
 import { OnlineStatus } from "./online-status";
+import { StepPhotos } from "./step-photos";
+
+export type StepPhotoProps = {
+  observationId: string | null;
+  media: ObservationMedia[];
+  canAttach: boolean;
+  reason: string;
+  onUploaded: (item: ObservationMedia) => Promise<void>;
+};
 
 export type StepSaveInput = {
   status: GuidedStepStatus;
@@ -31,10 +41,12 @@ export function StepRunner({
   view,
   step,
   onSave,
+  photos,
 }: {
   view: RoundView;
   step: RoundStep;
   onSave: (input: StepSaveInput) => Promise<void>;
+  photos?: StepPhotoProps;
 }) {
   const number = step.order + 1;
   const total = view.steps.length;
@@ -212,6 +224,17 @@ export function StepRunner({
 
         {saved ? <p className="pl-mono" role="status" style={{ marginTop: "12px" }}>{saved}</p> : null}
       </form>
+
+      {photos ? (
+        <StepPhotos
+          lotId={view.lotId}
+          observationId={photos.observationId}
+          media={photos.media}
+          canAttach={photos.canAttach}
+          reason={photos.reason}
+          onUploaded={photos.onUploaded}
+        />
+      ) : null}
 
       <nav style={{ display: "flex", gap: "12px", marginTop: "24px" }}>
         {previous ? (
