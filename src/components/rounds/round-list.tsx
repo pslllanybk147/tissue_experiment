@@ -9,6 +9,15 @@ export type RoundSummary = {
   stepCount: number;
 };
 
+function EquipmentLink() {
+  return (
+    <p className="pl-meta" style={{ marginTop: "16px" }}>
+      <Link className="pl-link" href="/my/equipment">ตั้งค่าของที่ฉันมี</Link>
+      {" "}เพื่อให้ระบบจัดเส้นทางและคำนวณสารให้ตรงกับอุปกรณ์จริง
+    </p>
+  );
+}
+
 export function RoundList({ rounds }: { rounds: RoundSummary[] }) {
   if (rounds.length === 0) {
     return (
@@ -22,6 +31,7 @@ export function RoundList({ rounds }: { rounds: RoundSummary[] }) {
             ไปเลือกต้น
           </Link>
         </p>
+        <EquipmentLink />
       </div>
     );
   }
@@ -43,6 +53,7 @@ export function RoundList({ rounds }: { rounds: RoundSummary[] }) {
           </Link>
         </li>
       ))}
+      <li><EquipmentLink /></li>
     </ul>
   );
 }

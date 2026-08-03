@@ -98,16 +98,25 @@ function Line({ line }: { line: IngredientLine }) {
   );
 }
 
-export function MediumCalculator({ recipes, initialRecipeId }: { recipes: MediaRecipe[]; initialRecipeId?: string }) {
+export function MediumCalculator({
+  recipes,
+  initialRecipeId,
+  tools,
+}: {
+  recipes: MediaRecipe[];
+  initialRecipeId?: string;
+  /** ค่าจากชุดอุปกรณ์ที่ผู้ใช้บันทึกไว้ ถ้าไม่ส่งมาจะใช้ค่ากลางแล้วให้แก้เอง */
+  tools?: { scaleMinimumMg: number; pipetteMinimumMl: number; msLabelRateGPerL: number };
+}) {
   const [recipeId, setRecipeId] = useState(initialRecipeId ?? recipes[0]?.id ?? "");
   const [cultureJars, setCultureJars] = useState(4);
   const [blankJars, setBlankJars] = useState(1);
   const [spareJars, setSpareJars] = useState(1);
   const [mlPerJar, setMlPerJar] = useState(25);
   const [lossPercent, setLossPercent] = useState(15);
-  const [scaleMinimumMg, setScaleMinimumMg] = useState(10);
-  const [pipetteMinimumMl, setPipetteMinimumMl] = useState(0.2);
-  const [msLabelRateGPerL, setMsLabelRateGPerL] = useState(4.43);
+  const [scaleMinimumMg, setScaleMinimumMg] = useState(tools?.scaleMinimumMg ?? 10);
+  const [pipetteMinimumMl, setPipetteMinimumMl] = useState(tools?.pipetteMinimumMl ?? 0.2);
+  const [msLabelRateGPerL, setMsLabelRateGPerL] = useState(tools?.msLabelRateGPerL ?? 4.43);
 
   const recipe = recipes.find((item) => item.id === recipeId) ?? recipes[0];
 
