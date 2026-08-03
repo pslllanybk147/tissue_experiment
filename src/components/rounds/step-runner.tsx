@@ -8,6 +8,7 @@ import { troubleshootingById } from "@/lib/manual/troubleshooting";
 import type { GuidedStepStatus } from "@/lib/domain/models";
 import type { ObservationMedia } from "@/lib/domain/models";
 import type { RoundStep, RoundView } from "@/lib/rounds/round-adapter";
+import { MediumCalculator } from "./medium-calculator";
 import { OnlineStatus } from "./online-status";
 import { StepPhotos } from "./step-photos";
 
@@ -42,11 +43,13 @@ export function StepRunner({
   step,
   onSave,
   photos,
+  tools,
 }: {
   view: RoundView;
   step: RoundStep;
   onSave: (input: StepSaveInput) => Promise<void>;
   photos?: StepPhotoProps;
+  tools?: { scaleMinimumMg: number; pipetteMinimumMl: number; msLabelRateGPerL: number };
 }) {
   const number = step.order + 1;
   const total = view.steps.length;
@@ -118,6 +121,16 @@ export function StepRunner({
 
       <List title="ผ่านเมื่อ" items={step.passCriteria} />
       <List title="หยุดทันทีถ้า" items={step.stopConditions} />
+
+      {step.id === "prep-media" ? (
+        // ชุดอุปกรณ์โหลดมาแบบ async หลังหน้าเรนเดอร์แล้ว การใส่ key ทำให้เครื่องคำนวณ
+        // เริ่มใหม่ด้วยค่าที่โหลดมาจริง แทนที่จะค้างอยู่กับค่าเริ่มต้นตอน mount
+        <MediumCalculator
+          key={`${tools?.scaleMinimumMg ?? ""}-${tools?.pipetteMinimumMl ?? ""}-${tools?.msLabelRateGPerL ?? ""}`}
+          recipes={view.mediaRecipes}
+          tools={tools}
+        />
+      ) : null}
 
       {troubleshooting.length > 0 ? (
         <section style={{ marginTop: "24px" }}>

@@ -11,8 +11,10 @@ import { StepRunner, type StepSaveInput } from "@/components/rounds/step-runner"
 import type { ObservationMedia } from "@/lib/domain/models";
 import { resolveBySlug } from "@/lib/manual/registry";
 import { buildRoundView, MANUAL_VERSION_ID, type RoundView } from "@/lib/rounds/round-adapter";
+import { defaultKit, type EquipmentKit } from "@/lib/equipment/resolve-path";
 import { evidenceObservationInput, findEvidenceObservation } from "@/lib/rounds/step-evidence";
 import { getExperimentRepository } from "@/lib/repositories/experiment-repository-factory";
+import { getEquipmentRepository } from "@/lib/repositories/equipment-repository-factory";
 import { getMediaRepository } from "@/lib/repositories/media-repository-factory";
 import { getStepRunRepository } from "@/lib/repositories/step-run-repository-factory";
 
@@ -24,12 +26,14 @@ export default function RoundStepPage() {
   const lots = useMemo(() => getExperimentRepository(ownerId, authenticated), [ownerId, authenticated]);
   const runs = useMemo(() => getStepRunRepository(ownerId, authenticated), [ownerId, authenticated]);
   const mediaRepo = useMemo(() => getMediaRepository(ownerId, authenticated), [ownerId, authenticated]);
+  const equipment = useMemo(() => getEquipmentRepository(ownerId, authenticated), [ownerId, authenticated]);
   const online = useIsOnline();
   const [view, setView] = useState<RoundView | null>(null);
   const [message, setMessage] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
   const [evidenceObservationId, setEvidenceObservationId] = useState<string | null>(null);
   const [media, setMedia] = useState<ObservationMedia[]>([]);
+  const [kit, setKit] = useState<EquipmentKit>(defaultKit);
 
   useEffect(() => {
     if (!["demo", "authenticated"].includes(session.status)) return;
@@ -102,6 +106,21 @@ export default function RoundStepPage() {
       });
   }, [canAttach, current, evidenceObservationId, lots, ownerId, roundId, view]);
 
+  // ดึงชุดอุปกรณ์ที่บันทึกไว้มาป้อนเครื่องคำนวณ ผู้ใช้จะได้ไม่ต้องกรอกความละเอียดเครื่องมือซ้ำทุกครั้ง
+  useEffect(() => {
+    if (!["demo", "authenticated"].includes(session.status)) return;
+    let active = true;
+    equipment
+      .get(ownerId)
+      .then((found) => {
+        if (active && found) setKit({ ...defaultKit, ...found });
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [equipment, ownerId, session.status]);
+
   const onUploaded = useCallback(async (item: ObservationMedia) => {
     await mediaRepo.save(ownerId, item);
     setMedia((items) => [...items, item]);
@@ -143,6 +162,7 @@ export default function RoundStepPage() {
             step={current}
             onSave={save}
             photos={{ observationId: evidenceObservationId, media, canAttach, reason: attachReason, onUploaded }}
+            tools={{ scaleMinimumMg: kit.scaleMinimumMg, pipetteMinimumMl: kit.pipetteMinimumMl, msLabelRateGPerL: kit.msLabelRateGPerL }}
           />
         ) : null}
       </GuideShell>

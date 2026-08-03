@@ -53,6 +53,15 @@ describe("StepDetail", () => {
     expect(html).not.toContain("ถ้าเจออาการแบบนี้");
   });
 
+  it("ขั้นทำอาหารมีเครื่องคำนวณ ส่วนขั้นอื่นไม่มี", () => {
+    const prep = manual.steps.find((item) => item.id === "prep-media")!;
+    const withCalculator = renderToStaticMarkup(<StepDetail manual={manual} step={prep} />);
+    const without = renderToStaticMarkup(<StepDetail manual={manual} step={sterilize} />);
+
+    expect(withCalculator).toContain("จะทำอาหารเท่าไหร่");
+    expect(without).not.toContain("จะทำอาหารเท่าไหร่");
+  });
+
   it("ไม่มีปุ่มย้อนกลับที่ขั้นแรก และไม่มีปุ่มถัดไปที่ขั้นสุดท้าย", () => {
     const firstHtml = renderToStaticMarkup(<StepDetail manual={manual} step={first} />);
     const lastHtml = renderToStaticMarkup(<StepDetail manual={manual} step={last} />);

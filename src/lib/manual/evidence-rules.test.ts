@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { capabilityMethods } from "@/lib/equipment/capabilities";
 import { allSlugs, resolveBySlug } from "./registry";
 import { troubleshootingEntries } from "./troubleshooting";
 import type { EvidenceRef } from "./types";
@@ -10,6 +11,7 @@ import type { EvidenceRef } from "./types";
 function collect(): Array<{ where: string; evidence: EvidenceRef }> {
   const items: Array<{ where: string; evidence: EvidenceRef }> = [];
   for (const [id, entry] of Object.entries(troubleshootingEntries)) items.push({ where: `trouble/${id}`, evidence: entry.evidence });
+  for (const method of capabilityMethods) items.push({ where: `equipment/${method.id}`, evidence: method.evidence });
   for (const slug of allSlugs()) {
     const manual = resolveBySlug(slug)!;
     for (const step of manual.steps) items.push({ where: `${slug}/${step.id}`, evidence: step.evidence });
