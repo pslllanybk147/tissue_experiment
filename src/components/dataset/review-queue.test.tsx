@@ -20,8 +20,8 @@ describe("ReviewQueue", () => {
 
   it("shows a beginner route to add the first image when the queue is empty", () => {
     const html = renderToStaticMarkup(<ReviewQueue items={[]} onReviewProvenance={async () => undefined} onSetLabel={async () => undefined} />);
-    expect(html).toContain("ไปเพิ่มรูปใน Experiment");
-    expect(html).toContain('href="/experiments"');
-    expect(html).toContain("ยังไม่มีต้นไม้ — เริ่มที่นี่");
+    expect(html).toContain("ไปเพิ่มรูปในรอบเพาะ");
+    expect(html).toContain('href="/my/rounds"');
+    expect(html).toContain("ยังไม่มีรอบ — เลือกต้นที่นี่");
   });
 });

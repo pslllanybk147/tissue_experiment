@@ -34,7 +34,7 @@ export function KnowledgeSourceDetail({ source, claims, audits, updateSource }: 
   }
 
   return <section className="knowledge-source-detail" aria-label="Knowledge source detail">
-    <div className="route-actions"><Link className="quiet-button" href="/knowledge">← กลับ Knowledge Library</Link><a className="secondary-button" href={source.url} target="_blank" rel="noreferrer">เปิด source ต้นฉบับ</a></div>
+    <div className="route-actions"><Link className="quiet-button" href="/admin/knowledge">← กลับ Knowledge Library</Link><a className="secondary-button" href={source.url} target="_blank" rel="noreferrer">เปิด source ต้นฉบับ</a></div>
     <header className="knowledge-detail-heading"><div><p className="eyebrow">SOURCE DETAIL · {source.sourceType}</p><h2>{source.title}</h2><p>{source.doi ?? "ไม่มี DOI"} · สร้างเมื่อ {new Date(source.createdAt).toLocaleDateString("th-TH")}</p></div><span className="badge badge-pending-review">metadata แก้ไขได้</span></header>
     {message && <p className="dataset-feedback success" role="status">{message}</p>}
     {error && <p className="dataset-feedback error" role="alert">{error}</p>}
