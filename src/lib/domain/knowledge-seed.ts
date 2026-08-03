@@ -1,66 +1,19 @@
-import {
-  starterTaxa,
-  type KnowledgeClaim,
-  type KnowledgeLibraryRecord,
-  type TissueCulturePlaybook,
-} from "./knowledge-library";
-import { monographForTaxon } from "./philodendron-knowledge";
+import { starterTaxa, type KnowledgeLibraryRecord } from "./knowledge-library";
 
-function monographClaims(taxonId: string): KnowledgeClaim[] {
-  const monograph = monographForTaxon(taxonId);
-  if (!monograph) return [];
-  return monograph.sections.flatMap((section) => section.claims.map((claim) => ({
-    id: claim.id,
-    taxonId,
-    category: section.id,
-    statement: claim.statement,
-    evidenceState: claim.evidenceState,
-    sourceIds: claim.sourceIds,
-    reviewedBy: claim.sourceIds.length ? "system-seed" : null,
-    reviewedAt: claim.sourceIds.length ? monograph.lastReviewedAt : null,
-  })));
-}
-
-function monographPlaybooks(taxonId: string): TissueCulturePlaybook[] {
-  const monograph = monographForTaxon(taxonId);
-  if (!monograph) return [];
-  const isPinkPrincess = taxonId === "cultivar-pink-princess";
-  return [{
-    id: `playbook-${taxonId}-nodal`,
-    taxonId,
-    method: "nodal",
-    protocolId: isPinkPrincess
-      ? "protocol-pink-princess-nodal"
-      : "protocol-violin-nodal",
-    evidenceState: monograph.tissueCulture.steps.some((step) => step.evidenceState === "Experimental")
-      ? "Experimental"
-      : monograph.sections.some((section) =>
-        section.claims.some((claim) => claim.evidenceState === "Adapted"))
-        ? "Adapted"
-        : "Verified",
-    claimIds: monograph.sections.flatMap((section) =>
-      section.claims.map((claim) => claim.id)),
-    status: "Active",
-    version: "0.1.0",
-  }];
-}
-
+/**
+ * รายการตั้งต้นของคลังหลังบ้านมีแต่รายชื่อ taxon เท่านั้น ไม่ seed claim หรือ playbook
+ *
+ * เดิมระบบ seed claim จาก monograph ซึ่งทำให้มีข้อมูลหลักฐานสองชุดที่ไม่ตรงกัน
+ * และชุดที่ seed ไว้ไม่ถูกกฎใด ๆ คุม ต่างจาก `src/lib/manual/` ที่มีเทสต์บังคับว่า
+ * ข้ออ้างที่บอกว่ามีงานรองรับต้องระบุแหล่ง และข้ออ้างที่บอกว่าไม่มีต้องบันทึกการค้น
+ *
+ * ตอนนี้หลักฐานของคู่มือมีที่เดียวคือ `src/lib/manual/` ส่วนคลังหลังบ้านใช้เก็บ
+ * แหล่งอ้างอิงและ claim ที่ผู้ใช้ลงทะเบียนเองแล้วรอเจ้าของระบบอนุมัติ
+ */
 export function starterKnowledgeRecords(): KnowledgeLibraryRecord[] {
-  return starterTaxa.map((taxon) => ({
-    taxon,
-    claims: monographClaims(taxon.id),
-    playbooks: monographPlaybooks(taxon.id),
-  }));
+  return starterTaxa.map((taxon) => ({ taxon, claims: [], playbooks: [] }));
 }
 
-export function hydrateKnowledgeRecord(
-  record: KnowledgeLibraryRecord,
-): KnowledgeLibraryRecord {
-  const seeded = starterKnowledgeRecords().find((item) => item.taxon.id === record.taxon.id);
-  if (!seeded) return record;
-  return {
-    taxon: record.taxon,
-    claims: record.claims.length ? record.claims : seeded.claims,
-    playbooks: record.playbooks.length ? record.playbooks : seeded.playbooks,
-  };
+export function hydrateKnowledgeRecord(record: KnowledgeLibraryRecord): KnowledgeLibraryRecord {
+  return record;
 }
