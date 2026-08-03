@@ -4,6 +4,14 @@
 
 คู่มืออ่านได้โดยไม่ต้องล็อกอินที่ `/` และ `/guide/{slug}` ส่วนการบันทึกรอบเพาะต้องล็อกอิน
 
+## เริ่มอ่านที่ไหน
+
+- **โครงสร้างระบบทั้งหมด ตั้งแต่เส้นทาง ชั้นข้อมูล ไปจนถึงกฎหลักฐาน — `project_summary.md`**
+- ภาพรวมว่าระบบนี้ถูก redesign มาอย่างไร และเจออะไรระหว่างทาง — `docs/superpowers/redesign-record.md`
+- วิธีเพิ่มคู่มือของพืชชนิดใหม่ — `docs/superpowers/manual-authoring-protocol.md`
+
+เนื้อหาคู่มือทั้งหมดอยู่ที่ `src/lib/manual/` และตรวจฉบับที่ประกอบเสร็จได้ที่ `/admin/manual/{slug}`
+
 ## Local preview without Firebase
 
 ```powershell
