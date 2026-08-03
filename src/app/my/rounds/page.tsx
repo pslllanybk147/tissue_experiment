@@ -6,8 +6,9 @@ import { useAuth } from "@/components/auth/auth-provider";
 import { GuideShell } from "@/components/guide/guide-shell";
 import { ThemeToggle } from "@/components/guide/theme-toggle";
 import { OnlineStatus } from "@/components/rounds/online-status";
-import { RoundList, type RoundSummary } from "@/components/rounds/round-list";
+import { RoundList, type LegacyRoundSummary, type RoundSummary } from "@/components/rounds/round-list";
 import { resolveBySlug } from "@/lib/manual/registry";
+import { partitionLots } from "@/lib/rounds/legacy-rounds";
 import { getExperimentRepository } from "@/lib/repositories/experiment-repository-factory";
 import { getStepRunRepository } from "@/lib/repositories/step-run-repository-factory";
 
@@ -18,6 +19,7 @@ export default function MyRoundsPage() {
   const repository = useMemo(() => getExperimentRepository(ownerId, authenticated), [ownerId, authenticated]);
   const stepRuns = useMemo(() => getStepRunRepository(ownerId, authenticated), [ownerId, authenticated]);
   const [rounds, setRounds] = useState<RoundSummary[] | null>(null);
+  const [legacy, setLegacy] = useState<LegacyRoundSummary[]>([]);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
@@ -25,7 +27,12 @@ export default function MyRoundsPage() {
     let active = true;
 
     async function load() {
-      const lots = (await repository.listLots(ownerId)).filter((lot) => resolveBySlug(lot.protocolId) !== null);
+      const all = await repository.listLots(ownerId);
+      // รอบเก่าต้องยังเห็นได้ ไม่ใช่ถูกกรองทิ้งจนผู้ใช้เข้าถึงข้อมูลเดิมไม่ได้
+      const { current: lots, legacy: older } = partitionLots(all);
+      if (active) {
+        setLegacy(older.map((lot) => ({ lotId: lot.id, title: lot.plant || lot.protocolTitle, startedAt: lot.startedAt })));
+      }
       const summaries = await Promise.all(lots.map(async (lot) => {
         const manual = resolveBySlug(lot.protocolId)!;
         const runs = await stepRuns.list(ownerId, lot.id);
@@ -60,7 +67,7 @@ export default function MyRoundsPage() {
           </p>
         ) : null}
         {rounds === null && !failed ? <p className="pl-lede" role="status">กำลังโหลด…</p> : null}
-        {rounds !== null ? <RoundList rounds={rounds} /> : null}
+        {rounds !== null ? <RoundList rounds={rounds} legacy={legacy} /> : null}
       </GuideShell>
     </AuthGate>
   );
