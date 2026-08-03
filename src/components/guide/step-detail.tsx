@@ -2,6 +2,7 @@ import Link from "next/link";
 import { sourceById } from "@/lib/manual/sources";
 import { troubleshootingById } from "@/lib/manual/troubleshooting";
 import type { ResolvedManual, ResolvedStep } from "@/lib/manual/types";
+import { MediumCalculator } from "@/components/rounds/medium-calculator";
 import { EvidenceBadge } from "./evidence-badge";
 import { Illustration } from "./illustrations";
 
@@ -89,6 +90,8 @@ export function StepDetail({ manual, step }: { manual: ResolvedManual; step: Res
 
       <List title="ผ่านเมื่อ" items={step.passCriteria} />
       <List title="หยุดทันทีถ้า" items={step.stopConditions} />
+
+      {step.id === "prep-media" ? <MediumCalculator recipes={manual.mediaRecipes} /> : null}
 
       <Troubleshooting ids={step.troubleshootingIds ?? []} />
 

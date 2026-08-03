@@ -8,6 +8,7 @@ import { troubleshootingById } from "@/lib/manual/troubleshooting";
 import type { GuidedStepStatus } from "@/lib/domain/models";
 import type { ObservationMedia } from "@/lib/domain/models";
 import type { RoundStep, RoundView } from "@/lib/rounds/round-adapter";
+import { MediumCalculator } from "./medium-calculator";
 import { OnlineStatus } from "./online-status";
 import { StepPhotos } from "./step-photos";
 
@@ -118,6 +119,8 @@ export function StepRunner({
 
       <List title="ผ่านเมื่อ" items={step.passCriteria} />
       <List title="หยุดทันทีถ้า" items={step.stopConditions} />
+
+      {step.id === "prep-media" ? <MediumCalculator recipes={view.mediaRecipes} /> : null}
 
       {troubleshooting.length > 0 ? (
         <section style={{ marginTop: "24px" }}>

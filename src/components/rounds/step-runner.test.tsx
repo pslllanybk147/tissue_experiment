@@ -86,6 +86,13 @@ describe("StepRunner", () => {
     expect(html).not.toContain('type="file"');
   });
 
+  it("ขั้นทำอาหารมีเครื่องคำนวณอยู่ในหน้าเดียวกับที่ลงมือ", () => {
+    const prep = view.steps.find((item) => item.id === "prep-media")!;
+    const html = renderToStaticMarkup(<StepRunner view={view} step={prep} onSave={noop} photos={photos} />);
+
+    expect(html).toContain("จะทำอาหารเท่าไหร่");
+  });
+
   it("ขั้นแรกไม่มีปุ่มย้อนกลับ", () => {
     const html = renderToStaticMarkup(<StepRunner view={view} step={receive} onSave={noop} />);
 

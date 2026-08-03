@@ -1,5 +1,5 @@
 import type { CreateLotInput, ExperimentLot, GuidedStepStatus, ProtocolStepRun } from "@/lib/domain/models";
-import type { ResolvedManual, ResolvedStep } from "@/lib/manual/types";
+import type { MediaRecipe, ResolvedManual, ResolvedStep } from "@/lib/manual/types";
 
 /** รุ่นของโครงเนื้อหาที่ใช้ตอนบันทึก เก็บไว้เพื่อให้ย้อนดูได้ว่ารอบนั้นเดินตามคู่มือรุ่นไหน */
 export const MANUAL_VERSION_ID = "manual-v1";
@@ -20,6 +20,7 @@ export type RoundView = {
   title: string;
   startedAt: string;
   steps: RoundStep[];
+  mediaRecipes: MediaRecipe[];
   currentStepNumber: number;
   passedCount: number;
 };
@@ -64,6 +65,7 @@ export function buildRoundView(lot: ExperimentLot, runs: ProtocolStepRun[], manu
     title: manual.commonName,
     startedAt: lot.startedAt,
     steps,
+    mediaRecipes: manual.mediaRecipes,
     currentStepNumber,
     passedCount,
   };
