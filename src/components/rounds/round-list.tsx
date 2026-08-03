@@ -26,14 +26,14 @@ function LegacyRounds({ legacy }: { legacy: LegacyRoundSummary[] }) {
     <section style={{ marginTop: "26px" }}>
       <h2 className="pl-h2">รอบที่เริ่มไว้ก่อนระบบคู่มือใหม่</h2>
       <p className="pl-lede" style={{ marginTop: "6px" }}>
-        รอบเหล่านี้เดินด้วยระบบเดิม จึงเปิดดูได้ที่หน้าเดิม ข้อมูลยังอยู่ครบและไม่ถูกลบ
+        รอบเหล่านี้เดินด้วยระบบเดิม จึงเปิดได้แบบอ่านอย่างเดียว ข้อมูลยังอยู่ครบและไม่ถูกลบ
       </p>
       <ul style={{ listStyle: "none", margin: "12px 0 0", padding: 0, display: "flex", flexDirection: "column", gap: "10px" }}>
         {legacy.map((item) => (
           <li key={item.lotId}>
             <Link
               className="pl-card pl-link"
-              href={`/experiments/${item.lotId}`}
+              href={`/my/rounds/legacy/${item.lotId}`}
               style={{ display: "block", color: "inherit", textDecoration: "none", background: "var(--pl-sunk)" }}
             >
               <p style={{ margin: 0, fontWeight: 700 }}>{item.title}</p>

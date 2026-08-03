@@ -28,7 +28,7 @@ describe("RoundList", () => {
 
     expect(html).toContain("รอบที่เริ่มไว้ก่อนระบบคู่มือใหม่");
     expect(html).toContain("ล็อตเดิม");
-    expect(html).toContain('href="/experiments/old-1"');
+    expect(html).toContain('href="/my/rounds/legacy/old-1"');
   });
 
   it("เมื่อยังไม่มีรอบ ชวนให้ไปเลือกต้นจากหน้าคู่มือ", () => {
