@@ -21,6 +21,16 @@ describe("RoundList", () => {
     expect(html).toContain('href="/my/rounds/round-1"');
   });
 
+  it("รอบเก่าที่คู่มือใหม่ไม่รู้จัก ต้องยังเห็นได้ ไม่ใช่หายไปเฉย ๆ", () => {
+    const html = renderToStaticMarkup(
+      <RoundList rounds={[]} legacy={[{ lotId: "old-1", title: "ล็อตเดิม", startedAt: "2026-07-01" }]} />,
+    );
+
+    expect(html).toContain("รอบที่เริ่มไว้ก่อนระบบคู่มือใหม่");
+    expect(html).toContain("ล็อตเดิม");
+    expect(html).toContain('href="/experiments/old-1"');
+  });
+
   it("เมื่อยังไม่มีรอบ ชวนให้ไปเลือกต้นจากหน้าคู่มือ", () => {
     const html = renderToStaticMarkup(<RoundList rounds={[]} />);
 

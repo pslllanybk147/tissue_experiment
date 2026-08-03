@@ -18,7 +18,35 @@ function EquipmentLink() {
   );
 }
 
-export function RoundList({ rounds }: { rounds: RoundSummary[] }) {
+export type LegacyRoundSummary = { lotId: string; title: string; startedAt: string };
+
+function LegacyRounds({ legacy }: { legacy: LegacyRoundSummary[] }) {
+  if (legacy.length === 0) return null;
+  return (
+    <section style={{ marginTop: "26px" }}>
+      <h2 className="pl-h2">รอบที่เริ่มไว้ก่อนระบบคู่มือใหม่</h2>
+      <p className="pl-lede" style={{ marginTop: "6px" }}>
+        รอบเหล่านี้เดินด้วยระบบเดิม จึงเปิดดูได้ที่หน้าเดิม ข้อมูลยังอยู่ครบและไม่ถูกลบ
+      </p>
+      <ul style={{ listStyle: "none", margin: "12px 0 0", padding: 0, display: "flex", flexDirection: "column", gap: "10px" }}>
+        {legacy.map((item) => (
+          <li key={item.lotId}>
+            <Link
+              className="pl-card pl-link"
+              href={`/experiments/${item.lotId}`}
+              style={{ display: "block", color: "inherit", textDecoration: "none", background: "var(--pl-sunk)" }}
+            >
+              <p style={{ margin: 0, fontWeight: 700 }}>{item.title}</p>
+              <p className="pl-meta" style={{ marginTop: "4px" }}>เริ่ม {item.startedAt}</p>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+export function RoundList({ rounds, legacy = [] }: { rounds: RoundSummary[]; legacy?: LegacyRoundSummary[] }) {
   if (rounds.length === 0) {
     return (
       <div className="pl-card">
@@ -32,6 +60,7 @@ export function RoundList({ rounds }: { rounds: RoundSummary[] }) {
           </Link>
         </p>
         <EquipmentLink />
+        <LegacyRounds legacy={legacy} />
       </div>
     );
   }
@@ -54,6 +83,7 @@ export function RoundList({ rounds }: { rounds: RoundSummary[] }) {
         </li>
       ))}
       <li><EquipmentLink /></li>
+      <li><LegacyRounds legacy={legacy} /></li>
     </ul>
   );
 }
