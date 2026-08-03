@@ -12,7 +12,7 @@ describe("LabShell", () => {
     );
 
     expect(html).toContain('href="/"');
-    expect(html).toContain('href="/research"');
+    expect(html).toContain('href="/admin/research"');
     expect(html).toContain('aria-label="Mobile navigation"');
     expect(html).toContain('aria-current="page"');
     expect(html).toContain("<main");
