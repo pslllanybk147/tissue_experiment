@@ -6,14 +6,12 @@ import { LabShell } from "./lab-shell";
 describe("LabShell", () => {
   it("renders semantic navigation and a main content landmark", () => {
     const html = renderToStaticMarkup(
-      <LabShell section="Experiments" sessionLabel="FIREBASE" onSignOut={() => undefined}>
+      <LabShell section="Knowledge" sessionLabel="FIREBASE" onSignOut={() => undefined}>
         <h1>Experiment lots</h1>
       </LabShell>,
     );
 
     expect(html).toContain('href="/"');
-    expect(html).toContain('href="/experiments"');
-    expect(html).toContain('href="/protocols"');
     expect(html).toContain('href="/research"');
     expect(html).toContain('aria-label="Mobile navigation"');
     expect(html).toContain('aria-current="page"');
@@ -24,13 +22,12 @@ describe("LabShell", () => {
 
   it("uses plain Thai task labels in navigation", () => {
     const html = renderToStaticMarkup(
-      <LabShell section="Experiments" sessionLabel="DEMO" onSignOut={() => undefined}>
+      <LabShell section="Knowledge" sessionLabel="DEMO" onSignOut={() => undefined}>
         <p>content</p>
       </LabShell>,
     );
 
     expect(html).toContain("เริ่มต้น");
-    expect(html).toContain("การทดลอง");
     expect(html).toContain("คลังความรู้");
     expect(html).toContain('aria-label="เมนูหลัก"');
   });
