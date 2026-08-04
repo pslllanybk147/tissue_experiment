@@ -8,7 +8,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("PrimaryNav", () => {
-  it("แสดงลิงก์หน้าแรก อุปกรณ์ของฉัน และปุ่มเครื่องคำนวณ", () => {
+  it("แสดงลิงก์หน้าแรก รอบเพาะของฉัน อุปกรณ์ของฉัน และปุ่มเครื่องคำนวณ", () => {
     const html = renderToStaticMarkup(
       <CalculatorOverlayProvider>
         <PrimaryNav />
@@ -16,8 +16,10 @@ describe("PrimaryNav", () => {
     );
 
     expect(html).toContain('href="/"');
+    expect(html).toContain('href="/my/rounds"');
     expect(html).toContain('href="/my/equipment"');
     expect(html).toContain("หน้าแรก");
+    expect(html).toContain("รอบเพาะของฉัน");
     expect(html).toContain("อุปกรณ์ของฉัน");
     expect(html).toContain("เครื่องคำนวณ");
     expect(html).toContain("<button");

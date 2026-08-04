@@ -23,6 +23,16 @@ function EquipmentIcon() {
   );
 }
 
+function RoundsIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <rect x="4" y="3.5" width="16" height="17" rx="2" strokeLinejoin="round" />
+      <path d="M8 8h8M8 12h5" strokeLinecap="round" />
+      <path d="m8 16 2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 function CalculatorIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
@@ -34,6 +44,7 @@ function CalculatorIcon() {
 
 const linkIcons: Record<string, () => React.JSX.Element> = {
   home: HomeIcon,
+  rounds: RoundsIcon,
   equipment: EquipmentIcon,
 };
 
