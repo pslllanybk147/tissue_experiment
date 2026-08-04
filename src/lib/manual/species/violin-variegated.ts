@@ -39,6 +39,10 @@ export const violinVariegatedPack: PlantPack = {
       evidence: {
         level: "adapted",
         sourceIds: ["source-us-patent-4855236"],
+        sourcePages: {
+          "source-us-patent-4855236":
+            "หัวข้อ “Initiation of In Vitro Culture” ใต้ Example 1 (สิทธิบัตรนี้ไม่มีเลขหน้ากำกับในเวอร์ชันเว็บของ Google Patents ใช้ชื่อหัวข้อแทน)",
+        },
         note:
           "สิทธิบัตรอุตสาหกรรมของพันธุ์พี่น้อง Philodendron 'Burgundy' (ทรงพุ่มตั้ง ไม่ใช่ไม้เลื้อยแบบ Violin) " +
           "ตัดยอดอ่อนยาว 4 ถึง 5 ซม. จากต้นแม่ แล้วฟอกสามขั้นต่อเนื่อง: Proceptil 1.0% 30 นาที, " +
@@ -52,6 +56,11 @@ export const violinVariegatedPack: PlantPack = {
       evidence: {
         level: "adapted",
         sourceIds: ["source-selfheading-philodendron-2012", "source-cannifolium-2008", "source-birkin-thai-2023"],
+        sourcePages: {
+          "source-selfheading-philodendron-2012": "Scientia Horticulturae เล่ม 141, หน้า 23–29",
+          "source-cannifolium-2008": "Journal of Plant Biotechnology เล่ม 35, หน้า 203–208",
+          "source-birkin-thai-2023": "PSRU Journal of Science and Technology ปีที่ 8 ฉบับที่ 1, หน้า 17–36",
+        },
         note:
           "งานทดสอบ Philodendron แบบทรงพุ่มตั้งหลายพันธุ์จากต้นแม่จริง พบว่าชิ้นส่วนข้อลำต้นตอบสนองดีที่สุด " +
           "เมื่อเทียบกับแผ่นใบและก้านใบ และ BA 0.5 ถึง 1 mg/L ให้ยอดที่ความถี่ 55.6 ถึง 80.6% เฉลี่ย 40.8 ถึง 50.4 ยอดต่อชิ้น " +
@@ -65,6 +74,10 @@ export const violinVariegatedPack: PlantPack = {
       evidence: {
         level: "adapted",
         sourceIds: ["source-selfheading-philodendron-2012", "source-cannifolium-2008"],
+        sourcePages: {
+          "source-selfheading-philodendron-2012": "Scientia Horticulturae เล่ม 141, หน้า 23–29",
+          "source-cannifolium-2008": "Journal of Plant Biotechnology เล่ม 35, หน้า 203–208",
+        },
         note:
           "งานเดียวกับขั้นเพิ่มจำนวน ยอดที่ได้จากอาหาร BA 0.5 mg/L นำไปออกรากด้วย IBA 0.1 ถึง 1 mg/L " +
           "บ่มหนึ่งเดือน ต้นที่ออกรากรอดหลังปรับสภาพในโรงเรือน 100% งาน Philodendron cannifolium ใช้ NAA 1 ถึง 2 mg/L " +
@@ -139,6 +152,7 @@ export const violinVariegatedPack: PlantPack = {
       evidence: {
         level: "adapted",
         sourceIds: ["source-cannifolium-2008"],
+        sourcePages: { "source-cannifolium-2008": "Journal of Plant Biotechnology เล่ม 35, หน้า 203–208" },
         note: "งาน Philodendron cannifolium ใช้ NAA แทน IBA ได้ราก 100% เท่ากัน เป็นสกุลเดียวกันแต่คนละสาร ยังไม่มีงานเปรียบเทียบตรง ๆ",
       },
     },

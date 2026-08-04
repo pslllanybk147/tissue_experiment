@@ -106,9 +106,11 @@ export function StepDetail({ manual, step }: { manual: ResolvedManual; step: Res
         <ul style={{ margin: "10px 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "6px" }}>
           {step.evidence.sourceIds.map((id) => {
             const source = sourceById(id);
+            const page = step.evidence.sourcePages?.[id];
             return (
               <li key={id}>
                 {source ? <a className="pl-link" href={source.url}>{source.title}</a> : id}
+                {page ? ` — ${page}` : null}
               </li>
             );
           })}
