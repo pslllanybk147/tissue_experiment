@@ -52,6 +52,8 @@ next-env.d.ts
 *-adminsdk-*.json
 
 # scratch output from scripts/find-plant-images.mjs — downloaded candidates
-# awaiting human review/caption, not final content
+# awaiting human review/caption, not final content. Also used to hold private
+# reference copies of copyrighted images per newplant_protocol.md stage 2 —
+# this repo is PUBLIC on GitHub, so nothing here may ever be committed.
 /docs/superpowers/image-candidates/
 
