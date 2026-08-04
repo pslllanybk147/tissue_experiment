@@ -1,6 +1,6 @@
 # Plantlover Lab — สรุปโครงสร้างระบบทั้งหมด
 
-> อัปเดต 3 สิงหาคม 2026 · เทสต์ 294 ผ่าน 10 skip · lint สะอาด · build ผ่าน
+> อัปเดต 4 สิงหาคม 2026 · เทสต์ 322 ผ่าน 10 skip · lint สะอาด · build ผ่าน
 >
 > เอกสารนี้อธิบาย **โครงสร้างของระบบตั้งแต่ต้นจนจบ** ว่ามีอะไรบ้าง แต่ละส่วนทำหน้าที่อะไร
 > และเชื่อมกันอย่างไร ถ้าอยากรู้ว่า **ทำไม** ถึงออกมาเป็นแบบนี้ อ่าน `docs/superpowers/redesign-record.md`
@@ -159,6 +159,9 @@ medium-plan.ts     คำนวณสูตรอาหารตามจำน�
 
 โมดูลคำนวณที่ยังใช้อยู่ `medium-batch-calculations`, `working-stock-calculator`, `haiter-calculations`
 
+ทั้งสามตัวมี UI เรียกใช้ได้จริงแล้วผ่านเมนู "เครื่องคำนวณ" (ดูส่วนที่ 14) ก่อนหน้านี้มีแค่สูตรอาหาร
+ที่ฝังอยู่ในขั้น `prep-media` เท่านั้น อีกสองตัวเป็นฟังก์ชันบริสุทธิ์ที่ทดสอบไว้แต่ไม่มีใครเรียกใช้
+
 ---
 
 ## 8 · ชั้นข้อมูล
@@ -245,6 +248,45 @@ repository ที่มี `experiment`, `step-run`, `media`, `equipment`, `data
 | การตัดสินใจเชิงออกแบบ | `docs/superpowers/specs/2026-08-02-manual-first-redesign-design.md` |
 | แต่ละเฟสสร้างยังไง | `docs/superpowers/plans/2026-08-0*.md` |
 | ผลตรวจของจริงแต่ละรอบ | `handoff.md` |
+| การออกแบบเมนูนำทาง + เครื่องคำนวณลอยทับ | `docs/superpowers/specs/2026-08-03-nav-and-calculators-design.md` |
+| แผน implementation ของเฟส 1 (nav + calculator) | `docs/superpowers/plans/2026-08-04-nav-and-calculators.md` |
 
 **หมายเหตุ** ไฟล์ใน `plans/` และ `specs/` ที่ลงวันที่เดือนกรกฎาคม 2026 เป็นของงานก่อนหน้า
 ไม่ใช่เอกสารปัจจุบัน
+
+---
+
+## 14 · เมนูนำทาง และเครื่องคำนวณลอยทับ (เพิ่ม 4 สิงหาคม 2026)
+
+เฟส 1 ของงานปรับ UX/UI ที่ผู้ใช้รู้สึกว่าระบบเดิม "แข็งกระด้าง" (ดูเหตุผลเต็มใน
+`docs/superpowers/specs/2026-08-03-nav-and-calculators-design.md`) แก้สองเรื่อง:
+ก่อนหน้านี้ `GuideShell` มีแค่แถบหัวโชว์ชื่อแบรนด์กับปุ่มสลับธีม **ไม่มีเมนูนำทางเลย**
+และเครื่องคำนวณสองในสามตัว (working stock, haiter) **ไม่มี UI เรียกใช้เลย**
+
+**ระบบนำทาง** คอมโพเนนต์ใหม่ `src/components/nav/primary-nav.tsx` เรนเดอร์เมนูเดียวกัน
+2 รูปแบบสลับด้วย CSS breakpoint 768px: bottom tab bar คงที่บนมือถือ, แถบแนวนอนในหัวเดิม
+บนเดสก์ท็อป มี 3 รายการ หน้าแรก · อุปกรณ์ของฉัน · เครื่องคำนวณ (ปุ่มเปิด overlay ไม่ใช่ลิงก์)
+
+**Calculator overlay** `src/components/calculators/calculator-overlay.tsx` เป็นกล่องลอยทับ
+คุมสถานะเปิด/ปิดและจอที่กำลังแสดงด้วย reducer บริสุทธิ์ (`src/components/nav/overlay-state.ts`)
+ผ่าน Context (`src/components/nav/calculator-overlay-context.tsx`) มีหน้า picker เลือก 3 ตัว
+แล้วสลับไปแสดงฟอร์มโดยไม่เปลี่ยน route สูตรอาหารใช้ `MediumCalculator` เดิมซ้ำ (ไม่แก้ไฟล์นั้น)
+ส่วน **Working Stock** (`working-stock-calculator.tsx`) และ **Haiter** (`haiter-calculator.tsx`)
+เป็น UI ใหม่ทั้งคู่ ครอบฟังก์ชันคำนวณเดิมที่มีอยู่แล้วแต่ไม่เคยมีใครเรียก ทั้งสองดึงค่าเริ่มต้น
+(ความละเอียดเครื่องชั่ง/ปิเปตต์) จาก equipment repository ของผู้ใช้ถ้าล็อกอินอยู่
+
+**โทนภาพ** องค์ประกอบใหม่ทั้งหมดเริ่มใช้ token ชุดนุ่มกว่าเดิม (`--pl-line-soft`,
+`--pl-shadow-soft` ใน `src/app/guide.css`) แทนเส้นขอบหนา/เงาทึบแบบ `.pl-card` เดิม
+เป็นจุดเริ่มของเฟส 2 ที่จะ retrofit ทั้งระบบทีหลัง (ยังไม่ทำในรอบนี้)
+
+ไฟล์ที่เพิ่ม: `src/components/nav/{overlay-state,calculator-overlay-context,nav-items,primary-nav}.tsx`
+และ `src/components/calculators/{calculator-field,working-stock-calculator,haiter-calculator,calculator-overlay}.tsx`
+พร้อมเทสต์คู่กันทุกไฟล์ (`renderToStaticMarkup` ตามธรรมเนียมเดิม ไม่มี jsdom)
+ไฟล์ที่แก้: `src/app/guide.css`, `src/components/guide/guide-shell.tsx` (mount provider/nav/overlay)
+
+**ที่ยังไม่ทำในรอบนี้** ปรับโทนสี/เงา/เส้นขอบของหน้าที่มีอยู่แล้วทั้งระบบ (เฟส 2), โซนหลังบ้าน
+(`LabShell`) ยังไม่มี bottom tab bar หรือ overlay, การลาก handle บาร์เพื่อปิด overlay ทำแบบ
+แตะปิดแทนการลากจริง (ตัดสินใจลดความซับซ้อนไว้ในแผน), เมนู "รอบเพาะของฉัน"/"โปรไฟล์" ตั้งใจ
+ไม่ใส่ใน nav หลักตามที่ผู้ใช้เลือก, ยังไม่ได้ทำ interactive QA ผ่านเบราว์เซอร์จริง
+(เช็กด้วย `renderToStaticMarkup` + smoke test ผ่าน curl เท่านั้น เพราะ `npm run ui:verify`
+เดิมอ้างอิงเส้นทาง/คลาสของ UI รุ่นก่อนหน้าที่ไม่ตรงกับโครงสร้างปัจจุบันแล้ว ยังไม่ได้แก้ในรอบนี้)
