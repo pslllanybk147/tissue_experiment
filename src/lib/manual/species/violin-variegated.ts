@@ -37,6 +37,23 @@ export const violinVariegatedPack: PlantPack = {
   overrides: {
     cut: {
       illustrationId: "cut-explant-violin-bipennifolium",
+      actions: [
+        "ตัดยอดอ่อนยาวประมาณ 4 ถึง 5 ซม. จากปลายยอด นับจากปลายยอดลงมา ไม่ใช่จากก้านใบ",
+        "ตัดใต้ข้อโดยไม่ตัดผ่านตา",
+        "เหลือเนื้อไว้เหนือและใต้ตาพอให้จับได้ตอนฟอก แล้วค่อยตัดแต่งเหลือช่วงข้อสั้น 3 ถึง 5 มม. ก่อนวางลงอาหาร",
+        "วัดความยาวชิ้นแล้วจดไว้",
+      ],
+      evidence: {
+        level: "adapted",
+        sourceIds: ["source-us-patent-4855236"],
+        sourcePages: {
+          "source-us-patent-4855236":
+            "หัวข้อ “Initiation of In Vitro Culture” ใต้ Example 1 (สิทธิบัตรนี้ไม่มีเลขหน้ากำกับในเวอร์ชันเว็บของ Google Patents ใช้ชื่อหัวข้อแทน)",
+        },
+        note:
+          "ตัวเลขมาจากสิทธิบัตรอุตสาหกรรมของพันธุ์พี่น้อง Philodendron 'Burgundy' (ทรงพุ่มตั้ง ไม่ใช่ไม้เลื้อยแบบ Violin) " +
+          "ไม่ใช่งานตีพิมพ์ที่ผ่านการทบทวน และไม่ใช่ตัวเลขที่ยืนยันแล้วสำหรับ Violin ด่างโดยตรง ใช้เป็นจุดตั้งต้นเท่านั้น",
+      },
       referenceImages: [
         {
           url: "https://www.rareplantfairy.com/products/philodendron-bipennifolium-variegated-violin-growers-choice",
