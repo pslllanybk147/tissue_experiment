@@ -4,7 +4,7 @@ import { troubleshootingById } from "@/lib/manual/troubleshooting";
 import type { ResolvedManual, ResolvedStep } from "@/lib/manual/types";
 import { MediumCalculator } from "@/components/rounds/medium-calculator";
 import { EvidenceBadge } from "./evidence-badge";
-import { Illustration } from "./illustrations";
+import { Illustration, illustrationCredits } from "./illustrations";
 
 function List({ title, items }: { title: string; items: string[] }) {
   if (items.length === 0) return null;
@@ -68,6 +68,11 @@ export function StepDetail({ manual, step }: { manual: ResolvedManual; step: Res
         <div className="pl-card" style={{ marginTop: "18px", padding: 0, overflow: "hidden" }}>
           <Illustration id={step.illustrationId} />
         </div>
+      ) : null}
+      {step.illustrationId && illustrationCredits[step.illustrationId] ? (
+        <p className="pl-lede" style={{ marginTop: "6px", fontSize: "13px" }}>
+          {illustrationCredits[step.illustrationId]}
+        </p>
       ) : null}
 
       {step.safetyNotes.length > 0 ? (

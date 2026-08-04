@@ -100,6 +100,30 @@ function CutExplant() {
   );
 }
 
+// วาดทับจากภาพถ่าย Philodendron bipennifolium (CC BY-SA, เครดิต Makoto Makoto ผ่าน GBIF
+// occurrence 3949841382) เป็นภาพโครงสร้างระดับสปีชีส์เท่านั้น ไม่ใช่ภาพลายด่างของพันธุ์ Violin
+// ด่างโดยตรง — ดูคำบรรยายที่ illustrationCredits ด้านล่าง
+function CutExplantViolinTraced() {
+  return (
+    <Frame tone="var(--pl-sunk)">
+      <rect x="30" y="18" width="10" height="120" rx="4" fill="var(--pl-card)" />
+      <path d="M40 130c-6-24-2-46 10-62s16-32 10-50" strokeWidth="6" stroke="var(--pl-leaf)" fill="none" />
+      <path
+        d="M100 20C122 34 132 42 124 56C138 60 142 70 128 78C142 84 146 96 130 104C118 114 108 118 100 118C92 118 82 114 70 104C54 96 58 84 72 78C58 70 62 60 76 56C68 42 78 34 100 20Z"
+        fill="var(--pl-leaf)"
+      />
+      <path d="M40 100h60" stroke="var(--pl-red)" strokeDasharray="8 7" />
+      <circle cx="40" cy="100" r="9" fill="var(--pl-yellow)" />
+      <path d="M186 62l38 26" />
+      <path d="M186 88l38-26" />
+      <circle cx="182" cy="58" r="9" fill="var(--pl-card)" />
+      <circle cx="182" cy="92" r="9" fill="var(--pl-card)" />
+      <path d="M244 60v30" />
+      <path d="M258 60v30" />
+    </Frame>
+  );
+}
+
 function PrepMedia() {
   return (
     <Frame tone="var(--pl-sunk)">
@@ -270,6 +294,7 @@ export const illustrations: Record<string, () => ReactElement> = {
   "identify-compare": IdentifyCompare,
   "node-cut-diagram": NodeCutDiagram,
   "cut-explant": CutExplant,
+  "cut-explant-violin-bipennifolium": CutExplantViolinTraced,
   "prep-media": PrepMedia,
   "sterilize-timer": SterilizeTimer,
   "medium-placement": MediumPlacement,
@@ -279,6 +304,15 @@ export const illustrations: Record<string, () => ReactElement> = {
   acclimatize: Acclimatize,
   "monitor-variegation": MonitorVariegation,
   "close-round": CloseRound,
+};
+
+/** เครดิตบังคับสำหรับภาพที่วาดทับจากรูปถ่ายจริง (ต่างจากภาพ generic ที่วาดเองล้วน)
+ *  ตามเงื่อนไข CC BY-SA ที่ต้องให้เครดิตต้นฉบับเสมอเมื่อทำงานดัดแปลง */
+export const illustrationCredits: Partial<Record<string, string>> = {
+  "cut-explant-violin-bipennifolium":
+    "วาดทับจากภาพถ่าย Philodendron bipennifolium โดย Makoto Makoto (CC BY-SA ผ่าน GBIF) " +
+    "เป็นภาพโครงสร้างอ้างอิงระดับสปีชีส์เท่านั้น ไม่ใช่ภาพลายด่างของพันธุ์ Violin ด่างโดยตรง " +
+    "และไม่ใช่คำแนะนำตำแหน่งตัดที่ยืนยันแล้วสำหรับพันธุ์นี้",
 };
 
 export function Illustration({ id }: { id?: string }): ReactElement | null {

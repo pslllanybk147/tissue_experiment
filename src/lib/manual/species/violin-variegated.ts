@@ -36,6 +36,7 @@ export const violinVariegatedPack: PlantPack = {
   sequence: [...standardSequence],
   overrides: {
     cut: {
+      illustrationId: "cut-explant-violin-bipennifolium",
       referenceImages: [
         {
           url: "https://www.rareplantfairy.com/products/philodendron-bipennifolium-variegated-violin-growers-choice",
