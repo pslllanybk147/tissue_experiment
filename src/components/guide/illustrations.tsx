@@ -106,19 +106,21 @@ function CutExplant() {
 function CutExplantViolinTraced() {
   return (
     <Frame tone="var(--pl-sunk)">
-      <path d="M40 130C34 106 38 84 50 68C60 54 75 62 92 60" strokeWidth="6" stroke="var(--pl-leaf)" fill="none" />
+      <path d="M90 135C84 112 88 92 100 78C112 66 140 70 172 58" strokeWidth="6" stroke="var(--pl-leaf)" fill="none" />
       <path
-        d="M101.6,37.5 L73.7,22.5 L71.2,33.8 Q71.2,33.8 76.8,44.4 L82.4,55.0 Q82.4,55.0 81.8,57.5 L81.2,60.0 Q81.2,60.0 79.3,70.0 L77.4,80.0 L101.6,118.8 L124.6,80.0 Q124.6,80.0 123.9,70.0 L123.3,60.0 Q123.3,60.0 121.4,57.5 L119.6,55.0 Q119.6,55.0 125.5,44.4 L131.4,33.8 L128.9,26.9 L101.6,37.5 Z"
+        d="M191.6,37.5 L163.7,22.5 L161.2,33.8 Q161.2,33.8 166.8,44.4 L172.4,55.0 Q172.4,55.0 171.8,57.5 L171.2,60.0 Q171.2,60.0 169.3,70.0 L167.4,80.0 L191.6,118.8 L214.6,80.0 Q214.6,80.0 213.9,70.0 L213.3,60.0 Q213.3,60.0 211.4,57.5 L209.6,55.0 Q209.6,55.0 215.5,44.4 L221.4,33.8 L218.9,26.9 L191.6,37.5 Z"
         fill="var(--pl-leaf)"
       />
-      <path d="M10 96h60" stroke="var(--pl-red)" strokeDasharray="8 7" />
-      <circle cx="38" cy="96" r="9" fill="var(--pl-yellow)" />
-      <path d="M186 62l38 26" />
-      <path d="M186 88l38-26" />
-      <circle cx="182" cy="58" r="9" fill="var(--pl-card)" />
-      <circle cx="182" cy="92" r="9" fill="var(--pl-card)" />
-      <path d="M244 60v30" />
-      <path d="M258 60v30" />
+      {/* วงเล็บซ้ายบอกช่วงความยาวที่ตัด ระหว่างเส้นประบนกับล่างคือชิ้นที่เก็บไว้ (4 ถึง 5 ซม.
+          จากปลายยอด ตัดแต่งเหลือข้อสั้น 3 ถึง 5 มม. ตามที่ระบุเป็นตัวเลขจริงในเนื้อหาขั้นตอน) */}
+      <path d="M22 82h66" stroke="var(--pl-red)" strokeDasharray="8 7" />
+      <path d="M22 130h68" stroke="var(--pl-red)" strokeDasharray="8 7" />
+      <path d="M14 82h6M14 82v48M14 130h6" />
+      <circle cx="88" cy="106" r="8" fill="var(--pl-yellow)" />
+      <path d="M42 118 L89 130" />
+      <path d="M42 142 L89 130" />
+      <circle cx="37" cy="115" r="7" />
+      <circle cx="37" cy="142" r="7" />
     </Frame>
   );
 }
