@@ -51,3 +51,7 @@ next-env.d.ts
 # firebase / credentials
 *-adminsdk-*.json
 
+# scratch output from scripts/find-plant-images.mjs — downloaded candidates
+# awaiting human review/caption, not final content
+/docs/superpowers/image-candidates/
+
