@@ -107,13 +107,13 @@ function CutExplantViolinTraced() {
   return (
     <Frame tone="var(--pl-sunk)">
       <rect x="30" y="18" width="10" height="120" rx="4" fill="var(--pl-card)" />
-      <path d="M40 130c-6-24-2-46 10-62s16-32 10-50" strokeWidth="6" stroke="var(--pl-leaf)" fill="none" />
+      <path d="M40 130C34 106 38 84 50 68C60 54 75 62 92 60" strokeWidth="6" stroke="var(--pl-leaf)" fill="none" />
       <path
-        d="M100 20C122 34 132 42 124 56C138 60 142 70 128 78C142 84 146 96 130 104C118 114 108 118 100 118C92 118 82 114 70 104C54 96 58 84 72 78C58 70 62 60 76 56C68 42 78 34 100 20Z"
+        d="M101.6,37.5 L73.7,22.5 L71.2,33.8 Q71.2,33.8 76.8,44.4 L82.4,55.0 Q82.4,55.0 81.8,57.5 L81.2,60.0 Q81.2,60.0 79.3,70.0 L77.4,80.0 L101.6,118.8 L124.6,80.0 Q124.6,80.0 123.9,70.0 L123.3,60.0 Q123.3,60.0 121.4,57.5 L119.6,55.0 Q119.6,55.0 125.5,44.4 L131.4,33.8 L128.9,26.9 L101.6,37.5 Z"
         fill="var(--pl-leaf)"
       />
-      <path d="M40 100h60" stroke="var(--pl-red)" strokeDasharray="8 7" />
-      <circle cx="40" cy="100" r="9" fill="var(--pl-yellow)" />
+      <path d="M35 128h105" stroke="var(--pl-red)" strokeDasharray="8 7" />
+      <circle cx="35" cy="128" r="9" fill="var(--pl-yellow)" />
       <path d="M186 62l38 26" />
       <path d="M186 88l38-26" />
       <circle cx="182" cy="58" r="9" fill="var(--pl-card)" />
