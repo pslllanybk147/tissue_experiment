@@ -52,6 +52,15 @@ export type TroubleshootingEntry = {
   evidence: EvidenceRef;
 };
 
+/** ลิงก์ภาพภายนอกไว้ "ดูลักษณะ" เท่านั้น เช่นรูปสินค้าจากร้านขายต้นไม้ที่แสดงลายด่างจริง
+ *  ไม่ใช่หลักฐานของคำแนะนำและไม่ผ่านตารางใบอนุญาตในขั้นที่ 5 ของ newplant_protocol.md
+ *  เพราะเป็นแค่ลิงก์ ไม่ใช่การก็อปรูปมาโฮสต์เอง — ต้องมี note กำกับข้อจำกัดเสมอ */
+export type ReferenceImageLink = {
+  url: string;
+  label: string;
+  note: string;
+};
+
 export type ManualStepDef = {
   id: string;
   title: string;
@@ -67,6 +76,7 @@ export type ManualStepDef = {
   illustrationId?: string;
   /** อ้างถึงคลังอาการกลาง resolve ตอน render เหมือนที่ sourceIds ทำ */
   troubleshootingIds?: string[];
+  referenceImages?: ReferenceImageLink[];
   durationMinutes: number | null;
 };
 

@@ -35,6 +35,20 @@ export const violinVariegatedPack: PlantPack = {
   durationLabel: "4 ถึง 8 เดือน",
   sequence: [...standardSequence],
   overrides: {
+    cut: {
+      referenceImages: [
+        {
+          url: "https://www.rareplantfairy.com/products/philodendron-bipennifolium-variegated-violin-growers-choice",
+          label: "Rare Plant Fairy — Philodendron Bipennifolium Variegated 'Violin'",
+          note: "รูปสินค้าจากร้านขายต้นไม้ สงวนลิขสิทธิ์ผู้ขาย ใช้ดูลักษณะลายด่างของพันธุ์นี้เท่านั้น ไม่ใช่คำแนะนำตำแหน่งตัดหรือหลักฐานทางวิชาการ",
+        },
+        {
+          url: "https://www.limitedleaves.com/en/bippenifolium-aurea-variegated.html",
+          label: "Limited Leaves — Bippenifolium Aurea Variegated Ø14",
+          note: "รูปสินค้าจากร้านขายต้นไม้ สงวนลิขสิทธิ์ผู้ขาย ใช้ดูลักษณะลายด่างของพันธุ์นี้เท่านั้น ไม่ใช่คำแนะนำตำแหน่งตัดหรือหลักฐานทางวิชาการ",
+        },
+      ],
+    },
     sterilize: {
       evidence: {
         level: "adapted",

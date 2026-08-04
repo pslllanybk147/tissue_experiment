@@ -117,6 +117,23 @@ export function StepDetail({ manual, step }: { manual: ResolvedManual; step: Res
         </ul>
       ) : null}
 
+      {step.referenceImages && step.referenceImages.length > 0 ? (
+        <section style={{ marginTop: "18px" }}>
+          <h2 className="pl-h2">ภาพอ้างอิงภายนอก (ดูลักษณะเท่านั้น)</h2>
+          <p className="pl-lede" style={{ marginTop: "6px" }}>
+            ลิงก์ไปหน้าเว็บภายนอกเพื่อดูลักษณะเท่านั้น ไม่ใช่คำแนะนำตำแหน่งตัดหรือหลักฐานของขั้นนี้
+          </p>
+          <ul style={{ margin: "10px 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "8px" }}>
+            {step.referenceImages.map((image) => (
+              <li key={image.url}>
+                <a className="pl-link" href={image.url}>{image.label}</a>
+                <p className="pl-lede" style={{ marginTop: "2px" }}>{image.note}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
       <nav style={{ display: "flex", gap: "12px", marginTop: "28px" }}>
         {previous ? (
           <Link
