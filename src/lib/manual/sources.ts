@@ -1,4 +1,4 @@
-export type ManualSourceKind = "taxonomy" | "peer-reviewed" | "technical-guide" | "research-gap";
+export type ManualSourceKind = "taxonomy" | "peer-reviewed" | "technical-guide" | "research-gap" | "patent" | "anecdotal";
 
 export type ManualSourceRecord = {
   id: string;
@@ -109,10 +109,31 @@ export const manualSources: ManualSourceRecord[] = [
   },
   {
     id: "source-violin-gap",
-    title: "Violin variegated evidence register — ยังไม่พบงานตรงพันธุ์",
-    url: "https://powo.science.kew.org/taxon/urn%3Alsid%3Aipni.org%3Anames%3A326132-2",
+    title: "Violin variegated evidence register — ยังไม่พบงานตรงพันธุ์ (species-direct)",
+    url: "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:87662-1",
     kind: "research-gap",
-    accessedAt: "2026-08-02",
+    accessedAt: "2026-08-04",
+  },
+  {
+    id: "source-kew-bipennifolium",
+    title: "Plants of the World Online — Philodendron bipennifolium Schott (ระดับสปีชีส์)",
+    url: "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:87662-1",
+    kind: "taxonomy",
+    accessedAt: "2026-08-04",
+  },
+  {
+    id: "source-selfheading-philodendron-2012",
+    title: "Micropropagation of self-heading Philodendron via direct shoot regeneration",
+    url: "https://www.sciencedirect.com/science/article/abs/pii/S030442381200177X",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-04",
+  },
+  {
+    id: "source-us-patent-4855236",
+    title: "US4855236A — Process for plant tissue culture propagation (Philodendron ‘Burgundy’, Example 1)",
+    url: "https://patents.google.com/patent/US4855236A/en",
+    kind: "patent",
+    accessedAt: "2026-08-04",
   },
 ];
 
