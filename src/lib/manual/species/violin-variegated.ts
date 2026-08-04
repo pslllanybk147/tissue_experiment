@@ -3,9 +3,10 @@ import { standardSequence } from "./pink-princess";
 
 // ค้นตามขั้นที่ 1 ของ docs/superpowers/newplant_protocol.md เมื่อ 2026-08-04 ครอบคลุมชื่อวิทยาศาสตร์
 // + micropropagation, ชื่อพ้อง (ยืนยันว่า "Philodendron panduriforme" ไม่ใช่ชื่อพ้องของพันธุ์นี้
-// ตามที่เข้าใจผิดกันทั่วไป), พันธุ์พี่น้อง/สกุลเดียวกัน, ชื่อไทย, และสิทธิบัตร ยังไม่ได้ค้น
-// วิทยานิพนธ์ (OATD/ThaiLIS) และฟอรัมนักปลูกอย่างเป็นระบบ — ดูบันทึกเต็มใน
-// docs/superpowers/search-logs/violin-variegated.md
+// ตามที่เข้าใจผิดกันทั่วไป), พันธุ์พี่น้อง/สกุลเดียวกัน, ชื่อไทย, สิทธิบัตร, วิทยานิพนธ์
+// (OATD ผ่าน web search — ไม่พบเล่มที่ตรงพันธุ์ ยังไม่ได้ค้น ThaiLIS/TDC ผ่านระบบค้นของเว็บโดยตรง)
+// และฟอรัมนักปลูก (พบคำแนะนำปักชำจากข้อในดิน เป็น anecdotal ไม่ใช่ tissue culture)
+// ดูบันทึกเต็มใน docs/superpowers/search-logs/violin-variegated.md
 const searchLog = {
   searchedAt: "2026-08-04",
   searchQueries: [
@@ -15,6 +16,11 @@ const searchLog = {
     'ฟิโลเดนดรอน ไวโอลิน เพาะเลี้ยงเนื้อเยื่อ OR "Philodendron bipennifolium" การเพาะเลี้ยงเนื้อเยื่อ',
     "Micropropagation of self-heading Philodendron via direct shoot regeneration node explant BA",
     "US Patent plant tissue culture propagation Philodendron explant preparation",
+    '"Philodendron bipennifolium" thesis dissertation micropropagation tissue culture',
+    "site:oatd.org Philodendron micropropagation",
+    "ThaiLIS TDC วิทยานิพนธ์ ฟิโลเดนดรอน เพาะเลี้ยงเนื้อเยื่อ",
+    '"Philodendron bipennifolium" OR "Violin variegated" propagation node cutting forum grower experience',
+    '"In vitro micropropagation of Philodendron cannifolium" shoot tip explant results',
   ],
 };
 
@@ -45,21 +51,24 @@ export const violinVariegatedPack: PlantPack = {
     multiply: {
       evidence: {
         level: "adapted",
-        sourceIds: ["source-selfheading-philodendron-2012"],
+        sourceIds: ["source-selfheading-philodendron-2012", "source-cannifolium-2008", "source-birkin-thai-2023"],
         note:
           "งานทดสอบ Philodendron แบบทรงพุ่มตั้งหลายพันธุ์จากต้นแม่จริง พบว่าชิ้นส่วนข้อลำต้นตอบสนองดีที่สุด " +
           "เมื่อเทียบกับแผ่นใบและก้านใบ และ BA 0.5 ถึง 1 mg/L ให้ยอดที่ความถี่ 55.6 ถึง 80.6% เฉลี่ย 40.8 ถึง 50.4 ยอดต่อชิ้น " +
-          "แล้วแต่พันธุ์ที่ทดสอบ พันธุ์ในงานนี้เป็นทรงพุ่มตั้งทั้งหมด ต่างจาก Violin ที่เป็นไม้เลื้อย " +
-          "อัตราตอบสนองจริงของ Violin อาจต่างจากนี้ ให้ถือเป็นจุดตั้งต้นเท่านั้น",
+          "แล้วแต่พันธุ์ที่ทดสอบ งานอีกสองชิ้นให้ผลไปทางเดียวกัน คือ Philodendron cannifolium ใช้ BAP 1.0 mg/L " +
+          "ร่วมกับ IBA 0.5 mg/L ได้ 11.4 ยอดต่อชิ้น และงานไทยของ Philodendron 'Birkin' ใช้ BA 2 mg/L ได้ราว 4.7 ยอดต่อชิ้น " +
+          "สามงานนี้จึงยืนยันช่วง BA ที่ใช้ได้ผลไปในทิศทางเดียวกัน แต่พันธุ์ในทุกงานเป็นทรงพุ่มตั้งหรือยังไม่ยืนยันรูปแบบการเจริญ " +
+          "ไม่มีงานใดทำกับพันธุ์ไม้เลื้อยแบบ Violin โดยตรง อัตราตอบสนองจริงของ Violin อาจต่างจากนี้ ให้ถือเป็นจุดตั้งต้นเท่านั้น",
       },
     },
     root: {
       evidence: {
         level: "adapted",
-        sourceIds: ["source-selfheading-philodendron-2012"],
+        sourceIds: ["source-selfheading-philodendron-2012", "source-cannifolium-2008"],
         note:
           "งานเดียวกับขั้นเพิ่มจำนวน ยอดที่ได้จากอาหาร BA 0.5 mg/L นำไปออกรากด้วย IBA 0.1 ถึง 1 mg/L " +
-          "บ่มหนึ่งเดือน ต้นที่ออกรากรอดหลังปรับสภาพในโรงเรือน 100%",
+          "บ่มหนึ่งเดือน ต้นที่ออกรากรอดหลังปรับสภาพในโรงเรือน 100% งาน Philodendron cannifolium ใช้ NAA 1 ถึง 2 mg/L " +
+          "แทน ก็ได้ราก 100% เช่นกัน เป็นออกซินคนละตัว ระบบเก็บสูตร IBA ไว้เป็นหลัก และมี NAA เป็นทางเลือกในสูตรอาหาร",
       },
     },
     acclimatize: {
@@ -117,12 +126,31 @@ export const violinVariegatedPack: PlantPack = {
       ],
       evidence: { level: "adapted", sourceIds: ["source-selfheading-philodendron-2012"] },
     },
+    {
+      id: "rooting-naa",
+      title: "ระยะออกราก ทางเลือกที่ใช้ NAA",
+      pH: "5.7 ถึง 5.8",
+      ingredients: [
+        { name: "MS basal salts", amountPerLiter: 1, unit: "×" },
+        { name: "Sucrose", amountPerLiter: 30, unit: "g/L" },
+        { name: "Agar", amountPerLiter: 7.5, unit: "g/L" },
+        { name: "NAA", amountPerLiter: 1, unit: "mg/L", note: "ใช้น้ำยาแม่ จุดเริ่มของช่วงที่งานทดสอบ 1 ถึง 2 mg/L" },
+      ],
+      evidence: {
+        level: "adapted",
+        sourceIds: ["source-cannifolium-2008"],
+        note: "งาน Philodendron cannifolium ใช้ NAA แทน IBA ได้ราก 100% เท่ากัน เป็นสกุลเดียวกันแต่คนละสาร ยังไม่มีงานเปรียบเทียบตรง ๆ",
+      },
+    },
   ],
   sourceIds: [
     "source-violin-gap",
     "source-kew-bipennifolium",
     "source-kew-philodendron",
     "source-selfheading-philodendron-2012",
+    "source-cannifolium-2008",
+    "source-birkin-thai-2023",
     "source-us-patent-4855236",
+    "source-violin-anecdotal-cutting",
   ],
 };

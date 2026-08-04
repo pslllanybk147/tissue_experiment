@@ -135,6 +135,27 @@ export const manualSources: ManualSourceRecord[] = [
     kind: "patent",
     accessedAt: "2026-08-04",
   },
+  {
+    id: "source-cannifolium-2008",
+    title: "In vitro micropropagation of Philodendron cannifolium",
+    url: "https://koreascience.or.kr/article/JAKO200835054214957.page",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-04",
+  },
+  {
+    id: "source-birkin-thai-2023",
+    title: "Effects of BA, TDZ, and NAA on Growth of Philodendron ‘Birkin’ In Vitro",
+    url: "https://ph01.tci-thaijo.org/index.php/Scipsru/article/view/250932",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-04",
+  },
+  {
+    id: "source-violin-anecdotal-cutting",
+    title: "Grower propagation notes for Philodendron bipennifolium (soil cutting, not tissue culture — anecdotal only)",
+    url: "https://plantophiles.com/plant-care/philodendron-bipennifolium/",
+    kind: "anecdotal",
+    accessedAt: "2026-08-04",
+  },
 ];
 
 export function sourceById(id: string): ManualSourceRecord | null {
