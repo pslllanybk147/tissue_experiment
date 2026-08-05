@@ -57,3 +57,6 @@ next-env.d.ts
 # this repo is PUBLIC on GitHub, so nothing here may ever be committed.
 /docs/superpowers/image-candidates/
 
+
+# visual brainstorming companion
+.superpowers/
