@@ -170,6 +170,11 @@
   background: var(--pl-red);
 }
 
+/* คำนิยามจากตำรา ไม่ใช่ข้ออ้างเชิงวิธีการ จึงใช้สีกลางที่ไม่สื่อว่าดีหรือแย่ */
+.pl-chip-fact {
+  background: var(--pl-sky);
+}
+
 .pl-h1 {
   font-size: clamp(26px, 5vw, 38px);
   font-weight: 700;

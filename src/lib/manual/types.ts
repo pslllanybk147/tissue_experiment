@@ -1,4 +1,9 @@
-export type EvidenceLevel = "species-direct" | "adapted" | "unsupported";
+/** ระดับหลักฐานของเนื้อหาแต่ละชิ้น
+ *  สามค่าแรกใช้กับ "ข้ออ้าง" คือข้อความที่สั่งให้ลงมือทำหรือมีตัวเลขที่ต้องทำตาม
+ *  ส่วน botanical-fact ใช้กับ "คำนิยาม" เช่น "ข้อคือวงนูนที่ใบและรากงอกออกมา"
+ *  ซึ่งตรวจได้จากตำราก่อนลงมือ จึงไม่เข้ากฎจุดอ่อนที่สุด (ดู evidence-level.ts)
+ *  แต่ยังบังคับให้ระบุ sourceIds เหมือนเดิม */
+export type EvidenceLevel = "species-direct" | "adapted" | "unsupported" | "botanical-fact";
 
 export type MeasurementUnit = "mL" | "g" | "mg/L" | "%" | "min" | "°C" | "pH" | "count";
 

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { evidenceLabel } from "@/components/guide/evidence-badge";
 import { allSlugs, resolveBySlug } from "@/lib/manual/registry";
 import { sourceById } from "@/lib/manual/sources";
 import { manualSummary } from "@/lib/manual/summary";
@@ -8,7 +9,6 @@ export function generateStaticParams() {
 }
 
 const originLabel = { core: "แกนกลาง", override: "ปรับค่า", pack: "เขียนเอง" } as const;
-const evidenceLabel = { "species-direct": "ตรงพันธุ์", adapted: "ประยุกต์", unsupported: "ยังไม่มีงานรองรับ" } as const;
 
 export default async function AdminManualDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
