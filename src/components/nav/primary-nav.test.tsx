@@ -8,7 +8,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("PrimaryNav", () => {
-  it("แสดงลิงก์หน้าแรก รอบเพาะของฉัน อุปกรณ์ของฉัน และปุ่มเครื่องคำนวณ", () => {
+  it("แสดงลิงก์หน้าแรก แก้ปัญหา อุปกรณ์ของฉัน และปุ่มเครื่องคำนวณ", () => {
     const html = renderToStaticMarkup(
       <CalculatorOverlayProvider>
         <PrimaryNav />
@@ -16,13 +16,25 @@ describe("PrimaryNav", () => {
     );
 
     expect(html).toContain('href="/"');
-    expect(html).toContain('href="/my/rounds"');
+    expect(html).toContain('href="/problem"');
     expect(html).toContain('href="/my/equipment"');
     expect(html).toContain("หน้าแรก");
-    expect(html).toContain("รอบเพาะของฉัน");
+    expect(html).toContain("แก้ปัญหา");
     expect(html).toContain("อุปกรณ์ของฉัน");
     expect(html).toContain("เครื่องคำนวณ");
     expect(html).toContain("<button");
+  });
+
+  // รอบเพาะเข้าจากหน้าคู่มือแทน เพราะ bottom tab bar บนมือถือรับได้ 4 ช่อง
+  // และการแก้ปัญหาเป็นสิ่งที่ผู้ใช้ต้องเข้าถึงเร็วที่สุดตอนขวดมีปัญหา
+  it("ไม่มีรอบเพาะของฉันในเมนูหลัก แต่ต้องยังเข้าถึงได้จากที่อื่น", () => {
+    const html = renderToStaticMarkup(
+      <CalculatorOverlayProvider>
+        <PrimaryNav />
+      </CalculatorOverlayProvider>,
+    );
+
+    expect(html).not.toContain('href="/my/rounds"');
   });
 
   it("ทำเครื่องหมาย aria-current ให้รายการที่ตรงกับ pathname ปัจจุบัน", () => {
