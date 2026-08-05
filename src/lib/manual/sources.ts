@@ -240,6 +240,62 @@ export const manualSources: ManualSourceRecord[] = [
     kind: "peer-reviewed",
     accessedAt: "2026-08-05",
   },
+  {
+    id: "source-monstera-thai-constellation",
+    title: "Micropropagation of Monstera deliciosa Liebm. 'Thai Constellation' — nodal segments 0.8–1.0 cm from mother plants",
+    url: "https://sejong.elsevierpure.com/en/publications/micropropagation-of-monstera-deliciosa-liebm-thai-constellation/",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-05",
+  },
+  {
+    id: "source-monstera-sterilization",
+    title: "Optimization of Surface Sterilization and Organogenesis of Monstera deliciosa — stepped sodium hypochlorite series",
+    url: "https://conference.um.ac.id/index.php/LAS/article/download/7854/2307",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-05",
+  },
+  {
+    id: "source-epipremnum-syngonium-invitro",
+    title: "In vitro culture of Epipremnum aureum, Syngonium podophyllum and Lonicera macranthodes",
+    url: "https://www.researchgate.net/publication/283888240",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-05",
+  },
+  {
+    id: "source-epipremnum-organogenesis",
+    title: "Direct Organogenesis of Epipremnum aureum G.S. Bunting for Mass Propagation — single nodal segments with axillary bud",
+    url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC12608126/",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-05",
+  },
+  {
+    id: "source-anthurium-lamina-petiole",
+    title: "In vitro Propagation of Anthurium andraeanum Linn. (White) via Indirect Organogenesis through Leaf Lamina and Petiole Explants",
+    url: "https://www.researchgate.net/publication/348844674",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-05",
+  },
+  {
+    id: "source-anthurium-sterilization-jewel",
+    title: "Standardization of Surface Sterilization Technique for In-vitro Propagation of Anthurium cv. Jewel — best results used mercuric chloride",
+    url: "https://www.academia.edu/22728372",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-05",
+  },
+  {
+    id: "source-alocasia-commercial",
+    title: "Commercial Micropropagation of Alocasia species — disinfection with 3.0% sodium hypochlorite for 20 minutes",
+    url: "https://www.academia.edu/37716492",
+    kind: "technical-guide",
+    accessedAt: "2026-08-05",
+  },
+  {
+    id: "source-sansevieria-trifasciata-2022",
+    title: "Indirect organogenesis for high frequency shoot regeneration of two cultivars of Sansevieria trifasciata Prain",
+    url: "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9122912/",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-05",
+  },
 ];
 
 export function sourceById(id: string): ManualSourceRecord | null {
