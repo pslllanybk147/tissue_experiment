@@ -86,7 +86,7 @@ export function StepRunner({
     .filter((entry) => entry !== null);
 
   return (
-    <>
+    <div className="pl-do">
       <OnlineStatus />
       <p className="pl-mono">
         <Link className="pl-link" href={`/my/rounds/${view.lotId}`} style={{ color: "inherit" }}>{view.title}</Link>
@@ -270,6 +270,6 @@ export function StepRunner({
           </Link>
         ) : null}
       </nav>
-    </>
+    </div>
   );
 }
