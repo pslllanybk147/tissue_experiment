@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { plainText } from "@/lib/manual/terms";
 import type { ResolvedManual } from "@/lib/manual/types";
 import { EvidenceBadge, evidenceLabel } from "./evidence-badge";
 
@@ -35,7 +36,7 @@ export function StepMap({ manual }: { manual: ResolvedManual }) {
             >
               <p className="pl-mono">ขั้นที่ {step.order + 1}</p>
               <p className="pl-h2" style={{ marginTop: "4px" }}>{step.title}</p>
-              <p className="pl-lede" style={{ marginTop: "4px" }}>{step.summary}</p>
+              <p className="pl-lede" style={{ marginTop: "4px" }}>{plainText(step.summary)}</p>
               <p style={{ marginTop: "10px" }}>
                 <EvidenceBadge level={step.evidence.level} />
               </p>

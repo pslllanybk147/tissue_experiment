@@ -23,7 +23,9 @@ export type ResolvedPath = {
   blocked: CapabilityId[];
 };
 
-const rank: Record<EvidenceLevel, number> = { "species-direct": 3, adapted: 2, unsupported: 1 };
+// botanical-fact อยู่อันดับสูงสุดเพราะเป็นคำนิยาม ไม่ใช่ข้ออ้างเชิงวิธีการ
+// เส้นทางอุปกรณ์ไม่ควรมีค่านี้อยู่แล้ว และถ้ามีก็ไม่ควรไปฉุดวิธีอื่น
+const rank: Record<EvidenceLevel, number> = { "botanical-fact": 4, "species-direct": 3, adapted: 2, unsupported: 1 };
 
 export const defaultKit: EquipmentKit = {
   owned: [],

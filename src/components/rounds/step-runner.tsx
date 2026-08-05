@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { EvidenceBadge } from "@/components/guide/evidence-badge";
 import { Illustration } from "@/components/guide/illustrations";
+import { plainText } from "@/lib/manual/terms";
 import { troubleshootingById } from "@/lib/manual/troubleshooting";
 import type { GuidedStepStatus } from "@/lib/domain/models";
 import type { ObservationMedia } from "@/lib/domain/models";
@@ -93,7 +94,7 @@ export function StepRunner({
       </p>
       <h1 className="pl-h1" style={{ marginTop: "8px" }}>{step.title}</h1>
       <p style={{ marginTop: "6px" }}><EvidenceBadge level={step.evidence.level} /></p>
-      <p className="pl-lede" style={{ marginTop: "12px" }}>{step.summary}</p>
+      <p className="pl-lede" style={{ marginTop: "12px" }}>{plainText(step.summary)}</p>
 
       {step.illustrationId ? (
         <div className="pl-card" style={{ marginTop: "18px", padding: 0, overflow: "hidden" }}>

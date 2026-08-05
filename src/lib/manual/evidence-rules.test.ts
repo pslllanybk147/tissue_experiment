@@ -36,6 +36,13 @@ describe("กฎของหลักฐาน", () => {
     }
   });
 
+  it("ข้อมูลจากตำราต้องระบุแหล่ง ห้ามใช้เป็นทางเลี่ยงการอ้างอิง", () => {
+    for (const item of collect()) {
+      if (item.evidence.level !== "botanical-fact") continue;
+      expect(item.evidence.sourceIds.length, `${item.where} เป็นข้อมูลจากตำราแต่ไม่ระบุแหล่ง`).toBeGreaterThan(0);
+    }
+  });
+
   it("วันที่ค้นเป็นรูปแบบ YYYY-MM-DD", () => {
     for (const item of collect()) {
       if (!item.evidence.searchedAt) continue;

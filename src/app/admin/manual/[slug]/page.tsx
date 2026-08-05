@@ -1,14 +1,21 @@
 import { notFound } from "next/navigation";
+import { evidenceLabel } from "@/components/guide/evidence-badge";
 import { allSlugs, resolveBySlug } from "@/lib/manual/registry";
 import { sourceById } from "@/lib/manual/sources";
 import { manualSummary } from "@/lib/manual/summary";
+import type { StepOrigin } from "@/lib/manual/types";
 
 export function generateStaticParams() {
   return allSlugs().map((slug) => ({ slug }));
 }
 
-const originLabel = { core: "แกนกลาง", override: "ปรับค่า", pack: "เขียนเอง" } as const;
-const evidenceLabel = { "species-direct": "ตรงพันธุ์", adapted: "ประยุกต์", unsupported: "ยังไม่มีงานรองรับ" } as const;
+const originLabel: Record<StepOrigin, string> = {
+  core: "แกนกลาง",
+  form: "ทรง",
+  genus: "สกุล",
+  override: "ปรับค่า",
+  pack: "เขียนเอง",
+};
 
 export default async function AdminManualDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -21,7 +28,7 @@ export default async function AdminManualDetailPage({ params }: { params: Promis
       <h1>{manual.scientificName}</h1>
       <p>{manual.summary}</p>
       <p>
-        {summary.stepCount} ขั้น · แกนกลาง {summary.byOrigin.core} · ปรับค่า {summary.byOrigin.override} · เขียนเอง {summary.byOrigin.pack}
+        {summary.stepCount} ขั้น · แกนกลาง {summary.byOrigin.core} · ทรง {summary.byOrigin.form} · สกุล {summary.byOrigin.genus} · ปรับค่า {summary.byOrigin.override} · เขียนเอง {summary.byOrigin.pack}
       </p>
 
       <h2>สูตรอาหาร</h2>
