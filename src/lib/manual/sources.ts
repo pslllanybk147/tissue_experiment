@@ -94,6 +94,13 @@ export const manualSources: ManualSourceRecord[] = [
     accessedAt: "2026-08-02",
   },
   {
+    id: "source-glabra-browning-2016",
+    title: "Remedial effect of ascorbic acid and citric acid on oxidative browning of Glycyrrhiza glabra callus cultures",
+    url: "https://doi.org/10.5114/bta.2016.62355",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-05",
+  },
+  {
     id: "source-sigma-explant-sterilization",
     title: "Explant Sterilization — Plant Tissue Culture Protocol",
     url: "https://www.sigmaaldrich.com/US/en/technical-documents/protocol/cell-culture-and-cell-culture-analysis/plant-tissue-culture/explant-sterilization",
