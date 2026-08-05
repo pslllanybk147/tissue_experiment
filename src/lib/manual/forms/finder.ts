@@ -1,8 +1,16 @@
 export type FinderChoice = { value: string; label: string; hint: string };
 export type FinderQuestion = { key: string; ask: string; choices: FinderChoice[] };
-/** planned เป็นจริงเมื่อทรงนั้นอยู่ในแผนแต่ยังไม่ได้เขียน หน้าจอต้องบอกตรง ๆ
- *  ไม่ใช่ซ่อนตัวเลือกจนผู้ใช้คิดว่าต้นของตัวเองไม่มีในระบบ */
-export type FinderOutcome = { formId: string; planned: boolean };
+/** planned เป็นจริงเมื่อทรงนั้นยังไม่ได้เขียน หน้าจอต้องบอกตรง ๆ
+ *  ไม่ใช่ซ่อนตัวเลือกจนผู้ใช้คิดว่าต้นของตัวเองไม่มีในระบบ
+ *
+ *  reason แยกสองกรณีที่ต้องพูดคนละแบบ
+ *  identified คือระบุทรงได้แล้วแต่ยังไม่ได้เขียนคู่มือของทรงนั้น
+ *  uncovered คือผู้ใช้บอกเองว่าต้นไม่ตรงกับทรงใดเลย เรายังระบุไม่ได้ด้วยซ้ำ */
+export type FinderOutcome = {
+  formId: string;
+  planned: boolean;
+  reason?: "identified" | "uncovered";
+};
 
 export const finderQuestions: FinderQuestion[] = [
   {
@@ -10,34 +18,67 @@ export const finderQuestions: FinderQuestion[] = [
     ask: "ลำต้นของต้นคุณเป็นแบบไหน",
     choices: [
       { value: "vine", label: "เลื้อยหรือพาดขึ้นหลัก", hint: "ลำต้นทอดยาว มีใบออกเป็นระยะตลอดความยาว" },
-      { value: "rosette", label: "ตั้งตรง ใบออกรอบจุดเดียว", hint: "ก้านใบซ้อนกันออกจากโคนเดียว มองไม่เห็นลำต้นชัด" },
-      { value: "rhizome", label: "มีหัวหรือเหง้าอยู่ใต้ดิน", hint: "ขุดดินขึ้นมาเจอหัวหรือแง่งทอดขวาง" },
-      { value: "leaf-only", label: "ใบออกจากดินเลย ไม่เห็นลำต้น", hint: "ใบหนาตั้งขึ้นตรงจากดิน" },
+      { value: "upright", label: "ตั้งตรง เห็นลำต้นหรือกอก้านใบ", hint: "ก้านใบซ้อนกันออกจากโคนเดียว หรือแตกกิ่งเป็นพุ่ม" },
+      { value: "underground", label: "ส่วนที่อ้วนอยู่ใต้ดินหรือที่โคนกอ", hint: "ขุดดินขึ้นมาเจอแง่ง หรือมีลำอ้วนตั้งจากโคนกอ" },
+      { value: "leaf-only", label: "ใบออกจากดินเลย ไม่เห็นลำต้น", hint: "ใบตั้งขึ้นตรงจากดินเป็นกอ" },
+      { value: "none", label: "ไม่ตรงสักข้อ", hint: "เช่นเฟิร์น ปาล์ม กระบองเพชร หรือต้นที่หน้าตาไม่เหมือนข้อไหนเลย" },
     ],
   },
   {
-    key: "node",
-    ask: "ตามลำต้นมีวงนูนหรือปุ่มเป็นระยะ ๆ ไหม",
+    key: "texture",
+    ask: "ลำต้นเป็นแบบไหนเมื่อจับดู",
     choices: [
-      { value: "visible", label: "เห็นชัด บางทีมีรากเล็ก ๆ งอกออกมา", hint: "ไล่นิ้วไปตามลำต้นแล้วสะดุดเป็นปุ่ม" },
-      { value: "faint", label: "เห็นราง ๆ หรือไม่แน่ใจ", hint: "ลำต้นค่อนข้างเรียบ หาปุ่มไม่เจอชัด" },
+      { value: "soft", label: "อวบน้ำ งอได้ ผิวยังเขียว", hint: "บีบแล้วนุ่ม เช่นเถาไม้ใบในบ้าน" },
+      { value: "woody", label: "แข็งเป็นไม้ ผิวออกน้ำตาล", hint: "งอแล้วหักดัง เช่นกุหลาบ ชวนชม" },
+      { value: "hollow", label: "กลวง เคาะแล้วเสียงโปร่ง", hint: "มีข้อเป็นวงนูนถี่ ๆ เช่นไผ่" },
+    ],
+  },
+  {
+    key: "leaf",
+    ask: "ใบของต้นคุณเป็นแบบไหน",
+    choices: [
+      { value: "thick", label: "หนา แข็ง ตั้งขึ้นตรง", hint: "หักแล้วมีน้ำเมือก เช่นลิ้นมังกร" },
+      { value: "thin", label: "บาง นุ่ม เห็นเส้นใบนูนที่หลังใบ", hint: "เช่นบีโกเนีย" },
+    ],
+  },
+  {
+    key: "bulb",
+    ask: "มีลำอ้วนเป็นท่อนตั้งขึ้นจากโคนกอไหม",
+    choices: [
+      { value: "yes", label: "มี และรากออกจากโคนกอไม่ใช่จากดิน", hint: "เช่นกล้วยไม้สกุลหวาย" },
+      { value: "no", label: "ไม่มี ส่วนที่อ้วนอยู่ใต้ดิน", hint: "ขุดขึ้นมาเจอแง่งทอดขวาง เช่นขิง ข่า" },
     ],
   },
 ];
 
-/** ปลายทางของแต่ละเส้นทางคำตอบ คีย์คือค่าที่ตอบต่อกันด้วย "/" */
+/** ปลายทางของแต่ละเส้นทางคำตอบ คีย์คือค่าที่ตอบต่อกันด้วย "/"
+ *  ทุกทรงในตารางของสเปกมีเส้นทางมาถึงครบแล้ว จึงไม่มีปลายทางที่ planned เหลืออยู่ */
 const outcomes: Record<string, FinderOutcome> = {
-  "vine/visible": { formId: "climbing-vine-visible-node", planned: false },
-  "vine/faint": { formId: "climbing-vine-hidden-node", planned: true },
-  rosette: { formId: "rosette-sheathed-node", planned: true },
-  rhizome: { formId: "rhizome-bud", planned: true },
-  "leaf-only": { formId: "thick-leaf-no-stem", planned: true },
+  "vine/soft": { formId: "climbing-vine-visible-node", planned: false },
+  "vine/woody": { formId: "woody-shrub-node", planned: false },
+  "vine/hollow": { formId: "culm-node", planned: false },
+  "upright/soft": { formId: "rosette-sheathed-node", planned: false },
+  "upright/woody": { formId: "woody-shrub-node", planned: false },
+  "upright/hollow": { formId: "culm-node", planned: false },
+  "leaf-only/thick": { formId: "thick-leaf-no-stem", planned: false },
+  "leaf-only/thin": { formId: "leaf-vein-bud", planned: false },
+  "underground/yes": { formId: "pseudobulb-node", planned: false },
+  "underground/no": { formId: "rhizome-bud", planned: false },
+  /** ต้นที่ไม่เข้าทรงใดในแปดทรงที่มี เช่นเฟิร์น ปาล์ม กระบองเพชร
+   *  ให้ปลายทางเป็นทรงที่ยังไม่ได้เขียน เพื่อให้ระบบบอกตรง ๆ แทนการยัดผู้ใช้เข้าทรงที่ผิด */
+  none: { formId: "not-yet-covered", planned: true, reason: "uncovered" },
 };
 
-/** ถามเฉพาะคำถามที่จำเป็นกับเส้นทางนั้น เส้นทางที่ไม่ใช่เถาเลื้อยจบตั้งแต่ข้อแรก */
+const byKey = Object.fromEntries(finderQuestions.map((question) => [question.key, question]));
+
+/** ถามเฉพาะคำถามที่จำเป็นกับเส้นทางนั้น คำถามที่สองต่างกันตามคำตอบแรก
+ *  เพราะ "ใบหนาหรือบาง" ถามกับต้นที่ไม่มีลำต้นเท่านั้นจึงจะมีความหมาย */
 function questionsFor(stem: string | undefined): FinderQuestion[] {
-  if (stem === "vine") return finderQuestions;
-  return finderQuestions.slice(0, 1);
+  const first = finderQuestions[0];
+  if (stem === "vine" || stem === "upright") return [first, byKey.texture];
+  if (stem === "leaf-only") return [first, byKey.leaf];
+  if (stem === "underground") return [first, byKey.bulb];
+  return [first];
 }
 
 function answered(question: FinderQuestion, answers: Record<string, string | undefined>): string | null {
