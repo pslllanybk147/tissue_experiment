@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "ui:verify": "node scripts/verify-accessible-ui.mjs",
+    "terms:report": "node scripts/report-unwrapped-terms.mjs",
     "firebase:emulators": "firebase emulators:start --only auth,firestore --project demo-philodendron-lab",
     "firebase:verify": "firebase emulators:exec --only auth,firestore --project demo-philodendron-lab \"npm test\""
   },
