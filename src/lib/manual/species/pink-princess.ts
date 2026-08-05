@@ -24,6 +24,9 @@ export const pinkPrincessPack: PlantPack = {
   method: "nodal",
   summary: "ขยายจากตาข้าง เน้นการรักษาลายด่างชมพูให้คงอยู่",
   durationLabel: "4 ถึง 8 เดือน",
+  growthFormId: "climbing-vine-visible-node",
+  genusId: "philodendron",
+  traitIds: ["variegated"],
   sequence: fullSequence,
   overrides: {
     sterilize: {

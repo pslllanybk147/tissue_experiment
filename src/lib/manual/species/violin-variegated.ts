@@ -33,6 +33,9 @@ export const violinVariegatedPack: PlantPack = {
     "ยังไม่มีงานตรงพันธุ์ ใช้ค่าระดับสกุลจากพันธุ์พี่น้องแบบ self-heading และสิทธิบัตรอุตสาหกรรมเป็นจุดตั้งต้น " +
     "โดยต้องระวังว่าพันธุ์นี้เป็นไม้เลื้อย ต่างจากพันธุ์ที่มีงานรองรับซึ่งเป็นทรงพุ่มตั้ง (self-heading)",
   durationLabel: "4 ถึง 8 เดือน",
+  growthFormId: "climbing-vine-visible-node",
+  genusId: "philodendron",
+  traitIds: ["variegated"],
   sequence: [...standardSequence],
   overrides: {
     cut: {

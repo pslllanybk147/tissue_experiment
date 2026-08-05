@@ -13,7 +13,7 @@ export function manualSummary(slug: string): ManualSummary | null {
   const manual = resolveBySlug(slug);
   if (!manual) return null;
 
-  const byOrigin: Record<StepOrigin, number> = { core: 0, override: 0, pack: 0 };
+  const byOrigin: Record<StepOrigin, number> = { core: 0, form: 0, genus: 0, override: 0, pack: 0 };
   const byEvidence: Record<EvidenceLevel, number> = {
     "species-direct": 0,
     adapted: 0,

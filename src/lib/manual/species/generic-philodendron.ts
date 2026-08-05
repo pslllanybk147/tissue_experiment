@@ -8,6 +8,8 @@ export const genericPhilodendronPack: PlantPack = {
   method: "nodal",
   summary: "เส้นทางกลางสำหรับต้นที่ยังระบุชนิดไม่ได้",
   durationLabel: "4 ถึง 8 เดือน",
+  growthFormId: "climbing-vine-visible-node",
+  genusId: "philodendron",
   sequence: [...standardSequence],
   overrides: {
     identify: {

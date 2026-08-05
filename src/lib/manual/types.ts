@@ -94,6 +94,11 @@ export type PlantPack = {
   method: string;
   summary: string;
   durationLabel: string;
+  /** ผูกขึ้นชั้นทรง ถ้าไม่ระบุจะ resolve ได้เฉพาะจากแกนกลาง */
+  growthFormId?: string;
+  genusId?: string;
+  /** อ้างทะเบียนใน traits.ts */
+  traitIds?: string[];
   sequence: string[];
   overrides?: Record<string, StepOverride>;
   steps?: Record<string, ManualStepDef>;
@@ -101,7 +106,7 @@ export type PlantPack = {
   sourceIds: string[];
 };
 
-export type StepOrigin = "core" | "override" | "pack";
+export type StepOrigin = "core" | "form" | "genus" | "override" | "pack";
 
 export type ResolvedStep = ManualStepDef & { order: number; origin: StepOrigin };
 

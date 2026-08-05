@@ -1,4 +1,6 @@
 import { coreSteps } from "./core-steps";
+import { formById } from "./forms/registry";
+import { genusById } from "./genera/registry";
 import { resolveManual } from "./resolve";
 import { genericPhilodendronPack } from "./species/generic-philodendron";
 import { pinkPrincessPack } from "./species/pink-princess";
@@ -17,5 +19,10 @@ export function packBySlug(slug: string): PlantPack | null {
 
 export function resolveBySlug(slug: string): ResolvedManual | null {
   const pack = packBySlug(slug);
-  return pack ? resolveManual(pack, coreSteps) : null;
+  if (!pack) return null;
+  return resolveManual(pack, {
+    library: coreSteps,
+    form: pack.growthFormId ? formById(pack.growthFormId) : null,
+    genus: pack.genusId ? genusById(pack.genusId) : null,
+  });
 }

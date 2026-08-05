@@ -1,7 +1,24 @@
+import type { GrowthForm } from "./forms/types";
+import type { GenusPack } from "./genera/types";
 import type { ManualStepDef, PlantPack, ResolvedManual, ResolvedStep, StepOrigin } from "./types";
 
-export function resolveManual(pack: PlantPack, library: Record<string, ManualStepDef>): ResolvedManual {
+export type ResolveContext = {
+  library: Record<string, ManualStepDef>;
+  form?: GrowthForm | null;
+  genus?: GenusPack | null;
+};
+
+/** ประกอบคู่มือโดยทับค่าจากบนลงล่าง core → form → genus → species
+ *  ชั้นล่างชนะเสมอ และฟิลด์ที่ชั้นล่างไม่พูดถึงจะตกทอดจากชั้นบนมาเอง
+ *
+ *  ขั้นที่แผ่นเสริมเขียนเองทั้งขั้น (pack.steps) ไม่รับการทับจากทรงหรือสกุล
+ *  เพราะการเขียนขั้นใหม่แปลว่าตั้งใจไม่ใช้ของกลางแล้ว
+ *
+ *  origin บอกชั้นล่างสุดที่แตะขั้นนั้น ใช้ในหน้าตรวจทานเพื่อให้รู้ว่าค่ามาจากไหน */
+export function resolveManual(pack: PlantPack, context: ResolveContext): ResolvedManual {
+  const { library, form, genus } = context;
   const seen = new Set<string>();
+
   const steps: ResolvedStep[] = pack.sequence.map((stepId, index) => {
     if (seen.has(stepId)) throw new Error(`ขั้นตอน ${stepId} ถูกใส่ใน sequence ซ้ำ`);
     seen.add(stepId);
@@ -16,8 +33,24 @@ export function resolveManual(pack: PlantPack, library: Record<string, ManualSte
     const base = packStep ?? library[stepId];
     if (!base) throw new Error(`ไม่พบขั้นตอน ${stepId} ทั้งในแกนกลางและในแผ่นเสริม`);
 
-    const origin: StepOrigin = packStep ? "pack" : override ? "override" : "core";
-    return { ...structuredClone(base), ...(override ?? {}), id: stepId, order: index, origin };
+    const formLayer = packStep ? undefined : form?.stepOverrides?.[stepId];
+    const genusLayer = packStep ? undefined : genus?.deviations[stepId];
+
+    let origin: StepOrigin = "core";
+    if (packStep) origin = "pack";
+    else if (override) origin = "override";
+    else if (genusLayer) origin = "genus";
+    else if (formLayer) origin = "form";
+
+    return {
+      ...structuredClone(base),
+      ...(formLayer ?? {}),
+      ...(genusLayer ?? {}),
+      ...(override ?? {}),
+      id: stepId,
+      order: index,
+      origin,
+    };
   });
 
   return {
