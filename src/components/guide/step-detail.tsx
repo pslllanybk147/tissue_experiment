@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { sourceById } from "@/lib/manual/sources";
-import { plainText } from "@/lib/manual/terms";
+import { RichText } from "./rich-text";
 import { troubleshootingById } from "@/lib/manual/troubleshooting";
 import type { ResolvedManual, ResolvedStep } from "@/lib/manual/types";
 import { MediumCalculator } from "@/components/rounds/medium-calculator";
@@ -62,7 +62,7 @@ export function StepDetail({ manual, step }: { manual: ResolvedManual; step: Res
       </p>
       <h1 className="pl-h1" style={{ marginTop: "8px" }}>{step.title}</h1>
       <p style={{ marginTop: "6px" }}><EvidenceBadge level={step.evidence.level} /></p>
-      <p className="pl-lede" style={{ marginTop: "12px" }}>{plainText(step.summary)}</p>
+      <p className="pl-lede" style={{ marginTop: "12px" }}><RichText source={step.summary} /></p>
       <p className="pl-lede" style={{ marginTop: "8px" }}>{step.why}</p>
 
       {step.illustrationId ? (

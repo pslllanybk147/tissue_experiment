@@ -431,3 +431,45 @@
   outline: 3px solid var(--pl-ink);
   outline-offset: 3px;
 }
+
+/* คำศัพท์ที่แตะกางดูได้ ต้องอยู่ในบรรทัดเดียวกับข้อความรอบ ๆ ไม่ตัดบรรทัดใหม่ */
+.pl-term {
+  display: inline;
+}
+
+.pl-term-word {
+  display: inline;
+  cursor: pointer;
+  border-bottom: 2px dotted var(--pl-leaf);
+  list-style: none;
+}
+
+.pl-term-word::-webkit-details-marker {
+  display: none;
+}
+
+.pl-term-word::after {
+  content: " \24D8";
+  font-size: 0.85em;
+  color: var(--pl-leaf);
+}
+
+.pl-term-body {
+  display: block;
+  margin: 8px 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--pl-leaf);
+  background: var(--pl-sunk);
+  border-radius: 8px;
+}
+
+.pl-term-line {
+  margin: 0 0 6px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--pl-ink-2);
+}
+
+.pl-term-line:last-child {
+  margin-bottom: 0;
+}
