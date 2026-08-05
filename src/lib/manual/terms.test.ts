@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { allTermIds, parseTerms, termIdsIn } from "./terms";
+import { allTermIds, parseTerms, plainText, termIdsIn } from "./terms";
 
 describe("การห่อคำศัพท์ในเนื้อหา", () => {
   it("ข้อความที่ไม่มีคำห่อ คืนชิ้นเดียว", () => {
@@ -37,6 +37,11 @@ describe("การห่อคำศัพท์ในเนื้อหา", (
       "node",
       "internode",
     ]);
+  });
+
+  it("ถอดเครื่องหมายห่อออกเหลือข้อความล้วน", () => {
+    expect(plainText("หา[[node|ข้อ]]ที่มี[[axillary-bud|ตาข้าง]]สมบูรณ์")).toBe("หาข้อที่มีตาข้างสมบูรณ์");
+    expect(plainText("ไม่มีคำห่อ")).toBe("ไม่มีคำห่อ");
   });
 
   it("ทะเบียนคำศัพท์มาจาก landmarks ของทุกทรง", () => {

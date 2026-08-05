@@ -61,7 +61,7 @@ export const coreSteps: Record<string, ManualStepDef> = {
   "select-explant": {
     id: "select-explant",
     title: "เลือกข้อที่จะตัด",
-    summary: "หาข้อที่มีตาข้างสมบูรณ์และยังไม่แตกยอด",
+    summary: "หา[[node|ข้อ]]ที่มี[[axillary-bud|ตาข้าง]]สมบูรณ์และยังไม่แตกยอด",
     why: "ตาข้างให้ยอดใหม่ที่ยังเก็บลักษณะเดิมของต้นแม่ไว้ได้ดีกว่าการสร้างยอดแบบสุ่ม",
     materials: ["ป้ายเบอร์ข้อ", "รูปถ่าย"],
     actions: [
