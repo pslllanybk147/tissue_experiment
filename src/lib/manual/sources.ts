@@ -163,6 +163,13 @@ export const manualSources: ManualSourceRecord[] = [
     kind: "anecdotal",
     accessedAt: "2026-08-04",
   },
+  {
+    id: "source-botany-plant-morphology",
+    title: "Stem (plant) — node, internode, axillary bud",
+    url: "https://www.britannica.com/science/stem-plant",
+    kind: "technical-guide",
+    accessedAt: "2026-08-05",
+  },
 ];
 
 export function sourceById(id: string): ManualSourceRecord | null {
