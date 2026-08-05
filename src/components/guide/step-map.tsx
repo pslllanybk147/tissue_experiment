@@ -36,6 +36,8 @@ export function StepMap({ manual }: { manual: ResolvedManual }) {
             >
               <p className="pl-mono">ขั้นที่ {step.order + 1}</p>
               <p className="pl-h2" style={{ marginTop: "4px" }}>{step.title}</p>
+              {/* ใช้ข้อความล้วนเพราะการ์ดทั้งใบอยู่ในลิงก์ ซึ่งซ้อน details ไม่ได้ตามมาตรฐาน HTML
+                  คำอธิบายศัพท์อยู่ที่หน้าขั้นเดียว (step-detail) ซึ่งไม่ได้อยู่ในลิงก์ */}
               <p className="pl-lede" style={{ marginTop: "4px" }}>{plainText(step.summary)}</p>
               <p style={{ marginTop: "10px" }}>
                 <EvidenceBadge level={step.evidence.level} />

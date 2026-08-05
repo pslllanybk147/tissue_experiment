@@ -23,12 +23,12 @@ function EquipmentIcon() {
   );
 }
 
-function RoundsIcon() {
+function ProblemIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-      <rect x="4" y="3.5" width="16" height="17" rx="2" strokeLinejoin="round" />
-      <path d="M8 8h8M8 12h5" strokeLinecap="round" />
-      <path d="m8 16 2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12 4 2.8 19.5h18.4L12 4Z" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12 10v4" strokeLinecap="round" />
+      <path d="M12 17h.01" strokeLinecap="round" />
     </svg>
   );
 }
@@ -42,9 +42,11 @@ function CalculatorIcon() {
   );
 }
 
-const linkIcons: Record<string, () => React.JSX.Element> = {
+/** ทุก key ใน navLinkItems ต้องมีไอคอนที่นี่ ไม่งั้น React จะเรนเดอร์ undefined
+ *  แล้วพังทั้งหน้าโดยไม่มีอะไรบอกว่าเพราะอะไร มีเทสต์บังคับใน nav-items.test.ts */
+export const linkIcons: Record<string, () => React.JSX.Element> = {
   home: HomeIcon,
-  rounds: RoundsIcon,
+  problem: ProblemIcon,
   equipment: EquipmentIcon,
 };
 

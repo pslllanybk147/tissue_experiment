@@ -139,12 +139,14 @@
   margin-left: auto;
 }
 
+/* สำเนียงโหมดอ่าน เส้นบางเงานุ่ม เพื่อถอยให้ภาพต้นจริงเป็นประธานของหน้า
+   ของเดิมเป็นเส้น 2.5px กับเงาทึบ 5px ซึ่งแย่งความสนใจกับเนื้อหา */
 .pl-card {
   background: var(--pl-card);
-  border: 2.5px solid var(--pl-line);
+  border: 1px solid var(--pl-line-soft);
   border-radius: 14px;
   padding: 18px;
-  box-shadow: 5px 5px 0 var(--pl-shadow);
+  box-shadow: 0 2px 14px var(--pl-shadow-soft);
 }
 
 .pl-chip {
@@ -175,19 +177,23 @@
   background: var(--pl-sky);
 }
 
+/* หัวข้อใช้ serif เพื่อโทนตำราที่อ่านยาวสบายตา ฟอนต์ serif ต้องการช่องไฟ
+   มากกว่า sans จึงเปลี่ยน letter-spacing จากติดลบเป็นบวกเล็กน้อย */
 .pl-h1 {
+  font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(26px, 5vw, 38px);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
   margin: 0 0 8px;
   text-wrap: balance;
 }
 
 .pl-h2 {
+  font-family: Georgia, "Times New Roman", serif;
   font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   margin: 0 0 6px;
 }
 
@@ -224,6 +230,22 @@
 :root[data-theme="dark"] .pl-when-dark { display: inline; }
 :root[data-theme="light"] .pl-when-light { display: inline; }
 :root[data-theme="light"] .pl-when-dark { display: none; }
+
+/* globals.css รีเซ็ต list-style เป็น none ทั้งหมด ทำให้ ol ในเนื้อหาไม่มีเลขข้อ
+   ซึ่งอ่านลำดับขั้นตอนไม่ได้ ตั้งค่ากลับเฉพาะในโซนคู่มือ
+   ลิสต์ที่ตั้งใจไม่มีเครื่องหมายใช้ inline style ซึ่งชนะกฎนี้อยู่แล้ว */
+.pl-root ol {
+  list-style: decimal;
+}
+
+/* ลิงก์ในเนื้อความต้องดูออกว่ากดได้ ก่อนหน้านี้มีแต่สไตล์ตอน focus
+   ทำให้ทางออกจากหน้าที่ค้นไม่เจอดูเหมือนข้อความธรรมดา
+   การ์ดที่ทั้งใบเป็นลิงก์ทับค่านี้ด้วย inline style ของตัวเองอยู่แล้ว */
+.pl-link {
+  color: var(--pl-leaf);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 
 .pl-link:focus-visible,
 .pl-skip:focus-visible,
@@ -430,4 +452,110 @@
 .pl-calc-tab:focus-visible {
   outline: 3px solid var(--pl-ink);
   outline-offset: 3px;
+}
+
+/* คำศัพท์ที่แตะกางดูได้ ต้องอยู่ในบรรทัดเดียวกับข้อความรอบ ๆ ไม่ตัดบรรทัดใหม่ */
+.pl-term {
+  display: inline;
+}
+
+.pl-term-word {
+  display: inline;
+  cursor: pointer;
+  border-bottom: 2px dotted var(--pl-leaf);
+  list-style: none;
+}
+
+.pl-term-word::-webkit-details-marker {
+  display: none;
+}
+
+.pl-term-word::after {
+  content: " \24D8";
+  font-size: 0.85em;
+  color: var(--pl-leaf);
+}
+
+/* เบราว์เซอร์ห่อเนื้อหาใน details ด้วย pseudo-element ::details-content ซึ่งเป็นกล่องบล็อก
+   เต็มความกว้างเสมอ แม้ตอนปิดและแม้ลูกข้างในจะ display:none ก็ตาม กล่องนั้นดันให้ details
+   ตัดบรรทัด ทำให้ประโยคขาดกลางคัน ต้องปิดที่ pseudo-element เอง ไม่ใช่ที่ลูก
+   เจอจากการเปิดดูของจริงในเบราว์เซอร์ เทสต์ renderToStaticMarkup จับไม่ได้ */
+.pl-term:not([open])::details-content {
+  display: none;
+}
+
+.pl-term:not([open]) .pl-term-body {
+  display: none;
+}
+
+.pl-term-body {
+  display: block;
+  margin: 8px 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--pl-leaf);
+  background: var(--pl-sunk);
+  border-radius: 8px;
+}
+
+.pl-term-line {
+  margin: 0 0 6px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--pl-ink-2);
+}
+
+.pl-term-line:last-child {
+  margin-bottom: 0;
+}
+
+.pl-input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--pl-line-soft);
+  border-radius: 10px;
+  background: var(--pl-card);
+  color: var(--pl-ink);
+  font: inherit;
+  font-size: 16px;
+}
+
+.pl-input:focus-visible {
+  outline: 2px solid var(--pl-leaf);
+  outline-offset: 1px;
+}
+
+.pl-button {
+  padding: 10px 18px;
+  border: 1px solid var(--pl-line-soft);
+  border-radius: 10px;
+  background: var(--pl-leaf);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* โหมดลงมือ ใช้เฉพาะตัวเดินขั้นตอนที่ผู้ใช้อ่านตอนใส่ถุงมือและมือเปื้อน
+   ต่างจากโหมดอ่านแค่คอนทราสต์และขนาดตัวเลข ไม่ใช่ระบบดีไซน์คนละชุด */
+.pl-do {
+  --pl-line-soft: var(--pl-ink-3);
+}
+
+.pl-do .pl-card {
+  border-width: 2px;
+}
+
+.pl-do .pl-lede {
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.pl-num {
+  display: inline-block;
+  font-size: 30px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
 }
