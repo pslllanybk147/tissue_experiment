@@ -559,3 +559,53 @@
   letter-spacing: -0.01em;
   line-height: 1.15;
 }
+
+/* ภาพอ้างอิงของทรง พร้อมหมุดที่วางด้วยเปอร์เซ็นต์จึงสเกลตามภาพเองโดยไม่ต้องใช้ JavaScript */
+.pl-figure {
+  margin: 18px 0 0;
+}
+
+.pl-figure-stage {
+  position: relative;
+  line-height: 0;
+}
+
+.pl-figure-stage img {
+  width: 100%;
+  height: auto;
+  border-radius: 14px;
+  border: 1px solid var(--pl-line-soft);
+}
+
+.pl-pin {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--pl-leaf);
+  color: #ffffff;
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 22px;
+  text-align: center;
+}
+
+.pl-landmark {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+/* ภาพซูมของจุดนั้น ครอปมาจากภาพใบเดียวกันด้วย cropStyle ไม่ต้องถ่ายเพิ่ม */
+.pl-swatch {
+  flex: none;
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  border: 1px solid var(--pl-line-soft);
+  background-repeat: no-repeat;
+}
