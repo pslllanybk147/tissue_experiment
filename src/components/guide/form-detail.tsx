@@ -16,7 +16,7 @@ export function FormDetail({ form, plants }: { form: GrowthForm; plants: FormPla
       <h1 className="pl-h1">{form.label}</h1>
       <p className="pl-lede" style={{ marginTop: "8px" }}>{form.plainDescription}</p>
 
-      {form.referenceImageId ? null : (
+      {form.referenceImage ? null : (
         <div className="pl-card" style={{ marginTop: "18px", background: "var(--pl-sunk)" }}>
           <p style={{ margin: 0, fontWeight: 700 }}>ทรงนี้ยังไม่มีภาพอ้างอิง</p>
           <p className="pl-lede" style={{ marginTop: "6px" }}>
