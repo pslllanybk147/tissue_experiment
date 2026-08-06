@@ -183,3 +183,38 @@ describe("การประกอบคู่มือแบบต่อชั�
     expect(manual.steps[0].origin).toBe("pack");
   });
 });
+
+const doseEvidence = { level: "adapted" as const, sourceIds: ["source-example"] };
+
+const sampleDose = {
+  form: "น้ำยาซักผ้าขาว NaOCl 6%",
+  low: 0.8,
+  high: 2,
+  unit: "%" as const,
+  durationMin: [10, 20] as [number, number],
+  movesLowerWhen: ["เนื้อด่างมาก"],
+  movesHigherWhen: ["ต้นกลางแจ้ง"],
+  evidence: doseEvidence,
+};
+
+describe("ค่าช่วงไหลตาม cascade", () => {
+  it("ค่าช่วงจากทรงไหลลงมาถึงคู่มือ", () => {
+    const formWithDose = { ...cascadeForm, defaultDoses: { "sterilize.dose": sampleDose } } as GrowthForm;
+    const manual = resolveManual(basePack, { library, form: formWithDose });
+    expect(manual.steps.find((item) => item.id === "sterilize")?.doses?.["sterilize.dose"]?.low).toBe(0.8);
+  });
+
+  it("ค่าช่วงของสกุลทับของทรงด้วยคีย์เดียวกัน", () => {
+    const formWithDose = { ...cascadeForm, defaultDoses: { "sterilize.dose": sampleDose } } as GrowthForm;
+    const genusWithDose = { ...cascadeGenus, doses: { "sterilize.dose": { ...sampleDose, low: 1.0, high: 1.6 } } };
+    const manual = resolveManual(basePack, { library, form: formWithDose, genus: genusWithDose });
+    const found = manual.steps.find((item) => item.id === "sterilize")?.doses?.["sterilize.dose"];
+    expect(found?.low).toBe(1.0);
+    expect(found?.high).toBe(1.6);
+  });
+
+  it("ขั้นที่ไม่มีค่าช่วง ต้องไม่มีฟิลด์ doses ติดมา", () => {
+    const manual = resolveManual(basePack, { library });
+    expect(manual.steps.find((item) => item.id === "receive")?.doses).toBeUndefined();
+  });
+});

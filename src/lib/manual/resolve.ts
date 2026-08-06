@@ -42,11 +42,21 @@ export function resolveManual(pack: PlantPack, context: ResolveContext): Resolve
     else if (genusLayer) origin = "genus";
     else if (formLayer) origin = "form";
 
+    // ค่าช่วงรวมจากบนลงล่างทีละคีย์ ต่างจากฟิลด์อื่นที่ทับกันทั้งก้อน
+    // เพราะทรงอาจให้ค่าหลายคีย์ แล้วสกุลทับเพียงคีย์เดียว ถ้าทับทั้งก้อนคีย์อื่นจะหาย
+    const doses = {
+      ...(packStep ? {} : form?.defaultDoses ?? {}),
+      ...(packStep ? {} : genus?.doses ?? {}),
+      ...(base.doses ?? {}),
+      ...(override?.doses ?? {}),
+    };
+
     return {
       ...structuredClone(base),
       ...(formLayer ?? {}),
       ...(genusLayer ?? {}),
       ...(override ?? {}),
+      doses: Object.keys(doses).length > 0 ? doses : undefined,
       id: stepId,
       order: index,
       origin,
