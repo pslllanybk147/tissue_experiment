@@ -133,6 +133,9 @@
   letter-spacing: -0.02em;
   color: var(--pl-ink);
   text-decoration: none;
+  /* ชื่อแบรนด์และปุ่มสลับธีมห้ามตัดกลางคำ เพราะ "Plantlover Lab" ที่แตกเป็น
+     "Plantl / over / Lab" อ่านไม่ออกและดูเหมือนหน้าพัง ยอมให้ล้นดีกว่าตัดกลางคำ */
+  white-space: nowrap;
 }
 
 .pl-bar-spacer {
@@ -249,6 +252,12 @@
 
 .pl-link:focus-visible,
 .pl-skip:focus-visible,
+/* ปุ่มสลับธีมห้ามตัดกลางคำเช่นกัน แต่ไม่ใส่กฎนี้ที่ .pl-chip ทั้งหมด
+   เพราะป้ายระดับหลักฐานยาวกว่าและควรตัดบรรทัดได้เมื่อจอแคบ */
+.pl-toggle {
+  white-space: nowrap;
+}
+
 .pl-toggle:focus-visible {
   outline: 3px solid var(--pl-ink);
   outline-offset: 3px;
