@@ -8,8 +8,17 @@ import { GuideShell } from "@/components/guide/guide-shell";
 import { ThemeToggle } from "@/components/guide/theme-toggle";
 import { useIsOnline } from "@/components/rounds/online-status";
 import { StepRunner, type StepSaveInput } from "@/components/rounds/step-runner";
+import { calibrationKey, type CalibrationEntry } from "@/lib/domain/calibration";
 import type { ObservationMedia } from "@/lib/domain/models";
 import { resolveBySlug } from "@/lib/manual/registry";
+import {
+  bracketKey,
+  buildBracketPlan,
+  chooseBracketWinner,
+  jarsPerArmKey,
+  type BracketResult,
+} from "@/lib/rounds/bracket";
+import { getCalibrationRepository } from "@/lib/repositories/calibration-repository-factory";
 import { buildRoundView, MANUAL_VERSION_ID, type RoundView } from "@/lib/rounds/round-adapter";
 import { defaultKit, type EquipmentKit } from "@/lib/equipment/resolve-path";
 import { evidenceObservationInput, findEvidenceObservation } from "@/lib/rounds/step-evidence";
@@ -34,6 +43,8 @@ export default function RoundStepPage() {
   const [evidenceObservationId, setEvidenceObservationId] = useState<string | null>(null);
   const [media, setMedia] = useState<ObservationMedia[]>([]);
   const [kit, setKit] = useState<EquipmentKit>(defaultKit);
+  const calibration = useMemo(() => getCalibrationRepository(ownerId, authenticated), [ownerId, authenticated]);
+  const [remembered, setRemembered] = useState<CalibrationEntry | null>(null);
 
   useEffect(() => {
     if (!["demo", "authenticated"].includes(session.status)) return;
@@ -121,6 +132,33 @@ export default function RoundStepPage() {
     };
   }, [equipment, ownerId, session.status]);
 
+  // ดึงค่าที่ผู้ใช้เคยทดสอบได้ของขั้นนี้มาแสดง ผู้ใช้จะได้ไม่ต้องเปิดรอบเก่าหาเอง
+  useEffect(() => {
+    if (!["demo", "authenticated"].includes(session.status)) return;
+    if (!view || !current) return;
+    let active = true;
+    const plan = buildBracketPlan(current);
+    // ตั้งค่า state ในผลของ promise เสมอ ไม่ตั้งตรง ๆ ในตัว effect
+    // เพราะการตั้ง state แบบ synchronous ที่นี่ทำให้เกิด cascading render
+    const load = plan ? calibration.list(ownerId) : Promise.resolve([]);
+    load
+      .then((entries) => {
+        if (!active) return;
+        if (!plan) {
+          setRemembered(null);
+          return;
+        }
+        const key = calibrationKey(view.slug, current.id, plan.doseKey);
+        setRemembered(
+          entries.find((item) => calibrationKey(item.slug, item.stepId, item.doseKey) === key) ?? null,
+        );
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [calibration, current, ownerId, session.status, view]);
+
   const onUploaded = useCallback(async (item: ObservationMedia) => {
     await mediaRepo.save(ownerId, item);
     setMedia((items) => [...items, item]);
@@ -141,8 +179,39 @@ export default function RoundStepPage() {
       observedAt: new Date().toISOString(),
       completionMode: "live",
     });
+
+    // ถ้ากรอกครบและมีชุดที่ใช้ได้ ให้จำค่านั้นไว้ ผู้ใช้จะได้ไม่ต้องทดสอบซ้ำในรอบถัดไป
+    // ค่านี้ไม่เปลี่ยนระดับหลักฐานของขั้น เพราะการทดลองของคนเดียวไม่ใช่งานที่ผ่านการทบทวน
+    const plan = buildBracketPlan(current);
+    if (plan) {
+      const jars = input.measurements[jarsPerArmKey()] ?? 0;
+      const results: BracketResult[] = plan.arms.map((arm) => ({
+        armId: arm.armId,
+        dose: arm.dose,
+        clean: input.measurements[bracketKey(arm.armId, "clean")] ?? 0,
+        alive: input.measurements[bracketKey(arm.armId, "alive")] ?? 0,
+        usable: input.measurements[bracketKey(arm.armId, "usable")] ?? 0,
+      }));
+      const outcome = chooseBracketWinner(results, jars);
+      if (outcome.kind === "winner") {
+        const entry: CalibrationEntry = {
+          slug: view.slug,
+          stepId: current.id,
+          doseKey: plan.doseKey,
+          value: outcome.dose,
+          unit: plan.dose.unit,
+          jarsPerArm: jars,
+          usable: results.find((item) => item.armId === outcome.armId)?.usable ?? 0,
+          lotId: view.lotId,
+          decidedAt: new Date().toISOString().slice(0, 10),
+        };
+        await calibration.save(ownerId, entry);
+        setRemembered(entry);
+      }
+    }
+
     setReloadKey((key) => key + 1);
-  }, [current, evidenceObservationId, media, ownerId, runs, view]);
+  }, [calibration, current, evidenceObservationId, media, ownerId, runs, view]);
 
   return (
     <AuthGate>
@@ -163,6 +232,7 @@ export default function RoundStepPage() {
             onSave={save}
             photos={{ observationId: evidenceObservationId, media, canAttach, reason: attachReason, onUploaded }}
             tools={{ scaleMinimumMg: kit.scaleMinimumMg, pipetteMinimumMl: kit.pipetteMinimumMl, msLabelRateGPerL: kit.msLabelRateGPerL }}
+            remembered={remembered}
           />
         ) : null}
       </GuideShell>
