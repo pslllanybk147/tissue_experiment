@@ -8,7 +8,7 @@ export function getCalibrationRepository(ownerId: string, authenticated: boolean
   if (authenticated) return createFirestoreCalibrationRepository(ownerId);
   const existing = demos.get(ownerId);
   if (existing) return existing;
-  const repository = createMemoryCalibrationRepository();
+  const repository = createMemoryCalibrationRepository(ownerId);
   demos.set(ownerId, repository);
   return repository;
 }

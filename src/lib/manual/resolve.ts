@@ -44,10 +44,16 @@ export function resolveManual(pack: PlantPack, context: ResolveContext): Resolve
 
     // ค่าช่วงรวมจากบนลงล่างทีละคีย์ ต่างจากฟิลด์อื่นที่ทับกันทั้งก้อน
     // เพราะทรงอาจให้ค่าหลายคีย์ แล้วสกุลทับเพียงคีย์เดียว ถ้าทับทั้งก้อนคีย์อื่นจะหาย
+    //
+    // ต้องรวมทั้งค่าระดับทรง/สกุล (defaultDoses, doses) และค่าที่ให้มากับขั้นนั้นโดยตรง
+    // (stepOverrides, deviations) เพราะทั้งสองทางเป็นที่ที่คนเขียนใส่ค่าได้จริง
+    // เรียงจากอ่อนไปแก่ตาม cascade คือ core → form → genus → species
     const doses = {
-      ...(packStep ? {} : form?.defaultDoses ?? {}),
-      ...(packStep ? {} : genus?.doses ?? {}),
       ...(base.doses ?? {}),
+      ...(packStep ? {} : form?.defaultDoses ?? {}),
+      ...(formLayer?.doses ?? {}),
+      ...(packStep ? {} : genus?.doses ?? {}),
+      ...(genusLayer?.doses ?? {}),
       ...(override?.doses ?? {}),
     };
 

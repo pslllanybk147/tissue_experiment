@@ -218,3 +218,36 @@ describe("ค่าช่วงไหลตาม cascade", () => {
     expect(manual.steps.find((item) => item.id === "receive")?.doses).toBeUndefined();
   });
 });
+
+describe("ค่าช่วงที่ให้มากับขั้นโดยตรง", () => {
+  it("ค่าช่วงที่สกุลให้ผ่าน deviations ต้องไม่หายไป", () => {
+    // บั๊กจริงที่เจอตอนเปิดดูของจริง บรรทัด doses ที่วางหลัง spread เคยทับค่าที่ spread ใส่มา
+    const genusWithStepDose = {
+      ...cascadeGenus,
+      deviations: { sterilize: { doses: { "sterilize.dose": sampleDose } } },
+    };
+    const manual = resolveManual(basePack, { library, genus: genusWithStepDose });
+    expect(manual.steps.find((item) => item.id === "sterilize")?.doses?.["sterilize.dose"]?.low).toBe(0.8);
+  });
+
+  it("ค่าช่วงที่ทรงให้ผ่าน stepOverrides ต้องไม่หายไป", () => {
+    const formWithStepDose = {
+      ...cascadeForm,
+      stepOverrides: { sterilize: { doses: { "sterilize.dose": sampleDose } } },
+    } as GrowthForm;
+    const manual = resolveManual(basePack, { library, form: formWithStepDose });
+    expect(manual.steps.find((item) => item.id === "sterilize")?.doses?.["sterilize.dose"]?.low).toBe(0.8);
+  });
+
+  it("ชั้นล่างชนะชั้นบนเสมอ ชนิดทับสกุล", () => {
+    const genusWithStepDose = {
+      ...cascadeGenus,
+      deviations: { sterilize: { doses: { "sterilize.dose": sampleDose } } },
+    };
+    const manual = resolveManual(
+      { ...basePack, overrides: { sterilize: { doses: { "sterilize.dose": { ...sampleDose, low: 1.5 } } } } },
+      { library, genus: genusWithStepDose },
+    );
+    expect(manual.steps.find((item) => item.id === "sterilize")?.doses?.["sterilize.dose"]?.low).toBe(1.5);
+  });
+});

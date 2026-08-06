@@ -105,3 +105,40 @@ describe("StepRunner", () => {
     expect(html).toContain("ขั้นที่ 7 จาก 14");
   });
 });
+
+describe("ตารางทดสอบช่วงต้องอยู่ในฟอร์ม", () => {
+  // บั๊กจริงที่เจอตอนเปิดดูของจริง ตารางเคยถูกวางนอก <form> ทำให้ FormData มองไม่เห็นช่อง
+  // ค่าที่ผู้ใช้กรอกจึงถูกบันทึกเป็น null เงียบ ๆ ทั้งที่ช่องแสดงผลถูกต้องทุกอย่าง
+  const withDose = {
+    ...sterilize,
+    doses: {
+      "sterilize.dose": {
+        form: "น้ำยาซักผ้าขาว NaOCl 6%",
+        low: 0.8,
+        high: 2,
+        unit: "%" as const,
+        durationMin: [10, 20] as [number, number],
+        movesLowerWhen: [],
+        movesHigherWhen: [],
+        evidence: { level: "adapted" as const, sourceIds: ["source-pp-2023"] },
+      },
+    },
+  };
+
+  it("ช่องกรอกของตารางอยู่ระหว่างแท็กเปิดและปิดของฟอร์ม", () => {
+    const html = renderToStaticMarkup(<StepRunner view={view} step={withDose} onSave={noop} />);
+    const formStart = html.indexOf("<form");
+    const formEnd = html.indexOf("</form>");
+    const input = html.indexOf('name="bracket-b-usable"');
+
+    expect(formStart, "ไม่พบฟอร์ม").toBeGreaterThan(-1);
+    expect(input, "ไม่พบช่องกรอกของตาราง").toBeGreaterThan(-1);
+    expect(input, "ช่องกรอกอยู่ก่อนฟอร์ม").toBeGreaterThan(formStart);
+    expect(input, "ช่องกรอกอยู่หลังฟอร์ม").toBeLessThan(formEnd);
+  });
+
+  it("ขั้นที่ไม่มีค่าช่วง ไม่มีตาราง", () => {
+    const html = renderToStaticMarkup(<StepRunner view={view} step={receive} onSave={noop} />);
+    expect(html).not.toContain('name="bracket-b-usable"');
+  });
+});

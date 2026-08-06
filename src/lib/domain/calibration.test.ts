@@ -23,13 +23,13 @@ describe("ค่าที่ทดสอบได้", () => {
   });
 
   it("บันทึกแล้วอ่านกลับได้", async () => {
-    const repo = createMemoryCalibrationRepository();
+    const repo = createMemoryCalibrationRepository("owner");
     await repo.save("owner", entry);
     expect(await repo.list("owner")).toEqual([entry]);
   });
 
   it("ทดสอบซ้ำของขั้นเดิม ทับค่าเดิม ไม่ใช่เพิ่มรายการใหม่", async () => {
-    const repo = createMemoryCalibrationRepository();
+    const repo = createMemoryCalibrationRepository("owner");
     await repo.save("owner", entry);
     await repo.save("owner", { ...entry, value: 0.8, decidedAt: "2026-09-01" });
     const found = await repo.list("owner");
@@ -38,15 +38,18 @@ describe("ค่าที่ทดสอบได้", () => {
   });
 
   it("ค่าของขั้นคนละขั้นอยู่แยกกัน", async () => {
-    const repo = createMemoryCalibrationRepository();
+    const repo = createMemoryCalibrationRepository("owner");
     await repo.save("owner", entry);
     await repo.save("owner", { ...entry, stepId: "multiply", doseKey: "multiply.cytokinin" });
     expect(await repo.list("owner")).toHaveLength(2);
   });
 
-  it("ค่าของเจ้าของคนละคนไม่ปนกัน", async () => {
-    const repo = createMemoryCalibrationRepository();
-    await repo.save("owner-a", entry);
-    expect(await repo.list("owner-b")).toEqual([]);
+  it("ที่เก็บของเจ้าของคนละคนแยกกันด้วยคีย์คนละอัน", async () => {
+    // แยกด้วย ownerId ตอนสร้าง repository เหมือน memory-equipment-repository
+    // ไม่ใช่แยกด้วย argument ตอนเรียก ซึ่งเป็นแพตเทิร์นเดิมของโปรเจกต์
+    const mine = createMemoryCalibrationRepository("owner-a");
+    const theirs = createMemoryCalibrationRepository("owner-b");
+    await mine.save("owner-a", entry);
+    expect(await theirs.list("owner-b")).toEqual([]);
   });
 });

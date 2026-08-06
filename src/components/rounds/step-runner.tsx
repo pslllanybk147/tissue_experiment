@@ -154,10 +154,6 @@ export function StepRunner({
         />
       ) : null}
 
-      {bracketPlan ? (
-        <BracketTable plan={bracketPlan} saved={step.state.measurements} remembered={remembered ?? null} />
-      ) : null}
-
       {troubleshooting.length > 0 ? (
         <section style={{ marginTop: "24px" }}>
           <h2 className="pl-h2">ถ้าเจออาการแบบนี้</h2>
@@ -185,6 +181,12 @@ export function StepRunner({
         onSubmit={(event) => void submit(event)}
       >
         <h2 className="pl-h2">บันทึกผลของขั้นนี้</h2>
+
+        {/* ตารางทดสอบช่วงต้องอยู่ในฟอร์มนี้ ไม่ใช่ข้างนอก ไม่งั้น FormData มองไม่เห็นช่องของมัน
+            แล้วค่าที่ผู้ใช้กรอกจะถูกบันทึกเป็น null เงียบ ๆ */}
+        {bracketPlan ? (
+          <BracketTable plan={bracketPlan} saved={step.state.measurements} remembered={remembered ?? null} />
+        ) : null}
 
         {step.measurements.map((measurement) => (
           <p key={measurement.id} style={{ marginTop: "14px" }}>
