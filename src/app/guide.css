@@ -1,91 +1,107 @@
 :root {
-  --pl-paper: #fdf6e8;
-  --pl-card: #ffffff;
-  --pl-sunk: #f3ecdc;
-  --pl-ink: #1d1a15;
-  --pl-ink-2: #4d463a;
-  --pl-ink-3: #7b7263;
-  --pl-line: #1d1a15;
-  --pl-shadow: #1d1a15;
-  --pl-chip-ink: #1d1a15;
-  --pl-yellow: #ffd23f;
-  --pl-green: #65c893;
-  --pl-pink: #e39ec4;
-  --pl-sky: #cfe8f5;
-  --pl-red: #e8705a;
-  --pl-stop: #ffdcd5;
-  --pl-leaf: #6f9a52;
-  --pl-agar: #a8e6c1;
-  --pl-line-soft: #d8cfba;
-  --pl-shadow-soft: rgba(29, 26, 21, 0.12);
+  --pl-paper: #070d1a;
+  --pl-card: #0b1424;
+  --pl-sunk: #0e1a2e;
+  --pl-ink: #f0fdff;
+  --pl-ink-2: #9fb3c8;
+  --pl-ink-3: #6b7f94;
+  --pl-line: #35cfe4;
+  --pl-shadow: #01030a;
+  --pl-chip-ink: #04070f;
+  --pl-yellow: #a3e635;
+  --pl-green: #34d399;
+  --pl-pink: #c084fc;
+  --pl-sky: #0e3a47;
+  --pl-red: #f87171;
+  --pl-stop: #3b1620;
+  --pl-leaf: #4ade80;
+  --pl-agar: #164e63;
+  --pl-line-soft: rgba(34, 211, 238, 0.18);
+  --pl-shadow-soft: rgba(1, 3, 10, 0.5);
+  --pl-neon: #22d3ee;
+  --pl-neon-2: #a3e635;
+  --pl-glow: rgba(34, 211, 238, 0.45);
+  --pl-grid: rgba(34, 211, 238, 0.05);
 }
 
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: light) {
   :root {
-    --pl-paper: #17150f;
-    --pl-card: #221e17;
-    --pl-sunk: #2b261d;
-    --pl-ink: #f4efe3;
-    --pl-ink-2: #c6bda9;
-    --pl-ink-3: #948b79;
-    --pl-line: #f4efe3;
-    --pl-shadow: #000000;
-    --pl-chip-ink: #1d1a15;
-    --pl-yellow: #e0b52e;
-    --pl-green: #4fa877;
-    --pl-pink: #c47ba2;
-    --pl-sky: #2f4d5e;
-    --pl-red: #e08b76;
-    --pl-stop: #3d1f18;
-    --pl-leaf: #7ca85e;
-    --pl-agar: #3f7a58;
-    --pl-line-soft: #3a352a;
-    --pl-shadow-soft: rgba(0, 0, 0, 0.35);
+    --pl-paper: #f4f7fa;
+    --pl-card: #ffffff;
+    --pl-sunk: #e9eff5;
+    --pl-ink: #0f2436;
+    --pl-ink-2: #46586a;
+    --pl-ink-3: #5c6f82;
+    --pl-line: #46586a;
+    --pl-shadow: #0f2436;
+    --pl-chip-ink: #f7fee7;
+    --pl-yellow: #3f6212;
+    --pl-green: #17834b;
+    --pl-pink: #7c3aed;
+    --pl-sky: #d9f2f8;
+    --pl-red: #b42318;
+    --pl-stop: #ffe4e0;
+    --pl-leaf: #3f6212;
+    --pl-agar: #a5f3fc;
+    --pl-line-soft: #dbe5ee;
+    --pl-shadow-soft: rgba(15, 36, 54, 0.10);
+    --pl-neon: #0891b2;
+    --pl-neon-2: #4d7c0f;
+    --pl-glow: rgba(8, 145, 178, 0.25);
+    --pl-grid: rgba(8, 145, 178, 0.05);
   }
 }
 
 :root[data-theme="dark"] {
-  --pl-paper: #17150f;
-  --pl-card: #221e17;
-  --pl-sunk: #2b261d;
-  --pl-ink: #f4efe3;
-  --pl-ink-2: #c6bda9;
-  --pl-ink-3: #948b79;
-  --pl-line: #f4efe3;
-  --pl-shadow: #000000;
-  --pl-chip-ink: #1d1a15;
-  --pl-yellow: #e0b52e;
-  --pl-green: #4fa877;
-  --pl-pink: #c47ba2;
-  --pl-sky: #2f4d5e;
-  --pl-red: #e08b76;
-  --pl-stop: #3d1f18;
-  --pl-leaf: #7ca85e;
-  --pl-agar: #3f7a58;
-  --pl-line-soft: #3a352a;
-  --pl-shadow-soft: rgba(0, 0, 0, 0.35);
+  --pl-paper: #070d1a;
+  --pl-card: #0b1424;
+  --pl-sunk: #0e1a2e;
+  --pl-ink: #f0fdff;
+  --pl-ink-2: #9fb3c8;
+  --pl-ink-3: #6b7f94;
+  --pl-line: #35cfe4;
+  --pl-shadow: #01030a;
+  --pl-chip-ink: #04070f;
+  --pl-yellow: #a3e635;
+  --pl-green: #34d399;
+  --pl-pink: #c084fc;
+  --pl-sky: #0e3a47;
+  --pl-red: #f87171;
+  --pl-stop: #3b1620;
+  --pl-leaf: #4ade80;
+  --pl-agar: #164e63;
+  --pl-line-soft: rgba(34, 211, 238, 0.18);
+  --pl-shadow-soft: rgba(1, 3, 10, 0.5);
+  --pl-neon: #22d3ee;
+  --pl-neon-2: #a3e635;
+  --pl-glow: rgba(34, 211, 238, 0.45);
+  --pl-grid: rgba(34, 211, 238, 0.05);
 }
 
 :root[data-theme="light"] {
-  --pl-paper: #fdf6e8;
+  --pl-paper: #f4f7fa;
   --pl-card: #ffffff;
-  --pl-sunk: #f3ecdc;
-  --pl-ink: #1d1a15;
-  --pl-ink-2: #4d463a;
-  --pl-ink-3: #7b7263;
-  --pl-line: #1d1a15;
-  --pl-shadow: #1d1a15;
-  --pl-chip-ink: #1d1a15;
-  --pl-yellow: #ffd23f;
-  --pl-green: #65c893;
-  --pl-pink: #e39ec4;
-  --pl-sky: #cfe8f5;
-  --pl-red: #e8705a;
-  --pl-stop: #ffdcd5;
-  --pl-leaf: #6f9a52;
-  --pl-agar: #a8e6c1;
-  --pl-line-soft: #d8cfba;
-  --pl-shadow-soft: rgba(29, 26, 21, 0.12);
+  --pl-sunk: #e9eff5;
+  --pl-ink: #0f2436;
+  --pl-ink-2: #46586a;
+  --pl-ink-3: #5c6f82;
+  --pl-line: #46586a;
+  --pl-shadow: #0f2436;
+  --pl-chip-ink: #f7fee7;
+  --pl-yellow: #3f6212;
+  --pl-green: #17834b;
+  --pl-pink: #7c3aed;
+  --pl-sky: #d9f2f8;
+  --pl-red: #b42318;
+  --pl-stop: #ffe4e0;
+  --pl-leaf: #3f6212;
+  --pl-agar: #a5f3fc;
+  --pl-line-soft: #dbe5ee;
+  --pl-shadow-soft: rgba(15, 36, 54, 0.10);
+  --pl-neon: #0891b2;
+  --pl-neon-2: #4d7c0f;
+  --pl-glow: rgba(8, 145, 178, 0.25);
+  --pl-grid: rgba(8, 145, 178, 0.05);
 }
 
 .pl-root {
@@ -143,13 +159,44 @@
 }
 
 /* สำเนียงโหมดอ่าน เส้นบางเงานุ่ม เพื่อถอยให้ภาพต้นจริงเป็นประธานของหน้า
-   ของเดิมเป็นเส้น 2.5px กับเงาทึบ 5px ซึ่งแย่งความสนใจกับเนื้อหา */
+   ของเดิมเป็นเส้น 2.5px กับเงาทึบ 5px ซึ่งแย่งความสนใจกับเนื้อหา
+   เพิ่มเส้นเน้นซ้ายสีนีออนตามผิวไซเบอร์ ส่วนขนาด/ระยะเดิมคงไว้ทั้งหมด */
 .pl-card {
   background: var(--pl-card);
   border: 1px solid var(--pl-line-soft);
+  border-left: 3px solid var(--pl-neon);
   border-radius: 14px;
   padding: 18px;
   box-shadow: 0 2px 14px var(--pl-shadow-soft);
+}
+
+.pl-card.pl-link:hover {
+  border-color: var(--pl-neon);
+  box-shadow: 0 0 14px var(--pl-glow);
+}
+
+/* chip สถานะสไตล์ HUD ใช้โดยหน้าทำงาน (Task 3) */
+.pl-hud-chip {
+  display: inline-block;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  padding: 2px 10px;
+  border: 1px solid var(--pl-neon);
+  border-radius: 4px;
+  color: var(--pl-neon);
+  background: transparent;
+}
+
+/* ไฟกะพริบจุดเดียวของหน้าทำงาน ดับใต้ prefers-reduced-motion ด้วยกติกา global
+   ท้ายไฟล์ (animation: none !important) จึงห้ามใส่ !important ที่นี่ */
+@keyframes pl-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.pl-pulse {
+  animation: pl-pulse 2s ease-in-out infinite;
 }
 
 .pl-chip {
@@ -178,6 +225,7 @@
 /* คำนิยามจากตำรา ไม่ใช่ข้ออ้างเชิงวิธีการ จึงใช้สีกลางที่ไม่สื่อว่าดีหรือแย่ */
 .pl-chip-fact {
   background: var(--pl-sky);
+  color: var(--pl-ink);
 }
 
 /* หัวข้อใช้ serif เพื่อโทนตำราที่อ่านยาวสบายตา ฟอนต์ serif ต้องการช่องไฟ
@@ -448,7 +496,8 @@
 
 .pl-calc-tab[aria-selected="true"] {
   background: var(--pl-leaf);
-  color: #ffffff;
+  /* ปัญหาเดียวกับ .pl-button: สีขาวตายตัวอ่านไม่ออกบนพื้นเขียวสว่างของธีมมืด */
+  color: var(--pl-chip-ink);
   border-color: var(--pl-leaf);
 }
 
@@ -539,10 +588,17 @@
   border: 1px solid var(--pl-line-soft);
   border-radius: 10px;
   background: var(--pl-leaf);
-  color: #ffffff;
+  /* เดิม color: #ffffff ตายตัว ธีมมืด --pl-leaf เป็นเขียวสว่าง (#4ade80) ตัวหนังสือขาวบนพื้นเขียวสว่าง
+     อ่านแทบไม่ออก ใช้ --pl-chip-ink แทนเพราะออกแบบมาคู่กับสีชิปพอดี: มืด = เกือบดำบนเขียวสว่าง,
+     สว่าง = เกือบขาวบนเขียวเข้ม อ่านออกทั้งสองธีม */
+  color: var(--pl-chip-ink);
   font: inherit;
   font-weight: 700;
   cursor: pointer;
+}
+
+.pl-button:hover {
+  box-shadow: 0 0 14px var(--pl-glow);
 }
 
 /* โหมดลงมือ ใช้เฉพาะตัวเดินขั้นตอนที่ผู้ใช้อ่านตอนใส่ถุงมือและมือเปื้อน
@@ -553,6 +609,7 @@
 
 .pl-do .pl-card {
   border-width: 2px;
+  border-left-width: 4px;
 }
 
 .pl-do .pl-lede {
@@ -614,7 +671,9 @@
   padding: 0 6px;
   border-radius: 999px;
   background: var(--pl-leaf);
-  color: #ffffff;
+  /* ปัญหาเดียวกับ .pl-button: สีขาวตายตัวอ่านไม่ออกบนพื้นเขียวสว่างของธีมมืด
+     ขอบวงแหวนคงเป็น #ffffff ต่อไปเพราะตัดกับภาพพื้นหลังทั่วไป ไม่ใช่ปัญหาคู่สีตัวอักษร/พื้น */
+  color: var(--pl-chip-ink);
   border: 2px solid #ffffff;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
   font-size: 13px;
@@ -638,3 +697,23 @@
   border: 1px solid var(--pl-line-soft);
   background-repeat: no-repeat;
 }
+
+/* Hero หน้าแรก: poster + HUD cyberpunk (Task 4 จะฝัง 3D ลงใน .pl-hero-stage) */
+.pl-hero { position: relative; overflow: hidden; border-radius: 12px; margin-bottom: 26px; padding: 18px; background: radial-gradient(120% 100% at 70% 20%, var(--pl-sunk) 0%, var(--pl-paper) 70%); border: 1px solid var(--pl-line-soft); }
+.pl-hero-grid { position: absolute; inset: 0; background-image: linear-gradient(var(--pl-grid) 1px, transparent 1px), linear-gradient(90deg, var(--pl-grid) 1px, transparent 1px); background-size: 28px 28px; }
+.pl-hero-stage { position: relative; width: min(280px, 70vw); height: 320px; margin: 0 auto; }
+.pl-hero-poster { position: absolute; inset: 0; width: 100%; height: 100%; }
+.pl-hero-poster-hidden { opacity: 0; transition: opacity 0.8s ease; }
+.pl-hero-canvas { position: absolute; inset: 0; z-index: 1; opacity: 0; animation: pl-fade-in 0.8s ease forwards; }
+@keyframes pl-fade-in { to { opacity: 1; } }
+.pl-hero-ring { position: absolute; border-radius: 50%; border: 1px dashed var(--pl-neon); opacity: 0.5; }
+.pl-hero-ring-a { inset: 6px; animation: pl-spin 16s linear infinite; }
+.pl-hero-ring-b { inset: 32px; border-color: var(--pl-neon-2); animation: pl-spin-rev 10s linear infinite; }
+.pl-hero-chip-top { position: absolute; top: 2px; right: 2px; z-index: 2; }
+.pl-hero-chip-bottom { position: absolute; bottom: 2px; left: 2px; z-index: 2; color: var(--pl-neon-2); border-color: var(--pl-neon-2); }
+.pl-hero-scanline { position: absolute; left: 10%; right: 10%; height: 2px; background: linear-gradient(90deg, transparent, var(--pl-neon), transparent); box-shadow: 0 0 10px var(--pl-glow); animation: pl-scan 4s linear infinite; }
+.pl-hero-note { margin-top: 10px; font-size: 13px; color: var(--pl-ink-3); text-align: center; }
+@keyframes pl-spin { to { transform: rotate(360deg); } }
+@keyframes pl-spin-rev { to { transform: rotate(-360deg); } }
+@keyframes pl-scan { 0% { top: 8%; opacity: 0; } 12% { opacity: 1; } 88% { opacity: 1; } 100% { top: 90%; opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .pl-hero-ring, .pl-hero-scanline { animation: none; } .pl-hero-scanline { display: none; } }
