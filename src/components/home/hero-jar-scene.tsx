@@ -18,8 +18,16 @@ function Jar({ colors }: { colors: SceneColors }) {
   return (
     <group
       ref={group}
-      onPointerDown={(e) => { drag.current.active = true; drag.current.lastX = e.clientX; }}
-      onPointerUp={() => { drag.current.active = false; }}
+      onPointerDown={(e) => {
+        drag.current.active = true;
+        drag.current.lastX = e.clientX;
+        (e.target as Element).setPointerCapture(e.pointerId);
+      }}
+      onPointerUp={(e) => {
+        drag.current.active = false;
+        (e.target as Element).releasePointerCapture(e.pointerId);
+      }}
+      onPointerCancel={() => { drag.current.active = false; }}
       onPointerLeave={() => { drag.current.active = false; }}
       onPointerMove={(e) => {
         if (!drag.current.active || !group.current) return;
