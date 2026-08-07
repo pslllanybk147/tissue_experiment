@@ -437,6 +437,28 @@ export const manualSources: ManualSourceRecord[] = [
     kind: "technical-guide",
     accessedAt: "2026-08-07",
   },
+  {
+    id: "source-powo-scindapsus-pictus",
+    title: "Scindapsus pictus Hassk. — Plants of the World Online (ชื่อพ้องรวม Epipremnum pictum)",
+    url: "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:88905-1",
+    kind: "taxonomy",
+    accessedAt: "2026-08-07",
+  },
+  {
+    id: "source-miller-murashige-1976",
+    title:
+      "Miller L.R., Murashige T. (1976). Tissue culture propagation of tropical foliage plants. In Vitro 12: 797–813 (Scindapsus aureus — lateral bud explants)",
+    url: "https://link.springer.com/article/10.1007/BF02796365",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-07",
+  },
+  {
+    id: "source-scindapsus-aureus-rooting-patent-cn",
+    title: "CN106613974A — Scindapsus aureus rooting medium and scindapsus aureus rooting culture method",
+    url: "https://patents.google.com/patent/CN106613974A/en",
+    kind: "patent",
+    accessedAt: "2026-08-07",
+  },
 ];
 
 export function sourceById(id: string): ManualSourceRecord | null {

@@ -9,6 +9,7 @@ import { monstera } from "./monstera";
 import { musa } from "./musa";
 import { philodendron } from "./philodendron";
 import { sansevieria } from "./sansevieria";
+import { scindapsus } from "./scindapsus";
 import { syngonium } from "./syngonium";
 import { zingiber } from "./zingiber";
 import type { GenusPack } from "./types";
@@ -27,6 +28,7 @@ export const generaPacks: GenusPack[] = [
   dendrobium,
   adenium,
   bambusa,
+  scindapsus,
 ];
 
 export function genusById(id: string): GenusPack | null {
