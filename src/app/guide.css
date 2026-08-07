@@ -697,6 +697,9 @@
 .pl-hero-grid { position: absolute; inset: 0; background-image: linear-gradient(var(--pl-grid) 1px, transparent 1px), linear-gradient(90deg, var(--pl-grid) 1px, transparent 1px); background-size: 28px 28px; }
 .pl-hero-stage { position: relative; width: min(280px, 70vw); height: 320px; margin: 0 auto; }
 .pl-hero-poster { position: absolute; inset: 0; width: 100%; height: 100%; }
+.pl-hero-poster-hidden { opacity: 0; transition: opacity 0.8s ease; }
+.pl-hero-canvas { position: absolute; inset: 0; z-index: 1; opacity: 0; animation: pl-fade-in 0.8s ease forwards; }
+@keyframes pl-fade-in { to { opacity: 1; } }
 .pl-hero-ring { position: absolute; border-radius: 50%; border: 1px dashed var(--pl-neon); opacity: 0.5; }
 .pl-hero-ring-a { inset: 6px; animation: pl-spin 16s linear infinite; }
 .pl-hero-ring-b { inset: 32px; border-color: var(--pl-neon-2); animation: pl-spin-rev 10s linear infinite; }

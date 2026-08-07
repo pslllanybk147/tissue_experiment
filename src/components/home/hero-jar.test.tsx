@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
-import { HeroJar } from "./hero-jar";
+import { HeroJar, shouldLoadScene } from "./hero-jar";
 
 describe("hero ขวดเพาะเลี้ยงหน้าแรก", () => {
   const html = renderToStaticMarkup(<HeroJar />);
@@ -21,5 +21,17 @@ describe("hero ขวดเพาะเลี้ยงหน้าแรก", ()
 
   it("องค์ประกอบตกแต่งถูกซ่อนจาก screen reader", () => {
     expect(html).toContain('aria-hidden="true"');
+  });
+});
+
+describe("เงื่อนไขโหลดฉาก 3D", () => {
+  it("ไม่โหลดเมื่อผู้ใช้ขอลดการเคลื่อนไหว", () => {
+    expect(shouldLoadScene({ reducedMotion: true, webgl: true })).toBe(false);
+  });
+  it("ไม่โหลดเมื่อไม่มี WebGL", () => {
+    expect(shouldLoadScene({ reducedMotion: false, webgl: false })).toBe(false);
+  });
+  it("โหลดเมื่อพร้อมทั้งคู่", () => {
+    expect(shouldLoadScene({ reducedMotion: false, webgl: true })).toBe(true);
   });
 });

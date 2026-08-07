@@ -1,6 +1,50 @@
 "use client";
 
+import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
+
+const HeroJarScene = dynamic(() => import("./hero-jar-scene"), { ssr: false });
+
+export function shouldLoadScene(env: { reducedMotion: boolean; webgl: boolean }) {
+  return !env.reducedMotion && env.webgl;
+}
+
+function detectEnv() {
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let webgl = false;
+  try {
+    const canvas = document.createElement("canvas");
+    webgl = Boolean(canvas.getContext("webgl2") ?? canvas.getContext("webgl"));
+  } catch {
+    webgl = false;
+  }
+  return { reducedMotion, webgl };
+}
+
+function readSceneColors() {
+  const style = getComputedStyle(document.documentElement);
+  return {
+    neon: style.getPropertyValue("--pl-neon").trim() || "#22d3ee",
+    neon2: style.getPropertyValue("--pl-neon-2").trim() || "#a3e635",
+    leaf: style.getPropertyValue("--pl-leaf").trim() || "#4ade80",
+    agar: style.getPropertyValue("--pl-agar").trim() || "#164e63",
+  };
+}
+
 export function HeroJar() {
+  const [scene, setScene] = useState<null | ReturnType<typeof readSceneColors>>(null);
+
+  useEffect(() => {
+    if (!shouldLoadScene(detectEnv())) return;
+    // ตรวจ WebGL/reduced-motion ได้หลัง mount เท่านั้น (ต้องพึ่ง window) จึงตั้งค่าครั้งเดียวในเอฟเฟกต์นี้
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setScene(readSceneColors());
+    // เปลี่ยนธีมแล้วให้แสง 3D เปลี่ยนตาม
+    const observer = new MutationObserver(() => setScene(readSceneColors()));
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <section className="pl-hero" aria-label="ขวดเพาะเลี้ยงจำลอง">
       <div className="pl-hero-grid" aria-hidden="true" />
@@ -10,17 +54,28 @@ export function HeroJar() {
         <span className="pl-hud-chip pl-hero-chip-top" aria-hidden="true">LAB:PLANTLOVER</span>
         <span className="pl-hud-chip pl-pulse pl-hero-chip-bottom" aria-hidden="true">READY ▲</span>
         <div className="pl-hero-scanline" aria-hidden="true" />
-        <HeroPoster />
+        <HeroPoster hidden={Boolean(scene)} />
+        {scene ? (
+          <div className="pl-hero-canvas" aria-hidden="true">
+            <HeroJarScene {...scene} />
+          </div>
+        ) : null}
       </div>
       <p className="pl-hero-note">ภาพจำลองขวดเพาะเลี้ยง ไม่ใช่ภาพต้นจริง — ลากเพื่อหมุนได้เมื่อโหลดครบ</p>
     </section>
   );
 }
 
-function HeroPoster() {
+function HeroPoster({ hidden = false }: { hidden?: boolean }) {
   // ภาพนิ่ง: โหลแก้ว + วุ้น + ต้นอ่อน ใช้สีจาก currentColor/var() เพื่อตามธีม
+  // อยู่ใน DOM เสมอ (fallback หลักเมื่อไม่มี WebGL/reduced-motion) — ซ่อนด้วย opacity เมื่อ 3D พร้อม
   return (
-    <svg className="pl-hero-poster" viewBox="0 0 200 260" role="img" aria-label="ขวดโหลแก้วมีต้นอ่อนบนวุ้นอาหาร">
+    <svg
+      className={hidden ? "pl-hero-poster pl-hero-poster-hidden" : "pl-hero-poster"}
+      viewBox="0 0 200 260"
+      role="img"
+      aria-label="ขวดโหลแก้วมีต้นอ่อนบนวุ้นอาหาร"
+    >
       <defs>
         <linearGradient id="pl-jar-glass" x1="0" y1="0" x2="1" y2="0">
           <stop offset="0" stopColor="var(--pl-ink)" stopOpacity="0.14" />
