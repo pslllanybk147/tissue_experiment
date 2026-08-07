@@ -116,8 +116,12 @@ async function inspectPage(page, viewportName, route) {
   });
 
   const prefix = `${viewportName} ${route}`;
+  // เดิม route label เช่น "public:/find" ยังมี ":" ค้างอยู่ ทำให้ path บน Windows/NTFS
+  // ตีความเป็น alternate data stream (file.png:foo) แล้วเขียนไม่ลง — ภาพเงียบ ๆ หายไปโดยไม่ error
+  // ลบอักขระที่ห้ามใช้ในชื่อไฟล์ Windows ทั้งหมด (< > : " | ? *) ไม่ใช่แค่ ":"
+  const safeRoute = route.replaceAll("/", "_").replaceAll(/[<>:"|?*]/g, "");
   await page.screenshot({
-    path: path.join(screenshotRoot, `${viewportName}-${route.replaceAll("/", "_").replaceAll("[", "").replaceAll("]", "") || "home"}.png`),
+    path: path.join(screenshotRoot, `${viewportName}-${safeRoute || "home"}.png`),
     fullPage: true,
   });
   assert(result.bodyText > 0, `${prefix}: หน้าเว็บว่าง`);

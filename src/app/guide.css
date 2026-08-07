@@ -496,7 +496,8 @@
 
 .pl-calc-tab[aria-selected="true"] {
   background: var(--pl-leaf);
-  color: #ffffff;
+  /* ปัญหาเดียวกับ .pl-button: สีขาวตายตัวอ่านไม่ออกบนพื้นเขียวสว่างของธีมมืด */
+  color: var(--pl-chip-ink);
   border-color: var(--pl-leaf);
 }
 
@@ -587,7 +588,10 @@
   border: 1px solid var(--pl-line-soft);
   border-radius: 10px;
   background: var(--pl-leaf);
-  color: #ffffff;
+  /* เดิม color: #ffffff ตายตัว ธีมมืด --pl-leaf เป็นเขียวสว่าง (#4ade80) ตัวหนังสือขาวบนพื้นเขียวสว่าง
+     อ่านแทบไม่ออก ใช้ --pl-chip-ink แทนเพราะออกแบบมาคู่กับสีชิปพอดี: มืด = เกือบดำบนเขียวสว่าง,
+     สว่าง = เกือบขาวบนเขียวเข้ม อ่านออกทั้งสองธีม */
+  color: var(--pl-chip-ink);
   font: inherit;
   font-weight: 700;
   cursor: pointer;
@@ -667,7 +671,9 @@
   padding: 0 6px;
   border-radius: 999px;
   background: var(--pl-leaf);
-  color: #ffffff;
+  /* ปัญหาเดียวกับ .pl-button: สีขาวตายตัวอ่านไม่ออกบนพื้นเขียวสว่างของธีมมืด
+     ขอบวงแหวนคงเป็น #ffffff ต่อไปเพราะตัดกับภาพพื้นหลังทั่วไป ไม่ใช่ปัญหาคู่สีตัวอักษร/พื้น */
+  color: var(--pl-chip-ink);
   border: 2px solid #ffffff;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
   font-size: 13px;

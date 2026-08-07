@@ -10,9 +10,12 @@ function Jar({ colors }: { colors: SceneColors }) {
   const group = useRef<Group>(null);
   const drag = useRef({ active: false, lastX: 0, velocity: 0.004 });
 
-  useFrame(() => {
+  useFrame((_, delta) => {
     if (!group.current) return;
-    if (!drag.current.active) group.current.rotation.y += drag.current.velocity;
+    // เดิมไม่รับ delta ทำให้ความเร็วหมุนผูกกับเฟรมเรตจอ (จอ 120Hz หมุนเร็วเป็น 2 เท่าของจอ 60Hz)
+    // velocity 0.004 ถูกตั้งไว้โดยอ้างอิงจอ 60fps จึงคูณด้วย 60 * delta เพื่อคงความเร็วที่เห็นเท่าเดิม
+    // ไม่ว่าเฟรมเรตจริงจะเป็นเท่าไร
+    if (!drag.current.active) group.current.rotation.y += drag.current.velocity * 60 * delta;
   });
 
   return (
@@ -25,7 +28,10 @@ function Jar({ colors }: { colors: SceneColors }) {
       }}
       onPointerUp={(e) => {
         drag.current.active = false;
-        (e.target as Element).releasePointerCapture(e.pointerId);
+        const target = e.target as Element;
+        // ปล่อยเฉพาะตอนที่ยึด capture ไว้จริง เรียก release เปล่า ๆ ตอนไม่มี capture (เช่นถูกยกเลิกไปก่อน
+        // จาก pointercancel) โยน DOMException ใน browser บางตัว
+        if (target.hasPointerCapture(e.pointerId)) target.releasePointerCapture(e.pointerId);
       }}
       onPointerCancel={() => { drag.current.active = false; }}
       onPointerLeave={() => { drag.current.active = false; }}

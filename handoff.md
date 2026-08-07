@@ -3402,3 +3402,80 @@ bottom-nav ที่มีอยู่ก่อนแล้ว ไม่ใช�
 - **Push และ merge เข้า master** — ตามกติกาโปรเจกต์ต้องรอผู้ใช้สั่งแยกต่างหาก ไม่ทำเองในรอบนี้
 - **ยังไม่เห็นบนเบราว์เซอร์จริงนอกเครื่องนี้** — ตรวจผ่าน `npm run start` (production build) local ที่
   `localhost:3100` เท่านั้น ยังไม่ได้ deploy ไป Vercel preview
+
+## 2026-08-07 — รอบแก้ตามผลรีวิวทั้งสาขา (dark theme หลุดใน /my และ /admin/*)
+
+รีวิวทั้งสาขาก่อน merge พบว่า `globals.css` (ใช้โดย `/my` และ `/admin/*`) ยังตั้ง `:root` เป็นโทนสว่างค้างไว้
+ทับด้วยพื้นผิว hex ตรง ๆ (`#fff`, `#f7f7f5`, `#ebeae7`, `#f4f4f2` ฯลฯ) กว่า 20 จุด คู่กับตัวหนังสือที่ใช้
+`var(--ink)`/`var(--muted)` ซึ่งกลายเป็นเกือบขาวในธีมมืด ทำให้ตัวหนังสือกลืนพื้นหลัง (ขาวบนขาว) ในหลายจุดของ
+sidebar, ฟอร์ม, แถบ hover/active, การ์ด knowledge/dataset/preprocessing/training
+
+**แก้ `src/app/globals.css`:**
+- เพิ่มโทเคน `--surface-2` (พื้นผิวรอง เช่นการ์ด/แถบ) และ `--hover` (พื้นหลัง hover/active) ทั้งสามบล็อกธีม
+- ผูก `--paper`/`--soft` ที่โค้ดเดิมอ้างถึงแต่ไม่เคยประกาศไว้ (`var()` ไม่มี fallback = ไม่มีผล) ให้เป็น alias
+  ของ `--canvas`/`--surface-2`
+- เพิ่ม `@media (prefers-color-scheme: light)` และ `:root[data-theme="dark"]` ให้ตรงกับรูปแบบของ `guide.css`
+  (เดิม globals.css ไม่มี media query นี้เลย ทำให้ผู้ใช้ระบบโหมดสว่างเห็นคู่มือสาธารณะสว่างแต่ /my และ /admin/*
+  มืดแบบไม่ตรงกัน)
+- ไล่แทนที่ hex พื้นผิวสว่างที่ยังใช้งานจริงด้วยโทเคนใน: `.lab-route-sidebar`, `.lab-route-nav`
+  a:hover/.active, `.route-state`, `.media-uploader`, `.dataset-review-row` (รวม img), `.dataset-field`,
+  `.dataset-training`, `.preprocessing-job`, `.preprocessing-progress`, `.baseline-training-run`,
+  `.baseline-metrics > div`, `.knowledge-search`, `.knowledge-row`, `.knowledge-form` (div และ input),
+  `.claim-row-focus`, `.knowledge-audit-filters`, `.knowledge-audit-list pre`, `.knowledge-source-claims`,
+  `.knowledge-source-audit pre`, `.training-readiness-panel`, `.training-blockers`,
+  `.lab-route-menu-toggle`, `.lab-route-mobile-nav` (ทั้งสองจุดที่ประกาศซ้ำ), `.guided-steps-toggle`,
+  `.observation-form`, `.audit-list pre`
+- ตรวจแล้วว่า class อื่นที่มี pattern เดียวกัน (`.nav-item`, `.hero-panel`, `.modal`, ตระกูล `.wizard-*`,
+  `.beginner-*`, `.protocol-visual-*`, `.linear-*`, `.catch-up-*` ฯลฯ) ไม่ถูกอ้างถึงจาก component จริงเลย
+  (`grep` ทั้ง `src/**/*.tsx` ไม่เจอ) เป็น CSS ตายจากดีไซน์ก่อนหน้า จึงไม่แก้ตามกติกา "ห้าม redesign"
+  (การแก้ CSS ที่ไม่มีอะไรเรนเดอร์ถึงไม่มีความเสี่ยงแต่ก็ไม่มีประโยชน์)
+
+**แก้ `src/app/guide.css`:**
+- `.pl-button`, `.pl-calc-tab[aria-selected="true"]`, `.pl-pin` ใช้ `background: var(--pl-leaf)` คู่กับ
+  `color: #ffffff` ตายตัว ธีมมืด `--pl-leaf` เป็นเขียวสว่าง (`#4ade80`) ทำให้ตัวหนังสือขาวอ่านแทบไม่ออก
+  เปลี่ยนเป็น `color: var(--pl-chip-ink)` ซึ่งออกแบบมาคู่กับสีชิปอยู่แล้ว (มืด = เกือบดำบนเขียวสว่าง,
+  สว่าง = เกือบขาวบนเขียวเข้ม) `.pl-pin` คงขอบวงแหวน `#ffffff` ไว้เพราะตัดกับภาพพื้นหลัง ไม่ใช่ปัญหาคู่สี
+
+**แก้ `scripts/verify-accessible-ui.mjs`:**
+- ชื่อไฟล์ screenshot จาก route label เช่น `public:/find` ยังมี `:` ค้างอยู่ ทำให้ path บน Windows/NTFS
+  ตีความเป็น alternate data stream แล้วเขียนไฟล์ไม่ลง (เงียบ ไม่ error) เพิ่มการลบอักขระต้องห้ามของชื่อไฟล์
+  Windows ทั้งชุด (`< > : " | ? *`) แทนที่จะลบแค่ `/`, `[`, `]` เหมือนเดิม
+
+**แก้ `src/components/home/hero-jar-scene.tsx` (minor, จากรีวิว):**
+- `useFrame` เดิมไม่รับ `delta` ทำให้ความเร็วหมุนของขวดผูกกับเฟรมเรตจอ (จอ 120Hz หมุนเร็วเป็น 2 เท่าของจอ
+  60Hz) แก้เป็นคูณด้วย `60 * delta` เพื่อคงความเร็วที่เห็นเท่าเดิมไม่ว่าเฟรมเรตจริงจะเป็นเท่าไร
+- `onPointerUp` เรียก `releasePointerCapture` แบบไม่มีการ์ด เพิ่มเช็ก `hasPointerCapture` ก่อนเรียก
+  ป้องกัน exception เมื่อ capture ถูกยกเลิกไปก่อนหน้าแล้ว (เช่นจาก `pointercancel`)
+
+### ผลตรวจ
+
+- `npm test`: ผ่าน 518 tests, skip 10 (124 test files, skip 4) — เท่ากับก่อนแก้ (การแก้เป็น CSS/สคริปต์/ตัวจับ
+  pointer เล็ก ๆ ไม่กระทบ logic ที่มี test คลุม)
+- `npm run lint`: ผ่าน ไม่มี error/warning
+- `npm run build`: ผ่าน compile สำเร็จ, 94 static pages
+- `npm run ui:verify`: ผ่านครบ 14 viewport — 360, 375, 390, 412, 428, 600, 744, 768, 820, 834, 1024, 1280,
+  1440 และ 1920px (รัน `next start -p 3100` เป็น production server ก่อนแล้วชี้ `ui:verify` เข้าไป)
+- ข้ามคำสั่ง `npm run firebase:verify`: การแก้ทั้งหมดเป็น CSS ล้วนบวกสคริปต์ตรวจสอบบวกตัวจับ pointer ของ 3D
+  scene ไม่แตะ logic ฝั่ง Auth/Firestore หรือ business logic ใด ๆ
+
+### ตรวจภาพด้วยตา
+
+เปิด `desktop-home-dark.png`, `desktop-home-light.png`, `desktop-_my.png`, `desktop-_admin_pin.png`:
+hero jar อ่านออกทั้งสองธีม ไม่มี overflow แนวนอน; หน้า `/my` (dark) sidebar/การ์ด/ตัวเลขสรุปอ่านชัดเจนแล้ว
+(เดิมเสี่ยงขาวบนขาวที่ sidebar และแถบ hover); หน้า `/admin/pin` (dark) ตัวหนังสือคำแนะนำอ่านชัด พื้นหลังมืด
+สม่ำเสมอ ไม่มีจุดขาวหลุด — สังเกตว่า `desktop-_admin_knowledge.png` มีความสูงผิดปกติ (~47000px) ซึ่งมีมาก่อน
+รอบแก้นี้แล้ว (ไม่เกี่ยวกับการเปลี่ยน background ใด ๆ ในรอบนี้ ซึ่งแก้แค่สี ไม่แก้ layout/height) ยังไม่ได้ไล่
+สาเหตุ เป็นรายการที่ควรตรวจแยกต่างหากในรอบถัดไป
+
+### ไฟล์ที่เปลี่ยนในรอบนี้
+
+- `src/app/globals.css`
+- `src/app/guide.css`
+- `scripts/verify-accessible-ui.mjs`
+- `src/components/home/hero-jar-scene.tsx`
+
+### ยังไม่ได้ทำ / ต้องรอสั่งแยก
+
+- **Push และ merge เข้า master** — ตามกติกาโปรเจกต์ต้องรอผู้ใช้สั่งแยกต่างหาก ไม่ทำเองในรอบนี้
+- **ความสูงผิดปกติของ `/admin/knowledge`** (~47000px ใน screenshot desktop) — พบระหว่างตรวจภาพ ไม่ได้อยู่ใน
+  ขอบเขตรอบนี้ ควรตรวจแยก
