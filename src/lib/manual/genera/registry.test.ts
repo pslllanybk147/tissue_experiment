@@ -39,6 +39,34 @@ describe("ทะเบียนสกุล", () => {
     }
   });
 
+  // ชั้นสกุลไหลลงไปหาทุกชนิดในสกุล การอ้างว่า "ตรงพันธุ์" ที่ชั้นนี้จึงเป็นไปไม่ได้เสมอ
+  // ต่อให้หลักฐานตรงพันธุ์จริงสำหรับชนิดหนึ่ง มันก็เป็นแค่ค่าประยุกต์สำหรับชนิดที่เหลือ
+  // ตัวเลขที่ผูกกับพันธุ์ต้องอยู่ที่ชั้นชนิด ไม่ใช่ชั้นนี้
+  it("ชั้นสกุลอ้างระดับตรงพันธุ์ไม่ได้ เพราะค่าจะไหลลงไปหาทุกชนิดในสกุล", () => {
+    for (const pack of generaPacks) {
+      for (const [stepId, override] of Object.entries(pack.deviations)) {
+        expect(
+          override.evidence?.level,
+          `${pack.id}/${stepId} อ้างตรงพันธุ์ที่ชั้นสกุล ต้องย้ายตัวเลขลงไปที่ชั้นชนิด`,
+        ).not.toBe("species-direct");
+      }
+      // ค่าช่วงวางได้สองที่ คือระดับสกุล (pack.doses) และระดับขั้น (deviations[x].doses)
+      // ต้องตรวจทั้งคู่ ไม่งั้นครึ่งหนึ่งของทางที่คนเขียนใส่ค่าได้จริงจะหลุดการตรวจ
+      const dosesInPack = Object.entries(pack.doses ?? {});
+      const dosesInSteps = Object.entries(pack.deviations).flatMap(([stepId, override]) =>
+        Object.entries(override.doses ?? {}).map(
+          ([key, dose]) => [`${stepId}/${key}`, dose] as const,
+        ),
+      );
+      for (const [doseKey, dose] of [...dosesInPack, ...dosesInSteps]) {
+        expect(
+          dose.evidence.level,
+          `${pack.id} ค่าช่วง ${doseKey} อ้างตรงพันธุ์ที่ชั้นสกุล`,
+        ).not.toBe("species-direct");
+      }
+    }
+  });
+
   it("ค้นด้วย id ได้ และคืน null เมื่อไม่มี", () => {
     expect(genusById("philodendron")?.id).toBe("philodendron");
     expect(genusById("ไม่มี")).toBeNull();

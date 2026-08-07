@@ -4,10 +4,16 @@ import { genusById } from "./genera/registry";
 import { resolveManual } from "./resolve";
 import { genericPhilodendronPack } from "./species/generic-philodendron";
 import { pinkPrincessPack } from "./species/pink-princess";
+import { thaiConstellationPack } from "./species/thai-constellation";
 import { violinVariegatedPack } from "./species/violin-variegated";
 import type { PlantPack, ResolvedManual } from "./types";
 
-export const plantPacks: PlantPack[] = [pinkPrincessPack, violinVariegatedPack, genericPhilodendronPack];
+export const plantPacks: PlantPack[] = [
+  pinkPrincessPack,
+  violinVariegatedPack,
+  thaiConstellationPack,
+  genericPhilodendronPack,
+];
 
 export function allSlugs(): string[] {
   return plantPacks.map((pack) => pack.slug);

@@ -170,6 +170,52 @@ export const manualSources: ManualSourceRecord[] = [
     kind: "technical-guide",
     accessedAt: "2026-08-05",
   },
+  {
+    id: "source-powo-monstera-deliciosa",
+    title: "Monstera deliciosa Liebm. — Plants of the World Online (ชื่อพ้องรวม Philodendron pertusum และ Monstera borsigiana)",
+    url: "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:87478-1",
+    kind: "taxonomy",
+    accessedAt: "2026-08-06",
+  },
+  {
+    id: "source-monstera-thai-constellation-2023",
+    title:
+      "Sivanesan I., Lee Y.K., Kang K.W., Park H.Y. (2023). Micropropagation of Monstera deliciosa Liebm. ‘Thai Constellation’. Propagation of Ornamental Plants 23(2): 31–38",
+    url: "https://sejong.elsevierpure.com/en/publications/micropropagation-of-monstera-deliciosa-liebm-thai-constellation/",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-06",
+  },
+  {
+    id: "source-monstera-tis-2024",
+    title:
+      "Micropropagation and Acclimatization of Monstera deliciosa Liebm. ‘Thai Constellation’. Horticulturae 10(1): 1 (2024)",
+    url: "https://doi.org/10.3390/horticulturae10010001",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-06",
+  },
+  {
+    id: "source-monstera-fonnesbech-1980",
+    title:
+      "Fonnesbech A., Fonnesbech M. (1980). In Vitro Propagation of Monstera deliciosa. HortScience 15(6): 740–741",
+    url: "https://journals.ashs.org/hortsci/view/journals/hortsci/15/6/article-p740.xml",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-06",
+  },
+  {
+    id: "source-tdz-aroid-2018",
+    title:
+      "Chen J., Wei X. (2018). Thidiazuron in Micropropagation of Aroid Plants. In: Thidiazuron: From Urea Derivative to Plant Growth Regulator. Springer: 95–113",
+    url: "https://link.springer.com/chapter/10.1007/978-981-10-8004-3_4",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-06",
+  },
+  {
+    id: "source-umn-monstera-propagation",
+    title: "Propagating Monstera deliciosa — University of Minnesota Extension",
+    url: "https://extension.umn.edu/houseplants/propagating-monstera-deliciosa",
+    kind: "technical-guide",
+    accessedAt: "2026-08-06",
+  },
 ];
 
 export function sourceById(id: string): ManualSourceRecord | null {
