@@ -117,6 +117,81 @@ export function planHaiterWorkingDilution(
   };
 }
 
+export type HaiterAutoInput = {
+  sourcePercent: number;
+  targetPercent: number;
+  finalVolumeMl: number;
+  minimumMeasurableMl: number;
+};
+
+export type HaiterAutoResult =
+  | { mode: "direct"; sourceVolumeMl: number; formula: string }
+  | {
+      mode: "working-dilution";
+      dilutionFactor: number;
+      workingPercent: number;
+      workingVolumeMl: number;
+      sourceVolumeMl: number;
+      diluentVolumeMl: number;
+      workingDoseMl: number;
+    };
+
+/** ลิสต์อัตราเจือจางและปริมาตร working stock สำเร็จรูปที่ระบบไล่หาให้เอง แทนที่จะให้ผู้ใช้เดา
+ *  รูปแบบเดียวกับ dilutionFactors ที่ calculateWorkingStock() ใช้อยู่แล้วสำหรับน้ำยาแม่ฮอร์โมน */
+const haiterDilutionFactors = [
+  2, 3, 4, 5, 6, 8, 10, 15, 20, 25, 30, 40, 50, 75, 100, 150, 200, 300, 500, 1000,
+];
+const haiterWorkingVolumesMl = [20, 50, 100, 200, 500, 1000];
+
+/** คำนวณให้ทั้งหมดในขั้นตอนเดียว ไม่ถามผู้ใช้ว่า "เจือจางกี่เท่า" หรือ "ปริมาตร working
+ *  ที่จะเตรียม" อีกต่อไป ไล่หาคู่อัตราเจือจาง/ปริมาตรที่ตวงได้จริงทั้งสองขั้น
+ *  (ทั้งตอนตวงต้นทางลงไปทำ working stock และตอนตวง working stock ไปใช้จริง)
+ *  แล้วเลือกคู่แรกที่เจือจางน้อยที่สุดและเปลืองน้อยที่สุด */
+export function planHaiterCleaningDose(input: HaiterAutoInput): HaiterAutoResult {
+  const dose = calculateHaiterDose(input);
+  if (!dose.needsWorkingDilution) {
+    return { mode: "direct", sourceVolumeMl: dose.sourceVolumeMl, formula: dose.formula };
+  }
+
+  for (const dilutionFactor of haiterDilutionFactors) {
+    for (const workingVolumeMl of haiterWorkingVolumesMl) {
+      let candidate;
+      try {
+        candidate = planHaiterWorkingDilution({
+          sourcePercent: input.sourcePercent,
+          dilutionFactor,
+          workingVolumeMl,
+          targetPercent: input.targetPercent,
+          finalVolumeMl: input.finalVolumeMl,
+          minimumMeasurableMl: input.minimumMeasurableMl,
+        });
+      } catch {
+        continue;
+      }
+
+      const sourcePourIsMeasurable = candidate.sourceVolumeMl >= input.minimumMeasurableMl;
+      const doseFitsInWorkingStock = candidate.workingDoseMl <= workingVolumeMl;
+      if (!candidate.isMeasurable || !sourcePourIsMeasurable || !doseFitsInWorkingStock) {
+        continue;
+      }
+
+      return {
+        mode: "working-dilution",
+        dilutionFactor,
+        workingPercent: candidate.workingPercent,
+        workingVolumeMl,
+        sourceVolumeMl: candidate.sourceVolumeMl,
+        diluentVolumeMl: candidate.diluentVolumeMl,
+        workingDoseMl: candidate.workingDoseMl,
+      };
+    }
+  }
+
+  throw new Error(
+    "อุปกรณ์ตวงละเอียดไม่พอสำหรับค่านี้ ต้องใช้อุปกรณ์ที่ตวงได้ละเอียดกว่านี้ หรือลดความเข้มข้นเป้าหมายลง",
+  );
+}
+
 /** ฉลากน้ำยาฟอกขาวบอกเปอร์เซ็นต์ได้สองแบบ และไม่เท่ากัน
  *
  *  w/v คือกรัมของสารต่อสารละลาย 100 มิลลิลิตร ซึ่งเป็นแบบที่สูตร C1V1 = C2V2 ใช้ได้ตรง

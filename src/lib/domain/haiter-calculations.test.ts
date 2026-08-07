@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import {
   calculateHaiterDose,
+  planHaiterCleaningDose,
   planHaiterWorkingDilution,
   toWeightPerVolumePercent,
 } from "./haiter-calculations";
@@ -137,5 +138,84 @@ describe("toWeightPerVolumePercent", () => {
 
   test("ค่าที่ไม่ใช่ตัวเลขบวก ต้องไม่คืนตัวเลขเงียบ ๆ", () => {
     expect(() => toWeightPerVolumePercent(0, "w/w")).toThrow();
+  });
+});
+
+describe("planHaiterCleaningDose", () => {
+  test("ตวงตรงได้อยู่แล้ว ไม่ต้องเจือจาง", () => {
+    const result = planHaiterCleaningDose({
+      sourcePercent: 6,
+      targetPercent: 1,
+      finalVolumeMl: 100,
+      minimumMeasurableMl: 1,
+    });
+
+    expect(result.mode).toBe("direct");
+    if (result.mode === "direct") {
+      expect(result.sourceVolumeMl).toBe(16.666667);
+    }
+  });
+
+  // ภาพหน้าจอจริงจากผู้ใช้ 7 สิงหาคม 2026: กรอก 6% w/w (=6.48% w/v), เป้าหมาย 1%,
+  // ปริมาตรสุดท้าย 100 mL, ตวงละเอียดสุด 0.1 mL แล้วเข้าใจผิดว่าต้องเจือจางก่อน
+  // ทั้งที่ตวงตรงจากขวดต้นทางได้อยู่แล้ว (15.432099 mL > 0.1 mL) ฟอร์มเดียวต้องไม่พาไป
+  // เจือจางเกินจำเป็นแบบนั้นอีก
+  test("ตัวเลขจากภาพหน้าจอจริงของผู้ใช้ ต้องได้ตวงตรง ไม่ใช่ working dilution", () => {
+    const result = planHaiterCleaningDose({
+      sourcePercent: 6.48,
+      targetPercent: 1,
+      finalVolumeMl: 100,
+      minimumMeasurableMl: 0.1,
+    });
+
+    expect(result.mode).toBe("direct");
+    if (result.mode === "direct") {
+      expect(result.sourceVolumeMl).toBe(15.432099);
+    }
+  });
+
+  test("ต้องเจือจางจริง เลือกอัตราเจือจางและปริมาตร working stock ให้เองโดยผู้ใช้ไม่ต้องกรอก", () => {
+    const result = planHaiterCleaningDose({
+      sourcePercent: 6,
+      targetPercent: 0.05,
+      finalVolumeMl: 10,
+      minimumMeasurableMl: 0.5,
+    });
+
+    expect(result.mode).toBe("working-dilution");
+    if (result.mode === "working-dilution") {
+      expect(result.dilutionFactor).toBe(6);
+      expect(result.workingPercent).toBe(1);
+      expect(result.workingVolumeMl).toBe(20);
+      expect(result.sourceVolumeMl).toBe(3.333333);
+      expect(result.diluentVolumeMl).toBe(16.666667);
+      expect(result.workingDoseMl).toBe(0.5);
+      // ต้องตวงได้จริงทั้งสองขั้น: ตวงต้นทางเข้า working stock ได้ไม่ต่ำกว่าเครื่องมือขั้นต่ำ
+      expect(result.sourceVolumeMl).toBeGreaterThanOrEqual(0.5);
+      // และตวงจาก working stock ได้ไม่เกินปริมาตรที่เตรียมไว้จริง
+      expect(result.workingDoseMl).toBeLessThanOrEqual(result.workingVolumeMl);
+    }
+  });
+
+  test("ไม่มีอัตราเจือจางไหนตวงได้จริงด้วยเครื่องมือนี้ ต้องบอกตรง ๆ ว่าทำไม่ได้", () => {
+    expect(() =>
+      planHaiterCleaningDose({
+        sourcePercent: 6,
+        targetPercent: 0.003,
+        finalVolumeMl: 1,
+        minimumMeasurableMl: 50,
+      }),
+    ).toThrow(/อุปกรณ์ตวงละเอียดไม่พอ/);
+  });
+
+  test("ปฏิเสธ target ที่มากกว่าหรือเท่ากับ source เหมือน calculateHaiterDose เดิม", () => {
+    expect(() =>
+      planHaiterCleaningDose({
+        sourcePercent: 5,
+        targetPercent: 5,
+        finalVolumeMl: 100,
+        minimumMeasurableMl: 0.1,
+      }),
+    ).toThrow("ต่ำกว่า source");
   });
 });
