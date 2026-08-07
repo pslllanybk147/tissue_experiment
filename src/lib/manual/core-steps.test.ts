@@ -3,13 +3,14 @@ import { coreSteps } from "./core-steps";
 import { troubleshootingById } from "./troubleshooting";
 
 describe("coreSteps", () => {
-  it("มีขั้นครบ 14 ขั้นตามลำดับมาตรฐาน", () => {
+  it("มีขั้นครบ 15 ขั้นตามลำดับมาตรฐาน", () => {
     expect(Object.keys(coreSteps)).toEqual([
       "receive",
       "quarantine",
       "identify",
       "select-explant",
       "cut",
+      "prep-tools",
       "prep-media",
       "sterilize",
       "initiate",

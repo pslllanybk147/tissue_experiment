@@ -41,21 +41,31 @@ describe("resolvePath", () => {
     expect(blockedIds).not.toContain("sterile-water");
   });
 
-  it("มีแค่ไฮเตอร์ ได้อาหารกับภาชนะและฟอกผิว แต่น้ำปลอดเชื้อยังตัน", () => {
+  // ไฮเตอร์อย่างเดียวเปิดได้ถึงน้ำปลอดเชื้อแล้ว หลังเพิ่มเส้นทางเติมไฮเตอร์ลงน้ำ
+  // แต่เครื่องมือปลอดเชื้อยังตัน เพราะทุกวิธีของความสามารถนั้นต้องมีแอลกอฮอล์
+  // ซึ่งเป็นช่องว่างจริงที่พบตอนตรวจแบบลงมือทำ ระบบเคยไม่มีความสามารถนี้เลย
+  it("มีแค่ไฮเตอร์ ได้ถึงน้ำปลอดเชื้อแล้ว แต่เครื่องมือยังตัน", () => {
     const path = resolvePath(kit(["bleach"]));
 
-    expect(path.blocked).toEqual(["sterile-water"]);
+    expect(path.blocked).toEqual(["sterile-tools"]);
   });
 
-  it("ซื้อน้ำเกลือปลอดเชื้อมาแล้วเส้นทางครบ", () => {
-    const path = resolvePath(kit(["bleach", "pharmacy-sterile-water"]));
+  it("มีไฮเตอร์กับแอลกอฮอล์ เส้นทางครบโดยไม่ต้องมีหม้อนึ่งเลย", () => {
+    const path = resolvePath(kit(["bleach", "alcohol-70"]));
 
     expect(path.blocked).toEqual([]);
     expect(path.overallLevel).not.toBeNull();
   });
 
+  it("เม็ดคลอรีน NaDCC ใช้แทนไฮเตอร์ในการทำอาหารได้", () => {
+    const path = resolvePath(kit(["nadcc-tablet", "alcohol-70"]));
+    const byId = new Map(path.capabilities.map((item) => [item.capability, item]));
+
+    expect(byId.get("sterile-medium")?.method?.id).toBe("medium-nadcc");
+  });
+
   it("ระดับรวมเท่ากับจุดที่อ่อนที่สุด ไม่ใช่จุดที่แข็งที่สุด", () => {
-    const path = resolvePath(kit(["bleach", "pharmacy-sterile-water", "stove-pot"]));
+    const path = resolvePath(kit(["bleach", "pharmacy-sterile-water", "stove-pot", "alcohol-70"]));
     const levels = path.capabilities.map((item) => item.method?.evidence.level);
 
     expect(levels).not.toContain(undefined);
@@ -65,8 +75,16 @@ describe("resolvePath", () => {
 
   it("เสนอทางเลือกของความสามารถที่ตัน เพื่อให้ผู้ใช้ตัดสินใจเอง", () => {
     const path = resolvePath(kit(["bleach"]));
-    const water = path.capabilities.find((item) => item.capability === "sterile-water");
+    const tools = path.capabilities.find((item) => item.capability === "sterile-tools");
 
-    expect(water?.alternatives.length).toBeGreaterThan(0);
+    expect(tools?.alternatives.length).toBeGreaterThan(0);
+  });
+
+  // ชุดจริงของเจ้าของเมื่อ 7 สิงหาคม 2026 คือไม่มีหม้อนึ่งและไม่มีหม้ออัดแรงดัน
+  // เทสต์นี้กันไม่ให้การแก้ในอนาคตทำให้ชุดนี้กลับไปตันอีก
+  it("ชุดที่ไม่มีหม้อนึ่งเลย ต้องเดินได้ครบทุกความสามารถ", () => {
+    const path = resolvePath(kit(["bleach", "alcohol-70", "stove-pot", "thermometer"]));
+
+    expect(path.blocked).toEqual([]);
   });
 });

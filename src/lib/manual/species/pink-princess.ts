@@ -11,6 +11,7 @@ const fullSequence = [
   "quarantine",
   "identify",
   "prep-media",
+  "prep-tools",
   "select-explant",
   "cut",
   "sterilize",

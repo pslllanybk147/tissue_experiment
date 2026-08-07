@@ -12,7 +12,7 @@ describe("StepDetail", () => {
   it("แสดงหมายเลขขั้นแบบเริ่มจาก 1 พร้อมชื่อและเหตุผล", () => {
     const html = renderToStaticMarkup(<StepDetail manual={manual} step={sterilize} />);
 
-    expect(html).toContain("ขั้นที่ 7 จาก 14");
+    expect(html).toContain("ขั้นที่ 8 จาก 15");
     expect(html).toContain("ฟอกฆ่าเชื้อ");
     expect(html).toContain("ฟอกอ่อนไปจะมีเชื้อขึ้น");
   });
@@ -68,7 +68,7 @@ describe("StepDetail", () => {
 
     expect(firstHtml).not.toContain("/step/0");
     expect(firstHtml).toContain("/step/2");
-    expect(lastHtml).toContain("/step/13");
+    expect(lastHtml).toContain("/step/14");
     expect(lastHtml).not.toContain("/step/15");
   });
 });

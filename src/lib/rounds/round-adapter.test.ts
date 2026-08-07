@@ -38,7 +38,7 @@ describe("buildRoundView", () => {
   it("ขั้นที่ยังไม่มีบันทึกได้สถานะรอทำ", () => {
     const view = buildRoundView(lot, [], manual);
 
-    expect(view.steps).toHaveLength(14);
+    expect(view.steps).toHaveLength(15);
     expect(view.steps.every((step) => step.state.status === "Pending")).toBe(true);
     expect(view.passedCount).toBe(0);
   });
@@ -60,8 +60,8 @@ describe("buildRoundView", () => {
     const runs = manual.steps.map((step) => run(step.id, "Passed"));
     const view = buildRoundView(lot, runs, manual);
 
-    expect(view.currentStepNumber).toBe(14);
-    expect(view.passedCount).toBe(14);
+    expect(view.currentStepNumber).toBe(15);
+    expect(view.passedCount).toBe(15);
   });
 
   it("ดึงค่าที่บันทึกไว้มาแสดงกับขั้นนั้น", () => {
@@ -75,7 +75,7 @@ describe("buildRoundView", () => {
   it("บันทึกที่อ้างขั้นซึ่งไม่มีในคู่มือแล้ว จะถูกข้ามไปโดยไม่ทำให้พัง", () => {
     const view = buildRoundView(lot, [run("ขั้นที่ถูกลบไปแล้ว", "Passed")], manual);
 
-    expect(view.steps).toHaveLength(14);
+    expect(view.steps).toHaveLength(15);
     expect(view.passedCount).toBe(0);
   });
 });

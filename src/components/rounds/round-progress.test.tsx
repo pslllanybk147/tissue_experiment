@@ -42,7 +42,7 @@ describe("RoundProgress", () => {
   it("แสดงความคืบหน้ารวมของรอบ", () => {
     const html = renderToStaticMarkup(<RoundProgress view={view} />);
 
-    expect(html).toContain("ผ่านแล้ว 1 จาก 14 ขั้น");
+    expect(html).toContain("ผ่านแล้ว 1 จาก 15 ขั้น");
   });
 
   it("ลิงก์แต่ละขั้นด้วยหมายเลขที่เริ่มจาก 1", () => {
