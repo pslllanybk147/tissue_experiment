@@ -121,11 +121,7 @@ export function CalculatorOverlay() {
           ) : null}
 
           {state.screen === "haiter" ? (
-            <HaiterCalculator
-              key={toolsKey}
-              initialDoseInput={{ minimumMeasurableMl: kit.pipetteMinimumMl }}
-              initialDilutionInput={{ minimumMeasurableMl: kit.pipetteMinimumMl }}
-            />
+            <HaiterCalculator key={toolsKey} initialInput={{ minimumMeasurableMl: kit.pipetteMinimumMl }} />
           ) : null}
         </div>
       </div>
