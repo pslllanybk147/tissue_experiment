@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import {
   calculateHaiterDose,
   planHaiterWorkingDilution,
+  toWeightPerVolumePercent,
+  type LabelBasis,
   type HaiterDoseInput,
   type HaiterDoseResult,
   type HaiterWorkingDilutionInput,
@@ -61,6 +63,15 @@ export function HaiterCalculator({
 
   const doseMerged = { ...defaultDoseInput, ...initialDoseInput };
   const [sourcePercent, setSourcePercent] = useState(doseMerged.sourcePercent);
+  // ฉลากบอกได้สองแบบและไม่เท่ากัน ต้องแปลงเป็น w/v ก่อนเข้าสูตรทุกครั้ง
+  const [labelBasis, setLabelBasis] = useState<LabelBasis>("w/v");
+  const effectiveSourcePercent = useMemo(() => {
+    try {
+      return toWeightPerVolumePercent(sourcePercent, labelBasis);
+    } catch {
+      return sourcePercent;
+    }
+  }, [sourcePercent, labelBasis]);
   const [targetPercent, setTargetPercent] = useState(doseMerged.targetPercent);
   const [finalVolumeMl, setFinalVolumeMl] = useState(doseMerged.finalVolumeMl);
   const [minimumMeasurableMl, setMinimumMeasurableMl] = useState(doseMerged.minimumMeasurableMl);
@@ -70,21 +81,27 @@ export function HaiterCalculator({
   const [workingVolumeMl, setWorkingVolumeMl] = useState(dilutionMerged.workingVolumeMl);
 
   const dose = useMemo(
-    () => tryCalculateDose({ sourcePercent, targetPercent, finalVolumeMl, minimumMeasurableMl }),
-    [sourcePercent, targetPercent, finalVolumeMl, minimumMeasurableMl],
+    () =>
+      tryCalculateDose({
+        sourcePercent: effectiveSourcePercent,
+        targetPercent,
+        finalVolumeMl,
+        minimumMeasurableMl,
+      }),
+    [effectiveSourcePercent, targetPercent, finalVolumeMl, minimumMeasurableMl],
   );
 
   const dilution = useMemo(
     () =>
       tryPlanDilution({
-        sourcePercent,
+        sourcePercent: effectiveSourcePercent,
         dilutionFactor,
         workingVolumeMl,
         targetPercent,
         finalVolumeMl,
         minimumMeasurableMl,
       }),
-    [sourcePercent, dilutionFactor, workingVolumeMl, targetPercent, finalVolumeMl, minimumMeasurableMl],
+    [effectiveSourcePercent, dilutionFactor, workingVolumeMl, targetPercent, finalVolumeMl, minimumMeasurableMl],
   );
 
   return (
@@ -110,11 +127,28 @@ export function HaiterCalculator({
         <div className="pl-soft-card" style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "12px" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "12px" }}>
             <CalculatorField id="hd-source" label="% สารต้นทาง" value={sourcePercent} onChange={setSourcePercent} />
+            <label style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "14px" }}>
+              ฉลากบอกแบบไหน
+              <select
+                value={labelBasis}
+                onChange={(event) => setLabelBasis(event.target.value as LabelBasis)}
+                className="pl-input"
+              >
+                <option value="w/v">w/v หรือไม่ได้ระบุ</option>
+                <option value="w/w">w/w</option>
+              </select>
+            </label>
             <CalculatorField id="hd-target" label="% เป้าหมาย" value={targetPercent} onChange={setTargetPercent} />
             <CalculatorField id="hd-volume" label="ปริมาตรสุดท้าย (mL)" value={finalVolumeMl} onChange={setFinalVolumeMl} />
             <CalculatorField id="hd-min" label="ตวงได้ละเอียดสุด (mL)" value={minimumMeasurableMl} onChange={setMinimumMeasurableMl} />
           </div>
 
+          {labelBasis === "w/w" ? (
+            <p className="pl-lede" style={{ margin: 0 }}>
+              ฉลาก {sourcePercent}% w/w คิดเป็น {effectiveSourcePercent}% w/v หลังคูณความหนาแน่นของน้ำยาฟอกขาว
+              ระบบใช้ค่าหลังแปลงในการคำนวณให้แล้ว
+            </p>
+          ) : null}
           {dose.ok ? (
             <div className="pl-soft-card" style={{ background: "var(--pl-sunk)" }}>
               <p className="pl-mono">{dose.result.formula}</p>
@@ -138,6 +172,17 @@ export function HaiterCalculator({
         <div className="pl-soft-card" style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "12px" }}>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "12px" }}>
             <CalculatorField id="hwd-source" label="% สารต้นทาง" value={sourcePercent} onChange={setSourcePercent} />
+            <label style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "14px" }}>
+              ฉลากบอกแบบไหน
+              <select
+                value={labelBasis}
+                onChange={(event) => setLabelBasis(event.target.value as LabelBasis)}
+                className="pl-input"
+              >
+                <option value="w/v">w/v หรือไม่ได้ระบุ</option>
+                <option value="w/w">w/w</option>
+              </select>
+            </label>
             <CalculatorField id="hwd-factor" label="เจือจางกี่เท่า" value={dilutionFactor} onChange={setDilutionFactor} />
             <CalculatorField id="hwd-volume" label="ปริมาตร working ที่จะเตรียม (mL)" value={workingVolumeMl} onChange={setWorkingVolumeMl} />
             <CalculatorField id="hwd-target" label="% เป้าหมาย" value={targetPercent} onChange={setTargetPercent} />
@@ -145,6 +190,12 @@ export function HaiterCalculator({
             <CalculatorField id="hwd-min" label="ตวงได้ละเอียดสุด (mL)" value={minimumMeasurableMl} onChange={setMinimumMeasurableMl} />
           </div>
 
+          {labelBasis === "w/w" ? (
+            <p className="pl-lede" style={{ margin: 0 }}>
+              ฉลาก {sourcePercent}% w/w คิดเป็น {effectiveSourcePercent}% w/v หลังคูณความหนาแน่นของน้ำยาฟอกขาว
+              ระบบใช้ค่าหลังแปลงในการคำนวณให้แล้ว
+            </p>
+          ) : null}
           {dilution.ok ? (
             <div className="pl-soft-card" style={{ background: "var(--pl-sunk)" }}>
               <p className="pl-mono">working stock {dilution.result.workingPercent}%</p>

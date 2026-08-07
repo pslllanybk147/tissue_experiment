@@ -10,7 +10,7 @@ describe("StepMap", () => {
     const html = renderToStaticMarkup(<StepMap manual={manual} />);
 
     expect(html).toContain("Pink Princess");
-    expect(html).toContain("14 ขั้น");
+    expect(html).toContain("15 ขั้น");
   });
 
   it("ลิงก์ทุกขั้นด้วยหมายเลขที่เริ่มจาก 1", () => {

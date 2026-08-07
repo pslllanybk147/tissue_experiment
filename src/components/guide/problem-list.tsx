@@ -65,6 +65,10 @@ export function ProblemList({ selected }: { selected: string | undefined }) {
       {entry.evidence.note ? <p className="pl-meta" style={{ marginTop: "8px" }}>{entry.evidence.note}</p> : null}
 
       <p className="pl-meta" style={{ marginTop: "22px" }}>
+        ไม่รู้จักสารที่เขียนไว้ข้างบน? <Link className="pl-link" href="/substances">ดูว่าคืออะไรและซื้อที่ไหน</Link>
+      </p>
+
+      <p className="pl-meta" style={{ marginTop: "8px" }}>
         ไม่ตรงกับที่เห็น? <Link className="pl-link" href="/problem">เลือกอาการใหม่</Link>
       </p>
     </>

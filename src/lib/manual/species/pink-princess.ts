@@ -1,12 +1,19 @@
 import type { PlantPack } from "../types";
 
+/** ทำอาหารต้องมาก่อนตัด ไม่ใช่หลังตัด
+ *
+ *  ลำดับเดิมให้ตัดก่อนแล้วค่อยทำอาหาร ซึ่งบังคับให้ชิ้นพืชรออย่างน้อยหนึ่งชั่วโมง
+ *  ตามเวลาของขั้นทำอาหาร และจริง ๆ นานกว่านั้นมากเพราะยังต้องนึ่งและรอวุ้นเย็นและเซ็ตตัว
+ *  ช่วงรอนั้นคือช่วงที่ฟีนอลิกทำงาน ซึ่งขัดกับคลังอาการของระบบเองที่เขียนไว้ว่า
+ *  "ตัดแล้วใส่ลงสารละลายทันที" ดู troubleshooting.ts รายการ browning-phenolic */
 const fullSequence = [
   "receive",
   "quarantine",
   "identify",
+  "prep-media",
+  "prep-tools",
   "select-explant",
   "cut",
-  "prep-media",
   "sterilize",
   "initiate",
   "check-contamination",

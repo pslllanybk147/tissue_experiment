@@ -20,12 +20,12 @@ describe("manual registry", () => {
     }
   });
 
-  it("คู่มือ Pink Princess มี 14 ขั้นตามลำดับแกนกลาง", () => {
+  it("คู่มือ Pink Princess มี 15 ขั้นตามลำดับแกนกลาง", () => {
     const manual = resolveBySlug("pink-princess");
 
-    expect(manual!.steps).toHaveLength(14);
+    expect(manual!.steps).toHaveLength(15);
     expect(manual!.steps[0].id).toBe("receive");
-    expect(manual!.steps[13].id).toBe("close-round");
+    expect(manual!.steps[14].id).toBe("close-round");
   });
 
   it("ขั้นฟอกฆ่าเชื้อของ Pink Princess ยังไม่มีงานรองรับ", () => {

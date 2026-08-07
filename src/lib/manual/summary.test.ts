@@ -5,8 +5,8 @@ describe("manualSummary", () => {
   it("นับจำนวนขั้นแยกตามที่มาและตามระดับหลักฐาน", () => {
     const summary = manualSummary("pink-princess")!;
 
-    expect(summary.stepCount).toBe(14);
-    expect(summary.byOrigin.core + summary.byOrigin.override + summary.byOrigin.pack).toBe(14);
+    expect(summary.stepCount).toBe(15);
+    expect(summary.byOrigin.core + summary.byOrigin.override + summary.byOrigin.pack).toBe(15);
     expect(summary.byOrigin.override).toBe(4);
     expect(summary.byEvidence["species-direct"]).toBe(3);
   });

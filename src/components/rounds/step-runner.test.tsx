@@ -102,7 +102,7 @@ describe("StepRunner", () => {
   it("บอกว่ากำลังทำขั้นที่เท่าไรจากทั้งหมดกี่ขั้น", () => {
     const html = renderToStaticMarkup(<StepRunner view={view} step={sterilize} onSave={noop} />);
 
-    expect(html).toContain("ขั้นที่ 7 จาก 14");
+    expect(html).toContain("ขั้นที่ 8 จาก 15");
   });
 });
 

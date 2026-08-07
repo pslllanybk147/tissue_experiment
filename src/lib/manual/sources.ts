@@ -389,6 +389,54 @@ export const manualSources: ManualSourceRecord[] = [
     kind: "peer-reviewed",
     accessedAt: "2026-08-06",
   },
+  {
+    id: "source-teng-nonautoclave-vessels",
+    title:
+      "Teng W.L. Sterilization of Non-autoclavable Vessels and Culture Media by Sodium Hypochlorite for In Vitro Culture. Acta Horticulturae 839 — อาหารเติม NaOCl 0.002% ภาชนะ 0.01% ที่ pH 5.4 ทำสำเร็จกับกล้วย",
+    url: "https://www.actahort.org/books/839/839_42.htm",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-07",
+  },
+  {
+    id: "source-sugarcane-nonautoclave-2019",
+    title:
+      "Suaib S., Suaib N.F. (2019). Non-autoclaved Sterilization Procedures of Sugarcane Tissue in vitro Culture. Journal of Applied Sciences 19(5): 434–440 — น้ำยาฟอกขาว 5.25% ปริมาณ 50 ถึง 200 µL/L ในอาหาร",
+    url: "https://doi.org/10.3923/jas.2019.434.440",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-07",
+  },
+  {
+    id: "source-nadcc-explant-sterilisation",
+    title:
+      "Sterilisation of explants and cultures with sodium dichloroisocyanurate. Plant Growth Regulation — NaDCC 300 ppm นาน 24 ถึง 48 ชม. ได้ผลอย่างน้อยเท่าเมอร์คิวริกคลอไรด์ผสมแคลเซียมไฮโปคลอไรต์",
+    url: "https://doi.org/10.1007/BF00024060",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-07",
+  },
+  {
+    id: "source-nadcc-media-alternative-2021",
+    title:
+      "Sodium Dichloroisocyanurate: An eco-friendly chemical alternative for media autoclaving and explant sterilisation in plant tissue culture. Int. J. Research in Pharmaceutical Sciences — ช่วงใช้งาน 0.05 ถึง 1.0 g/L",
+    url: "https://pharmascope.org/index.php/ijrps/article/view/3943",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-07",
+  },
+  {
+    id: "source-nadcc-vs-naocl-1985",
+    title:
+      "Bloomfield S.F., Miles G.A. A comparison of sodium hypochlorite and sodium dichloroisocyanurate products. Journal of Hospital Infection — ฤทธิ์ฆ่าเชื้อพอกันที่คลอรีนเท่ากัน แต่ NaDCC ทนสารอินทรีย์ได้ดีกว่ามาก",
+    url: "https://pubmed.ncbi.nlm.nih.gov/2859320/",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-07",
+  },
+  {
+    id: "source-cmu-rose-home-tc",
+    title:
+      "การเพาะเลี้ยงเนื้อเยื่อกุหลาบอย่างง่าย ๆ — ศูนย์ความเป็นเลิศด้านเทคโนโลยีชีวภาพพืช มหาวิทยาลัยเชียงใหม่ (คลิปสาธิต ไม่ใช่บทความที่ผ่านการทบทวน)",
+    url: "https://www.youtube.com/watch?v=QI9bWN1IkOs",
+    kind: "technical-guide",
+    accessedAt: "2026-08-07",
+  },
 ];
 
 export function sourceById(id: string): ManualSourceRecord | null {
