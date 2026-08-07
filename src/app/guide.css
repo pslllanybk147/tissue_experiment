@@ -691,3 +691,20 @@
   border: 1px solid var(--pl-line-soft);
   background-repeat: no-repeat;
 }
+
+/* Hero หน้าแรก: poster + HUD cyberpunk (Task 4 จะฝัง 3D ลงใน .pl-hero-stage) */
+.pl-hero { position: relative; overflow: hidden; border-radius: 12px; margin-bottom: 26px; padding: 18px; background: radial-gradient(120% 100% at 70% 20%, var(--pl-sunk) 0%, var(--pl-paper) 70%); border: 1px solid var(--pl-line-soft); }
+.pl-hero-grid { position: absolute; inset: 0; background-image: linear-gradient(var(--pl-grid) 1px, transparent 1px), linear-gradient(90deg, var(--pl-grid) 1px, transparent 1px); background-size: 28px 28px; }
+.pl-hero-stage { position: relative; width: min(280px, 70vw); height: 320px; margin: 0 auto; }
+.pl-hero-poster { position: absolute; inset: 0; width: 100%; height: 100%; }
+.pl-hero-ring { position: absolute; border-radius: 50%; border: 1px dashed var(--pl-neon); opacity: 0.5; }
+.pl-hero-ring-a { inset: 6px; animation: pl-spin 16s linear infinite; }
+.pl-hero-ring-b { inset: 32px; border-color: var(--pl-neon-2); animation: pl-spin-rev 10s linear infinite; }
+.pl-hero-chip-top { position: absolute; top: 2px; right: 2px; z-index: 2; }
+.pl-hero-chip-bottom { position: absolute; bottom: 2px; left: 2px; z-index: 2; color: var(--pl-neon-2); border-color: var(--pl-neon-2); }
+.pl-hero-scanline { position: absolute; left: 10%; right: 10%; height: 2px; background: linear-gradient(90deg, transparent, var(--pl-neon), transparent); box-shadow: 0 0 10px var(--pl-glow); animation: pl-scan 4s linear infinite; }
+.pl-hero-note { margin-top: 10px; font-size: 13px; color: var(--pl-ink-3); text-align: center; }
+@keyframes pl-spin { to { transform: rotate(360deg); } }
+@keyframes pl-spin-rev { to { transform: rotate(-360deg); } }
+@keyframes pl-scan { 0% { top: 8%; opacity: 0; } 12% { opacity: 1; } 88% { opacity: 1; } 100% { top: 90%; opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .pl-hero-ring, .pl-hero-scanline { animation: none; } .pl-hero-scanline { display: none; } }
