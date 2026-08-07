@@ -39,12 +39,28 @@ export type Dose = {
   evidence: EvidenceRef;
 };
 
+/** ภาพอ้างอิงของทรง เป็นภาพต้นจริงของชนิดหนึ่งที่เป็นตัวแทน ไม่ใช่ภาพของทุกชนิดในทรง
+ *  ไฟล์ commit ขึ้น public repo จึงต้องพกเครดิตและใบอนุญาตติดตัวมาด้วยเสมอ */
+export type FormImage = {
+  /** ชื่อไฟล์ใน public/forms/ เช่น "climbing-vine-visible-node.jpg" */
+  file: string;
+  /** ชนิดที่อยู่ในภาพจริง ๆ ต้องบอกผู้ใช้ตรง ๆ ตามกฎชั้น D ของ newplant_protocol.md */
+  speciesShown: string;
+  credit: string;
+  license: "CC BY-SA 4.0";
+  /** ต้องบรรยายโครงสร้างที่เห็น ไม่ใช่ "ภาพต้นไม้" */
+  alt: string;
+  /** ใช้กันหน้ากระตุกตอนโหลด และใช้คำนวณภาพซูมใน crop.ts */
+  width: number;
+  height: number;
+};
+
 export type GrowthForm = {
   id: string;
   label: string;
   /** ให้คนที่ไม่รู้อะไรเลยจำแนกต้นของตัวเองได้ */
   plainDescription: string;
-  referenceImageId?: string;
+  referenceImage?: FormImage;
   landmarks: Landmark[];
   defaultExplant: {
     landmarkId: string;

@@ -133,6 +133,9 @@
   letter-spacing: -0.02em;
   color: var(--pl-ink);
   text-decoration: none;
+  /* ชื่อแบรนด์และปุ่มสลับธีมห้ามตัดกลางคำ เพราะ "Plantlover Lab" ที่แตกเป็น
+     "Plantl / over / Lab" อ่านไม่ออกและดูเหมือนหน้าพัง ยอมให้ล้นดีกว่าตัดกลางคำ */
+  white-space: nowrap;
 }
 
 .pl-bar-spacer {
@@ -249,6 +252,12 @@
 
 .pl-link:focus-visible,
 .pl-skip:focus-visible,
+/* ปุ่มสลับธีมห้ามตัดกลางคำเช่นกัน แต่ไม่ใส่กฎนี้ที่ .pl-chip ทั้งหมด
+   เพราะป้ายระดับหลักฐานยาวกว่าและควรตัดบรรทัดได้เมื่อจอแคบ */
+.pl-toggle {
+  white-space: nowrap;
+}
+
 .pl-toggle:focus-visible {
   outline: 3px solid var(--pl-ink);
   outline-offset: 3px;
@@ -578,4 +587,54 @@
   font-size: 13px;
   color: var(--pl-ink-3);
   font-weight: 600;
+}
+
+/* ภาพอ้างอิงของทรง พร้อมหมุดที่วางด้วยเปอร์เซ็นต์จึงสเกลตามภาพเองโดยไม่ต้องใช้ JavaScript */
+.pl-figure {
+  margin: 18px 0 0;
+}
+
+.pl-figure-stage {
+  position: relative;
+  line-height: 0;
+}
+
+.pl-figure-stage img {
+  width: 100%;
+  height: auto;
+  border-radius: 14px;
+  border: 1px solid var(--pl-line-soft);
+}
+
+.pl-pin {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--pl-leaf);
+  color: #ffffff;
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 22px;
+  text-align: center;
+}
+
+.pl-landmark {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+/* ภาพซูมของจุดนั้น ครอปมาจากภาพใบเดียวกันด้วย cropStyle ไม่ต้องถ่ายเพิ่ม */
+.pl-swatch {
+  flex: none;
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  border: 1px solid var(--pl-line-soft);
+  background-repeat: no-repeat;
 }

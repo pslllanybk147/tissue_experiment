@@ -29,9 +29,9 @@ describe("ทะเบียนทรงการเติบโต", () => {
     }
   });
 
-  it("มีพิกัดได้เมื่อมีภาพอ้างอิงเท่านั้น", () => {
+  it("มีพิกัดได้เมื่อทรงมีภาพเท่านั้น", () => {
     for (const form of growthForms) {
-      if (form.referenceImageId) continue;
+      if (form.referenceImage) continue;
       for (const landmark of form.landmarks) {
         expect(landmark.point, `${form.id}/${landmark.id} มีพิกัดแต่ทรงยังไม่มีภาพ`).toBeUndefined();
       }

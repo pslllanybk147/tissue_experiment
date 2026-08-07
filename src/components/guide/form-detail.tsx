@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cropStyle } from "@/lib/manual/forms/crop";
 import type { GrowthForm } from "@/lib/manual/forms/types";
 import { EvidenceBadge } from "./evidence-badge";
 import { RichText } from "./rich-text";
@@ -16,7 +17,39 @@ export function FormDetail({ form, plants }: { form: GrowthForm; plants: FormPla
       <h1 className="pl-h1">{form.label}</h1>
       <p className="pl-lede" style={{ marginTop: "8px" }}>{form.plainDescription}</p>
 
-      {form.referenceImageId ? null : (
+      {form.referenceImage ? (
+        <figure className="pl-figure">
+          <div className="pl-figure-stage">
+            {/* ใช้ img ธรรมดาไม่ใช่ next/image เพราะไฟล์เป็น static ที่เรารู้ขนาดแน่นอนอยู่แล้ว
+                และหมุดต้องวางทับด้วยเปอร์เซ็นต์บนกล่องเดียวกัน */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`/forms/${form.referenceImage.file}`}
+              alt={form.referenceImage.alt}
+              width={form.referenceImage.width}
+              height={form.referenceImage.height}
+            />
+            {form.landmarks.map((landmark, index) =>
+              landmark.point ? (
+                <span
+                  key={landmark.id}
+                  className="pl-pin"
+                  style={{ left: `${landmark.point.x * 100}%`, top: `${landmark.point.y * 100}%` }}
+                  aria-hidden="true"
+                >
+                  {index + 1}
+                </span>
+              ) : null,
+            )}
+          </div>
+          <figcaption className="pl-meta" style={{ marginTop: "8px" }}>
+            ภาพ: {form.referenceImage.speciesShown} · ถ่ายโดย {form.referenceImage.credit} ·{" "}
+            {form.referenceImage.license}
+            <br />
+            ใช้แสดงโครงสร้างของทรงนี้ ไม่ใช่ภาพของทุกชนิดในทรง
+          </figcaption>
+        </figure>
+      ) : (
         <div className="pl-card" style={{ marginTop: "18px", background: "var(--pl-sunk)" }}>
           <p style={{ margin: 0, fontWeight: 700 }}>ทรงนี้ยังไม่มีภาพอ้างอิง</p>
           <p className="pl-lede" style={{ marginTop: "6px" }}>
@@ -28,19 +61,40 @@ export function FormDetail({ form, plants }: { form: GrowthForm; plants: FormPla
 
       <h2 className="pl-h2" style={{ marginTop: "26px" }}>จุดสังเกตที่ต้องหาให้เจอ</h2>
       <ul style={{ listStyle: "none", margin: "12px 0 0", padding: 0, display: "flex", flexDirection: "column", gap: "12px" }}>
-        {form.landmarks.map((landmark) => (
-          <li className="pl-card" key={landmark.id}>
-            <p className="pl-h2">{landmark.term}</p>
-            {landmark.aka?.length ? (
-              <p className="pl-meta" style={{ marginTop: "2px" }}>เรียกอีกอย่างว่า {landmark.aka.join(" · ")}</p>
-            ) : null}
-            <p className="pl-lede" style={{ marginTop: "8px" }}>{landmark.whatItIs}</p>
-            <p className="pl-lede" style={{ marginTop: "6px" }}><b>หายังไง</b> {landmark.howToFind}</p>
-            {landmark.confusedWith ? (
-              <p className="pl-lede" style={{ marginTop: "6px" }}><b>อย่าสับสน</b> {landmark.confusedWith}</p>
-            ) : null}
-          </li>
-        ))}
+        {form.landmarks.map((landmark, index) => {
+          const image = form.referenceImage;
+          const swatch = image && landmark.point ? cropStyle(landmark.point, image) : null;
+
+          return (
+            <li className="pl-card pl-landmark" key={landmark.id}>
+              {swatch && image ? (
+                <span
+                  className="pl-swatch"
+                  style={{
+                    backgroundImage: `url(/forms/${image.file})`,
+                    backgroundSize: swatch.backgroundSize,
+                    backgroundPosition: swatch.backgroundPosition,
+                  }}
+                  aria-hidden="true"
+                />
+              ) : null}
+              <div>
+                <p className="pl-h2">
+                  {swatch ? `${index + 1} · ` : ""}
+                  {landmark.term}
+                </p>
+                {landmark.aka?.length ? (
+                  <p className="pl-meta" style={{ marginTop: "2px" }}>เรียกอีกอย่างว่า {landmark.aka.join(" · ")}</p>
+                ) : null}
+                <p className="pl-lede" style={{ marginTop: "8px" }}>{landmark.whatItIs}</p>
+                <p className="pl-lede" style={{ marginTop: "6px" }}><b>หายังไง</b> {landmark.howToFind}</p>
+                {landmark.confusedWith ? (
+                  <p className="pl-lede" style={{ marginTop: "6px" }}><b>อย่าสับสน</b> {landmark.confusedWith}</p>
+                ) : null}
+              </div>
+            </li>
+          );
+        })}
       </ul>
 
       <h2 className="pl-h2" style={{ marginTop: "26px" }}>ต้นทรงนี้ตัดตรงไหน</h2>
