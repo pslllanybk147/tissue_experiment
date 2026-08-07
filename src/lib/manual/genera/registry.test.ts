@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { coreSteps } from "../core-steps";
 import { formById } from "../forms/registry";
 import { manualSources } from "../sources";
 import { generaPacks, genusById } from "./registry";
@@ -64,6 +65,22 @@ describe("ทะเบียนสกุล", () => {
           `${pack.id} ค่าช่วง ${doseKey} อ้างตรงพันธุ์ที่ชั้นสกุล`,
         ).not.toBe("species-direct");
       }
+    }
+  });
+
+  it("ทุกขั้นที่สกุลทับค่า ต้องเป็นขั้นที่มีอยู่จริงในแกนกลาง", () => {
+    // พิมพ์ชื่อขั้นผิดจะไม่ทำให้อะไรพัง แค่ทับค่าไม่ติดแล้วเงียบไป
+    // ซึ่งอันตรายกว่าพังเสียอีก เพราะคู่มือจะแสดงค่ากลางทั้งที่คนเขียนคิดว่าแก้แล้ว
+    for (const pack of generaPacks) {
+      for (const stepId of Object.keys(pack.deviations)) {
+        expect(coreSteps[stepId], `${pack.id} ทับขั้น ${stepId} ที่ไม่มีในแกนกลาง`).toBeDefined();
+      }
+    }
+  });
+
+  it("สกุลที่ไม่มีคู่มือชนิด ต้องมีชื่อไทยอย่างน้อยหนึ่งชื่อ ไม่งั้นคนไทยค้นไม่เจอ", () => {
+    for (const pack of generaPacks) {
+      expect(pack.commonNames.length, `${pack.id} ไม่มีชื่อเรียกทั่วไป`).toBeGreaterThan(0);
     }
   });
 
