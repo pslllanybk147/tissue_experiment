@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
-:root { --ink: #171717; --muted: #666666; --faint: #6b6b6b; --line: #e7e5e4; --surface: #fff; --canvas: #f7f7f5; --blue: #1d4ed8; --blue-soft: #eff6ff; --green: #17834b; --green-soft: #ecfdf3; --orange: #b45309; --orange-soft: #fff7ed; --red: #b42318; --red-soft: #fff1f0; --purple: #7c3aed; }
+:root { --ink: #f0fdff; --muted: #9fb3c8; --faint: #6b7f94; --line: rgba(34,211,238,.35); --surface: #0b1424; --canvas: #070d1a; --blue: #22d3ee; --blue-soft: #0e3a47; --green: #34d399; --green-soft: #0d3327; --orange: #fbbf24; --orange-soft: #3b2a10; --red: #f87171; --red-soft: #3b1620; --purple: #c084fc; }
+:root[data-theme="light"] { --ink: #0f2436; --muted: #46586a; --faint: #5c6f82; --line: #dbe5ee; --surface: #ffffff; --canvas: #f4f7fa; --blue: #0891b2; --blue-soft: #d9f2f8; --green: #17834b; --green-soft: #e7f6ee; --orange: #b45309; --orange-soft: #fff7ed; --red: #b42318; --red-soft: #fff1f0; --purple: #7c3aed; }
 * { box-sizing: border-box; }
 html { background: var(--canvas); }
 body { margin: 0; background: var(--canvas); color: var(--ink); font-family: var(--font-geist-sans), Tahoma, "Noto Sans Thai", "Leelawadee UI", Arial, sans-serif; }
