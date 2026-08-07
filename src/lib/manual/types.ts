@@ -1,3 +1,7 @@
+// import แบบ type-only ทั้งคู่ จึงถูกลบทิ้งตอน compile ไม่เกิดวงจรพึ่งพาตอนรัน
+// แม้ forms/types.ts จะ import กลับมาที่ไฟล์นี้เหมือนกัน
+import type { Dose } from "./forms/types";
+
 /** ระดับหลักฐานของเนื้อหาแต่ละชิ้น
  *  สามค่าแรกใช้กับ "ข้ออ้าง" คือข้อความที่สั่งให้ลงมือทำหรือมีตัวเลขที่ต้องทำตาม
  *  ส่วน botanical-fact ใช้กับ "คำนิยาม" เช่น "ข้อคือวงนูนที่ใบและรากงอกออกมา"
@@ -77,6 +81,9 @@ export type ManualStepDef = {
   stopConditions: string[];
   safetyNotes: string[];
   measurements: Measurement[];
+  /** ค่าเชิงปริมาณเป็นช่วง คีย์เช่น "sterilize.dose" รวมมาจากชั้นทรงและชั้นสกุลตอน resolve
+   *  ขั้นที่มีค่านี้และหลักฐานไม่ใช่ตรงพันธุ์ จะมีขั้นทดสอบช่วงกำกับ */
+  doses?: Record<string, Dose>;
   evidence: EvidenceRef;
   illustrationId?: string;
   /** อ้างถึงคลังอาการกลาง resolve ตอน render เหมือนที่ sourceIds ทำ */

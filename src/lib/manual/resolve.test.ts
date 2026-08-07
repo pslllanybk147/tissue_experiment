@@ -183,3 +183,71 @@ describe("การประกอบคู่มือแบบต่อชั�
     expect(manual.steps[0].origin).toBe("pack");
   });
 });
+
+const doseEvidence = { level: "adapted" as const, sourceIds: ["source-example"] };
+
+const sampleDose = {
+  form: "น้ำยาซักผ้าขาว NaOCl 6%",
+  low: 0.8,
+  high: 2,
+  unit: "%" as const,
+  durationMin: [10, 20] as [number, number],
+  movesLowerWhen: ["เนื้อด่างมาก"],
+  movesHigherWhen: ["ต้นกลางแจ้ง"],
+  evidence: doseEvidence,
+};
+
+describe("ค่าช่วงไหลตาม cascade", () => {
+  it("ค่าช่วงจากทรงไหลลงมาถึงคู่มือ", () => {
+    const formWithDose = { ...cascadeForm, defaultDoses: { "sterilize.dose": sampleDose } } as GrowthForm;
+    const manual = resolveManual(basePack, { library, form: formWithDose });
+    expect(manual.steps.find((item) => item.id === "sterilize")?.doses?.["sterilize.dose"]?.low).toBe(0.8);
+  });
+
+  it("ค่าช่วงของสกุลทับของทรงด้วยคีย์เดียวกัน", () => {
+    const formWithDose = { ...cascadeForm, defaultDoses: { "sterilize.dose": sampleDose } } as GrowthForm;
+    const genusWithDose = { ...cascadeGenus, doses: { "sterilize.dose": { ...sampleDose, low: 1.0, high: 1.6 } } };
+    const manual = resolveManual(basePack, { library, form: formWithDose, genus: genusWithDose });
+    const found = manual.steps.find((item) => item.id === "sterilize")?.doses?.["sterilize.dose"];
+    expect(found?.low).toBe(1.0);
+    expect(found?.high).toBe(1.6);
+  });
+
+  it("ขั้นที่ไม่มีค่าช่วง ต้องไม่มีฟิลด์ doses ติดมา", () => {
+    const manual = resolveManual(basePack, { library });
+    expect(manual.steps.find((item) => item.id === "receive")?.doses).toBeUndefined();
+  });
+});
+
+describe("ค่าช่วงที่ให้มากับขั้นโดยตรง", () => {
+  it("ค่าช่วงที่สกุลให้ผ่าน deviations ต้องไม่หายไป", () => {
+    // บั๊กจริงที่เจอตอนเปิดดูของจริง บรรทัด doses ที่วางหลัง spread เคยทับค่าที่ spread ใส่มา
+    const genusWithStepDose = {
+      ...cascadeGenus,
+      deviations: { sterilize: { doses: { "sterilize.dose": sampleDose } } },
+    };
+    const manual = resolveManual(basePack, { library, genus: genusWithStepDose });
+    expect(manual.steps.find((item) => item.id === "sterilize")?.doses?.["sterilize.dose"]?.low).toBe(0.8);
+  });
+
+  it("ค่าช่วงที่ทรงให้ผ่าน stepOverrides ต้องไม่หายไป", () => {
+    const formWithStepDose = {
+      ...cascadeForm,
+      stepOverrides: { sterilize: { doses: { "sterilize.dose": sampleDose } } },
+    } as GrowthForm;
+    const manual = resolveManual(basePack, { library, form: formWithStepDose });
+    expect(manual.steps.find((item) => item.id === "sterilize")?.doses?.["sterilize.dose"]?.low).toBe(0.8);
+  });
+
+  it("ชั้นล่างชนะชั้นบนเสมอ ชนิดทับสกุล", () => {
+    const genusWithStepDose = {
+      ...cascadeGenus,
+      deviations: { sterilize: { doses: { "sterilize.dose": sampleDose } } },
+    };
+    const manual = resolveManual(
+      { ...basePack, overrides: { sterilize: { doses: { "sterilize.dose": { ...sampleDose, low: 1.5 } } } } },
+      { library, genus: genusWithStepDose },
+    );
+    expect(manual.steps.find((item) => item.id === "sterilize")?.doses?.["sterilize.dose"]?.low).toBe(1.5);
+  });
+});

@@ -8,7 +8,10 @@ import { plainText } from "@/lib/manual/terms";
 import { troubleshootingById } from "@/lib/manual/troubleshooting";
 import type { GuidedStepStatus } from "@/lib/domain/models";
 import type { ObservationMedia } from "@/lib/domain/models";
+import type { CalibrationEntry } from "@/lib/domain/calibration";
 import type { RoundStep, RoundView } from "@/lib/rounds/round-adapter";
+import { bracketKey, buildBracketPlan, jarsPerArmKey } from "@/lib/rounds/bracket";
+import { BracketTable } from "./bracket-table";
 import { MediumCalculator } from "./medium-calculator";
 import { OnlineStatus } from "./online-status";
 import { StepPhotos } from "./step-photos";
@@ -45,13 +48,16 @@ export function StepRunner({
   onSave,
   photos,
   tools,
+  remembered,
 }: {
   view: RoundView;
   step: RoundStep;
   onSave: (input: StepSaveInput) => Promise<void>;
   photos?: StepPhotoProps;
   tools?: { scaleMinimumMg: number; pipetteMinimumMl: number; msLabelRateGPerL: number };
+  remembered?: CalibrationEntry | null;
 }) {
+  const bracketPlan = buildBracketPlan(step);
   const number = step.order + 1;
   const total = view.steps.length;
   const previous = number > 1 ? number - 1 : null;
@@ -71,6 +77,21 @@ export function StepRunner({
       const raw = String(form.get(measurement.id) ?? "").trim();
       measurements[measurement.id] = raw === "" ? null : Number(raw);
     }
+    // ค่าของตารางทดสอบช่วงใช้ name ที่มาจากฟังก์ชันสร้างคีย์ จึงอ่านด้วยวิธีเดียวกับช่องอื่น
+    if (bracketPlan) {
+      const keys = [jarsPerArmKey()];
+      for (const arm of bracketPlan.arms) {
+        for (const field of ["clean", "alive", "usable"] as const) keys.push(bracketKey(arm.armId, field));
+        // ความเข้มข้นระบบเป็นคนเขียน ไม่ใช่ผู้ใช้กรอก เก็บไว้ให้ย้อนดูได้ว่ารอบนั้นทดสอบค่าอะไร
+        // แม้คู่มือจะแก้ช่วงภายหลัง
+        measurements[bracketKey(arm.armId, "dose")] = arm.dose;
+      }
+      for (const key of keys) {
+        const raw = String(form.get(key) ?? "").trim();
+        measurements[key] = raw === "" ? null : Number(raw);
+      }
+    }
+
     setSaving(true);
     setSaved("");
     try {
@@ -160,6 +181,12 @@ export function StepRunner({
         onSubmit={(event) => void submit(event)}
       >
         <h2 className="pl-h2">บันทึกผลของขั้นนี้</h2>
+
+        {/* ตารางทดสอบช่วงต้องอยู่ในฟอร์มนี้ ไม่ใช่ข้างนอก ไม่งั้น FormData มองไม่เห็นช่องของมัน
+            แล้วค่าที่ผู้ใช้กรอกจะถูกบันทึกเป็น null เงียบ ๆ */}
+        {bracketPlan ? (
+          <BracketTable plan={bracketPlan} saved={step.state.measurements} remembered={remembered ?? null} />
+        ) : null}
 
         {step.measurements.map((measurement) => (
           <p key={measurement.id} style={{ marginTop: "14px" }}>

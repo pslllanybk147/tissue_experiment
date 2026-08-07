@@ -559,3 +559,23 @@
   letter-spacing: -0.01em;
   line-height: 1.15;
 }
+
+/* ตารางผลทดสอบช่วง อยู่ในโหมดลงมือจึงเน้นตัวเลขอ่านง่ายตอนมือเปื้อน */
+.pl-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-variant-numeric: tabular-nums;
+}
+
+.pl-table th,
+.pl-table td {
+  border: 1px solid var(--pl-line-soft);
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.pl-table thead th {
+  font-size: 13px;
+  color: var(--pl-ink-3);
+  font-weight: 600;
+}
