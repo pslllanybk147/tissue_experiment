@@ -82,6 +82,22 @@ export function planHaiterWorkingDilution(
   }
 
   const workingPercent = round(input.sourcePercent / input.dilutionFactor);
+
+  // เจือจางแรงเกินไปจน working stock อ่อนกว่าเป้าหมาย ทำให้ไม่มีปริมาตรใดผสมแล้วถึงเป้าได้เลย
+  // ถ้าไม่ดักตรงนี้ สูตร C1V1 = C2V2 จะคืนปริมาตรที่มากกว่าปริมาตรสุดท้าย
+  // ซึ่งเทลงไปจริงไม่ได้ และผู้ใช้ที่เทตามอาจได้สารอ่อนกว่าที่คิดโดยไม่รู้ตัว แล้วฟอกไม่ขึ้น
+  // calculateHaiterDose ดักกรณีคู่ขนานนี้อยู่แล้ว (target ต้องต่ำกว่า source) ตรงนี้เคยตกหล่นไป
+  if (workingPercent < input.targetPercent) {
+    const directMl = round(input.targetPercent * input.finalVolumeMl / input.sourcePercent);
+    const enough = directMl >= input.minimumMeasurableMl;
+    throw new Error(
+      `เจือจาง ${input.dilutionFactor} เท่าแล้วได้ working stock ${workingPercent}% ` +
+        `ซึ่งอ่อนกว่าเป้าหมาย ${input.targetPercent}% จึงผสมยังไงก็ไม่ถึงเป้า` +
+        (enough
+          ? ` กรณีนี้ไม่ต้องทำ working dilution เลย ใช้แท็บคำนวณตรงแล้วตวงต้นทาง ${directMl} mL ได้เลย`
+          : " ให้ลดจำนวนเท่าที่เจือจางลง จนกว่า working stock จะเข้มกว่าเป้าหมาย"),
+    );
+  }
   const sourceVolumeMl = round(input.workingVolumeMl / input.dilutionFactor);
   const diluentVolumeMl = round(input.workingVolumeMl - sourceVolumeMl);
   const workingDoseMl = round(
