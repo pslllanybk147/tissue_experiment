@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import {
   calculateHaiterDose,
   planHaiterWorkingDilution,
+  toWeightPerVolumePercent,
 } from "./haiter-calculations";
 
 describe("calculateHaiterDose", () => {
@@ -121,5 +122,20 @@ describe("planHaiterWorkingDilution · กรณีที่ทำตามไ�
       minimumMeasurableMl: 0.1,
     });
     expect(result.workingDoseMl).toBe(100);
+  });
+});
+
+describe("toWeightPerVolumePercent", () => {
+  test("ฉลากที่เป็น w/v อยู่แล้ว ใช้ค่าเดิมไม่แปลง", () => {
+    expect(toWeightPerVolumePercent(6, "w/v")).toBe(6);
+  });
+
+  // ไฮเตอร์ที่เจ้าของมีจริงระบุ 6% w/w การกรอก 6 ลงไปตรง ๆ ทำให้คิดคลอรีนต่ำกว่าจริง
+  test("ฉลากที่เป็น w/w ต้องคูณความหนาแน่นก่อน", () => {
+    expect(toWeightPerVolumePercent(6, "w/w")).toBe(6.48);
+  });
+
+  test("ค่าที่ไม่ใช่ตัวเลขบวก ต้องไม่คืนตัวเลขเงียบ ๆ", () => {
+    expect(() => toWeightPerVolumePercent(0, "w/w")).toThrow();
   });
 });

@@ -70,3 +70,20 @@ describe("HaiterCalculator", () => {
     expect(html).toContain("dilution factor ต้องมากกว่า 1");
   });
 });
+
+describe("HaiterCalculator · หน่วยบนฉลาก", () => {
+  // ไฮเตอร์ที่เจ้าของมีจริงระบุ 6% w/w ซึ่งไม่เท่ากับ 6% w/v
+  // เดิมระบบไม่มีที่ให้ระบุ จึงคิดคลอรีนต่ำกว่าจริงราว 8 เปอร์เซ็นต์เสมอ
+  it("ตั้งต้นเป็น w/v และยังไม่ขึ้นคำอธิบายการแปลงหน่วย", () => {
+    const html = renderToStaticMarkup(<HaiterCalculator />);
+
+    expect(html).toContain("ฉลากบอกแบบไหน");
+    expect(html).not.toContain("หลังคูณความหนาแน่น");
+  });
+
+  it("มีตัวเลือก w/w ให้ผู้ใช้ระบุได้", () => {
+    const html = renderToStaticMarkup(<HaiterCalculator />);
+
+    expect(html).toContain("w/w");
+  });
+});

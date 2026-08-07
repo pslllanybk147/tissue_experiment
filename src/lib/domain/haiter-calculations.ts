@@ -116,3 +116,26 @@ export function planHaiterWorkingDilution(
       : `แม้เจือจาง ${input.dilutionFactor} เท่าแล้ว ปริมาตร ${workingDoseMl} mL ยังต่ำกว่าเครื่องมือขั้นต่ำ ${input.minimumMeasurableMl} mL`,
   };
 }
+
+/** ฉลากน้ำยาฟอกขาวบอกเปอร์เซ็นต์ได้สองแบบ และไม่เท่ากัน
+ *
+ *  w/v คือกรัมของสารต่อสารละลาย 100 มิลลิลิตร ซึ่งเป็นแบบที่สูตร C1V1 = C2V2 ใช้ได้ตรง
+ *  w/w คือกรัมของสารต่อสารละลาย 100 กรัม ซึ่งต้องคูณความหนาแน่นก่อนจึงจะเทียบกันได้
+ *
+ *  น้ำยาฟอกขาวใช้ในบ้านมีความหนาแน่นราว 1.08 g/mL การกรอกเลข w/w ลงไปตรง ๆ
+ *  จึงทำให้ได้คลอรีนสูงกว่าที่ตั้งใจราว 8 เปอร์เซ็นต์ ไม่ถึงกับอันตราย แต่พอจะทำให้
+ *  ผลรอบต่อรอบไม่ตรงกันโดยหาสาเหตุไม่เจอ */
+export type LabelBasis = "w/v" | "w/w";
+
+/** ความหนาแน่นโดยประมาณของน้ำยาฟอกขาวใช้ในบ้าน หน่วย g/mL
+ *  เป็นค่ากลางของช่วงที่พบทั่วไป ไม่ใช่ค่าที่วัดจากขวดใดขวดหนึ่ง */
+export const bleachDensityGPerMl = 1.08;
+
+/** แปลงเปอร์เซ็นต์บนฉลากให้เป็น w/v เสมอ ก่อนส่งเข้าสูตรคำนวณ */
+export function toWeightPerVolumePercent(labelPercent: number, basis: LabelBasis): number {
+  if (!Number.isFinite(labelPercent) || labelPercent <= 0) {
+    throw new Error("เปอร์เซ็นต์บนฉลากต้องเป็นตัวเลขที่มากกว่า 0");
+  }
+  if (basis === "w/v") return labelPercent;
+  return round(labelPercent * bleachDensityGPerMl);
+}

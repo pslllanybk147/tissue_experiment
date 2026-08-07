@@ -73,6 +73,13 @@ export function PathSummary({ path }: { path: ResolvedPath }) {
             : "ยังมีสิ่งที่ทำไม่ได้อยู่ จึงยังบอกระดับของทั้งเส้นทางไม่ได้ ต้องเติมของให้ครบก่อน"}
         </p>
       </div>
+
+      <p className="pl-meta" style={{ marginTop: "18px" }}>
+        ไม่รู้จักสารที่ระบบเอ่ยชื่อ?{" "}
+        <a className="pl-link" href="/substances">
+          ดูว่าคืออะไร ซื้อที่ไหน และถ้าไม่มีใช้อะไรแทน
+        </a>
+      </p>
     </section>
   );
 }
