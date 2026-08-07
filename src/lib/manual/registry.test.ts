@@ -2,8 +2,13 @@ import { describe, expect, it } from "vitest";
 import { allSlugs, packBySlug, plantPacks, resolveBySlug } from "./registry";
 
 describe("manual registry", () => {
-  it("มีแผ่นเสริมสามชนิดและ slug ไม่ซ้ำกัน", () => {
-    expect(allSlugs()).toEqual(["pink-princess", "violin-variegated", "generic-philodendron"]);
+  it("มีแผ่นเสริมสี่ชนิดและ slug ไม่ซ้ำกัน", () => {
+    expect(allSlugs()).toEqual([
+      "pink-princess",
+      "violin-variegated",
+      "thai-constellation",
+      "generic-philodendron",
+    ]);
     expect(new Set(allSlugs()).size).toBe(plantPacks.length);
   });
 
