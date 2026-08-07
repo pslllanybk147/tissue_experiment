@@ -159,13 +159,44 @@
 }
 
 /* สำเนียงโหมดอ่าน เส้นบางเงานุ่ม เพื่อถอยให้ภาพต้นจริงเป็นประธานของหน้า
-   ของเดิมเป็นเส้น 2.5px กับเงาทึบ 5px ซึ่งแย่งความสนใจกับเนื้อหา */
+   ของเดิมเป็นเส้น 2.5px กับเงาทึบ 5px ซึ่งแย่งความสนใจกับเนื้อหา
+   เพิ่มเส้นเน้นซ้ายสีนีออนตามผิวไซเบอร์ ส่วนขนาด/ระยะเดิมคงไว้ทั้งหมด */
 .pl-card {
   background: var(--pl-card);
   border: 1px solid var(--pl-line-soft);
+  border-left: 3px solid var(--pl-neon);
   border-radius: 14px;
   padding: 18px;
   box-shadow: 0 2px 14px var(--pl-shadow-soft);
+}
+
+.pl-card.pl-link:hover {
+  border-color: var(--pl-neon);
+  box-shadow: 0 0 14px var(--pl-glow);
+}
+
+/* chip สถานะสไตล์ HUD ใช้โดยหน้าทำงาน (Task 3) */
+.pl-hud-chip {
+  display: inline-block;
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  padding: 2px 10px;
+  border: 1px solid var(--pl-neon);
+  border-radius: 4px;
+  color: var(--pl-neon);
+  background: transparent;
+}
+
+/* ไฟกะพริบจุดเดียวของหน้าทำงาน ดับใต้ prefers-reduced-motion ด้วยกติกา global
+   ท้ายไฟล์ (animation: none !important) จึงห้ามใส่ !important ที่นี่ */
+@keyframes pl-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.pl-pulse {
+  animation: pl-pulse 2s ease-in-out infinite;
 }
 
 .pl-chip {
@@ -562,6 +593,10 @@
   cursor: pointer;
 }
 
+.pl-button:hover {
+  box-shadow: 0 0 14px var(--pl-glow);
+}
+
 /* โหมดลงมือ ใช้เฉพาะตัวเดินขั้นตอนที่ผู้ใช้อ่านตอนใส่ถุงมือและมือเปื้อน
    ต่างจากโหมดอ่านแค่คอนทราสต์และขนาดตัวเลข ไม่ใช่ระบบดีไซน์คนละชุด */
 .pl-do {
@@ -570,6 +605,7 @@
 
 .pl-do .pl-card {
   border-width: 2px;
+  border-left-width: 4px;
 }
 
 .pl-do .pl-lede {
