@@ -3320,3 +3320,85 @@ runner อีกสามตัวยังอยู่ เพราะหน้
 **บทเรียนที่ย้ำอีกครั้ง** นี่เป็นความผิดพลาดชนิดเดียวกับที่บันทึกไว้แล้วสองครั้งใน session นี้
 คือสรุปสถานะจากความจำแทนที่จะตรวจของจริง วิธีกันคือ
 `gh pr list --state open` และ `git merge-base --is-ancestor` ก่อนพูดถึงสถานะ PR หรือสาขาใด ๆ
+
+---
+
+## 2026-08-07 — Cyber Greenhouse Visual Redesign (สาขา `feature/cyber-greenhouse`, ยังไม่ merge)
+
+ทำ 5 งานตามแผนใน `.superpowers/sdd/2026-08-07-cyber-greenhouse-visual-redesign/` เรียงเป็น commit ต่อกัน
+ยังไม่ push และไม่ merge เข้า master — รอผู้ใช้สั่งแยกต่างหากตามกติกาโปรเจกต์
+
+### สิ่งที่ทำ (Task 1–4 สรุปจาก commit log)
+
+- **โทนสี cyber greenhouse** (`bab19c6`, `b6689bc`) — ใส่ชุดสี `--pl-*` ใหม่ลงในระบบ theme token เดิม
+  (`src/app/guide.css`) โดยโหมดมืดเป็นค่าเริ่มต้น ระบบสลับ/จำค่า/กัน flash ของธีมมีอยู่แล้วจากก่อนหน้านี้
+  ไม่ต้องสร้างใหม่ (ยืนยันจาก `src/components/guide/theme-script.tsx` และ `theme-toggle.tsx`)
+- **พื้นผิวหน้าทำงานแบบ cyber** (`031b380`) — เพิ่ม `.pl-hud-chip` และ `.pl-pulse` และปรับพื้นผิวหน้าทำงานให้เข้าธีม
+- **Hero poster + HUD หน้าแรก** (`59c610d`) — `src/components/home/hero-jar.tsx` component `HeroJar`
+  เรนเดอร์ SVG poster (`.pl-hero-poster`) อยู่ใน SSR markup เสมอ เป็น fallback หลักเมื่อไม่มี WebGL/reduced-motion
+  พร้อม HUD chip สองอัน (`LAB:PLANTLOVER`, `READY ▲`) — ป้าย HUD ใช้ข้อความกลางเสมอ ไม่ดึงข้อมูลรอบเพาะจริง
+  (จงใจ ตามที่บันทึกไว้ใน self-review ของแผน กันขอบเขตบาน)
+- **ฉาก 3D แบบ lazy-load** (`3dc5c20`, `51fea63`) — `src/components/home/hero-jar-scene.tsx` โหลดผ่าน
+  `dynamic(..., { ssr:false })` เฉพาะเมื่อ `shouldLoadScene({reducedMotion, webgl})` เป็นจริง ไม่โหลดถ้า
+  `prefers-reduced-motion` หรือไม่มี WebGL แก้บั๊กที่ลากหมุนแล้วค้าง (pointer capture)
+
+### สิ่งที่ทำในรอบนี้ (Task 5 — ขยาย ui:verify + ตรวจครบชุดปิดงาน)
+
+**ปัญหาที่เจอก่อนแก้ของจริงได้:** `npm run ui:verify` (`scripts/verify-accessible-ui.mjs`) เขียนไว้สำหรับ
+แอปรุ่นก่อนหน้าที่มี wizard สร้าง Lot/Protocol editor เต็มรูปแบบที่ `/plants`, `/experiments`, `/protocols`,
+`/knowledge`, `/research`, `/dataset-review` — เส้นทางเหล่านี้ไม่มีอยู่ในแอปปัจจุบันแล้วสักเส้นทางเดียว
+(ตรวจแล้วจาก `next build` route list จริง) แอปตอนนี้คือ `/my` + `/admin/*` (LabShell) และหน้าคู่มือสาธารณะ
+(`/`, `/guide/*`, `/find`, `/start`, `/substances`, `/problem`, `/search` ผ่าน GuideShell) สคริปต์เดิม
+timeout ที่การคลิกลิงก์ nav `/plants` ซึ่งไม่มีอยู่จริงอีกต่อไป — ไม่ใช่แค่ลิงก์เดียว แต่ทั้งฟังก์ชัน
+`verifyWizard`, `verifyProtocolPages`, `verifyPlantDetail`, `inspectProtocolTypography` (รวม ~270 บรรทัด)
+ทดสอบ flow ที่ถูกแทนที่ไปหมดแล้ว จึงลบทิ้งทั้งหมด (ไม่ใช่แก้โค้ดแอปให้ตรงกับสคริปต์)
+
+**แก้ `scripts/verify-accessible-ui.mjs`:**
+- ลบฟังก์ชันที่ตรวจ flow เก่าที่ไม่มีอยู่จริงแล้ว (`verifyWizard`, `verifyProtocolPages`, `verifyPlantDetail`,
+  `inspectProtocolTypography`)
+- แก้ `routes` (เมนูหลักของ LabShell) และ `verifyDirectRoutes` ให้ชี้เส้นทางจริงของแอปปัจจุบัน
+  (`/my`, `/admin/knowledge`, `/admin/research`, `/admin/dataset-review`, `/my/equipment`, `/my/rounds`,
+  `/admin/pin`, `/admin/manual/pink-princess`) — ตัด `/admin/manual` ออกจากลูปคลิกเมนูต่อกันเพราะเป็นหน้า
+  internal review เปล่า ๆ ไม่มี nav ต่อ (หน้านั้นเขียนกำกับไว้เองว่า "ไม่ใช่หน้าที่ผู้ใช้เห็น")
+- ขยาย `verifyPublicGuide` ให้ครอบคลุมหน้าสาธารณะที่เหลือ (`/find`, `/start`, `/substances`, `/problem`, `/search`)
+- เพิ่มฟังก์ชันใหม่ `verifyThemeAndHero` ตรวจ 3 เรื่องที่หน้าแรกสาธารณะ: (1) `.pl-hero-poster` มีอยู่เสมอ,
+  (2) กดปุ่มสลับธีม (`.pl-toggle`, aria-label "สลับระหว่างโหมดสว่างและโหมดมืด") แล้ว `data-theme` เปลี่ยนจริง
+  และสีตัวหนังสือกับพื้นหลังต่างกันทั้งสองโหมด พร้อมเก็บ screenshot `<viewport>-home-dark.png`/`-light.png`,
+  (3) ภายใต้ reduced motion ต้องไม่มี `<canvas>` 3D และ poster ต้องมองเห็น เรียกฟังก์ชันนี้ก่อนเข้าโหมดสาธิต
+  ทุก viewport
+- พบเคส false positive เพิ่มหนึ่งเรื่องระหว่างตรวจ: Chrome เองฉีด `style="caret-color: transparent"` ให้
+  `input[type=search]` (หน้า `/search`) เป็นบางจังหวะ ทำให้ React แจ้ง hydration mismatch — grep ทั้ง repo
+  ยืนยันไม่มีโค้ดแอปที่ตั้งค่านี้เลย จึงกรอง console error รูปแบบนี้ทิ้งเฉพาะกรณีนี้ในสคริปต์ ไม่ใช่บั๊กแอปจริง
+
+### ผลตรวจครบชุดปิดงาน (เรียงตามลำดับที่กติกาโปรเจกต์กำหนด)
+
+- `npm test`: ผ่าน 518 tests, skip 10 (124 test files, skip 4)
+- `npm run lint`: ผ่าน ไม่มี error/warning
+- `npm run build`: ผ่าน compile สำเร็จ, 94 static pages
+- `npm run firebase:verify`: **รอบแรกล้มเหลวเพราะ Java 8 เป็นค่าเริ่มต้นใน PATH** (`firebase-tools`
+  ต้องการ JDK 21+ สำหรับ Firestore emulator) — พบว่ามี JDK 21 (Temurin) ติดตั้งอยู่แล้วที่
+  `C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot` แค่ไม่ได้อยู่ก่อนใน PATH หลังตั้ง PATH ใหม่
+  รันซ้ำแล้วผ่าน **528 tests ทั้งหมด, exit code 0** (รอบก่อนหน้าเจอ 39 worker-fork crash ของ vitest
+  ระหว่าง emulator กำลังทำงาน คาดว่าเป็นความแออัดของทรัพยากรบนเครื่องนี้ ไม่ใช่บั๊กจริง เพราะไม่มี assertion
+  ตกแม้แต่ตัวเดียวทั้งสองรอบ — รันซ้ำแล้วผ่านสะอาด)
+- `npm run ui:verify`: ผ่านครบ 14 viewport — 360, 375, 390, 412, 428, 600, 744, 768, 820, 834, 1024, 1280,
+  1440 และ 1920px รวมการตรวจธีม/hero/fallback ใหม่จาก Task 5 ทุก viewport
+
+### ตรวจภาพด้วยตา (จากโฟลเดอร์ screenshot ของ ui:verify)
+
+เปิดดู `desktop-home-dark.png`, `desktop-home-light.png`, `android-360-home-dark.png`,
+`android-360-home-light.png`, `iphone-se-home-dark.png` — hero jar แสดงครบ: ขวดแก้ว + วุ้น + ต้นอ่อน,
+กริดพื้นหลังคล้าย HUD, วงแหวนหมุน, ป้าย `LAB:PLANTLOVER` และ `READY ▲` ตรงคอนเซปต์ cyberpunk
+ทั้งสองโหมดอ่านตัวหนังสือชัด ไม่มี overflow แนวนอน การ์ดสี่ใบด้านล่าง hero ("มีต้นอยู่ แต่ไม่รู้ชื่อ" ฯลฯ)
+จัดวางปกติทั้งเดสก์ท็อปและมือถือ 360px (แถบเมนูล่างแบบ tab bar บนมือถือทับขอบการ์ดใบแรกเล็กน้อยตามดีไซน์
+bottom-nav ที่มีอยู่ก่อนแล้ว ไม่ใช่ของใหม่จาก branch นี้)
+
+### ไฟล์ที่เปลี่ยนในรอบนี้ (Task 5 เท่านั้น)
+
+- `scripts/verify-accessible-ui.mjs`
+
+### ยังไม่ได้ทำ / ต้องรอสั่งแยก
+
+- **Push และ merge เข้า master** — ตามกติกาโปรเจกต์ต้องรอผู้ใช้สั่งแยกต่างหาก ไม่ทำเองในรอบนี้
+- **ยังไม่เห็นบนเบราว์เซอร์จริงนอกเครื่องนี้** — ตรวจผ่าน `npm run start` (production build) local ที่
+  `localhost:3100` เท่านั้น ยังไม่ได้ deploy ไป Vercel preview
