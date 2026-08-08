@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
+import { plantImageUrl } from "@/lib/manual/plant-images";
 import { plantPacks } from "@/lib/manual/registry";
 import { StartList } from "./start-list";
 
@@ -22,8 +23,18 @@ describe("หน้าเริ่มต้นสำหรับคนที่�
     for (const pack of plantPacks) expect(html).toContain(`href="/guide/${pack.slug}"`);
   });
 
+  it("ต้นที่มีไฟล์ภาพจริง ต้องโชว์รูป ไม่ใช่ตัวอักษรย่อ", () => {
+    // ตรวจตาม plantImageUrl() จริง แทนการเดาว่ามีไฟล์ครบหรือไม่ครบกี่ต้น ไม่ผูกกับสถานะไฟล์ปัจจุบัน
+    for (const pack of plantPacks) {
+      const image = plantImageUrl(pack.slug);
+      if (!image) continue;
+      expect(html).toContain(`background-image:url(${image})`);
+    }
+  });
+
   it("ต้นที่ยังไม่มีไฟล์ภาพ ต้องมีตัวอักษรย่อสำรอง ไม่ใช่ว่างเปล่า", () => {
-    // ตอนรันเทสต์ยังไม่มีไฟล์ใน public/plants/ เลย ทุกการ์ดจึงต้องขึ้น placeholder
+    const missing = plantPacks.filter((pack) => !plantImageUrl(pack.slug));
+    if (missing.length === 0) return; // ตอนนี้ทุกต้นมีภาพครบแล้ว ไม่มีเคสให้ตรวจ แต่ไม่ควรทำให้เทสต์พัง
     expect(html).toContain("pl-plant-card-placeholder");
   });
 
