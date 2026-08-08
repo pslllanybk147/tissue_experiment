@@ -16,6 +16,7 @@ const allPaths = [
   { stem: "leaf-only", leaf: "frond" },
   { stem: "underground", bulb: "yes" },
   { stem: "underground", bulb: "no" },
+  { stem: "mat" },
   { stem: "none" },
 ];
 

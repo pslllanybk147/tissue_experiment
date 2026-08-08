@@ -15,6 +15,8 @@ import { rhaphidophora } from "./rhaphidophora";
 import { sansevieria } from "./sansevieria";
 import { scindapsus } from "./scindapsus";
 import { syngonium } from "./syngonium";
+import { taxiphyllum } from "./taxiphyllum";
+import { vesicularia } from "./vesicularia";
 import { zingiber } from "./zingiber";
 import type { GenusPack } from "./types";
 
@@ -37,6 +39,8 @@ export const generaPacks: GenusPack[] = [
   hemianthus,
   microsorum,
   bolbitis,
+  vesicularia,
+  taxiphyllum,
 ];
 
 export function genusById(id: string): GenusPack | null {

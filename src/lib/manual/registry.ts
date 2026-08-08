@@ -3,9 +3,11 @@ import { formById } from "./forms/registry";
 import { genusById } from "./genera/registry";
 import { resolveManual } from "./resolve";
 import { bolbitisHeudelotiiPack } from "./species/bolbitis-heudelotii";
+import { christmasMossPack } from "./species/christmas-moss";
 import { genericPhilodendronPack } from "./species/generic-philodendron";
 import { hemianthusCallitrichoidesCubaPack } from "./species/hemianthus-callitrichoides-cuba";
 import { javaFernPack } from "./species/java-fern";
+import { javaMossPack } from "./species/java-moss";
 import { pinkPrincessPack } from "./species/pink-princess";
 import { rhaphidophoraTetraspermaVariegataPack } from "./species/rhaphidophora-tetrasperma-variegata";
 import { scindapsusExoticaPack } from "./species/scindapsus-exotica";
@@ -23,6 +25,8 @@ export const plantPacks: PlantPack[] = [
   javaFernPack,
   bolbitisHeudelotiiPack,
   hemianthusCallitrichoidesCubaPack,
+  christmasMossPack,
+  javaMossPack,
 ];
 
 export function allSlugs(): string[] {

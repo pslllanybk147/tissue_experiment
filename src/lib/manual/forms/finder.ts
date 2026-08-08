@@ -21,6 +21,7 @@ export const finderQuestions: FinderQuestion[] = [
       { value: "upright", label: "ตั้งตรง เห็นลำต้นหรือกอก้านใบ", hint: "ก้านใบซ้อนกันออกจากโคนเดียว หรือแตกกิ่งเป็นพุ่ม" },
       { value: "underground", label: "ส่วนที่อ้วนอยู่ใต้ดินหรือที่โคนกอ", hint: "ขุดดินขึ้นมาเจอแง่ง หรือมีลำอ้วนตั้งจากโคนกอ" },
       { value: "leaf-only", label: "ใบออกจากดินเลย ไม่เห็นลำต้น", hint: "ใบตั้งขึ้นตรงจากดินเป็นกอ หรือเป็นใบเฟิร์นแตกจากเหง้า" },
+      { value: "mat", label: "เป็นแผ่นหรือกอเขียวเตี้ย ไม่มีลำต้นแยกจากใบเลย", hint: "เช่นมอสหรือตะไคร่ในตู้ปลา จับดูเป็นกอฟู ๆ ไม่มีจุดข้อให้เห็น" },
       { value: "none", label: "ไม่ตรงสักข้อ", hint: "เช่นปาล์ม กระบองเพชร หรือต้นที่หน้าตาไม่เหมือนข้อไหนเลย" },
     ],
   },
@@ -66,7 +67,8 @@ const outcomes: Record<string, FinderOutcome> = {
   "leaf-only/frond": { formId: "fern-frond-or-spore", planned: false },
   "underground/yes": { formId: "pseudobulb-node", planned: false },
   "underground/no": { formId: "rhizome-bud", planned: false },
-  /** ต้นที่ไม่เข้าทรงใดในเก้าทรงที่มี เช่นปาล์ม กระบองเพชร
+  mat: { formId: "fragment-mat-no-node", planned: false },
+  /** ต้นที่ไม่เข้าทรงใดในทรงที่มี เช่นปาล์ม กระบองเพชร
    *  ให้ปลายทางเป็นทรงที่ยังไม่ได้เขียน เพื่อให้ระบบบอกตรง ๆ แทนการยัดผู้ใช้เข้าทรงที่ผิด */
   none: { formId: "not-yet-covered", planned: true, reason: "uncovered" },
 };
@@ -80,6 +82,7 @@ function questionsFor(stem: string | undefined): FinderQuestion[] {
   if (stem === "vine" || stem === "upright") return [first, byKey.texture];
   if (stem === "leaf-only") return [first, byKey.leaf];
   if (stem === "underground") return [first, byKey.bulb];
+  /** mat (มอส) ไม่ต้องถามคำถามที่สอง เหมือน none เพราะไม่มีมิติที่สองที่มีความหมายจะถามต่อ */
   return [first];
 }
 

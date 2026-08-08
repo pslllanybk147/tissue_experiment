@@ -1,6 +1,7 @@
 import { climbingVineVisibleNode } from "./climbing-vine-visible-node";
 import { culmNode } from "./culm-node";
 import { fernFrondOrSpore } from "./fern-frond-or-spore";
+import { fragmentMatNoNode } from "./fragment-mat-no-node";
 import { leafVeinBud } from "./leaf-vein-bud";
 import { pseudobulbNode } from "./pseudobulb-node";
 import { rhizomeBud } from "./rhizome-bud";
@@ -14,6 +15,7 @@ export const growthForms: GrowthForm[] = [
   climbingVineVisibleNode,
   rhizomeBud,
   thickLeafNoStem,
+  fragmentMatNoNode,
   leafVeinBud,
   culmNode,
   rosetteSheathedNode,

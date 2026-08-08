@@ -538,6 +538,29 @@ export const manualSources: ManualSourceRecord[] = [
     kind: "peer-reviewed",
     accessedAt: "2026-08-08",
   },
+  {
+    id: "source-vesicularia-montagnei-2023",
+    title:
+      "Hu Y. et al. (2023). Axenic in vitro cultivation and genome diploidization of the moss Vesicularia montagnei for horticulture utilization. Frontiers in Plant Science",
+    url: "https://doi.org/10.3389/fpls.2023.1137214",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-08",
+  },
+  {
+    id: "source-aquatic-moss-axenic-2024",
+    title:
+      "Anglana C. et al. (2024). Characterization of Three Species of Aquatic Mosses in Axenic Culture (Leptodictyum riparium, Vesicularia montagnei, Taxiphyllum barbieri). Aquatic Botany 193: 103762 (ScienceDirect ปิดกั้นเนื้อหาเต็ม เข้าถึงได้แค่บทคัดย่อ ห้ามอ้างตัวเลขความเข้มข้น เวลา หรือสภาพแสง/อุณหภูมิจากงานนี้)",
+    url: "https://doi.org/10.1016/j.aquabot.2024.103762",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-08",
+  },
+  {
+    id: "source-botany-moss-morphology",
+    title: "Bryophyte — gametophyte structure of mosses (no true stem, leaf, or root)",
+    url: "https://www.britannica.com/plant/bryophyte",
+    kind: "technical-guide",
+    accessedAt: "2026-08-08",
+  },
 ];
 
 export function sourceById(id: string): ManualSourceRecord | null {

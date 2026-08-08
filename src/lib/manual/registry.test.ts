@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { allSlugs, packBySlug, plantPacks, resolveBySlug } from "./registry";
 
 describe("manual registry", () => {
-  it("มีแผ่นเสริมเก้าชนิดและ slug ไม่ซ้ำกัน", () => {
+  it("มีแผ่นเสริมสิบเอ็ดชนิดและ slug ไม่ซ้ำกัน", () => {
     expect(allSlugs()).toEqual([
       "pink-princess",
       "violin-variegated",
@@ -13,6 +13,8 @@ describe("manual registry", () => {
       "java-fern",
       "bolbitis-heudelotii",
       "hemianthus-callitrichoides-cuba",
+      "christmas-moss",
+      "java-moss",
     ]);
     expect(new Set(allSlugs()).size).toBe(plantPacks.length);
   });
