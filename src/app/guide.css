@@ -698,6 +698,48 @@
   background-repeat: no-repeat;
 }
 
+/* การ์ดเลือกต้นที่ /start รูปเป็นไฟล์ static ที่อาจยังไม่มี (ดู plant-images.ts)
+   จึงต้องมีพื้นหลังกับตัวอักษรย่อสำรองเสมอ ไม่ใช่ว่างเปล่าหรือไอคอนรูปหักที่ browser วาดเอง */
+.pl-plant-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pl-plant-card {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.pl-plant-card-image {
+  aspect-ratio: 1 / 1;
+  border-radius: 14px;
+  border: 1px solid var(--pl-line-soft);
+  background-color: var(--pl-sunk);
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.pl-plant-card.pl-link:hover .pl-plant-card-image {
+  border-color: var(--pl-neon);
+  box-shadow: 0 0 14px var(--pl-glow);
+}
+
+.pl-plant-card-placeholder {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--pl-ink-3);
+}
+
 /* Hero หน้าแรก: poster + HUD cyberpunk (Task 4 จะฝัง 3D ลงใน .pl-hero-stage) */
 .pl-hero { position: relative; overflow: hidden; border-radius: 12px; margin-bottom: 26px; padding: 18px; background: radial-gradient(120% 100% at 70% 20%, var(--pl-sunk) 0%, var(--pl-paper) 70%); border: 1px solid var(--pl-line-soft); }
 .pl-hero-grid { position: absolute; inset: 0; background-image: linear-gradient(var(--pl-grid) 1px, transparent 1px), linear-gradient(90deg, var(--pl-grid) 1px, transparent 1px); background-size: 28px 28px; }

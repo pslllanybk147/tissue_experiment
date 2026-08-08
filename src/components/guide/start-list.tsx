@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { growthForms } from "@/lib/manual/forms/registry";
+import { formById } from "@/lib/manual/forms/registry";
+import { plantImageUrl } from "@/lib/manual/plant-images";
+import { plantPacks } from "@/lib/manual/registry";
 
 const difficultyLabel: Record<1 | 2 | 3, string> = {
   1: "ง่ายสุดสำหรับมือใหม่",
@@ -8,34 +10,47 @@ const difficultyLabel: Record<1 | 2 | 3, string> = {
 };
 
 export function StartList() {
-  const sorted = [...growthForms].sort((a, b) => a.beginnerDifficulty - b.beginnerDifficulty);
-
   return (
     <>
-      <h1 className="pl-h1">เริ่มจากต้นแบบไหนดี</h1>
+      <h1 className="pl-h1">เลือกต้นที่จะเพาะ</h1>
       <p className="pl-lede" style={{ marginBottom: "20px" }}>
-        ความยากไม่ได้อยู่ที่ชนิดพืช แต่อยู่ที่ทรงของมัน เพราะทรงเป็นตัวกำหนดว่าหาจุดตัดยากแค่ไหน
+        แตะการ์ดต้นที่ตรงกับต้นของคุณเพื่อเปิดคู่มือได้เลย
       </p>
 
-      <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: "14px" }}>
-        {sorted.map((form) => (
-          <li key={form.id}>
-            <Link
-              className="pl-card pl-link"
-              href={`/form/${form.id}`}
-              style={{ display: "block", color: "inherit", textDecoration: "none" }}
-            >
-              <p className="pl-mono">{difficultyLabel[form.beginnerDifficulty]}</p>
-              <p className="pl-h2" style={{ marginTop: "4px" }}>{form.label}</p>
-              <p className="pl-lede" style={{ marginTop: "6px" }}>{form.whyThisDifficulty}</p>
-            </Link>
-          </li>
-        ))}
+      <ul className="pl-plant-grid">
+        {plantPacks.map((pack) => {
+          const image = plantImageUrl(pack.slug);
+          const form = pack.growthFormId ? formById(pack.growthFormId) : null;
+
+          return (
+            <li key={pack.slug}>
+              <Link className="pl-plant-card pl-link" href={`/guide/${pack.slug}`}>
+                <div
+                  className="pl-plant-card-image"
+                  style={image ? { backgroundImage: `url(${image})` } : undefined}
+                  role="img"
+                  aria-label={pack.commonName}
+                >
+                  {!image ? (
+                    <span className="pl-plant-card-placeholder" aria-hidden="true">
+                      {pack.commonName.charAt(0)}
+                    </span>
+                  ) : null}
+                </div>
+                <p className="pl-h2" style={{ marginTop: "10px" }}>{pack.commonName}</p>
+                <p className="pl-meta">{pack.scientificName}</p>
+                {form ? (
+                  <p className="pl-meta" style={{ marginTop: "2px" }}>{difficultyLabel[form.beginnerDifficulty]}</p>
+                ) : null}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
 
       <p className="pl-meta" style={{ marginTop: "22px" }}>
-        รายการนี้ยังไม่ครบทุกทรง เรากำลังทยอยเขียนเพิ่ม ถ้ามีต้นอยู่แล้วและไม่รู้ว่าทรงไหน
-        ลอง <Link className="pl-link" href="/find">ไล่ดูจากลักษณะต้น</Link>
+        ไม่รู้ว่าต้นของคุณตรงกับชนิดไหนในนี้?{" "}
+        <Link className="pl-link" href="/find">ไล่ดูจากลักษณะต้น</Link>
       </p>
     </>
   );
