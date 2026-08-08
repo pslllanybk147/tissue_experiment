@@ -459,6 +459,22 @@ export const manualSources: ManualSourceRecord[] = [
     kind: "patent",
     accessedAt: "2026-08-07",
   },
+  {
+    id: "source-chan-tan-chew-2003",
+    title:
+      "Chan L.K., Tan C.M., Chew G.S. (2003). Micropropagation of the Araceae Ornamental Plants. Acta Horticulturae 616: 58 (ISHS) — axillary buds of four Araceae species, MS + 6-BA 2.0 mg/L + IBA 0.5 mg/L",
+    url: "https://www.actahort.org/books/616/616_58.htm",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-08",
+  },
+  {
+    id: "source-rhaphidophora-decursiva-1988",
+    title:
+      "Lin Dehui (1988). Tissue culture of Rhaphidophora decursiva shoot tips and stem nodes in vitro. Acta Botanica Yunnanica 10(4): 499–500 (เข้าถึงได้แค่หัวเรื่อง/บรรณานุกรมผ่าน FAO AGRIS ไม่มีเนื้อหาให้ตรวจ ดึงตัวเลขมาใช้ไม่ได้)",
+    url: "https://agris.fao.org/agris-search/search.do?recordID=CN8901836",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-08",
+  },
 ];
 
 export function sourceById(id: string): ManualSourceRecord | null {

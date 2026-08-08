@@ -8,6 +8,7 @@ import { epipremnum } from "./epipremnum";
 import { monstera } from "./monstera";
 import { musa } from "./musa";
 import { philodendron } from "./philodendron";
+import { rhaphidophora } from "./rhaphidophora";
 import { sansevieria } from "./sansevieria";
 import { scindapsus } from "./scindapsus";
 import { syngonium } from "./syngonium";
@@ -29,6 +30,7 @@ export const generaPacks: GenusPack[] = [
   adenium,
   bambusa,
   scindapsus,
+  rhaphidophora,
 ];
 
 export function genusById(id: string): GenusPack | null {

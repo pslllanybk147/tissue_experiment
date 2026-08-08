@@ -4,6 +4,7 @@ import { genusById } from "./genera/registry";
 import { resolveManual } from "./resolve";
 import { genericPhilodendronPack } from "./species/generic-philodendron";
 import { pinkPrincessPack } from "./species/pink-princess";
+import { rhaphidophoraTetraspermaVariegataPack } from "./species/rhaphidophora-tetrasperma-variegata";
 import { scindapsusExoticaPack } from "./species/scindapsus-exotica";
 import { thaiConstellationPack } from "./species/thai-constellation";
 import { violinVariegatedPack } from "./species/violin-variegated";
@@ -14,6 +15,7 @@ export const plantPacks: PlantPack[] = [
   violinVariegatedPack,
   thaiConstellationPack,
   scindapsusExoticaPack,
+  rhaphidophoraTetraspermaVariegataPack,
   genericPhilodendronPack,
 ];
 

@@ -3581,3 +3581,48 @@ Verification:
 
 ยังไม่ได้ทำ (ตามลำดับที่ตกลงกับเจ้าของ): Rhaphidophora tetrasperma ด่าง (ต้นที่ 2 ในกลุ่มไม้บก
 เสี่ยงต่ำ), จากนั้นค่อยไปกลุ่มเสี่ยงสูงกว่า (แก้บั๊ก rhizome-bud form + เฟิร์นไม้น้ำ, HC, มอสตู้ปลา)
+
+## 2026-08-08 — เพิ่ม Rhaphidophora tetrasperma ด่าง (มินิมอนสเตอร่าด่าง) ตาม newplant_protocol.md
+
+ต้นที่ 2 ในกลุ่มไม้บก 3 ต้นเสี่ยงต่ำสุด (ตัดข้อแบบ Philodendron) งานเขียน genus/species pack
+ทำไว้เกือบเสร็จตั้งแต่ก่อน restart คอม บันทึกสถานะไว้ใน `hold_session.md` แล้ว resume ต่อในเซสชันนี้
+ทำครบตามขั้นที่ 0-8 ของ `docs/superpowers/newplant_protocol.md`:
+
+- ค้นหลักฐาน 11 ช่องทาง บันทึกที่ `docs/superpowers/evidence/2026-08-08-rhaphidophora.md`
+- เป็นแผ่นเสริมที่บางที่สุดในสามต้นบกของรอบนี้ ไม่มีขั้นใดถึงระดับ `species-direct` เลย แม้แต่ระดับสกุล
+  เองก็แทบไม่มีหลักฐานเป็นของตัวเอง (`genera/rhaphidophora.ts` มี deviations แค่ select-explant/cut,
+  sterilize, multiply — ทั้งหมด `adapted`)
+- ขั้นออกรากไม่พบหลักฐานจากที่ไหนเลยแม้แต่ระดับวงศ์ย่อย Monstereae (งานของสกุลนี้เอง Lin Dehui 1988
+  อ่านเนื้อหาไม่ได้) จึงเขียน override เป็น `unsupported` ตรง ๆ พร้อม `searchedAt`/`searchQueries`
+  กำกับเอง เพราะค่า default ดิบจาก core-steps.ts ไม่มีข้อมูลนี้
+- ด่างของพันธุ์นี้เป็น chimera จริง (ต่างจาก Scindapsus pictus ที่ลายเงินเป็นโครงสร้างเสถียร) จึงติด
+  `traitIds: ["variegated"]`
+- ระหว่างค้นเจอ false positive 2 รายการ ปฏิเสธทิ้งแล้วบันทึกเหตุผลไว้ในเอกสารค้นหลักฐาน: บทความ ThaiJo
+  ที่ดูเหมือนตรงแต่จริงๆ เป็นคนละต้น, เว็บ care-guide ที่มีตัวเลขเปอร์เซ็นต์แม่นยำผิดปกติไม่มีแหล่งอ้างอิง
+  ซึ่งน่าจะเป็นเนื้อหาสร้างด้วย AI
+- เพิ่มไฟล์ใหม่: `src/lib/manual/genera/rhaphidophora.ts`,
+  `src/lib/manual/species/rhaphidophora-tetrasperma-variegata.ts` (สูตรอาหาร 2 สูตร: ระยะตั้งต้น
+  `unsupported`, ระยะเพิ่มจำนวน `adapted` จากงานปี 2003 ที่ทำกับ Araceae สี่ชนิด)
+- เพิ่มแหล่งอ้างอิงใหม่ 2 รายการใน `sources.ts`: `source-chan-tan-chew-2003`,
+  `source-rhaphidophora-decursiva-1988`
+- ลงทะเบียนสกุลใหม่ใน `genera/registry.ts` (ทำไว้ก่อน restart) และพันธุ์ใหม่ใน `registry.ts`
+  (`plantPacks`) และแก้ `registry.test.ts` เพิ่ม slug ในลิสต์ที่ hardcode ไว้ (ทำในเซสชันนี้)
+
+Verification:
+
+- `npm test`: ผ่าน 522 tests, skip 10 (เทสต์ทั่วไปในตระกูล evidence-rules/sources/registry
+  ครอบคลุมของใหม่โดยอัตโนมัติ ไม่ต้องเขียนเทสต์เฉพาะพันธุ์เพิ่ม)
+- `npm run lint`: ผ่าน
+- `npm run build`: ผ่าน สร้าง `/guide/rhaphidophora-tetrasperma-variegata` และ
+  `/admin/manual/rhaphidophora-tetrasperma-variegata` สำเร็จ
+- ตรวจในเบราว์เซอร์จริงบน dev server: เปิด `/admin/manual/rhaphidophora-tetrasperma-variegata`
+  ยืนยันว่าขั้นออกรากแสดง "ยังไม่มีงานรองรับ" พร้อมหมายเหตุอธิบายว่าไม่พบสูตรจากที่ไหนเลย ไม่ใช่ตัวเลข
+  มั่ว; เปิด `/guide/rhaphidophora-tetrasperma-variegata` ตรวจทั้งโหมดสว่างและโหมดมืด อ่านออกชัดเจน
+  ทั้งคู่ แถบเตือน "คู่มือนี้มี 1 ขั้นที่ยังไม่มีงานรองรับ" ขึ้นถูกต้อง
+- `npm run firebase:verify`: ไม่ได้รันในเครื่องนี้เหมือนรอบก่อนหน้า (ต้องมี Java 21)
+- Implementation commit: ดู task list ของเซสชันนี้สำหรับสถานะล่าสุด
+
+ยังไม่ได้ทำ (ตามลำดับที่ตกลงกับเจ้าของ): กลุ่มเสี่ยงสูงกว่า — แก้บั๊ก `rhizome-bud` form (ไม่มี
+stepOverrides ของตัวเอง ขิง/กล้วยเห็นคำผิดตอนนี้) + สร้างเนื้อหาฟอร์มเฟิร์นเพื่อปลดล็อก Java fern,
+Bolbitis heudelotii, จากนั้น HC (Hemianthus callitrichoides 'Cuba'), และมอสตู้ปลา (Christmas moss
+ฯลฯ) ยากสุด ต้องสร้าง GrowthForm ใหม่ทั้งหมด
