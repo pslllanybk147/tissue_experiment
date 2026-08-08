@@ -44,9 +44,14 @@ describe("การห่อคำศัพท์ในเนื้อหา", (
     expect(plainText("ไม่มีคำห่อ")).toBe("ไม่มีคำห่อ");
   });
 
-  it("ทะเบียนคำศัพท์มาจาก landmarks ของทุกทรง", () => {
+  it("ถอดเครื่องหมายห่อของคำที่ชี้ไปสารในคลังสารได้เหมือนกับ landmark เพราะ plainText ไม่แยกชนิด", () => {
+    expect(plainText("จุ่ม[[ascorbic-acid|กรดแอสคอร์บิก]]แล้ววาง")).toBe("จุ่มกรดแอสคอร์บิกแล้ววาง");
+  });
+
+  it("ทะเบียนคำศัพท์มาจาก landmarks ของทุกทรงและสารในคลังสาร", () => {
     expect(allTermIds().has("node")).toBe(true);
     expect(allTermIds().has("axillary-bud")).toBe(true);
+    expect(allTermIds().has("ascorbic-acid")).toBe(true);
     expect(allTermIds().has("ไม่มีคำนี้")).toBe(false);
   });
 });

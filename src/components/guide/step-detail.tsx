@@ -14,7 +14,7 @@ function List({ title, items }: { title: string; items: string[] }) {
     <section style={{ marginTop: "18px" }}>
       <h2 className="pl-h2">{title}</h2>
       <ul style={{ margin: "8px 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "6px" }}>
-        {items.map((item) => <li key={item}>{item}</li>)}
+        {items.map((item) => <li key={item}><RichText source={item} /></li>)}
       </ul>
     </section>
   );
@@ -39,7 +39,7 @@ function Troubleshooting({ ids }: { ids: string[] }) {
             ) : null}
             <h3 className="pl-mono" style={{ marginTop: "12px" }}>ทำอะไรต่อ</h3>
             <ol style={{ margin: "6px 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "6px" }}>
-              {entry.actions.map((action) => <li key={action}>{action}</li>)}
+              {entry.actions.map((action) => <li key={action}><RichText source={action} /></li>)}
             </ol>
             <p style={{ marginTop: "12px" }}><EvidenceBadge level={entry.evidence.level} /></p>
           </article>
@@ -66,7 +66,7 @@ export function StepDetail({ manual, step }: { manual: ResolvedManual; step: Res
       <p className="pl-lede" style={{ marginTop: "12px" }}><RichText source={step.summary} /></p>
 
       <BracketNotice step={step} />
-      <p className="pl-lede" style={{ marginTop: "8px" }}>{step.why}</p>
+      <p className="pl-lede" style={{ marginTop: "8px" }}><RichText source={step.why} /></p>
 
       {step.illustrationId ? (
         <div className="pl-card" style={{ marginTop: "18px", padding: 0, overflow: "hidden" }}>
@@ -83,7 +83,7 @@ export function StepDetail({ manual, step }: { manual: ResolvedManual; step: Res
         <div className="pl-card" style={{ background: "var(--pl-stop)", marginTop: "18px" }}>
           <p className="pl-mono" style={{ color: "var(--pl-ink-2)" }}>ความปลอดภัย</p>
           <ul style={{ margin: "8px 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "6px" }}>
-            {step.safetyNotes.map((item) => <li key={item}>{item}</li>)}
+            {step.safetyNotes.map((item) => <li key={item}><RichText source={item} /></li>)}
           </ul>
         </div>
       ) : null}
@@ -93,7 +93,7 @@ export function StepDetail({ manual, step }: { manual: ResolvedManual; step: Res
       <section style={{ marginTop: "18px" }}>
         <h2 className="pl-h2">ลงมือทำ</h2>
         <ol style={{ margin: "8px 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "8px" }}>
-          {step.actions.map((action) => <li key={action}>{action}</li>)}
+          {step.actions.map((action) => <li key={action}><RichText source={action} /></li>)}
         </ol>
       </section>
 

@@ -1,4 +1,5 @@
 import { growthForms } from "./forms/registry";
+import { substances } from "./substances";
 
 export type TermSpan =
   | { kind: "text"; text: string }
@@ -46,9 +47,12 @@ export function malformedTermsIn(source: string): string[] {
   return (source.match(loosePattern) ?? []).filter((found) => !valid.has(found));
 }
 
-/** ทะเบียนคำศัพท์ของทั้งระบบ มาจาก landmarks ของทุกทรง ไม่มีคลังคำแยกต่างหาก */
+/** ทะเบียนคำศัพท์ของทั้งระบบ มาจาก landmarks ของทุกทรง รวมกับสารในคลังสาร (substances.ts)
+ *  สองทะเบียนนี้ไม่ทับ id กันเพราะคนละหมวดหมู่ (จุดสังเกตบนต้น vs สารเคมี) จึงรวมเป็นเนมสเปซเดียวได้
+ *  RichText เป็นตัวตัดสินว่า id หนึ่งเป็น landmark หรือสาร แล้วเรนเดอร์การ์ดที่ตรงชนิด */
 export function allTermIds(): Set<string> {
   const ids = new Set<string>();
   for (const form of growthForms) for (const landmark of form.landmarks) ids.add(landmark.id);
+  for (const substance of substances) ids.add(substance.id);
   return ids;
 }

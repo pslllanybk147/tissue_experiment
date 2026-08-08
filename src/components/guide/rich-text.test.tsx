@@ -33,4 +33,11 @@ describe("ข้อความที่มีคำศัพท์แตะด�
     expect(landmarkByTermId("axillary-bud")?.term).toBe("ตาข้าง");
     expect(landmarkByTermId("ไม่มี")).toBeNull();
   });
+
+  it("คำที่ห่อไว้ชี้ไปสารในคลังสาร กางดูวิธีซื้อได้เหมือนกัน", () => {
+    const html = renderToStaticMarkup(<RichText source="จุ่ม[[ascorbic-acid|กรดแอสคอร์บิก]]" />);
+    expect(html).toContain("<details");
+    expect(html).toContain("ซื้อที่ไหน");
+    expect(html).toContain("ร้านขายวัตถุดิบทำขนม");
+  });
 });

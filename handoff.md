@@ -2,6 +2,44 @@
 
 # Philodendron Lab — Handoff
 
+## 2026-08-09 — เชื่อมคลังสาร (substances.ts) เข้ากับเนื้อหาจริงทั่วระบบ ให้ครบตามที่ค้างจากคอมมิต 5a1ae8a
+
+- Session ก่อนหน้า (8 ส.ค.) ปิดกะทันหันโดยไม่ commit และไม่บันทึก handoff งานที่ค้างคือการเชื่อมคำศัพท์สาร
+  (`ascorbic-acid`, `citric-acid`, `activated-charcoal`, `pvp` ฯลฯ) เข้ากับ `RichText` ให้แตะดูได้เหมือน landmark
+  term ตรวจแล้วพบว่าโค้ดค้างนั้นมีบั๊กจริงและ roll out ไม่ครบ จึงแก้ต่อในรอบนี้ทั้งหมด:
+- **บั๊กที่พบและแก้**: `step-detail.tsx` render `step.why` เป็น plain text ตรง ๆ (ไม่ผ่าน `RichText`) ทำให้
+  `[[ascorbic-acid|...]]` ที่เพิ่มไว้ในคอมมิตก่อนหน้าจะโผล่เป็นวงเล็บเหลี่ยมดิบบนหน้าจอจริง ไม่ใช่การ์ดคำศัพท์
+- **ช่องว่างที่ใหญ่กว่านั้น**: `step-runner.tsx` (Guided Runner หน้าที่ใช้ทำงานจริงระหว่างรอบทดลอง) ยังใช้
+  `plainText()` ค้างมาตั้งแต่คอมมิต 1e15ea1 (5 ส.ค.) ไม่เคยอัปเกรดเป็น `RichText` เหมือน `step-detail.tsx`
+  ที่อัปเกรดไปแล้วในคอมมิต 8f835da แปลว่าหน้า "ลงมือทำ" จริงไม่มีการ์ดคำศัพท์เลยสักคำ ทั้งที่หน้า "อ่านคู่มือ" มี
+- แก้ทั้งสองไฟล์ให้ `why`, `safetyNotes`, `materials`, `actions`, `passCriteria`, `stopConditions` และ
+  troubleshooting actions ผ่าน `RichText` ทั้งหมด (เดิมมีแค่ `summary` กับ troubleshooting actions ใน
+  step-detail.tsx)
+- เชื่อม `[[id|text]]` ให้ครบทุกจุดที่เอ่ยชื่อสารจริงในเนื้อหาที่ผู้ใช้อ่าน (ไม่แตะ `evidence.note` เพราะเป็น
+  citation/เมตาเท็กซ์ ไม่ใช่คำสั่งลงมือทำ และไม่แตะชื่อ ingredient ใน mediaRecipes เพราะเป็น structured data
+  ไม่ผ่าน RichText อยู่แล้ว):
+  - `mercuric-chloride`: genera/bambusa, dendrobium, epipremnum, zingiber, anthurium,
+    species/hemianthus-callitrichoides-cuba (HgCl2)
+  - `nadcc`: core-steps.ts (ทางเลือกฆ่าเชื้ออาหารไม่ใช้หม้อนึ่ง) และ species ทั้ง 11 ไฟล์ที่มีย่อหน้า
+    "ทางเลือกทดลอง" chlorinated rinse (bolbitis-heudelotii, christmas-moss, generic-philodendron,
+    hemianthus-callitrichoides-cuba, java-fern, java-moss, pink-princess,
+    rhaphidophora-tetrasperma-variegata, scindapsus-exotica, thai-constellation, violin-variegated)
+  - `ascorbic-acid`/`citric-acid`: core-steps.ts และ 5 species ที่มีย่อหน้าสารต้านสีน้ำตาลซ้ำ
+  - `tdz`: genera/monstera, species/thai-constellation
+  - `activated-charcoal`: genera/adenium, species/thai-constellation
+  - `surfactant`: core-steps.ts, species/bolbitis-heudelotii
+- เพิ่มลิงก์ "คลังสาร" ในหัวเว็บ (`guide-shell.tsx`) แทนที่จะยัดเข้า `PrimaryNav` เพราะ bottom tab bar บนจอ 360px
+  มีที่พอดีสี่ช่อง (สามรายการใน `navLinkItems` บวกปุ่มเครื่องคำนวณ) ตามที่ `nav-items.test.ts` บังคับไว้
+  เพิ่มอีกไม่ได้ จึงใส่ในแถบบนที่ไม่ถูกจำกัดแบบนั้นและโชว์ทุกขนาดจอแทน
+- เพิ่มเทสใน `terms.test.ts` ยืนยันว่า `plainText()` (ที่ `step-map.tsx` ใช้กับการ์ดที่ทั้งใบเป็นลิงก์) ถอด
+  เครื่องหมายห่อของคำที่ชี้ไปสารได้เหมือนกับ landmark และ `allTermIds()` รวม substance ids ด้วย
+- `new_idea.md` (บันทึกวิจัย NaDCC vs Haiter chlorinated rinse, หัวข้อ 1–16) ยังไม่แตะในรอบนี้ตามที่ตกลง
+  รอบหน้าจะเริ่มออกแบบเป็น experiment protocol ในระบบจากหัวข้อ 15
+- Verification รอบนี้:
+  - `npm test`: ผ่าน 537 tests (เพิ่มจาก 536 เดิม 1 เทสใหม่), skip 10
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน ทุก route รวม `/substances` และ 215 static path
+
 ## 2026-07-27 — Beginner-Complete Protocol Standard
 
 - ล็อกหลักการว่า Protocol พร้อมใช้ต้องสอนผู้ไม่มีพื้นฐานซึ่งทำงานคนเดียวได้ ระบบห้ามใช้ “ถามผู้มีประสบการณ์”, “ถามผู้เชี่ยวชาญ” หรือ “ถามที่ปรึกษา” เป็นทางแก้
