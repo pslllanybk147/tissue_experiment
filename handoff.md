@@ -3677,3 +3677,53 @@ Verification:
 ทดลองในหัวข้อ 15 ของ new_idea.md (งานแล็บจริงที่ต้องเป็นเจ้าของทำเอง), และงานกลุ่มเสี่ยงสูงกว่าที่ค้าง
 มาจาก session ก่อน (rhizome-bud form + เฟิร์น, HC, มอสตู้ปลา) ส่วน commit Rhaphidophora (`d23f9df`)
 ก็ยังไม่ได้ push เหมือนเดิม
+
+## 2026-08-08 (ต่อ 2) — แก้บั๊ก rhizome-bud + ขยาย NaDCC rinse ไปทุกแผ่นเสริม + เข้า protocol ถาวร
+
+เจ้าของสั่งให้ทำงานค้างทั้ง 5 ข้อจาก session ก่อนต่อเนื่องกัน (หา full text, แก้บั๊ก rhizome-bud,
+เฟิร์น, HC, มอส) แล้วระหว่างทางเพิ่มคำสั่งใหม่ให้ประยุกต์ NaDCC chlorinated rinse เข้าทุกแผ่นเสริม
+ที่มีอยู่ และบันทึกเป็นข้อบังคับถาวรใน newplant_protocol.md
+
+งานที่ทำเสร็จและ**ยังไม่ commit** ในรอบนี้ (verify ผ่านหมดแล้ว รอ commit):
+
+1. **หา full text Shetty & Narasimhan 2021** — ลองเพิ่มอีกหลายช่องทาง (DOAJ, CORE, BASE-search,
+   ดาวน์โหลดตรงจาก ijrps.com) ไม่เจอเลย สรุปปิดการค้นแล้ว บันทึกไว้ใน `new_idea.md` หัวข้อ 16
+2. **แก้บั๊ก `src/lib/manual/forms/rhizome-bud.ts`** — เพิ่ม `stepOverrides` สำหรับ `select-explant`
+   และ `cut` ที่แกนกลางเขียนสมมติว่าตาอยู่เหนือดินข้างก้านใบ (ผิดกลไกสำหรับพืชเหง้าใต้ดินอย่างขิง/กล้วย)
+   ปรับเป็นขั้นขุด/ล้างดิน/หาตาเหง้าแทน หมายเหตุ: ยังไม่มีพืชในระบบใช้ทรงนี้ (ไม่มี ginger/banana pack
+   จริง) จึงตรวจในเบราว์เซอร์ที่ `/form/rhizome-bud` ไม่เห็นผลเปลี่ยนแปลง เพราะหน้านั้นแสดงแค่ landmarks
+   ไม่ได้ resolve step ผ่าน species แต่โค้ด/เทสต์ยืนยันว่า merge ถูกต้องแล้ว (จะเห็นผลจริงตอนเขียน
+   ginger/banana pack ในอนาคต)
+3. **ขยาย NaDCC chlorinated-rinse ไปทุกแผ่นเสริมที่มีอยู่** (ก่อนหน้านี้มีแค่ violin-variegated)
+   เพิ่ม override ที่ขั้น `sterilize` ให้ pink-princess, thai-constellation, scindapsus-exotica,
+   rhaphidophora-tetrasperma-variegata, generic-philodendron ทุกอันใช้ข้อความเดียวกัน (ทางเลือก
+   ทดลอง opt-in, safetyNotes เตือนเรื่องเม็ดคลอรีนเชิงพาณิชย์ไม่ใช่ reagent-grade, evidence อ้าง
+   `source-nadcc-explant-sterilisation` เพิ่มจากของเดิมของแต่ละพันธุ์) เพิ่ม sourceId นี้เข้า
+   `sourceIds` ของทุกแผ่นเสริมที่แก้ด้วย
+4. **บันทึกเป็นข้อบังคับถาวรใน `docs/superpowers/newplant_protocol.md`** เพิ่มแถวในตารางคลังเทคนิค
+   ทางเลือกของขั้นที่ 4 และเพิ่มหัวข้อ "ทางเลือกทดลอง: chlorinated rinse" ในขั้นที่ 6 บังคับว่าแผ่นเสริม
+   ใหม่ทุกอันที่มีขั้น `sterilize` ต้องเสนอทางเลือกนี้ตั้งแต่รอบนี้เป็นต้นไป พร้อมสามองค์ประกอบบังคับ
+   (actions/safetyNotes/evidence.note) และตัวอย่างอ้างอิงที่ `violin-variegated.ts`
+
+Verification: `npm test` ผ่าน 522 tests สกิป 10 เหมือนเดิม, `npm run lint` ผ่าน, `npm run build` ผ่าน
+เนื้อหาข้อความเป็นแบบเดียวกับที่ตรวจในเบราว์เซอร์ไปแล้วตอนทำ violin-variegated รอบก่อน (โครงเดียวกัน
+คัดลอกมาปรับ) จึงไม่ได้ตรวจซ้ำในเบราว์เซอร์ทีละพันธุ์รอบนี้ ถ้าจะยืนยันอีกทีให้เปิด
+`/guide/pink-princess/step/8` เทียบกับที่เคยตรวจของ Violin
+
+งานวิจัยที่ทำไว้แล้วแต่ยังไม่ได้เขียนเข้าโค้ด (ใช้ background agent ค้นคู่ขนานสามงาน บันทึกผลละเอียด
+ไว้ใน task list ของเซสชันนี้และจะย้ายไปไฟล์ `pause_session.md` ก่อนพักงาน):
+
+- **เฟิร์น (Java fern / Bolbitis heudelotii)** — Java fern มีงานตรงพันธุ์จริง (Suwannamali et al.
+  2024, Horticulturae, DOI 10.3390/horticulturae10070673, วิธี green globular body ไม่ใช่ nodal
+  culture) แต่ Bolbitis heudelotii ไม่มีงานตรงพันธุ์เลย ต้องยืมจาก Bolbitis costata (Mazumder et al.
+  2010) แบบ spore culture ทั้งสองพันธุ์ต้องการ **ทรงใหม่ (GrowthForm)** เพราะเฟิร์นไม่มีข้อ/ตาข้าง
+- **HC (Hemianthus callitrichoides 'Cuba')** — ข่าวดี มีงานตรงพันธุ์จริงถึงสี่ชิ้น (Barpete et al.
+  2015 ยืนยันแล้วว่ามีจริง, Özcan et al. 2023, Ng et al. 2016, Wu et al. 2025 บนสกุลเดียวกัน) ชิ้นส่วน
+  ที่ใช้คือ nodal segment ~1 ซม. หรือ shoot-clump ยังต้องตัดสินใจว่าจะใช้ทรง climbing-vine-visible-node
+  เดิมหรือสร้างทรงใหม่เพราะ HC เป็นพืชปูพื้นไม่ใช่เถาเลื้อย (plainDescription เดิมจะผิดบริบท)
+- **มอสตู้ปลา** — งานวิจัยยืนยันว่า **GrowthForm เดิม (landmark/node) ใช้ไม่ได้เลยกับมอส** เพราะมอส
+  ไม่มีข้อ ไม่มีลำต้นจริง ขยายพันธุ์จากชิ้นส่วน gametophyte ขนาดมิลลิเมตรได้ทุกจุด ต้องออกแบบโมเดล
+  ใหม่ทั้งหมด (คีย์คือขนาดชิ้นส่วนและสภาพเนื้อเยื่อ ไม่ใช่ landmark) — **นี่คือจุดที่ควรเช็คกับเจ้าของ
+  ก่อนเริ่มเขียนโค้ด** เพราะเป็นการเปลี่ยนสถาปัตยกรรมหลักของระบบ ไม่ใช่แค่เพิ่มข้อมูลพันธุ์ใหม่
+  ชื่อวิทยาศาสตร์ก็สับสนมาก (Vesicularia montagnei vs Taxiphyllum barbieri ถูกเรียกสลับกันในตลาด)
+  งานวิจัยทั่วไปของ bryophyte tissue culture มีจริงและใช้เป็นฐานได้ (เช่น Sabovljević et al. 2012)
