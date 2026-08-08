@@ -52,6 +52,10 @@ export function StartList() {
         ไม่รู้ว่าต้นของคุณตรงกับชนิดไหนในนี้?{" "}
         <Link className="pl-link" href="/find">ไล่ดูจากลักษณะต้น</Link>
       </p>
+      <p className="pl-meta" style={{ marginTop: "6px" }}>
+        รู้ชื่อต้นอยู่แล้ว?{" "}
+        <Link className="pl-link" href="/search">ค้นหาโดยตรง</Link>
+      </p>
     </>
   );
 }
