@@ -1,5 +1,6 @@
 import { climbingVineVisibleNode } from "./climbing-vine-visible-node";
 import { culmNode } from "./culm-node";
+import { fernFrondOrSpore } from "./fern-frond-or-spore";
 import { leafVeinBud } from "./leaf-vein-bud";
 import { pseudobulbNode } from "./pseudobulb-node";
 import { rhizomeBud } from "./rhizome-bud";
@@ -18,6 +19,7 @@ export const growthForms: GrowthForm[] = [
   rosetteSheathedNode,
   pseudobulbNode,
   woodyShrubNode,
+  fernFrondOrSpore,
 ];
 
 export function formById(id: string): GrowthForm | null {

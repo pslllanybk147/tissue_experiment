@@ -20,8 +20,8 @@ export const finderQuestions: FinderQuestion[] = [
       { value: "vine", label: "เลื้อยหรือพาดขึ้นหลัก", hint: "ลำต้นทอดยาว มีใบออกเป็นระยะตลอดความยาว" },
       { value: "upright", label: "ตั้งตรง เห็นลำต้นหรือกอก้านใบ", hint: "ก้านใบซ้อนกันออกจากโคนเดียว หรือแตกกิ่งเป็นพุ่ม" },
       { value: "underground", label: "ส่วนที่อ้วนอยู่ใต้ดินหรือที่โคนกอ", hint: "ขุดดินขึ้นมาเจอแง่ง หรือมีลำอ้วนตั้งจากโคนกอ" },
-      { value: "leaf-only", label: "ใบออกจากดินเลย ไม่เห็นลำต้น", hint: "ใบตั้งขึ้นตรงจากดินเป็นกอ" },
-      { value: "none", label: "ไม่ตรงสักข้อ", hint: "เช่นเฟิร์น ปาล์ม กระบองเพชร หรือต้นที่หน้าตาไม่เหมือนข้อไหนเลย" },
+      { value: "leaf-only", label: "ใบออกจากดินเลย ไม่เห็นลำต้น", hint: "ใบตั้งขึ้นตรงจากดินเป็นกอ หรือเป็นใบเฟิร์นแตกจากเหง้า" },
+      { value: "none", label: "ไม่ตรงสักข้อ", hint: "เช่นปาล์ม กระบองเพชร หรือต้นที่หน้าตาไม่เหมือนข้อไหนเลย" },
     ],
   },
   {
@@ -39,6 +39,7 @@ export const finderQuestions: FinderQuestion[] = [
     choices: [
       { value: "thick", label: "หนา แข็ง ตั้งขึ้นตรง", hint: "หักแล้วมีน้ำเมือก เช่นลิ้นมังกร" },
       { value: "thin", label: "บาง นุ่ม เห็นเส้นใบนูนที่หลังใบ", hint: "เช่นบีโกเนีย" },
+      { value: "frond", label: "แผ่ออกเป็นแฉกหรือขนนก อาจมีจุดสีน้ำตาลเรียงแถวที่หลังใบ", hint: "เช่นเฟิร์นทุกชนิด" },
     ],
   },
   {
@@ -62,9 +63,10 @@ const outcomes: Record<string, FinderOutcome> = {
   "upright/hollow": { formId: "culm-node", planned: false },
   "leaf-only/thick": { formId: "thick-leaf-no-stem", planned: false },
   "leaf-only/thin": { formId: "leaf-vein-bud", planned: false },
+  "leaf-only/frond": { formId: "fern-frond-or-spore", planned: false },
   "underground/yes": { formId: "pseudobulb-node", planned: false },
   "underground/no": { formId: "rhizome-bud", planned: false },
-  /** ต้นที่ไม่เข้าทรงใดในแปดทรงที่มี เช่นเฟิร์น ปาล์ม กระบองเพชร
+  /** ต้นที่ไม่เข้าทรงใดในเก้าทรงที่มี เช่นปาล์ม กระบองเพชร
    *  ให้ปลายทางเป็นทรงที่ยังไม่ได้เขียน เพื่อให้ระบบบอกตรง ๆ แทนการยัดผู้ใช้เข้าทรงที่ผิด */
   none: { formId: "not-yet-covered", planned: true, reason: "uncovered" },
 };

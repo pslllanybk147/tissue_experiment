@@ -13,6 +13,7 @@ const allPaths = [
   { stem: "upright", texture: "hollow" },
   { stem: "leaf-only", leaf: "thick" },
   { stem: "leaf-only", leaf: "thin" },
+  { stem: "leaf-only", leaf: "frond" },
   { stem: "underground", bulb: "yes" },
   { stem: "underground", bulb: "no" },
   { stem: "none" },

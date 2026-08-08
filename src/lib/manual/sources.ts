@@ -475,6 +475,37 @@ export const manualSources: ManualSourceRecord[] = [
     kind: "peer-reviewed",
     accessedAt: "2026-08-08",
   },
+  {
+    id: "source-java-fern-ggb-2024",
+    title:
+      "Suwannamali W., Wang K.-T., Su C.-C., Kantha P., Tzean Y., Wu T.-M. (2024). Optimizing Green Globular Body Induction for Micropropagation of Microsorum pteropus 'Windeløv'. Horticulturae 10(7): 673",
+    url: "https://doi.org/10.3390/horticulturae10070673",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-08",
+  },
+  {
+    id: "source-bolbitis-costata-2010",
+    title:
+      "Mazumder B., Choudhury M.D., Mazumder P.B. (2010). Effect of growth regulators on in vitro propagation of Bolbitis costata. Assam University Journal of Science & Technology 5: 23–33 (ทำกับ Bolbitis costata ไม่ใช่ B. heudelotii แต่เป็นสกุลเดียวกัน)",
+    url: "https://www.researchgate.net/publication/265207682",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-08",
+  },
+  {
+    id: "source-marsilea-rhizome-2015",
+    title:
+      "Shekhawat M.S. et al. (2015). In Vitro Regeneration of Shoots and Genetic Fidelity Assessment of Marsilea quadrifolia — rhizome explant organogenesis. Advances in Biology, Article 639678",
+    url: "https://doi.org/10.1155/2015/639678",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-08",
+  },
+  {
+    id: "source-botany-fern-morphology",
+    title: "Fern — frond, rhizome, and sorus morphology",
+    url: "https://www.britannica.com/plant/fern-plant",
+    kind: "technical-guide",
+    accessedAt: "2026-08-08",
+  },
 ];
 
 export function sourceById(id: string): ManualSourceRecord | null {

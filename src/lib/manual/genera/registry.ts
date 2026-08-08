@@ -3,8 +3,10 @@ import { alocasia } from "./alocasia";
 import { anthurium } from "./anthurium";
 import { bambusa } from "./bambusa";
 import { begonia } from "./begonia";
+import { bolbitis } from "./bolbitis";
 import { dendrobium } from "./dendrobium";
 import { epipremnum } from "./epipremnum";
+import { microsorum } from "./microsorum";
 import { monstera } from "./monstera";
 import { musa } from "./musa";
 import { philodendron } from "./philodendron";
@@ -31,6 +33,8 @@ export const generaPacks: GenusPack[] = [
   bambusa,
   scindapsus,
   rhaphidophora,
+  microsorum,
+  bolbitis,
 ];
 
 export function genusById(id: string): GenusPack | null {

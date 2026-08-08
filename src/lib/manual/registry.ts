@@ -2,7 +2,9 @@ import { coreSteps } from "./core-steps";
 import { formById } from "./forms/registry";
 import { genusById } from "./genera/registry";
 import { resolveManual } from "./resolve";
+import { bolbitisHeudelotiiPack } from "./species/bolbitis-heudelotii";
 import { genericPhilodendronPack } from "./species/generic-philodendron";
+import { javaFernPack } from "./species/java-fern";
 import { pinkPrincessPack } from "./species/pink-princess";
 import { rhaphidophoraTetraspermaVariegataPack } from "./species/rhaphidophora-tetrasperma-variegata";
 import { scindapsusExoticaPack } from "./species/scindapsus-exotica";
@@ -17,6 +19,8 @@ export const plantPacks: PlantPack[] = [
   scindapsusExoticaPack,
   rhaphidophoraTetraspermaVariegataPack,
   genericPhilodendronPack,
+  javaFernPack,
+  bolbitisHeudelotiiPack,
 ];
 
 export function allSlugs(): string[] {
