@@ -1,13 +1,21 @@
+"use client";
+
+import { useCalculatorOverlay } from "@/components/nav/calculator-overlay-context";
 import type { ResolvedStep } from "@/lib/manual/types";
 import { buildBracketPlan } from "@/lib/rounds/bracket";
 
 const armLabel = { a: "A", b: "B", c: "C" } as const;
 const armWhen = { a: "ปลายต่ำ", b: "กลาง", c: "ปลายสูง" } as const;
+const methodLabel = { haiter: "Haiter", nadcc: "NaDCC" } as const;
 
-/** กล่องนี้เป็นข้อความอย่างเดียว ไม่มีช่องกรอกและไม่มีข้อมูลเฉพาะบุคคล
- *  เพราะหน้าคู่มือสาธารณะ prerender ตอน build และอ่านได้โดยไม่ต้องล็อกอิน
- *  การกรอกจริงอยู่ในรอบเพาะ ดู bracket-table.tsx */
+/** กล่องนี้เป็นข้อความล้วนเดิม ไม่มีช่องกรอกและไม่มีข้อมูลเฉพาะบุคคล เพราะหน้าคู่มือสาธารณะ prerender
+ *  ตอน build และอ่านได้โดยไม่ต้องล็อกอิน การกรอกจริงอยู่ในรอบเพาะ ดู bracket-table.tsx
+ *
+ *  ปุ่ม "เปิดเครื่องคำนวณ" ที่เพิ่มมาไม่ขัดกับข้อนี้ เพราะไม่ได้กรอกหรือแสดงข้อมูลเฉพาะบุคคลใด ๆ
+ *  แค่เปลี่ยนจอเครื่องคำนวณที่ mount อยู่แล้วทั้งระบบ (ดู calculator-overlay.tsx) ให้ตรงกับ
+ *  dose.method ของขั้นนี้ ผู้ใช้ยังต้องกรอกตัวเลขเองในเครื่องคำนวณเหมือนเดิมทุกประการ */
 export function BracketNotice({ step }: { step: ResolvedStep }) {
+  const { open, select } = useCalculatorOverlay();
   const plan = buildBracketPlan(step);
   if (!plan) return null;
 
@@ -36,6 +44,19 @@ export function BracketNotice({ step }: { step: ResolvedStep }) {
         <p className="pl-meta" style={{ marginTop: "4px" }}>
           เริ่มจากปลายสูงถ้า {dose.movesHigherWhen.join(" · ")}
         </p>
+      ) : null}
+      {dose.method ? (
+        <button
+          type="button"
+          className="pl-soft-card pl-link"
+          style={{ marginTop: "10px", fontWeight: 700, cursor: "pointer" }}
+          onClick={() => {
+            open();
+            select(dose.method!);
+          }}
+        >
+          เปิดเครื่องคำนวณ{methodLabel[dose.method]}
+        </button>
       ) : null}
       <p className="pl-lede" style={{ marginTop: "10px" }}>
         ดูผลใน 14 วัน แล้วบันทึกลงรอบเพาะ ชุดที่ไม่ติดเชื้อและชิ้นยังเขียว คือค่าของต้นคุณ

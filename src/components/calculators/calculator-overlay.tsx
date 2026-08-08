@@ -8,12 +8,14 @@ import { plantPacks } from "@/lib/manual/registry";
 import { getEquipmentRepository } from "@/lib/repositories/equipment-repository-factory";
 import { MediumCalculator } from "@/components/rounds/medium-calculator";
 import { HaiterCalculator } from "./haiter-calculator";
+import { NadccCalculator } from "./nadcc-calculator";
 import { WorkingStockCalculator } from "./working-stock-calculator";
 
 const pickerItems = [
   { screen: "medium" as const, title: "สูตรอาหาร", description: "คำนวณปริมาณสารต่อชุดอาหารที่จะทำ" },
   { screen: "working-stock" as const, title: "น้ำยาแม่ (working stock)", description: "เมื่อสารต้องใช้น้อยจนตวงตรง ๆ ไม่ได้" },
   { screen: "haiter" as const, title: "ไฮเตอร์ฆ่าเชื้อ", description: "เจือจางสารฟอกให้ได้ % ที่ต้องการ" },
+  { screen: "nadcc" as const, title: "NaDCC (เม็ดคลอรีน)", description: "แปลงเม็ดฟู่เป็น available chlorine แล้วเจือจางให้ได้ ppm ที่ต้องการ" },
 ];
 
 export function CalculatorOverlay() {
@@ -122,6 +124,10 @@ export function CalculatorOverlay() {
 
           {state.screen === "haiter" ? (
             <HaiterCalculator key={toolsKey} initialInput={{ minimumMeasurableMl: kit.pipetteMinimumMl }} />
+          ) : null}
+
+          {state.screen === "nadcc" ? (
+            <NadccCalculator key={toolsKey} initialInput={{ minimumMeasurableMl: kit.pipetteMinimumMl }} />
           ) : null}
         </div>
       </div>

@@ -1,4 +1,4 @@
-export type CalculatorScreen = "picker" | "medium" | "working-stock" | "haiter";
+export type CalculatorScreen = "picker" | "medium" | "working-stock" | "haiter" | "nadcc";
 
 export type OverlayState = {
   isOpen: boolean;

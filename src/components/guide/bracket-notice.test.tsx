@@ -1,9 +1,20 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
+import { CalculatorOverlayProvider } from "@/components/nav/calculator-overlay-context";
 import type { Dose } from "@/lib/manual/forms/types";
 import type { ResolvedStep } from "@/lib/manual/types";
 import { BracketNotice } from "./bracket-notice";
+
+// ใช้ useCalculatorOverlay() ตั้งแต่เพิ่มปุ่มเปิดเครื่องคำนวณ จึงต้อง render ผ่าน provider เสมอ
+// เหมือนที่ระบบจริง mount ไว้ให้ใน guide-shell.tsx
+function withProvider(step: ResolvedStep) {
+  return renderToStaticMarkup(
+    <CalculatorOverlayProvider>
+      <BracketNotice step={step} />
+    </CalculatorOverlayProvider>,
+  );
+}
 
 const dose: Dose = {
   form: "น้ำยาซักผ้าขาว NaOCl 6%",
@@ -37,7 +48,7 @@ const withDose: ResolvedStep = { ...base, doses: { "sterilize.dose": dose } };
 
 describe("กล่องบอกว่าต้องทดสอบช่วง", () => {
   it("ขั้นที่ไม่มีค่าช่วง ไม่แสดงอะไร", () => {
-    expect(renderToStaticMarkup(<BracketNotice step={base} />)).toBe("");
+    expect(withProvider(base)).toBe("");
   });
 
   it("ขั้นที่มีงานตรงพันธุ์ ไม่แสดงอะไร", () => {
@@ -45,29 +56,44 @@ describe("กล่องบอกว่าต้องทดสอบช่ว�
       ...withDose,
       evidence: { level: "species-direct", sourceIds: ["source-pp-2023"] },
     };
-    expect(renderToStaticMarkup(<BracketNotice step={step} />)).toBe("");
+    expect(withProvider(step)).toBe("");
   });
 
   it("แสดงสามชุดพร้อมค่าที่ต้องใช้", () => {
-    const html = renderToStaticMarkup(<BracketNotice step={withDose} />);
+    const html = withProvider(withDose);
     expect(html).toContain("0.8");
     expect(html).toContain("1.4");
     expect(html).toContain("2");
   });
 
   it("บอกชื่อและรูปแบบของสารที่ใช้จริง ไม่ใช่ตัวเลขลอย ๆ", () => {
-    expect(renderToStaticMarkup(<BracketNotice step={withDose} />)).toContain("น้ำยาซักผ้าขาว NaOCl 6%");
+    expect(withProvider(withDose)).toContain("น้ำยาซักผ้าขาว NaOCl 6%");
   });
 
   it("บอกตัวแปรที่ทำให้ขยับขึ้นและลง", () => {
-    const html = renderToStaticMarkup(<BracketNotice step={withDose} />);
+    const html = withProvider(withDose);
     expect(html).toContain("เนื้อด่างมาก");
     expect(html).toContain("ต้นกลางแจ้ง");
   });
 
   it("ไม่มีช่องกรอกและไม่มีฟอร์ม เพราะหน้านี้ prerender และอ่านได้โดยไม่ล็อกอิน", () => {
-    const html = renderToStaticMarkup(<BracketNotice step={withDose} />);
+    const html = withProvider(withDose);
     expect(html).not.toContain("<input");
     expect(html).not.toContain("<form");
+  });
+
+  it("dose ที่ไม่ตั้ง method ไม่แสดงปุ่มเปิดเครื่องคำนวณ", () => {
+    const html = withProvider(withDose);
+    expect(html).not.toContain("เปิดเครื่องคำนวณ");
+  });
+
+  it("dose ที่ตั้ง method แสดงปุ่มเปิดเครื่องคำนวณที่ตรงกัน", () => {
+    const withMethod: ResolvedStep = {
+      ...base,
+      doses: { "sterilize.dose.nadcc": { ...dose, method: "nadcc" } },
+    };
+    const html = withProvider(withMethod);
+    expect(html).toContain("เปิดเครื่องคำนวณ");
+    expect(html).toContain("NaDCC");
   });
 });

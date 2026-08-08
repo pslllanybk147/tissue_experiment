@@ -37,6 +37,9 @@ export type Dose = {
   movesLowerWhen: string[];
   movesHigherWhen: string[];
   evidence: EvidenceRef;
+  /** ทางเลือกวิธี/สารที่ dose นี้ใช้ ถ้ามีค่า BracketNotice จะโชว์ปุ่มเปิดเครื่องคำนวณที่ตรงกันต่อท้าย
+   *  ไม่มีค่า = ไม่โชว์ปุ่ม เหมือนพฤติกรรมเดิมของ dose ทุกตัวก่อนหน้านี้ */
+  method?: "haiter" | "nadcc";
 };
 
 /** ภาพอ้างอิงของทรง เป็นภาพต้นจริงของชนิดหนึ่งที่เป็นตัวแทน ไม่ใช่ภาพของทุกชนิดในทรง
