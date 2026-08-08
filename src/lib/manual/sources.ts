@@ -506,6 +506,38 @@ export const manualSources: ManualSourceRecord[] = [
     kind: "technical-guide",
     accessedAt: "2026-08-08",
   },
+  {
+    id: "source-hc-barpete-2015",
+    title:
+      "Barpete S., Özcan S.F., Aasim M., Özcan S. (2015). In vitro high frequency regeneration through apical shoot proliferation of Hemianthus callitrichoides 'Cuba'. Turkish Journal of Biology 39: 493–500",
+    url: "https://journals.tubitak.gov.tr/biology/vol39/iss3/17/",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-08",
+  },
+  {
+    id: "source-hc-ozcan-2023",
+    title:
+      "Özcan E., Atar H.H., Ali S.A., Aasim M. (2023). Artificial neural network and decision tree-based models for prediction and validation of in vitro organogenesis of two hydrophytes — Hemianthus callitrichoides and Riccia fluitans. In Vitro Cellular & Developmental Biology – Plant 59(5): 547–562",
+    url: "https://doi.org/10.1007/s11627-023-10367-z",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-08",
+  },
+  {
+    id: "source-hc-ng-pome-2016",
+    title:
+      "Ng Y.S., Lim C.R., Chan D.J.C. (2016). Development of treated palm oil mill effluent (POME) culture medium for plant tissue culture of Hemianthus callitrichoides. Journal of Environmental Chemical Engineering 4: 4890–4896",
+    url: "https://doi.org/10.1016/j.jece.2016.05.004",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-08",
+  },
+  {
+    id: "source-micranthemum-nematode-2025",
+    title:
+      "Wu T.-M. et al. (2025). From nematode identification to sustainable solution: developing tissue culture propagation for Micranthemum and Cryptocoryne ornamental aquatic plants. BMC Plant Biology 25: 886",
+    url: "https://doi.org/10.1186/s12870-025-06894-z",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-08",
+  },
 ];
 
 export function sourceById(id: string): ManualSourceRecord | null {

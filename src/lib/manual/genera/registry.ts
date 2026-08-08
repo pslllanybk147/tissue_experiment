@@ -6,6 +6,7 @@ import { begonia } from "./begonia";
 import { bolbitis } from "./bolbitis";
 import { dendrobium } from "./dendrobium";
 import { epipremnum } from "./epipremnum";
+import { hemianthus } from "./hemianthus";
 import { microsorum } from "./microsorum";
 import { monstera } from "./monstera";
 import { musa } from "./musa";
@@ -33,6 +34,7 @@ export const generaPacks: GenusPack[] = [
   bambusa,
   scindapsus,
   rhaphidophora,
+  hemianthus,
   microsorum,
   bolbitis,
 ];

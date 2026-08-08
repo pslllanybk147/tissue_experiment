@@ -4,6 +4,7 @@ import { genusById } from "./genera/registry";
 import { resolveManual } from "./resolve";
 import { bolbitisHeudelotiiPack } from "./species/bolbitis-heudelotii";
 import { genericPhilodendronPack } from "./species/generic-philodendron";
+import { hemianthusCallitrichoidesCubaPack } from "./species/hemianthus-callitrichoides-cuba";
 import { javaFernPack } from "./species/java-fern";
 import { pinkPrincessPack } from "./species/pink-princess";
 import { rhaphidophoraTetraspermaVariegataPack } from "./species/rhaphidophora-tetrasperma-variegata";
@@ -21,6 +22,7 @@ export const plantPacks: PlantPack[] = [
   genericPhilodendronPack,
   javaFernPack,
   bolbitisHeudelotiiPack,
+  hemianthusCallitrichoidesCubaPack,
 ];
 
 export function allSlugs(): string[] {
