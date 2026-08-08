@@ -561,6 +561,14 @@ export const manualSources: ManualSourceRecord[] = [
     kind: "technical-guide",
     accessedAt: "2026-08-08",
   },
+  {
+    id: "source-nadcc-media-costa-urtiga-2019",
+    title:
+      "da Costa Urtiga C., de Araújo Silva-Cardoso I.M., Araujo Figueiredo S. (2019). Low sodium isocyanurate concentrations as a substitute to medium autoclaving in plant tissue culture. Plant Cell, Tissue and Organ Culture 139(3): 601-604 (ทดสอบกับเมล็ด Dianthus caryophyllus ในอาหาร MS, ช่วง 0.01-0.04 g/L ไม่มีอาการเป็นพิษและปนเปื้อนต่ำกว่า 5% เข้าถึงได้แค่บทคัดย่อ)",
+    url: "https://doi.org/10.1007/s11240-019-01681-9",
+    kind: "peer-reviewed",
+    accessedAt: "2026-08-08",
+  },
 ];
 
 export function sourceById(id: string): ManualSourceRecord | null {
