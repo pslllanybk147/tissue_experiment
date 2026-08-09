@@ -106,7 +106,7 @@ function blankV2(legacy: EquipmentKit): EquipmentProfileV2 {
       sterilizationMethod: null,
     },
     phone: { model: "ยังไม่ได้บันทึก", available: false },
-    inventory: [],
+    inventory: equipmentItemIds.map((id) => ({ id, quantity: 0, unit: "piece" as const, note: "ยังไม่ได้บันทึกจำนวน" })),
     msRateGPerL: legacy.msLabelRateGPerL,
   };
 }

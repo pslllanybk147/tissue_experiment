@@ -34,6 +34,8 @@ function weakest(statuses: ReadinessStatus[]): ReadinessStatus {
 export function resolveTrialReadiness(profile: EquipmentProfileV2): TrialReadiness {
   const hasChemicalMediumOption = profile.chemicals.bleach.percentWw > 0 || profile.chemicals.nadcc.availableChlorinePercent > 0;
   const selectedMediumMethod = profile.medium.sterilizationMethod;
+  const quantity = (id: EquipmentProfileV2["inventory"][number]["id"]) => profile.inventory.find((item) => item.id === id)?.quantity ?? 0;
+  const hasCuttingTools = quantity("forceps") > 0 && quantity("scissors") > 0 && (quantity("scalpel-narrow") > 0 || quantity("scalpel-wide") > 0);
   const capabilities: ReadinessCapability[] = [
     {
       id: "sterile-medium",
@@ -71,15 +73,19 @@ export function resolveTrialReadiness(profile: EquipmentProfileV2): TrialReadine
       id: "surface-decontam",
       title: "ฟอกผิวชิ้นพืช",
       status: profile.chemicals.bleach.percentWw > 0 && profile.chemicals.nadcc.availableChlorinePercent > 0 ? "experimental" : "blocked",
-      have: `มี Haiter ${profile.chemicals.bleach.percentWw}% w/w และ NaDCC ตามฉลากจริง`,
+      have: profile.chemicals.bleach.percentWw > 0 || profile.chemicals.nadcc.availableChlorinePercent > 0
+        ? `มี Haiter ${profile.chemicals.bleach.percentWw}% w/w และ NaDCC ${profile.chemicals.nadcc.availableChlorinePercent}% ตามฉลาก`
+        : "ยังไม่ได้บันทึกสารสำหรับฟอกผิว",
       missing: "Violin ด่างยังไม่มีค่าที่พิสูจน์ตรงกับของชุดนี้",
       next: "เริ่มจากแขนควบคุมและ T1/T2 ก่อน แล้วบันทึกความเข้มข้น เวลาจริง และอาการเสียหาย",
     },
     {
       id: "sterile-tools",
       title: "คีม กรรไกร และมีด",
-      status: profile.inventory.some((entry) => entry.id === "forceps") ? "experimental" : "blocked",
-      have: `มีเครื่องมือตัด เตาแก๊ส และแอลกอฮอล์ ${profile.chemicals.alcohol.percent}%`,
+      status: hasCuttingTools ? "experimental" : "blocked",
+      have: hasCuttingTools
+        ? `มีคีม กรรไกร มีด เตาแก๊ส และแอลกอฮอล์ ${profile.chemicals.alcohol.percent}%`
+        : "ยังบันทึกคีม กรรไกร หรือมีดไม่ครบ",
       missing: "แอลกอฮอล์ที่มีเป็น 75% ไม่ใช่ 70% และตะเกียงไม่มีเชื้อเพลิง",
       next: "ใช้วิธีต้มเครื่องมือและจุ่มแอลกอฮอล์โดยไม่ใช้เปลวไฟในพื้นที่พลาสติก พร้อมบันทึกวิธีที่ทำจริง",
     },

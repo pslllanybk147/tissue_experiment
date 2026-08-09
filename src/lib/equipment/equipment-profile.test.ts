@@ -20,6 +20,8 @@ describe("normalizeEquipmentProfile", () => {
       msLabelRateGPerL: 4.43,
       msRateGPerL: 4.43,
     });
+    expect(profile.inventory).toHaveLength(25);
+    expect(profile.inventory.find((item) => item.id === "forceps")?.quantity).toBe(0);
   });
 
   it("เก็บค่าจากฉลากและอุปกรณ์ของผู้ใช้ตามที่รายงานจริง", () => {

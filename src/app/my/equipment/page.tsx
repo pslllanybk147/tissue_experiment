@@ -65,6 +65,17 @@ export default function EquipmentPage() {
 
         <ProfileSection profile={profile} onChange={(next) => { setProfile(next); setSaved(""); }} />
 
+        <p style={{ marginTop: "14px" }}>
+          <button
+            type="button"
+            className="pl-chip"
+            onClick={() => { setProfile(structuredClone(USER_REPORTED_PROFILE)); setSaved("เติมค่าจากรายการที่แจ้งไว้แล้ว กรุณาตรวจอีกครั้งก่อนบันทึก"); }}
+            style={{ background: "var(--pl-sunk)", cursor: "pointer", fontSize: "15px", padding: "10px 18px" }}
+          >
+            เติมค่าจากรายการที่แจ้งไว้
+          </button>
+        </p>
+
         <p style={{ marginTop: "16px", display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
           <button
             type="button"
