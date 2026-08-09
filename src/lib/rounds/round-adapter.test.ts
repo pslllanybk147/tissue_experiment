@@ -132,6 +132,30 @@ describe("buildRoundView", () => {
     expect(view.trialArmRole).toBeUndefined();
     expect(view.sterilization).toBeUndefined();
   });
+
+  it("แนบสถานะล็อก T3 เมื่อส่งบริบทของแขนงพี่น้องมาให้", () => {
+    const t1 = { ...lot, id: "lot-t1", trialId: "trial-1", armRole: "t1" as const };
+    const t2 = { ...lot, id: "lot-t2", trialId: "trial-1", armRole: "t2" as const };
+    const t3 = { ...lot, id: "lot-t3", trialId: "trial-1", armRole: "t3" as const };
+    const complete = (trialLot: ExperimentLot) => ({
+      ...run("check-contamination", "Passed", {
+        "container-total": 8,
+        "container-clean": 6,
+        "container-usable": 5,
+      }),
+      id: `run-${trialLot.armRole}`,
+      lotId: trialLot.id,
+    });
+
+    const locked = buildRoundView(t3, [], manual, { trialLots: [t1, t2, t3], trialRuns: [complete(t1)] });
+    const unlocked = buildRoundView(t3, [], manual, {
+      trialLots: [t1, t2, t3],
+      trialRuns: [complete(t1), complete(t2)],
+    });
+
+    expect(locked.t3Eligibility).toMatchObject({ unlocked: false, reason: "missing-results" });
+    expect(unlocked.t3Eligibility).toEqual({ unlocked: true, reason: "evidence-complete", missing: [] });
+  });
 });
 
 describe("newLotInput", () => {

@@ -68,6 +68,16 @@ describe("projectTrialSteps", () => {
     expect(text).not.toMatch(/Haiter|ไฮเตอร์|NaOCl|NaClO|rinse|150|450/);
   });
 
+  it.each(["t1", "t2"] as const)("%s มีช่องผลปนเปื้อนที่ใช้ปลดล็อก T3", (role) => {
+    const step = projectTrialSteps(manual.steps, trialLot(role)).find((item) => item.id === "check-contamination")!;
+
+    expect(step.measurements.map((measurement) => measurement.id)).toEqual(expect.arrayContaining([
+      "container-total",
+      "container-clean",
+      "container-usable",
+    ]));
+  });
+
   it("Control-B เป็น blank workflow เจ็ดขั้นโดยไม่มีภาษาที่สั่งจัดการ explant", () => {
     const projected = projectTrialSteps(manual.steps, trialLot("control-b"));
 

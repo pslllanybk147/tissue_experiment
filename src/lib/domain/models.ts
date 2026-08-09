@@ -251,6 +251,13 @@ export type LotStatus = ExperimentStatus;
  *  ยังไม่ใช่ enum ทั่วไปสำหรับสร้างชุดทดลองเองได้ทุกแบบ แค่พอสำหรับแม่แบบนี้แม่แบบเดียว */
 export type TrialArmRole = "control-a" | "control-b" | "t1" | "t2" | "t3";
 
+export type T3Override = {
+  reason: string;
+  acknowledged: boolean;
+  recordedAt: string;
+  mode: "risk-override" | "demo-only";
+};
+
 export type ExperimentLot = {
   id: string;
   ownerId: string;
@@ -278,6 +285,8 @@ export type ExperimentLot = {
   /** true เฉพาะกระปุกควบคุมที่ไม่มี explant ใช้แยกว่าปนเปื้อนมาจากอาหาร/ภาชนะ ไม่ใช่จาก explant
    *  ตัวแปรนี้ตัดสินว่า Guided Runner ข้ามขั้นที่ต้องมี explant หรือไม่ (ดู round-adapter.ts) */
   isBlank?: boolean;
+  /** บันทึกการยอมรับความเสี่ยงเมื่อผู้ใช้ปลดล็อก T3 ก่อนมีผล T1/T2 ครบ */
+  t3Override?: T3Override;
 };
 
 export type CreateLotInput = Omit<ExperimentLot, "ownerId" | "createdAt" | "updatedAt">;

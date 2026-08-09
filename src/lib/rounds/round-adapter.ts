@@ -8,6 +8,7 @@ import type {
 } from "@/lib/domain/models";
 import type { MediaRecipe, ResolvedManual, ResolvedStep } from "@/lib/manual/types";
 import { projectTrialSteps } from "@/lib/trials/project-trial-steps";
+import { evaluateT3Eligibility, type T3Eligibility } from "@/lib/trials/t3-eligibility";
 
 /** รุ่นของโครงเนื้อหาที่ใช้ตอนบันทึก เก็บไว้เพื่อให้ย้อนดูได้ว่ารอบนั้นเดินตามคู่มือรุ่นไหน */
 export const MANUAL_VERSION_ID = "manual-v1";
@@ -40,6 +41,12 @@ export type RoundView = {
   trialArmRole?: TrialArmRole;
   trialArmLabel?: string;
   sterilization?: LotSterilizationSnapshot;
+  t3Eligibility?: T3Eligibility;
+};
+
+export type RoundTrialContext = {
+  trialLots: ExperimentLot[];
+  trialRuns: ProtocolStepRun[];
 };
 
 const emptyState = (stepId: string): RoundStepState => ({
@@ -54,7 +61,12 @@ const emptyState = (stepId: string): RoundStepState => ({
  * บันทึกที่อ้างขั้นซึ่งไม่มีในคู่มือแล้วจะถูกข้าม เพื่อให้คู่มือที่แก้ลำดับขั้นภายหลัง
  * ไม่ทำให้รอบเก่าเปิดไม่ได้
  */
-export function buildRoundView(lot: ExperimentLot, runs: ProtocolStepRun[], manual: ResolvedManual): RoundView {
+export function buildRoundView(
+  lot: ExperimentLot,
+  runs: ProtocolStepRun[],
+  manual: ResolvedManual,
+  trialContext?: RoundTrialContext,
+): RoundView {
   const byStepId = new Map<string, ProtocolStepRun>();
   for (const run of runs) byStepId.set(run.stepId, run);
 
@@ -90,6 +102,9 @@ export function buildRoundView(lot: ExperimentLot, runs: ProtocolStepRun[], manu
     ...(lot.armRole ? { trialArmRole: lot.armRole } : {}),
     ...(lot.armLabel ? { trialArmLabel: lot.armLabel } : {}),
     ...(lot.sterilization ? { sterilization: lot.sterilization } : {}),
+    ...(lot.armRole === "t3" && trialContext
+      ? { t3Eligibility: evaluateT3Eligibility(trialContext.trialLots, trialContext.trialRuns) }
+      : {}),
   };
 }
 

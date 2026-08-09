@@ -234,6 +234,17 @@ function fixedSterilizeStep(step: ResolvedStep, role: Exclude<TrialArmRole, "con
 }
 
 function projectArmStep(step: ResolvedStep, role: TrialArmRole): ResolvedStep {
+  if (step.id === "check-contamination" && (role === "t1" || role === "t2")) {
+    return {
+      ...cloneStep(step),
+      measurements: [
+        { id: "container-total", label: "จำนวนกระปุกทั้งหมด", unit: "count", required: true, min: 1 },
+        { id: "container-clean", label: "จำนวนกระปุกไม่ติดเชื้อ", unit: "count", required: true, min: 0 },
+        { id: "container-usable", label: "จำนวนที่ยังใช้ได้", unit: "count", required: true, min: 0 },
+      ],
+      evidenceRequirement: "photo-with-caption",
+    };
+  }
   if (step.id !== "sterilize" || role === "control-b") return cloneStep(step);
   return fixedSterilizeStep(step, role);
 }
