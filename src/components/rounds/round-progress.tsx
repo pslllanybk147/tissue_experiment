@@ -27,7 +27,7 @@ export function RoundProgress({ view }: { view: RoundView }) {
 
       <ol style={{ listStyle: "none", margin: "22px 0 0", padding: 0, display: "flex", flexDirection: "column", gap: "12px" }}>
         {view.steps.map((step) => {
-          const number = step.order + 1;
+          const number = step.displayNumber;
           const isCurrent = number === view.currentStepNumber;
           // แสดงชื่อที่ผู้ใช้อ่านออก ไม่ใช่ id ภายในของช่องวัด
           const recorded = step.measurements

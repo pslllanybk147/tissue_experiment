@@ -19,7 +19,11 @@ export type RoundStepState = {
   observedAt?: string;
 };
 
-export type RoundStep = ResolvedStep & { state: RoundStepState };
+/** displayNumber คือตำแหน่งจริงใน view.steps (หลังกรองขั้นของกระปุกเปล่าออกแล้ว) ใช้แทน step.order
+ *  เสมอเมื่อจะแสดงเลขขั้นหรือสร้างลิงก์ /step/N เพราะ step.order มาจากตำแหน่งในคู่มือเต็ม 15 ขั้น
+ *  ก่อนกรอง ถ้ากระปุกเปล่าข้ามสองขั้น step.order จะไม่ตรงกับตำแหน่งจริงในหน้า /step/[step] อีกต่อไป
+ *  (บั๊กที่พบจริง: URL /step/6 ของกระปุกเปล่าเปิดขั้นที่ order บอกว่าเป็น "ขั้นที่ 8") */
+export type RoundStep = ResolvedStep & { state: RoundStepState; displayNumber: number };
 
 export type RoundView = {
   lotId: string;
@@ -62,7 +66,7 @@ export function buildRoundView(lot: ExperimentLot, runs: ProtocolStepRun[], manu
     ? manual.steps.filter((step) => !BLANK_SKIP_STEP_IDS.has(step.id))
     : manual.steps;
 
-  const steps: RoundStep[] = applicableSteps.map((step) => {
+  const steps: RoundStep[] = applicableSteps.map((step, index) => {
     const run = byStepId.get(step.id);
     const state: RoundStepState = run
       ? {
@@ -73,7 +77,7 @@ export function buildRoundView(lot: ExperimentLot, runs: ProtocolStepRun[], manu
           observedAt: run.observedAt,
         }
       : emptyState(step.id);
-    return { ...step, state };
+    return { ...step, state, displayNumber: index + 1 };
   });
 
   const passedCount = steps.filter((step) => step.state.status === "Passed").length;

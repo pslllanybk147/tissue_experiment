@@ -96,6 +96,22 @@ describe("buildRoundView", () => {
     expect(view.steps.some((step) => step.id === "check-contamination")).toBe(true);
   });
 
+  it("displayNumber ของกระปุกเปล่าคือตำแหน่งจริงหลังกรอง ไม่ใช่ order เดิมจากคู่มือเต็ม 15 ขั้น", () => {
+    const blankLot: ExperimentLot = { ...lot, isBlank: true };
+    const view = buildRoundView(blankLot, [], manual);
+
+    // sterilize อยู่ลำดับที่ 8 ในคู่มือเต็ม (order = 7) แต่กระปุกเปล่าข้าม select-explant กับ cut ไปสองขั้น
+    // จึงต้องเป็นขั้นที่ 6 จริงในหน้า /step/[step] ของรอบนี้ ไม่ใช่ขั้นที่ 8 ตาม order เดิม
+    const sterilize = view.steps.find((step) => step.id === "sterilize")!;
+    expect(sterilize.displayNumber).toBe(6);
+    expect(sterilize.order).toBe(7);
+
+    // displayNumber ต้องเรียงต่อเนื่อง 1..N ไม่มีช่องว่าง ไม่งั้นลิงก์ /step/N บางเลขจะไม่ตรงกับขั้นไหนเลย
+    expect(view.steps.map((step) => step.displayNumber)).toEqual(
+      Array.from({ length: view.steps.length }, (_, index) => index + 1),
+    );
+  });
+
   it("รอบที่เป็นแขนงของชุดทดลองพก trialArmRole/trialArmLabel/sterilization ติดไปด้วย", () => {
     const trialLot: ExperimentLot = {
       ...lot,

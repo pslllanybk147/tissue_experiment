@@ -61,7 +61,7 @@ export function StepRunner({
   remembered?: CalibrationEntry | null;
 }) {
   const bracketPlan = buildBracketPlan(step);
-  const number = step.order + 1;
+  const number = step.displayNumber;
   const total = view.steps.length;
   const previous = number > 1 ? number - 1 : null;
   const next = number < total ? number + 1 : null;
