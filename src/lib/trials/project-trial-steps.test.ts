@@ -95,6 +95,13 @@ describe("projectTrialSteps", () => {
 });
 
 describe("ค่าที่ต้องบันทึกจริงของแขน NaDCC", () => {
+  it("ภาพเปรียบเทียบ Haiter กับ NaDCC แสดงเฉพาะ T2 ที่ใช้ทั้งสองสาร", () => {
+    for (const role of ["control-a", "t1", "t2", "t3"] as const) {
+      const sterilize = projectTrialSteps(manual.steps, trialLot(role)).find((step) => step.id === "sterilize")!;
+      expect(sterilize.illustrationId, role).toBe(role === "t2" ? "sterilant-sequence" : "sterilize-timer");
+    }
+  });
+
   it("T2 เก็บ product, batch, actual ppm, volume, rinse count และ final rinse", () => {
     const sterilize = projectTrialSteps(manual.steps, trialLot("t2")).find((step) => step.id === "sterilize")!;
     const ids = sterilize.measurements.map((field) => field.id);

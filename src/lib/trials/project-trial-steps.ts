@@ -271,7 +271,7 @@ function fixedSterilizeStep(step: ResolvedStep, role: Exclude<TrialArmRole, "con
         },
     doses: undefined,
     evidenceRequirement: "one-photo",
-    illustrationId: "sterilant-sequence",
+    illustrationId: role === "t2" ? "sterilant-sequence" : base.illustrationId,
   };
 }
 
