@@ -22,6 +22,7 @@ describe("ReadinessGate", () => {
     const experimentalProfile = {
       ...USER_REPORTED_PROFILE,
       water: { sourcePpm: 15, sterile: true, sterilizationMethod: "นึ่งด้วยหม้ออัดแรงดัน" },
+      medium: { ...USER_REPORTED_PROFILE.medium, sterilizationMethod: "nadcc-chemical" as const },
     };
     const readiness = resolveTrialReadiness(experimentalProfile);
     const unchecked = renderToStaticMarkup(<ReadinessGate loading={false} readiness={readiness} starting={false} confirmed={false} onConfirmed={noop} onStart={noop} />);

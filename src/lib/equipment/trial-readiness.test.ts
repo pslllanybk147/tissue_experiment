@@ -9,6 +9,7 @@ describe("resolveTrialReadiness", () => {
     expect(readiness.overall).toBe("blocked");
     expect(readiness.blockers).toEqual(expect.arrayContaining([
       expect.objectContaining({ id: "sterile-water" }),
+      expect.objectContaining({ id: "sterile-medium" }),
     ]));
     expect(readiness.capabilities.find((item) => item.id === "sterile-water")).toMatchObject({
       status: "blocked",

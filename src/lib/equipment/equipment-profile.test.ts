@@ -38,6 +38,7 @@ describe("normalizeEquipmentProfile", () => {
     expect(profile.containers).toMatchObject({ cultureJar50Ml: 46, glassJar250Ml: 4 });
     expect(profile.workspace).toMatchObject({ sab: true, plasticRoom: true, openFlameFuelAvailable: false });
     expect(profile.phone.model).toBe("Samsung Galaxy S24 FE");
+    expect(profile.medium.sterilizationMethod).toBeNull();
   });
 
   it("มีรายการของชิ้นจริงครบและไม่ตีความของที่ไม่ได้บอกจำนวนว่าไม่มี", () => {

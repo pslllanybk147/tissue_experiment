@@ -33,16 +33,21 @@ function weakest(statuses: ReadinessStatus[]): ReadinessStatus {
 
 export function resolveTrialReadiness(profile: EquipmentProfileV2): TrialReadiness {
   const hasChemicalMediumOption = profile.chemicals.bleach.percentWw > 0 || profile.chemicals.nadcc.availableChlorinePercent > 0;
+  const selectedMediumMethod = profile.medium.sterilizationMethod;
   const capabilities: ReadinessCapability[] = [
     {
       id: "sterile-medium",
       title: "อาหารเลี้ยงเชื้อ",
-      status: hasChemicalMediumOption ? "experimental" : "blocked",
+      status: hasChemicalMediumOption && selectedMediumMethod ? "experimental" : "blocked",
       have: hasChemicalMediumOption
         ? `มี Haiter ${profile.chemicals.bleach.percentWw}% w/w และ NaDCC ${profile.chemicals.nadcc.availableChlorinePercent}%`
         : "ยังไม่พบวิธีฆ่าเชื้ออาหารจากข้อมูลที่บันทึก",
-      missing: "ไม่มีหม้อนึ่งหรือหม้ออัดแรงดัน วิธีใช้สารเคมียังเป็นวิธีทดลองและต้องเลือกให้ชัดก่อนเริ่ม",
-      next: "เลือกวิธีฆ่าเชื้ออาหารหนึ่งวิธี และทำกระปุกเปล่าควบคุมจากอาหารชุดเดียวกัน",
+      missing: selectedMediumMethod
+        ? "ไม่มีหม้อนึ่งหรือหม้ออัดแรงดัน วิธีใช้สารเคมีที่เลือกยังเป็นวิธีทดลอง"
+        : "ยังไม่ได้เลือกว่าจะฆ่าเชื้ออาหารด้วย Haiter หรือ NaDCC",
+      next: selectedMediumMethod
+        ? "ทำกระปุกเปล่าควบคุมจากอาหาร batch เดียวกันและบันทึกค่าที่ใช้จริง"
+        : "เลือกวิธีฆ่าเชื้ออาหารหนึ่งวิธีในหน้าอุปกรณ์ก่อนเริ่ม",
     },
     {
       id: "sterile-water",

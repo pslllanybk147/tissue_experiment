@@ -62,6 +62,7 @@ export type EquipmentProfileV2 = EquipmentKit & {
     baMgPerMl: number;
     ibaMgPerMl: number;
     agarBrand: string;
+    sterilizationMethod: "haiter-chemical" | "nadcc-chemical" | null;
   };
   phone: { model: string; available: boolean };
   inventory: Array<{ id: EquipmentItemId; quantity: number; unit: InventoryUnit; note: string }>;
@@ -102,6 +103,7 @@ function blankV2(legacy: EquipmentKit): EquipmentProfileV2 {
       baMgPerMl: 0,
       ibaMgPerMl: 0,
       agarBrand: "ยังไม่ได้บันทึก",
+      sterilizationMethod: null,
     },
     phone: { model: "ยังไม่ได้บันทึก", available: false },
     inventory: [],
@@ -111,8 +113,10 @@ function blankV2(legacy: EquipmentKit): EquipmentProfileV2 {
 
 export function normalizeEquipmentProfile(value: EquipmentKit | EquipmentProfileV2 | null | undefined): EquipmentProfileV2 {
   if (value && "schemaVersion" in value && value.schemaVersion === 2) {
+    const defaults = blankV2(value);
     return structuredClone({
       ...value,
+      medium: { ...defaults.medium, ...value.medium, sterilizationMethod: value.medium.sterilizationMethod ?? null },
       msLabelRateGPerL: value.msRateGPerL,
       scaleMinimumMg: value.instruments.balanceResolutionG * 1000,
       pipetteMinimumMl: value.instruments.syringeResolutionMl,
@@ -159,6 +163,7 @@ export const USER_REPORTED_PROFILE: EquipmentProfileV2 = {
     baMgPerMl: 1,
     ibaMgPerMl: 1,
     agarBrand: "ตราโทรศัพท์",
+    sterilizationMethod: null,
   },
   phone: { model: "Samsung Galaxy S24 FE", available: true },
   inventory: [

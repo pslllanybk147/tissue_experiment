@@ -124,6 +124,19 @@ export function ProfileSection({ profile, onChange }: { profile: EquipmentProfil
       </Card>
 
       <Card title="วัตถุดิบอาหาร">
+        <p style={{ marginTop: "12px" }}>
+          <label htmlFor="medium-sterilization" style={{ display: "block", fontWeight: 700, marginBottom: "5px" }}>วิธีฆ่าเชื้ออาหารที่จะใช้</label>
+          <select
+            id="medium-sterilization"
+            value={profile.medium.sterilizationMethod ?? ""}
+            onChange={(event) => changed({ ...profile, medium: { ...profile.medium, sterilizationMethod: event.currentTarget.value === "haiter-chemical" ? "haiter-chemical" : event.currentTarget.value === "nadcc-chemical" ? "nadcc-chemical" : null } })}
+            style={inputStyle}
+          >
+            <option value="">ยังไม่ได้เลือก</option>
+            <option value="haiter-chemical">Haiter แบบเคมี · ต้องมีกระปุกเปล่าควบคุม</option>
+            <option value="nadcc-chemical">NaDCC แบบเคมี · ต้องมีกระปุกเปล่าควบคุม</option>
+          </select>
+        </p>
         <FieldGrid>
           <NumberField id="ms-rate" label="MS ตามฉลาก (g/L)" value={profile.medium.msRateGPerL} onValue={(value) => changed({ ...profile, medium: { ...profile.medium, msRateGPerL: value }, msRateGPerL: value, msLabelRateGPerL: value })} />
           <NumberField id="naa-stock" label="NAA stock (mg/mL)" value={profile.medium.naaMgPerMl} onValue={(value) => changed({ ...profile, medium: { ...profile.medium, naaMgPerMl: value } })} />

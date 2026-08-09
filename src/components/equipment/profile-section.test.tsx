@@ -34,4 +34,11 @@ describe("ProfileSection", () => {
     expect(html).toContain("Foggy (ขวด)");
     expect(html).toContain('value="3"');
   });
+
+  it("บังคับให้ผู้ใช้เลือกวิธีฆ่าเชื้ออาหารเองและไม่เลือกแทนล่วงหน้า", () => {
+    expect(html).toContain("วิธีฆ่าเชื้ออาหารที่จะใช้");
+    expect(html).toContain("ยังไม่ได้เลือก");
+    expect(html).not.toContain('<option value="haiter-chemical" selected=""');
+    expect(html).not.toContain('<option value="nadcc-chemical" selected=""');
+  });
 });
