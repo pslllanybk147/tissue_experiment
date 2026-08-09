@@ -67,4 +67,19 @@ describe("projectTrialSteps", () => {
     expect(text).toMatch(/24 ถึง 48 ชั่วโมง/);
     expect(text).not.toMatch(/Haiter|ไฮเตอร์|NaOCl|NaClO|rinse|150|450/);
   });
+
+  it("Control-B เป็น blank workflow เจ็ดขั้นโดยไม่มีภาษาที่สั่งจัดการ explant", () => {
+    const projected = projectTrialSteps(manual.steps, trialLot("control-b"));
+
+    expect(projected.map((step) => step.id)).toEqual([
+      "blank-prepare",
+      "blank-medium",
+      "blank-container",
+      "blank-pour",
+      "blank-seal",
+      "blank-incubate",
+      "blank-observe",
+    ]);
+    expect(JSON.stringify(projected)).not.toMatch(/explant|ชิ้นพืช|ตัดข้อ|ฟอกผิว|วางชิ้น/);
+  });
 });

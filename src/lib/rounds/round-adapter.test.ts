@@ -79,37 +79,37 @@ describe("buildRoundView", () => {
     expect(view.passedCount).toBe(0);
   });
 
-  it("กระปุกเปล่า (isBlank) ข้ามขั้นเลือกและตัด explant เพราะไม่มีชิ้นพืชให้ทำ", () => {
-    const blankLot: ExperimentLot = { ...lot, isBlank: true };
+  it("กระปุกเปล่าใช้ blank workflow เจ็ดขั้นโดยเฉพาะ", () => {
+    const blankLot: ExperimentLot = { ...lot, isBlank: true, armRole: "control-b" };
     const view = buildRoundView(blankLot, [], manual);
 
-    expect(view.steps.some((step) => step.id === "select-explant")).toBe(false);
-    expect(view.steps.some((step) => step.id === "cut")).toBe(false);
-    expect(view.steps).toHaveLength(13);
+    expect(view.steps.map((step) => step.id)).toEqual([
+      "blank-prepare",
+      "blank-medium",
+      "blank-container",
+      "blank-pour",
+      "blank-seal",
+      "blank-incubate",
+      "blank-observe",
+    ]);
   });
 
-  it("กระปุกเปล่ายังต้องผ่านฟอกฆ่าเชื้อและเฝ้าดูปนเปื้อนเหมือนกระปุกอื่น", () => {
-    const blankLot: ExperimentLot = { ...lot, isBlank: true };
+  it("กระปุกเปล่าไม่ฟอกผิวและยังเฝ้าดูการปนเปื้อน", () => {
+    const blankLot: ExperimentLot = { ...lot, isBlank: true, armRole: "control-b" };
     const view = buildRoundView(blankLot, [], manual);
 
-    expect(view.steps.some((step) => step.id === "sterilize")).toBe(true);
-    expect(view.steps.some((step) => step.id === "check-contamination")).toBe(true);
+    expect(view.steps.some((step) => step.id === "sterilize")).toBe(false);
+    expect(view.steps.some((step) => step.id === "blank-observe")).toBe(true);
   });
 
-  it("displayNumber ของกระปุกเปล่าคือตำแหน่งจริงหลังกรอง ไม่ใช่ order เดิมจากคู่มือเต็ม 15 ขั้น", () => {
-    const blankLot: ExperimentLot = { ...lot, isBlank: true };
+  it("displayNumber ของกระปุกเปล่าเรียงต่อเนื่องตาม blank workflow", () => {
+    const blankLot: ExperimentLot = { ...lot, isBlank: true, armRole: "control-b" };
     const view = buildRoundView(blankLot, [], manual);
 
-    // sterilize อยู่ลำดับที่ 8 ในคู่มือเต็ม (order = 7) แต่กระปุกเปล่าข้าม select-explant กับ cut ไปสองขั้น
-    // จึงต้องเป็นขั้นที่ 6 จริงในหน้า /step/[step] ของรอบนี้ ไม่ใช่ขั้นที่ 8 ตาม order เดิม
-    const sterilize = view.steps.find((step) => step.id === "sterilize")!;
-    expect(sterilize.displayNumber).toBe(6);
-    expect(sterilize.order).toBe(7);
-
-    // displayNumber ต้องเรียงต่อเนื่อง 1..N ไม่มีช่องว่าง ไม่งั้นลิงก์ /step/N บางเลขจะไม่ตรงกับขั้นไหนเลย
     expect(view.steps.map((step) => step.displayNumber)).toEqual(
       Array.from({ length: view.steps.length }, (_, index) => index + 1),
     );
+    expect(view.steps.map((step) => step.order)).toEqual([0, 1, 2, 3, 4, 5, 6]);
   });
 
   it("รอบที่เป็นแขนงของชุดทดลองพก trialArmRole/trialArmLabel/sterilization ติดไปด้วย", () => {

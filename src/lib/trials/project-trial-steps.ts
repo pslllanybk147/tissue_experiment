@@ -1,7 +1,122 @@
 import type { ExperimentLot, TrialArmRole } from "@/lib/domain/models";
-import type { EvidenceRef, ResolvedStep } from "@/lib/manual/types";
+import type { EvidenceRef, Measurement, ResolvedStep } from "@/lib/manual/types";
 
-const BLANK_SKIP_STEP_IDS = new Set(["select-explant", "cut"]);
+type BlankStepInput = {
+  id: string;
+  title: string;
+  summary: string;
+  why: string;
+  materials: string[];
+  actions: string[];
+  passCriteria: string[];
+  stopConditions: string[];
+  measurements?: Measurement[];
+  durationMinutes: number;
+};
+
+function blankStep(input: BlankStepInput, order: number): ResolvedStep {
+  return {
+    ...input,
+    safetyNotes: [],
+    measurements: input.measurements ?? [],
+    evidence: {
+      level: "adapted",
+      sourceIds: ["source-merck-media-sterilization"],
+      note: "ประยุกต์หลักควบคุมภาชนะและอาหารเปล่าเพื่อแยกแหล่งการปนเปื้อน",
+    },
+    order,
+    origin: "core",
+  };
+}
+
+function buildBlankSteps(): ResolvedStep[] {
+  const steps: BlankStepInput[] = [
+    {
+      id: "blank-prepare",
+      title: "เตรียมพื้นที่และติดฉลาก",
+      summary: "เตรียมพื้นที่สะอาดและระบุว่าเป็น Control-B",
+      why: "ฉลากช่วยป้องกันการสลับกับกระปุกแขนงอื่น",
+      materials: ["ตู้ SAB", "แอลกอฮอล์สำหรับเช็ดพื้นผิว", "ฉลาก", "ปากกา"],
+      actions: ["เช็ดพื้นผิวด้านในตู้ SAB", "รอให้ละอองแอลกอฮอล์ระเหย", "เขียนรหัส Control-B และวันที่บนฉลาก"],
+      passCriteria: ["พื้นที่แห้งและฉลากอ่านได้"],
+      stopConditions: ["ยังมีละอองแอลกอฮอล์ในอากาศ", "ฉลากอ่านไม่ออก"],
+      durationMinutes: 10,
+    },
+    {
+      id: "blank-medium",
+      title: "เตรียมอาหารชุดเดียวกับแขนงอื่น",
+      summary: "ใช้อาหารจาก batch เดียวกันเพื่อให้เปรียบเทียบได้",
+      why: "ถ้าใช้อาหารคนละ batch จะระบุแหล่งปนเปื้อนได้ยาก",
+      materials: ["อาหาร batch เดียวกับแขนงอื่น", "บันทึกรหัส batch"],
+      actions: ["ตรวจรหัส batch ของอาหาร", "จดรหัส batch ที่ใช้"],
+      passCriteria: ["รหัส batch ตรงกับแขนงอื่น"],
+      stopConditions: ["ไม่ทราบว่าอาหารมาจาก batch ใด"],
+      durationMinutes: 5,
+    },
+    {
+      id: "blank-container",
+      title: "เตรียมกระปุกเปล่า",
+      summary: "ตรวจสภาพกระปุกและฝาก่อนแบ่งอาหาร",
+      why: "รอยแตกหรือฝาที่ปิดไม่สนิททำให้ผลควบคุมใช้ไม่ได้",
+      materials: ["กระปุกเพาะพร้อมฝา"],
+      actions: ["ตรวจว่ากระปุกไม่มีรอยแตก", "ตรวจว่าฝาปิดได้สนิท", "วางกระปุกในพื้นที่สะอาด"],
+      passCriteria: ["กระปุกและฝาสมบูรณ์"],
+      stopConditions: ["กระปุกแตก", "ฝาปิดไม่สนิท"],
+      measurements: [{ id: "blank-container-total", label: "จำนวนกระปุกเปล่า", unit: "count", required: true, min: 1 }],
+      durationMinutes: 5,
+    },
+    {
+      id: "blank-pour",
+      title: "แบ่งอาหารโดยไม่ใส่วัสดุพืช",
+      summary: "แบ่งอาหารลงกระปุกและปล่อยกระปุกว่าง",
+      why: "กระปุกนี้ใช้ตรวจเชื้อจากอาหาร ภาชนะ และขั้นตอนแบ่งอาหาร",
+      materials: ["อาหาร batch ที่บันทึกไว้", "กระปุก Control-B"],
+      actions: ["เปิดฝากระปุกให้น้อยที่สุด", "แบ่งอาหารปริมาตรเดียวกับแขนงอื่น", "ไม่ใส่วัสดุพืชลงในกระปุก"],
+      passCriteria: ["แบ่งอาหารครบและไม่ใส่วัสดุพืช"],
+      stopConditions: ["มีสิ่งอื่นตกลงในกระปุก", "อาหารหกที่ขอบฝา"],
+      durationMinutes: 10,
+    },
+    {
+      id: "blank-seal",
+      title: "ปิดฝาและบันทึก",
+      summary: "ปิดกระปุกทันทีและเก็บภาพเริ่มต้น",
+      why: "ภาพเริ่มต้นช่วยแยกคราบเดิมออกจากเชื้อที่เกิดภายหลัง",
+      materials: ["ฝาที่เข้าคู่กับกระปุก", "โทรศัพท์"],
+      actions: ["ปิดฝาให้สนิท", "ตรวจฉลากอีกครั้ง", "ถ่ายภาพกระปุกหลังปิดฝา"],
+      passCriteria: ["ฝาปิดสนิท ฉลากอ่านได้ และมีภาพเริ่มต้น"],
+      stopConditions: ["ฝาหลวม", "ไม่มีรหัส Control-B บนกระปุก"],
+      durationMinutes: 5,
+    },
+    {
+      id: "blank-incubate",
+      title: "บ่มร่วมกับชุดทดลอง",
+      summary: "วาง Control-B ในสภาพเดียวกับแขนงอื่น",
+      why: "ตำแหน่งและสภาพบ่มที่ต่างกันทำให้เปรียบเทียบไม่ได้",
+      materials: ["พื้นที่บ่มชุดเดียวกับแขนงอื่น"],
+      actions: ["วาง Control-B ในพื้นที่บ่มเดียวกับแขนงอื่น", "จดตำแหน่งที่วาง", "ไม่เปิดฝาระหว่างบ่ม"],
+      passCriteria: ["บันทึกตำแหน่งและไม่เปิดฝา"],
+      stopConditions: ["ฝาเปิดหรือรั่วระหว่างบ่ม"],
+      durationMinutes: 5,
+    },
+    {
+      id: "blank-observe",
+      title: "ตรวจการปนเปื้อน",
+      summary: "ตรวจทุกกระปุกผ่านผนังโดยไม่เปิดฝา",
+      why: "ผลนี้บอกว่าการปนเปื้อนอาจมาจากอาหาร ภาชนะ หรือขั้นตอนแบ่งอาหาร",
+      materials: ["โทรศัพท์", "พื้นที่แยกกระปุกที่มีปัญหา"],
+      actions: ["ตรวจความขุ่น เมือก และเส้นใยโดยไม่เปิดฝา", "ถ่ายภาพกระปุกที่ผิดปกติ", "แยกกระปุกที่ผิดปกติออกจากพื้นที่สะอาด", "จดจำนวนทั้งหมดและจำนวนที่ยังใส"],
+      passCriteria: ["ตรวจและบันทึกครบทุกกระปุก"],
+      stopConditions: ["เปิดฝากระปุกในพื้นที่สะอาด"],
+      measurements: [
+        { id: "container-total", label: "จำนวนกระปุกทั้งหมด", unit: "count", required: true, min: 1 },
+        { id: "container-clean", label: "จำนวนกระปุกที่ยังใส", unit: "count", required: true, min: 0 },
+      ],
+      durationMinutes: 10,
+    },
+  ];
+
+  return steps.map(blankStep);
+}
 
 function cloneStep(step: ResolvedStep): ResolvedStep {
   return {
@@ -120,13 +235,13 @@ function projectArmStep(step: ResolvedStep, role: TrialArmRole): ResolvedStep {
 
 export function projectTrialSteps(steps: ResolvedStep[], lot: ExperimentLot): ResolvedStep[] {
   if (lot.isBlank && !lot.armRole) {
-    return steps.filter((step) => !BLANK_SKIP_STEP_IDS.has(step.id)).map(cloneStep);
+    return buildBlankSteps();
   }
 
   if (!lot.armRole) return steps.map(cloneStep);
 
   if (lot.armRole === "control-b") {
-    return steps.filter((step) => !BLANK_SKIP_STEP_IDS.has(step.id)).map(cloneStep);
+    return buildBlankSteps();
   }
 
   return steps.map((step) => projectArmStep(step, lot.armRole!));
