@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/guide/theme-toggle";
 import { ReadinessGate } from "@/components/trials/readiness-gate";
 import { JarAllocationPanel } from "@/components/trials/jar-allocation-panel";
 import type { TrialArmRole } from "@/lib/domain/models";
+import type { EquipmentProfileV2 } from "@/lib/equipment/equipment-profile";
 import { resolveTrialReadiness, type TrialReadiness } from "@/lib/equipment/trial-readiness";
 import { resolveBySlug } from "@/lib/manual/registry";
 import {
@@ -37,6 +38,7 @@ function CreateTrial() {
   const [starting, setStarting] = useState(false);
   const [failed, setFailed] = useState("");
   const [readiness, setReadiness] = useState<TrialReadiness | null>(null);
+  const [profile, setProfile] = useState<EquipmentProfileV2 | null>(null);
   const [loadingReadiness, setLoadingReadiness] = useState(true);
   const [confirmed, setConfirmed] = useState(false);
   const [jarTotal, setJarTotal] = useState(0);
@@ -49,6 +51,7 @@ function CreateTrial() {
     equipmentRepository.get(ownerId)
       .then((profile) => {
         if (!active) return;
+        setProfile(profile);
         setReadiness(profile ? resolveTrialReadiness(profile) : null);
         if (profile) {
           const allocation = allocateTrialJars(profile.containers.cultureJar50Ml, TRIAL_ROLES, 1);
@@ -80,7 +83,7 @@ function CreateTrial() {
         total: jarTotal,
         reserved: jarReserved,
         allocations: jarAllocations,
-      });
+      }, profile?.rinseWater);
       const lots = await Promise.all(inputs.map((input) => repository.createLot(ownerId, input)));
       const trialId = lots[0]?.trialId;
       if (!trialId) throw new Error("สร้างชุดทดลองไม่สำเร็จ");

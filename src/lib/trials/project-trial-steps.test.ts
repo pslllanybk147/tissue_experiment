@@ -102,15 +102,27 @@ describe("ค่าที่ต้องบันทึกจริงของ�
     }
   });
 
-  it("T2 เก็บ product, batch, actual ppm, volume, rinse count และ final rinse", () => {
+  it("T2 เก็บ product, batch, actual ppm, volume และ rinse count โดยไม่บังคับ final sterile rinse", () => {
     const sterilize = projectTrialSteps(manual.steps, trialLot("t2")).find((step) => step.id === "sterilize")!;
     const ids = sterilize.measurements.map((field) => field.id);
 
     expect(ids).toEqual(expect.arrayContaining([
       "stock-product", "stock-batch", "rinse-product", "rinse-batch", "rinse-actual-ppm",
-      "rinse-stock-volume-ml", "rinse-final-volume-ml", "sterile-rinses", "final-rinse",
+      "rinse-stock-volume-ml", "rinse-final-volume-ml", "sterile-rinses",
     ]));
-    expect(sterilize.measurements.find((field) => field.id === "final-rinse")?.kind).toBe("checkbox");
+    expect(sterilize.measurements.find((field) => field.id === "final-rinse")).toBeUndefined();
+  });
+
+  it.each(["t1", "t2"] as const)("%s ใช้ chlorinated rinse 3 รอบโดยไม่ต้องใช้น้ำปลอดเชื้อในแขนนี้", (role) => {
+    const text = sterilizationText(role);
+    expect(text).toContain("3 รอบ");
+    expect(text).not.toContain("ล้างสารฟอกออกด้วยน้ำปลอดเชื้อ");
+    expect(text).not.toContain("ล้างครั้งสุดท้ายด้วยน้ำปลอดเชื้อ");
+  });
+
+  it("Control-A และ T3 ยังใช้น้ำปลอดเชื้อคนละ protocol", () => {
+    expect(sterilizationText("control-a")).toContain("น้ำปลอดเชื้อ 3 รอบ");
+    expect(sterilizationText("t3")).toContain("น้ำปลอดเชื้อ 3 รอบ");
   });
 
   it("T3 เก็บ actual ppm, volume, ชั่วโมงแช่ และจำนวนรอบล้าง", () => {

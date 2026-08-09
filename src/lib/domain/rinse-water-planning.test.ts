@@ -31,6 +31,7 @@ describe("sterile rinse-water planning", () => {
   it("locks the no-pressure Haiter rinse to 0.03% (300 ppm) independently from the 0.6% explant soak", () => {
     expect(buildLowDoseRinseWaterSnapshot(50)).toEqual({
       method: "low-dose-hypochlorite",
+      status: "planned",
       containerCount: 3,
       volumePerContainerMl: 50,
       preparationVolumeMl: 1000,
@@ -42,6 +43,7 @@ describe("sterile rinse-water planning", () => {
   it("เจือจาก NaDCC เป็นน้ำ rinse ที่คลอรีนออกฤทธิ์เท่ากับ NaClO ที่ 300 ppm ตามหัวข้อ 8 และ 12 ของ new_idea.md", () => {
     expect(buildNaDccRinseWaterSnapshot(50)).toEqual({
       method: "nadcc",
+      status: "planned",
       containerCount: 3,
       volumePerContainerMl: 50,
       preparationVolumeMl: 1000,

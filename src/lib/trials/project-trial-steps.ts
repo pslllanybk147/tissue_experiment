@@ -154,7 +154,6 @@ function cloneStep(step: ResolvedStep): ResolvedStep {
 
 const haiterMaterials = [
   "Haiter 6% w/w",
-  "น้ำปลอดเชื้อสำหรับล้าง",
   "ภาชนะแช่",
   "ตัวจับเวลา",
   "[[surfactant|สารลดแรงตึงผิว]]",
@@ -223,14 +222,10 @@ function fixedSterilizeStep(step: ResolvedStep, role: Exclude<TrialArmRole, "con
     ? ["ครบเวลาแล้วล้างด้วยน้ำปลอดเชื้อ 3 รอบ รอบละประมาณหนึ่งนาที"]
     : role === "t1"
       ? [
-          "ครบเวลาแล้วล้างสารฟอกออกด้วยน้ำปลอดเชื้อ",
-          "ล้างต่อด้วยน้ำ NaClO 300 ppm จำนวน 3 รอบ รอบละประมาณหนึ่งนาที",
-          "ล้างครั้งสุดท้ายด้วยน้ำปลอดเชื้อ",
+          "ครบเวลาแล้วล้างต่อด้วยน้ำ NaClO 300 ppm จำนวน 3 รอบ รอบละประมาณหนึ่งนาที",
         ]
       : [
-          "ครบเวลาแล้วล้างสารฟอกออกด้วยน้ำปลอดเชื้อ",
-          "ล้างต่อด้วยน้ำ NaDCC 300 ppm จำนวน 3 รอบ รอบละประมาณหนึ่งนาที",
-          "ล้างครั้งสุดท้ายด้วยน้ำปลอดเชื้อ",
+          "ครบเวลาแล้วล้างต่อด้วยน้ำ NaDCC 300 ppm จำนวน 3 รอบ รอบละประมาณหนึ่งนาที",
         ];
 
   const rinseFields: Measurement[] = role === "control-a" ? [] : [
@@ -240,11 +235,13 @@ function fixedSterilizeStep(step: ResolvedStep, role: Exclude<TrialArmRole, "con
     { id: "rinse-stock-volume-ml", label: "ปริมาตร stock rinse ที่ตวงจริง", unit: "mL", kind: "number", required: true, min: 0 },
     { id: "rinse-final-volume-ml", label: "ปริมาตรน้ำ rinse รวม", unit: "mL", kind: "number", required: true, min: 1 },
   ];
+  const finalRinseField: Measurement = { id: "final-rinse", label: "ทำ final rinse ด้วยน้ำปลอดเชื้อ", unit: "boolean", kind: "checkbox", required: false };
 
   return {
     ...base,
     materials: [
       ...haiterMaterials,
+      ...(role === "control-a" ? ["น้ำปลอดเชื้อสำหรับล้าง"] : []),
       ...(role === "t1" ? ["น้ำ NaClO 300 ppm"] : role === "t2" ? ["น้ำ NaDCC 300 ppm"] : []),
     ],
     actions: [...haiterActions, ...rinseActions, "จดเวลาและจำนวนรอบที่ทำจริง"],
@@ -252,8 +249,8 @@ function fixedSterilizeStep(step: ResolvedStep, role: Exclude<TrialArmRole, "con
       ...batchFields,
       { id: "sterilize-minutes", label: "เวลาฟอกที่ใช้จริง", unit: "min", kind: "number", required: true, min: 1 },
       ...rinseFields,
-      { id: "sterile-rinses", label: "จำนวนรอบที่ล้างจริง", unit: "count", kind: "number", required: true, min: 1 },
-      { id: "final-rinse", label: "ทำ final rinse ด้วยน้ำปลอดเชื้อ", unit: "boolean", kind: "checkbox", required: role !== "control-a" },
+      { id: "sterile-rinses", label: role === "control-a" ? "จำนวนรอบที่ล้างด้วยน้ำปลอดเชื้อจริง" : "จำนวนรอบที่ล้างด้วยน้ำ rinse จริง", unit: "count", kind: "number", required: true, min: 1 },
+      ...(role === "control-a" ? [finalRinseField] : []),
     ],
     safetyNotes: role === "t2"
       ? base.safetyNotes

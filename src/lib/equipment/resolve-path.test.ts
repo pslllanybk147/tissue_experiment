@@ -41,20 +41,17 @@ describe("resolvePath", () => {
     expect(blockedIds).not.toContain("sterile-water");
   });
 
-  // ไฮเตอร์อย่างเดียวเปิดได้ถึงน้ำปลอดเชื้อแล้ว หลังเพิ่มเส้นทางเติมไฮเตอร์ลงน้ำ
-  // แต่เครื่องมือปลอดเชื้อยังตัน เพราะทุกวิธีของความสามารถนั้นต้องมีแอลกอฮอล์
-  // ซึ่งเป็นช่องว่างจริงที่พบตอนตรวจแบบลงมือทำ ระบบเคยไม่มีความสามารถนี้เลย
-  it("มีแค่ไฮเตอร์ ได้ถึงน้ำปลอดเชื้อแล้ว แต่เครื่องมือยังตัน", () => {
+  it("มีแค่ไฮเตอร์ไม่ทำให้น้ำถูกเรียกว่าน้ำปลอดเชื้อ และเครื่องมือยังตัน", () => {
     const path = resolvePath(kit(["bleach"]));
 
-    expect(path.blocked).toEqual(["sterile-tools"]);
+    expect(path.blocked).toEqual(["sterile-water", "sterile-tools"]);
   });
 
-  it("มีไฮเตอร์กับแอลกอฮอล์ เส้นทางครบโดยไม่ต้องมีหม้อนึ่งเลย", () => {
+  it("มีไฮเตอร์กับแอลกอฮอล์ยังขาดน้ำปลอดเชื้อ แม้มีทางเลือก rinse ทดลอง", () => {
     const path = resolvePath(kit(["bleach", "alcohol-70"]));
 
-    expect(path.blocked).toEqual([]);
-    expect(path.overallLevel).not.toBeNull();
+    expect(path.blocked).toEqual(["sterile-water"]);
+    expect(path.overallLevel).toBeNull();
   });
 
   it("เม็ดคลอรีน NaDCC ใช้แทนไฮเตอร์ในการทำอาหารได้", () => {

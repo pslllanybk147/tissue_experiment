@@ -1,8 +1,22 @@
 import type { ExperimentLot, ExperimentStatus } from "./models";
+import type { RinseWaterSnapshot } from "./models";
 
 type LegacyLot = Partial<ExperimentLot> & { day?: number; protocol?: string };
 const statuses: ExperimentStatus[] = ["Healthy", "Review", "At risk", "Contaminated"];
 const stringValue = (value: unknown, fallback: string) => typeof value === "string" && value.trim() ? value : fallback;
+
+function normalizeRinseWaterSnapshot(value: unknown): RinseWaterSnapshot | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const input = value as Partial<RinseWaterSnapshot>;
+  if (typeof input.method !== "string" || typeof input.volumePerContainerMl !== "number") return undefined;
+  return {
+    ...input,
+    method: input.method as RinseWaterSnapshot["method"],
+    status: input.status === "prepared" ? "prepared" : "planned",
+    containerCount: 3,
+    volumePerContainerMl: input.volumePerContainerMl,
+  };
+}
 
 export function normalizeExperimentLot(input: LegacyLot, now = new Date()): ExperimentLot {
   const day = Number.isFinite(input.day) ? Math.max(0, Math.floor(input.day!)) : 0;
@@ -18,7 +32,14 @@ export function normalizeExperimentLot(input: LegacyLot, now = new Date()): Expe
     ...(input.taxonId ? { taxonId: input.taxonId } : {}),
     ...(input.templateId ? { templateId: input.templateId } : {}),
     ...(input.method ? { method: input.method } : {}),
-    ...(input.sterilization ? { sterilization: input.sterilization } : {}),
+    ...(input.sterilization ? {
+      sterilization: {
+        ...input.sterilization,
+        ...(input.sterilization.rinseWater
+          ? { rinseWater: normalizeRinseWaterSnapshot(input.sterilization.rinseWater) }
+          : {}),
+      },
+    } : {}),
     ...(input.workflowVersion === "v1" || input.workflowVersion === "v2"
       ? { workflowVersion: input.workflowVersion }
       : {}),

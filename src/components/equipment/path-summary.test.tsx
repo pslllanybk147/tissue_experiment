@@ -52,4 +52,15 @@ describe("PathSummary", () => {
     expect(html).toContain("ทำอะไรต่อ");
     expect(html).toContain("น้ำ 15 ppm ยังไม่ใช่น้ำปลอดเชื้อ");
   });
+
+  it("แสดง readiness แยกตามแขนและไม่เรียก rinse ว่าน้ำปลอดเชื้อ", () => {
+    const html = renderToStaticMarkup(<PathSummary readiness={resolveTrialReadiness(USER_REPORTED_PROFILE)} />);
+
+    expect(html).toContain("ความพร้อมแยกตามแขนทดลอง");
+    expect(html).toContain("Control-A");
+    expect(html).toContain("T1");
+    expect(html).toContain("T2");
+    expect(html).toContain("T3");
+    expect(html).toContain("chlorinated rinse");
+  });
 });

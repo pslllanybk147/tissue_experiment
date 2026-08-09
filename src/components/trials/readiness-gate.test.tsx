@@ -23,6 +23,18 @@ describe("ReadinessGate", () => {
       ...USER_REPORTED_PROFILE,
       water: { sourcePpm: 15, sterile: true, sterilizationMethod: "นึ่งด้วยหม้ออัดแรงดัน" },
       medium: { ...USER_REPORTED_PROFILE.medium, sterilizationMethod: "nadcc-chemical" as const },
+      rinseWater: {
+        lowDoseHypochlorite: {
+          method: "low-dose-hypochlorite" as const, status: "prepared" as const, containerCount: 3 as const,
+          volumePerContainerMl: 50, productName: "Haiter", batchOrLot: "H-1", actualChlorinePpm: 300,
+          stockVolumeMl: 5, finalVolumeMl: 1000, preparedAt: "2026-08-09",
+        },
+        nadcc: {
+          method: "nadcc" as const, status: "prepared" as const, containerCount: 3 as const,
+          volumePerContainerMl: 50, productName: "NaDCC", batchOrLot: "N-1", actualChlorinePpm: 300,
+          stockVolumeMl: 1, finalVolumeMl: 1000, preparedAt: "2026-08-09",
+        },
+      },
     };
     const readiness = resolveTrialReadiness(experimentalProfile);
     const unchecked = renderToStaticMarkup(<ReadinessGate loading={false} readiness={readiness} starting={false} confirmed={false} onConfirmed={noop} onStart={noop} />);
@@ -34,5 +46,9 @@ describe("ReadinessGate", () => {
     expect(unchecked.slice(unchecked.lastIndexOf("<button"))).toContain("disabled");
     expect(checked.slice(checked.lastIndexOf("<button"))).not.toContain("disabled");
     expect(starting.slice(starting.lastIndexOf("<button"))).toContain("disabled");
+    expect(unchecked).toContain("Control-A");
+    expect(unchecked).toContain("T1");
+    expect(unchecked).toContain("T2");
+    expect(unchecked).toContain("T3");
   });
 });

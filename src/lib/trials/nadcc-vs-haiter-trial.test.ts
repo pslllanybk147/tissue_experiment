@@ -42,8 +42,42 @@ describe("buildNaDccVsHaiterTrialLotInputs", () => {
 
     expect(t1.sterilization?.rinseWater?.method).toBe("low-dose-hypochlorite");
     expect(t2.sterilization?.rinseWater?.method).toBe("nadcc");
+    expect(t1.sterilization?.rinseWater?.status).toBe("planned");
+    expect(t2.sterilization?.rinseWater?.status).toBe("planned");
     expect(t1.sterilization?.rinseWater?.targetChlorinePercent).toBe(0.03);
     expect(t2.sterilization?.rinseWater?.targetChlorinePercent).toBe(0.03);
+  });
+
+  it("คัดลอกหลักฐาน rinse ที่เตรียมจริงจาก equipment profile ลง lot T1/T2", () => {
+    const inputs = buildNaDccVsHaiterTrialLotInputs(manual, "2026-08-09", 50, undefined, {
+      lowDoseHypochlorite: {
+        method: "low-dose-hypochlorite",
+        status: "prepared",
+        containerCount: 3,
+        volumePerContainerMl: 50,
+        productName: "Haiter",
+        batchOrLot: "H-1",
+        actualChlorinePpm: 300,
+        stockVolumeMl: 5,
+        finalVolumeMl: 1000,
+        preparedAt: "2026-08-09",
+      },
+      nadcc: {
+        method: "nadcc",
+        status: "prepared",
+        containerCount: 3,
+        volumePerContainerMl: 50,
+        productName: "NaDCC",
+        batchOrLot: "N-1",
+        actualChlorinePpm: 300,
+        stockVolumeMl: 1,
+        finalVolumeMl: 1000,
+        preparedAt: "2026-08-09",
+      },
+    });
+
+    expect(inputs.find((input) => input.armRole === "t1")?.sterilization?.rinseWater?.status).toBe("prepared");
+    expect(inputs.find((input) => input.armRole === "t2")?.sterilization?.rinseWater?.batchOrLot).toBe("N-1");
   });
 
   it("T3 ใช้ NaDCC เดี่ยวแทน Haiter ทั้งขั้น จึงไม่มี rinseWater เสริม", () => {

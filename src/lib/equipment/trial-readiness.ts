@@ -1,4 +1,5 @@
 import type { EquipmentProfileV2 } from "./equipment-profile";
+import { resolveTrialArmReadinesses, type TrialArmReadiness } from "@/lib/trials/trial-readiness";
 
 export type ReadinessStatus = "ready" | "experimental" | "blocked" | "unknown";
 export type ReadinessCapabilityId =
@@ -23,6 +24,8 @@ export type TrialReadiness = {
   capabilities: ReadinessCapability[];
   blockers: ReadinessCapability[];
   cautions: string[];
+  arms: TrialArmReadiness[];
+  armBlockers: TrialArmReadiness[];
 };
 
 const statusRank: Record<ReadinessStatus, number> = { ready: 3, experimental: 2, unknown: 1, blocked: 0 };
@@ -99,6 +102,8 @@ export function resolveTrialReadiness(profile: EquipmentProfileV2): TrialReadine
     },
   ];
 
+  const arms = resolveTrialArmReadinesses(profile);
+
   const cautions = [
     "มีตะเกียงแอลกอฮอล์แต่ไม่มีเชื้อเพลิง จึงห้ามนับว่าใช้วิธีเผาเครื่องมือได้",
     "ห้องคลุมพลาสติกและละอองแอลกอฮอล์ติดไฟได้ ห้ามใช้เปลวไฟภายในห้องหรือ SAB",
@@ -106,9 +111,11 @@ export function resolveTrialReadiness(profile: EquipmentProfileV2): TrialReadine
   ];
 
   return {
-    overall: weakest(capabilities.map((item) => item.status)),
+    overall: weakest([...capabilities.map((item) => item.status), ...arms.map((item) => item.status)]),
     capabilities,
     blockers: capabilities.filter((item) => item.status === "blocked"),
     cautions,
+    arms,
+    armBlockers: arms.filter((item) => item.status === "blocked"),
   };
 }

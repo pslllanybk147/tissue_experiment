@@ -41,6 +41,31 @@ describe("normalizeExperimentLot", () => {
     });
   });
 
+  it("treats a legacy rinse snapshot without preparation status as planned", () => {
+    const lot = normalizeExperimentLot({
+      id: "LOT-RINSE-LEGACY",
+      ownerId: "u1",
+      plant: "Violin ด่าง",
+      protocolId: "violin-variegated",
+      protocolTitle: "Violin ด่าง",
+      stage: "sterilize",
+      status: "Healthy",
+      sterilization: {
+        profileId: "haiter-chemical-v1",
+        profileVersion: "1.0.0",
+        method: "haiter-chemical",
+        rinseWater: {
+          method: "nadcc",
+          containerCount: 3,
+          volumePerContainerMl: 50,
+          targetChlorinePercent: 0.03,
+        },
+      },
+    });
+
+    expect(lot.sterilization?.rinseWater?.status).toBe("planned");
+  });
+
   it("preserves the guided workflow version when Firebase reads a v2 lot", () => {
     const lot = normalizeExperimentLot({
       id: "LOT-V2",

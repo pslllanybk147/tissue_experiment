@@ -40,6 +40,7 @@ export function buildLowDoseRinseWaterSnapshot(volumePerContainerMl: number): Ri
   assertVolume(volumePerContainerMl);
   return {
     method: "low-dose-hypochlorite",
+    status: "planned",
     containerCount: 3,
     volumePerContainerMl,
     preparationVolumeMl: 1000,
@@ -55,6 +56,7 @@ export function buildNaDccRinseWaterSnapshot(volumePerContainerMl: number): Rins
   assertVolume(volumePerContainerMl);
   return {
     method: "nadcc",
+    status: "planned",
     containerCount: 3,
     volumePerContainerMl,
     preparationVolumeMl: 1000,

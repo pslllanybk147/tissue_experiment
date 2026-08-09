@@ -36,6 +36,7 @@ describe("normalizeEquipmentProfile", () => {
       tabletCount: 15,
     });
     expect(profile.water).toMatchObject({ sourcePpm: 15, sterile: false, sterilizationMethod: null });
+    expect(profile.rinseWater).toEqual({ lowDoseHypochlorite: null, nadcc: null });
     expect(profile.instruments).toMatchObject({ balanceResolutionG: 0.01, foodScaleResolutionG: 0.1, syringeResolutionMl: 0.1, phMeter: true });
     expect(profile.containers).toMatchObject({ cultureJar50Ml: 46, glassJar250Ml: 4 });
     expect(profile.workspace).toMatchObject({ sab: true, plasticRoom: true, openFlameFuelAvailable: false });

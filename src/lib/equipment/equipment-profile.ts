@@ -1,4 +1,5 @@
 import { defaultKit, type EquipmentKit } from "./resolve-path";
+import type { RinseWaterSnapshot } from "@/lib/domain/models";
 
 export const equipmentItemIds = [
   "forceps",
@@ -46,6 +47,10 @@ export type EquipmentProfileV2 = EquipmentKit & {
     alcohol: { percent: number };
   };
   water: { sourcePpm: number; sterile: boolean; sterilizationMethod: string | null };
+  rinseWater: {
+    lowDoseHypochlorite: RinseWaterSnapshot | null;
+    nadcc: RinseWaterSnapshot | null;
+  };
   instruments: {
     balanceResolutionG: number;
     foodScaleResolutionG: number;
@@ -87,6 +92,7 @@ function blankV2(legacy: EquipmentKit): EquipmentProfileV2 {
       alcohol: { percent: 0 },
     },
     water: { sourcePpm: 0, sterile: false, sterilizationMethod: null },
+    rinseWater: { lowDoseHypochlorite: null, nadcc: null },
     instruments: {
       balanceResolutionG: legacy.scaleMinimumMg / 1000,
       foodScaleResolutionG: 0.1,
@@ -118,6 +124,7 @@ export function normalizeEquipmentProfile(value: EquipmentKit | EquipmentProfile
     const defaults = blankV2(value);
     return structuredClone({
       ...value,
+      rinseWater: { ...defaults.rinseWater, ...value.rinseWater },
       medium: { ...defaults.medium, ...value.medium, sterilizationMethod: value.medium.sterilizationMethod ?? null },
       msLabelRateGPerL: value.msRateGPerL,
       scaleMinimumMg: value.instruments.balanceResolutionG * 1000,
@@ -164,6 +171,7 @@ export const USER_REPORTED_PROFILE: EquipmentProfileV2 = {
     alcohol: { percent: 75 },
   },
   water: { sourcePpm: 15, sterile: false, sterilizationMethod: null },
+  rinseWater: { lowDoseHypochlorite: null, nadcc: null },
   instruments: { balanceResolutionG: 0.01, foodScaleResolutionG: 0.1, syringeResolutionMl: 0.1, phMeter: true },
   containers: { cultureJar50Ml: 46, glassJar250Ml: 4 },
   workspace: { sab: true, plasticRoom: true, openFlameFuelAvailable: false },
