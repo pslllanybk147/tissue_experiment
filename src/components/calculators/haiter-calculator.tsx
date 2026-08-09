@@ -29,14 +29,17 @@ function tryPlan(input: HaiterAutoInput): Attempt<HaiterAutoResult> {
 
 export function HaiterCalculator({
   initialInput,
+  initialLabelBasis,
 }: {
   /** ตั้งค่าเริ่มต้นจากอุปกรณ์ของผู้ใช้ (minimumMeasurableMl) และใช้ในเทสต์ */
   initialInput?: Partial<HaiterAutoInput>;
+  /** ถ้าโปรไฟล์มีฉลาก 6% w/w ให้เปิดหน้าด้วยหน่วยนี้ ไม่บังคับให้ผู้ใช้จำได้เอง */
+  initialLabelBasis?: LabelBasis;
 }) {
   const merged = { ...defaultInput, ...initialInput };
   const [sourcePercent, setSourcePercent] = useState(merged.sourcePercent);
   // ฉลากบอกได้สองแบบและไม่เท่ากัน ต้องแปลงเป็น w/v ก่อนเข้าสูตรทุกครั้ง
-  const [labelBasis, setLabelBasis] = useState<LabelBasis>("w/v");
+  const [labelBasis, setLabelBasis] = useState<LabelBasis>(initialLabelBasis ?? "w/v");
   const effectiveSourcePercent = useMemo(() => {
     try {
       return toWeightPerVolumePercent(sourcePercent, labelBasis);

@@ -37,10 +37,16 @@ export type EvidenceRef = {
   sourcePages?: Record<string, string>;
 };
 
+export type MediaIngredientUnit = "×" | "g/L" | "mg/L" | "mM" | "µM";
+
 export type MediaIngredient = {
   name: string;
   amountPerLiter: number;
-  unit: "×" | "g/L" | "mg/L";
+  unit: MediaIngredientUnit;
+  /** ใช้กับหน่วย × เท่านั้น เพื่อบอกว่าควรอ่านอัตราฉลากจากฐานใด */
+  base?: "MS" | "BCD";
+  /** จำเป็นเมื่อหน่วยเป็น mM หรือ µM เพื่อแปลงเป็นมวลที่ต้องชั่ง */
+  molecularWeightGPerMol?: number;
   note?: string;
 };
 

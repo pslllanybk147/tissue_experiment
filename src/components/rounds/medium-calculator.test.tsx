@@ -46,4 +46,20 @@ describe("MediumCalculator", () => {
     expect(html).toContain("ชั่งไม่ได้");
     expect(html).toContain("น้ำยาแม่");
   });
+
+  it("แสดงระดับหลักฐานและช่วงต้านการดำพร้อมปริมาณตาม batch", () => {
+    const html = renderToStaticMarkup(<MediumCalculator recipes={recipes} initialRecipeId="multiplication" />);
+
+    expect(html).toContain("ระดับหลักฐาน");
+    expect(html).toContain("ถ้าเจอชิ้นพืชดำ");
+    expect(html).toContain("วิตามินซี");
+    expect(html).toContain("กรดซิตริก");
+  });
+
+  it("ไม่แอบใช้สูตรแรกแทนสูตรออกรากเมื่อคู่มือยังไม่มีสูตรราก", () => {
+    const html = renderToStaticMarkup(<MediumCalculator recipes={recipes} initialRecipeId="rooting-missing" />);
+
+    expect(html).toContain("ยังไม่มีสูตรอาหารของขั้นนี้ในระบบ");
+    expect(html).not.toContain("MS basal salts");
+  });
 });

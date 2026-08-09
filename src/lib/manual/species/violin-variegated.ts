@@ -201,7 +201,7 @@ export const violinVariegatedPack: PlantPack = {
   mediaRecipes: [
     {
       id: "establishment",
-      title: "ระยะตั้งต้น",
+      title: "ระยะตั้งต้น (ชุดควบคุมทดลอง)",
       pH: "5.7 ถึง 5.8",
       ingredients: [
         { name: "MS basal salts", amountPerLiter: 1, unit: "×" },
@@ -213,7 +213,7 @@ export const violinVariegatedPack: PlantPack = {
         sourceIds: [],
         searchedAt: searchLog.searchedAt,
         searchQueries: searchLog.searchQueries,
-        note: "ไม่มีงานตรงพันธุ์รายงานสูตรตั้งต้นก่อนใส่ฮอร์โมน สูตรนี้เป็นอาหารพื้นฐานทั่วไป",
+        note: "ยังไม่มีงานตรงพันธุ์ที่รายงานการตั้งต้นจากชิ้นพืชของ Violin และงานของพันธุ์ใกล้เคียงเริ่มจากเนื้อเยื่อที่อยู่ในขวดแล้ว สูตรนี้จึงเป็นชุดควบคุมทดลองที่ไม่ใส่ฮอร์โมน ไม่ใช่ค่าที่วิจัยยืนยันว่าดีที่สุด",
       },
     },
     {

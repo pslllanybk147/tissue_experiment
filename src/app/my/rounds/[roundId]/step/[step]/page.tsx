@@ -257,7 +257,15 @@ export default function RoundStepPage() {
               step={current}
               onSave={save}
               photos={{ observationId: evidenceObservationId, media, canAttach, reason: attachReason, onUploaded }}
-              tools={{ scaleMinimumMg: kit.scaleMinimumMg, pipetteMinimumMl: kit.pipetteMinimumMl, msLabelRateGPerL: kit.msLabelRateGPerL }}
+              tools={{
+                scaleMinimumMg: kit.scaleMinimumMg,
+                pipetteMinimumMl: kit.pipetteMinimumMl,
+                msLabelRateGPerL: kit.msLabelRateGPerL,
+                bcdLabelRateGPerL: kit.bcdLabelRateGPerL,
+                naaStockMgPerMl: kit.naaStockMgPerMl,
+                baStockMgPerMl: kit.baStockMgPerMl,
+                ibaStockMgPerMl: kit.ibaStockMgPerMl,
+              }}
               remembered={remembered}
               locked={Boolean(view.t3Eligibility && !view.t3Eligibility.unlocked)}
               lockReason="T3 ยังถูกล็อก รอผล T1 และ T2 ให้ครบ หรือยืนยันความเสี่ยงก่อน"

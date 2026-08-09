@@ -139,9 +139,9 @@ export function ProfileSection({ profile, onChange }: { profile: EquipmentProfil
         </p>
         <FieldGrid>
           <NumberField id="ms-rate" label="MS ตามฉลาก (g/L)" value={profile.medium.msRateGPerL} onValue={(value) => changed({ ...profile, medium: { ...profile.medium, msRateGPerL: value }, msRateGPerL: value, msLabelRateGPerL: value })} />
-          <NumberField id="naa-stock" label="NAA stock (mg/mL)" value={profile.medium.naaMgPerMl} onValue={(value) => changed({ ...profile, medium: { ...profile.medium, naaMgPerMl: value } })} />
-          <NumberField id="ba-stock" label="BA stock (mg/mL)" value={profile.medium.baMgPerMl} onValue={(value) => changed({ ...profile, medium: { ...profile.medium, baMgPerMl: value } })} />
-          <NumberField id="iba-stock" label="IBA stock (mg/mL)" value={profile.medium.ibaMgPerMl} onValue={(value) => changed({ ...profile, medium: { ...profile.medium, ibaMgPerMl: value } })} />
+          <NumberField id="naa-stock" label="NAA stock (mg/mL)" value={profile.medium.naaMgPerMl} onValue={(value) => changed({ ...profile, medium: { ...profile.medium, naaMgPerMl: value }, naaStockMgPerMl: value })} />
+          <NumberField id="ba-stock" label="BA stock (mg/mL)" value={profile.medium.baMgPerMl} onValue={(value) => changed({ ...profile, medium: { ...profile.medium, baMgPerMl: value }, baStockMgPerMl: value })} />
+          <NumberField id="iba-stock" label="IBA stock (mg/mL)" value={profile.medium.ibaMgPerMl} onValue={(value) => changed({ ...profile, medium: { ...profile.medium, ibaMgPerMl: value }, ibaStockMgPerMl: value })} />
         </FieldGrid>
         <p className="pl-lede" style={{ marginTop: "10px" }}>น้ำตาลทรายขาวเกรดบริโภค · pH up/down · ผงวุ้น{profile.medium.agarBrand}</p>
       </Card>
