@@ -518,7 +518,10 @@
 }
 
 .pl-term-word {
-  display: inline;
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  vertical-align: middle;
   cursor: pointer;
   border-bottom: 2px dotted var(--pl-leaf);
   list-style: none;
