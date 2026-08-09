@@ -3,16 +3,17 @@
 import Link from "next/link";
 import type { TrialReadiness } from "@/lib/equipment/trial-readiness";
 
-export function ReadinessGate({ loading, readiness, starting, confirmed, onConfirmed, onStart }: {
+export function ReadinessGate({ loading, readiness, starting, confirmed, onConfirmed, onStart, additionalBlocker = "" }: {
   loading: boolean;
   readiness: TrialReadiness | null;
   starting: boolean;
   confirmed: boolean;
   onConfirmed: (confirmed: boolean) => void;
   onStart: () => void;
+  additionalBlocker?: string;
 }) {
   const experimental = readiness?.overall === "experimental";
-  const canStart = !loading && Boolean(readiness) && (readiness?.overall === "ready" || (experimental && confirmed));
+  const canStart = !loading && !additionalBlocker && Boolean(readiness) && (readiness?.overall === "ready" || (experimental && confirmed));
 
   return (
     <section className="pl-card" style={{ marginTop: "18px", background: readiness?.overall === "blocked" ? "var(--pl-stop)" : "var(--pl-sunk)" }}>
@@ -44,6 +45,8 @@ export function ReadinessGate({ loading, readiness, starting, confirmed, onConfi
       ) : null}
 
       {readiness?.overall === "ready" ? <p className="pl-lede" style={{ marginTop: "8px" }}>อุปกรณ์และวิธีหลักพร้อมสำหรับเริ่มชุดทดลอง</p> : null}
+
+      {additionalBlocker ? <p className="pl-card" role="alert" style={{ marginTop: "12px", background: "var(--pl-stop)" }}>{additionalBlocker}</p> : null}
 
       <button
         type="button"

@@ -288,6 +288,9 @@ export type ExperimentLot = {
   isBlank?: boolean;
   /** บันทึกการยอมรับความเสี่ยงเมื่อผู้ใช้ปลดล็อก T3 ก่อนมีผล T1/T2 ครบ */
   t3Override?: T3Override;
+  /** จำนวนภาชนะที่กันไว้ให้แขนนี้ ณ ตอนสร้างชุดทดลอง ไม่เปลี่ยนตาม inventory ภายหลัง */
+  plannedContainerCount?: number;
+  trialContainerPlan?: { total: number; reserved: number };
 };
 
 export type CreateLotInput = Omit<ExperimentLot, "ownerId" | "createdAt" | "updatedAt">;

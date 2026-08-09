@@ -86,6 +86,7 @@ export function buildNaDccVsHaiterTrialLotInputs(
   manual: ResolvedManual,
   startedAt: string,
   volumePerContainerMl = 50,
+  containerPlan?: { total: number; reserved: number; allocations: Partial<Record<TrialArmRole, number>> },
 ): CreateLotInput[] {
   const trialId = buildTrialId();
 
@@ -107,6 +108,10 @@ export function buildNaDccVsHaiterTrialLotInputs(
       armLabel: arm.label,
       isBlank: arm.isBlank,
       templateId: NADCC_VS_HAITER_TRIAL_TEMPLATE_ID,
+      ...(containerPlan ? {
+        plannedContainerCount: containerPlan.allocations[arm.armRole] ?? 0,
+        trialContainerPlan: { total: containerPlan.total, reserved: containerPlan.reserved },
+      } : {}),
       ...(sterilization ? { sterilization } : {}),
     };
   });

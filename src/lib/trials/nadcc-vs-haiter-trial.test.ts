@@ -56,3 +56,13 @@ describe("buildNaDccVsHaiterTrialLotInputs", () => {
     expect(t3.isBlank).toBe(false);
   });
 });
+
+it("snapshot จำนวนกระปุกจาก design เดียวกันลงทุกแขน", () => {
+  const allocations = { "control-a": 9, "control-b": 9, t1: 9, t2: 9, t3: 9 } as const;
+  const lots = buildNaDccVsHaiterTrialLotInputs(manual, "2026-08-09", 50, { total: 46, reserved: 1, allocations });
+
+  expect(lots.map((lot) => [lot.armRole, lot.plannedContainerCount])).toEqual([
+    ["control-a", 9], ["control-b", 9], ["t1", 9], ["t2", 9], ["t3", 9],
+  ]);
+  expect(lots.every((lot) => lot.trialContainerPlan?.total === 46 && lot.trialContainerPlan.reserved === 1)).toBe(true);
+});

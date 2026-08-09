@@ -7,6 +7,8 @@ import { useAuth } from "@/components/auth/auth-provider";
 import { GuideShell } from "@/components/guide/guide-shell";
 import { ThemeToggle } from "@/components/guide/theme-toggle";
 import { ReadinessGate } from "@/components/trials/readiness-gate";
+import { JarAllocationPanel } from "@/components/trials/jar-allocation-panel";
+import type { TrialArmRole } from "@/lib/domain/models";
 import { resolveTrialReadiness, type TrialReadiness } from "@/lib/equipment/trial-readiness";
 import { resolveBySlug } from "@/lib/manual/registry";
 import {
@@ -14,12 +16,15 @@ import {
   T3_RISK_NOTE,
   buildNaDccVsHaiterTrialLotInputs,
 } from "@/lib/trials/nadcc-vs-haiter-trial";
+import { allocateTrialJars } from "@/lib/trials/jar-allocation";
 import { getExperimentRepository } from "@/lib/repositories/experiment-repository-factory";
 import { getEquipmentRepository } from "@/lib/repositories/equipment-repository-factory";
 
 // เนื้อหาทดลอง NaDCC vs Haiter (new_idea.md หัวข้อ 15) มี doses["sterilize.dose.nadcc"] ให้ทดสอบช่วงจริง
 // ในระบบแค่พันธุ์เดียวตอนนี้ จึงล็อกไว้ที่พันธุ์นี้ก่อน ไม่ใช่เพราะแม่แบบผูกกับพันธุ์นี้ถาวร
 const TARGET_SLUG = "violin-variegated";
+const TRIAL_ROLES = ["control-a", "control-b", "t1", "t2", "t3"] as const;
+const EMPTY_ALLOCATION: Record<TrialArmRole, number> = { "control-a": 0, "control-b": 0, t1: 0, t2: 0, t3: 0 };
 
 function CreateTrial() {
   const router = useRouter();
@@ -34,6 +39,9 @@ function CreateTrial() {
   const [readiness, setReadiness] = useState<TrialReadiness | null>(null);
   const [loadingReadiness, setLoadingReadiness] = useState(true);
   const [confirmed, setConfirmed] = useState(false);
+  const [jarTotal, setJarTotal] = useState(0);
+  const [jarReserved, setJarReserved] = useState(1);
+  const [jarAllocations, setJarAllocations] = useState<Record<TrialArmRole, number>>(EMPTY_ALLOCATION);
 
   useEffect(() => {
     if (!["demo", "authenticated"].includes(session.status)) return;
@@ -42,6 +50,12 @@ function CreateTrial() {
       .then((profile) => {
         if (!active) return;
         setReadiness(profile ? resolveTrialReadiness(profile) : null);
+        if (profile) {
+          const allocation = allocateTrialJars(profile.containers.cultureJar50Ml, TRIAL_ROLES, 1);
+          setJarTotal(profile.containers.cultureJar50Ml);
+          setJarReserved(allocation.reserved);
+          setJarAllocations(allocation.allocations);
+        }
         setLoadingReadiness(false);
       })
       .catch((error: unknown) => {
@@ -55,12 +69,18 @@ function CreateTrial() {
 
   async function start() {
     const allowed = readiness?.overall === "ready" || (readiness?.overall === "experimental" && confirmed);
-    if (!manual || starting || !allowed) return;
+    const jarUsed = Object.values(jarAllocations).reduce((sum, value) => sum + value, 0) + jarReserved;
+    const jarsValid = jarUsed <= jarTotal && jarReserved >= 0 && Object.values(jarAllocations).every((value) => Number.isInteger(value) && value > 0);
+    if (!manual || starting || !allowed || !jarsValid) return;
     setStarting(true);
     setFailed("");
     try {
       const startedAt = new Date().toISOString().slice(0, 10);
-      const inputs = buildNaDccVsHaiterTrialLotInputs(manual, startedAt);
+      const inputs = buildNaDccVsHaiterTrialLotInputs(manual, startedAt, 50, {
+        total: jarTotal,
+        reserved: jarReserved,
+        allocations: jarAllocations,
+      });
       const lots = await Promise.all(inputs.map((input) => repository.createLot(ownerId, input)));
       const trialId = lots[0]?.trialId;
       if (!trialId) throw new Error("สร้างชุดทดลองไม่สำเร็จ");
@@ -107,6 +127,16 @@ function CreateTrial() {
         </p>
       ) : null}
 
+      {jarTotal > 0 ? (
+        <JarAllocationPanel
+          total={jarTotal}
+          reserved={jarReserved}
+          allocations={jarAllocations}
+          onReserved={setJarReserved}
+          onAllocation={(role, value) => setJarAllocations((current) => ({ ...current, [role]: value }))}
+        />
+      ) : null}
+
       <ReadinessGate
         loading={loadingReadiness}
         readiness={readiness}
@@ -114,6 +144,13 @@ function CreateTrial() {
         confirmed={confirmed}
         onConfirmed={setConfirmed}
         onStart={() => void start()}
+        additionalBlocker={(() => {
+          if (jarTotal === 0) return "ยังไม่มีจำนวนกระปุกเพาะในหน้าอุปกรณ์";
+          const used = Object.values(jarAllocations).reduce((sum, value) => sum + value, 0) + jarReserved;
+          if (used > jarTotal) return `จัดสรร ${used} ใบ แต่มีจริง ${jarTotal} ใบ`;
+          if (Object.values(jarAllocations).some((value) => !Number.isInteger(value) || value <= 0)) return "ทุกแขนต้องมีกระปุกเป็นจำนวนเต็มอย่างน้อย 1 ใบ";
+          return "";
+        })()}
       />
     </GuideShell>
   );
