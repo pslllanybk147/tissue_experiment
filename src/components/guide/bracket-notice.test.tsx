@@ -96,4 +96,14 @@ describe("กล่องบอกว่าต้องทดสอบช่ว�
     expect(html).toContain("เปิดเครื่องคำนวณ");
     expect(html).toContain("NaDCC");
   });
+
+  it("durationMin ต้น-ปลายเท่ากัน (เช่นน้ำ rinse 1 นาทีเป๊ะ) ไม่แสดงเป็น 'X ถึง X' ที่อ่านเหมือนพิมพ์ผิด", () => {
+    const oneMinuteRinse: ResolvedStep = {
+      ...base,
+      doses: { "sterilize.dose.nadcc": { ...dose, durationMin: [1, 1], method: "nadcc" } },
+    };
+    const html = withProvider(oneMinuteRinse);
+    expect(html).toContain("แช่นาน 1 นาที");
+    expect(html).not.toContain("1 ถึง 1");
+  });
 });

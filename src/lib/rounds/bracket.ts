@@ -26,6 +26,12 @@ function round2(value: number): number {
   return Math.round(value * 100) / 100;
 }
 
+/** durationMin บางรายการต้น-ปลายเท่ากัน (เช่น [1, 1] แปลว่า "1 นาทีเป๊ะ" ไม่ใช่ช่วง)
+ *  เขียนเป็น "1 ถึง 1 นาที" ตรง ๆ อ่านแล้วดูเหมือนพิมพ์ผิด ต้องยุบเหลือค่าเดียวเมื่อต้น-ปลายเท่ากัน */
+export function formatDurationMinRange([low, high]: [number, number]): string {
+  return low === high ? `${low}` : `${low} ถึง ${high}`;
+}
+
 /** คืนแผนทดสอบเมื่อขั้นนั้นมีค่าช่วงและยังไม่มีงานตรงพันธุ์
  *  ขั้นที่มีงานตรงพันธุ์แล้วไม่ต้องให้ผู้ใช้ทดลองเอง */
 export function buildBracketPlan(step: ResolvedStep): BracketPlan | null {

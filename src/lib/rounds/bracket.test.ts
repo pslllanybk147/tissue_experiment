@@ -6,6 +6,7 @@ import {
   bracketKey,
   buildBracketPlan,
   chooseBracketWinner,
+  formatDurationMinRange,
   jarsPerArmKey,
   validateBracket,
   type BracketResult,
@@ -172,5 +173,15 @@ describe("การตรวจตัวเลขที่ขัดกันเ�
 
   it("คำเตือนบอกว่าเป็นชุดไหน", () => {
     expect(validateBracket([arm("c", 2, 3, 3, 9)], 3)[0]).toContain("C");
+  });
+});
+
+describe("formatDurationMinRange", () => {
+  it("ต้น-ปลายต่างกันแสดงเป็นช่วง", () => {
+    expect(formatDurationMinRange([10, 20])).toBe("10 ถึง 20");
+  });
+
+  it("ต้น-ปลายเท่ากันยุบเหลือค่าเดียว ไม่ใช่ 'X ถึง X' ที่อ่านเหมือนพิมพ์ผิด", () => {
+    expect(formatDurationMinRange([1, 1])).toBe("1");
   });
 });
