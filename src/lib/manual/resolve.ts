@@ -17,6 +17,82 @@ function beginnerActionLines(actions: string[]): string[] {
     .filter(Boolean));
 }
 
+function mediaExecutionInstructions(pack: PlantPack) {
+  const recipeReference = pack.mediaRecipes
+    .map((recipe) => `${recipe.title}: pH ${recipe.pH}`)
+    .join(" · ");
+  const recipeNames = pack.mediaRecipes.map((recipe) => recipe.title).join(" / ");
+
+  return [
+    {
+      label: "เลือกสูตรและคำนวณ batch",
+      action: "เลือกสูตรอาหารที่จะทำในเครื่องคำนวณด้านล่าง แล้วกรอกจำนวนกระปุก ปริมาตรต่อกระปุก และค่าความละเอียดของเครื่องชั่ง/การตวง",
+      quantity: `สูตรที่เลือกได้: ${recipeNames}`,
+      completion: "เครื่องคำนวณแสดงปริมาตรรวมและปริมาณส่วนผสมของสูตรที่เลือกแล้ว",
+      next: "ใช้ตัวเลขจากผลคำนวณในข้อถัดไป ห้ามกะปริมาณเอง",
+    },
+    {
+      label: "ตรวจ pH meter",
+      action: "ตรวจวันคาลิเบรต pH meter ถ้าเกินหนึ่งเดือนหรือจำไม่ได้ ให้คาลิเบรตใหม่ก่อนวัด",
+      materials: ["pH meter", "สารละลายคาลิเบรตตามคู่มือเครื่อง"],
+      completion: "pH meter พร้อมใช้งานและอ่านค่าได้คงที่",
+    },
+    {
+      label: "วัดน้ำก่อนผสม",
+      action: "วัดค่า ppm ของน้ำที่จะใช้ แล้วจดค่าจริงไว้ในบันทึกรอบ",
+      materials: ["น้ำที่จะใช้ผสมอาหาร", "เครื่องวัด ppm"],
+      completion: "มีค่า ppm และวันที่วัดบันทึกไว้",
+    },
+    {
+      label: "ละลายส่วนผสมหลัก",
+      action: "ตวงน้ำตามปริมาตรรวมจากเครื่องคำนวณ ค่อย ๆ ละลาย MS basal salts แล้วน้ำตาลให้ใสก่อนเติมส่วนผสมถัดไป",
+      quantity: "ใช้ปริมาณ MS basal salts และน้ำตาลจากผลคำนวณของสูตรที่เลือก",
+      completion: "สารละลายใส ไม่มีผง MS หรือน้ำตาลตกค้างที่ก้นภาชนะ",
+    },
+    {
+      label: "เติมน้ำยาแม่",
+      action: "ตวงฮอร์โมนจากน้ำยาแม่ตามผลคำนวณ แล้วเติมลงในสารละลาย ห้ามชั่งผงฮอร์โมนเอง",
+      materials: ["น้ำยาแม่ฮอร์โมนที่มีฉลากความเข้มข้น", "syringe หรืออุปกรณ์ตวงที่ละเอียดพอ"],
+      quantity: "ใช้ปริมาตรน้ำยาแม่ที่เครื่องคำนวณแสดงจริงของสูตรที่เลือก",
+      completion: "เติมน้ำยาแม่ครบตามรายการและจด stock/ปริมาตรที่ใช้จริง",
+    },
+    {
+      label: "ปรับ pH",
+      action: "วัด pH ของสารละลาย แล้วปรับ pH ให้ตรงกับค่าเป้าหมายของสูตรที่เลือก",
+      quantity: recipeReference,
+      materials: ["pH meter", "สารละลาย pH up/down"],
+      completion: `ค่า pH อยู่ตรงกับสูตรที่เลือก (${recipeReference}) ก่อนใส่วุ้น`,
+      next: "เมื่อ pH ถึงเป้าหมายแล้วจึงใส่ผงวุ้น",
+    },
+    {
+      label: "เติมผงวุ้น",
+      action: "ชั่งผงวุ้นตามผลคำนวณ เติมหลังปรับ pH แล้วคนให้กระจายตัว",
+      quantity: "ใช้ปริมาณ Agar จากผลคำนวณของสูตรที่เลือก",
+      completion: "ผงวุ้นกระจายทั่วสารละลาย ไม่มีผงจับเป็นก้อน",
+    },
+    {
+      label: "แบ่งและติดป้าย",
+      action: "แบ่งอาหารลงกระปุกตามปริมาตรต่อกระปุกที่กรอกไว้ แล้วติดป้ายรหัสรอบ/สูตรให้ครบทุกกระปุก",
+      quantity: "ใช้จำนวนกระปุกและ mL ต่อกระปุกตามค่าที่กรอกในเครื่องคำนวณ",
+      completion: "กระปุกทุกใบมีป้ายอ่านได้และปริมาตรใกล้เคียงกัน",
+    },
+    {
+      label: "ฆ่าเชื้ออาหารด้วยวิธีมาตรฐาน",
+      action: "นึ่งกระปุกอาหารด้วยหม้อนึ่งที่ 121°C ความดัน 15 psi แล้วเริ่มจับเวลาเมื่อถึงอุณหภูมิ/ความดันเป้าหมาย",
+      container: "หม้อนึ่ง",
+      durationLabel: "15–20 นาที",
+      completion: "ครบเวลาแล้ว ปล่อยความดันลงตามคู่มือหม้อนึ่งก่อนเปิด",
+      next: "ปล่อยให้อาหารเย็นและเซ็ตตัวก่อนนำไปใช้",
+    },
+    {
+      label: "ทางเลือก NaDCC",
+      action: "หากจะทดลองใช้ NaDCC แทนการนึ่ง ให้หยุดที่การเตรียมอาหารหลักก่อน แล้วเปิดเครื่องคำนวณ NaDCC แยกต่างหากและบันทึกว่าเป็นแขนทดลอง ไม่ใช่ขั้นบังคับของสูตรหลัก",
+      tone: "warning" as const,
+      completion: "มีการระบุแขนทดลองและปริมาณที่คำนวณจากฉลากจริงก่อนใช้",
+    },
+  ];
+}
+
 /** ประกอบคู่มือโดยทับค่าจากบนลงล่าง core → form → genus → species
  *  ชั้นล่างชนะเสมอ และฟิลด์ที่ชั้นล่างไม่พูดถึงจะตกทอดจากชั้นบนมาเอง
  *
@@ -77,13 +153,17 @@ export function resolveManual(pack: PlantPack, context: ResolveContext): Resolve
       origin,
     };
     const actions = beginnerActionLines(resolved.actions);
+    const executionInstructions = resolved.executionInstructions
+      ?? (stepId === "prep-media" && pack.mediaRecipes.length > 0
+        ? mediaExecutionInstructions(pack)
+        : actions.map((action, actionIndex) => ({
+          label: `ข้อ ${actionIndex + 1}`,
+          action,
+        })));
     return {
       ...resolved,
       actions,
-      executionInstructions: resolved.executionInstructions ?? actions.map((action, actionIndex) => ({
-        label: `ข้อ ${actionIndex + 1}`,
-        action,
-      })),
+      executionInstructions,
     };
   });
 

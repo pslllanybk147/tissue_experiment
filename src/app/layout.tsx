@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import localFont from "next/font/local";
 import { Geist, Geist_Mono, IBM_Plex_Sans_Thai, Noto_Sans_Thai } from "next/font/google";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { ThemeScript } from "@/components/guide/theme-script";
@@ -13,6 +14,11 @@ const plexSansThai = IBM_Plex_Sans_Thai({
   subsets: ["thai", "latin"],
   weight: ["400", "600", "700"],
 });
+const torsilp = localFont({
+  src: "../../public/fonts/torsilp/TorsilpThamnganMangThoe.ttf",
+  variable: "--font-torsilp",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Plantlover Lab",
@@ -20,7 +26,7 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const fontVars = [geistSans, geistMono, notoSansThai, plexSansThai]
+  const fontVars = [geistSans, geistMono, notoSansThai, plexSansThai, torsilp]
     .map((font) => font.variable)
     .join(" ");
   return (
