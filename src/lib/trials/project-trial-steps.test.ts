@@ -59,6 +59,32 @@ describe("projectTrialSteps", () => {
     expect(text).not.toMatch(/150|450|24 ถึง 48 ชั่วโมง/);
   });
 
+  it("T2 ให้คำสั่งปฏิบัติที่มีป้ายภาชนะ ปริมาตร และเวลาแยกเป็นข้อ", () => {
+    const step = projectTrialSteps(manual.steps, trialLot("t2")).find((item) => item.id === "sterilize")!;
+    const instructions = step.executionInstructions ?? [];
+
+    expect(instructions.map((item) => item.container)).toEqual(expect.arrayContaining(["S", "R1", "R2", "R3"]));
+    expect(instructions.filter((item) => /^R[123]$/.test(item.container ?? ""))).toHaveLength(3);
+    expect(instructions.filter((item) => /^R[123]$/.test(item.container ?? "")).every((item) => item.durationMinutes === 1)).toBe(true);
+    expect(instructions.find((item) => item.container === "R1")?.quantity).toContain("50 mL");
+    expect(instructions.map((item) => `${item.label} ${item.action}`).join(" ")).toContain("น้ำล้างคลอรีนต่ำ 300 ppm");
+  });
+
+  it("ใช้ปริมาตรน้ำล้างจากรอบจริง ไม่ยึด 50 mL เมื่อรอบตั้งค่าไว้ต่างกัน", () => {
+    const lot = {
+      ...trialLot("t2"),
+      sterilization: {
+        profileId: "haiter-chemical-v1",
+        profileVersion: "1.0.0",
+        method: "haiter-chemical" as const,
+        rinseWater: { method: "nadcc" as const, containerCount: 3 as const, volumePerContainerMl: 75 },
+      },
+    };
+    const step = projectTrialSteps(manual.steps, lot).find((item) => item.id === "sterilize")!;
+
+    expect(step.executionInstructions?.find((item) => item.container === "R1")?.quantity).toContain("75 mL");
+  });
+
   it("T3 แสดง NaDCC soak 300 ppm 24–48 ชั่วโมงโดยไม่มี Haiter, NaOCl หรือ rinse เสริม", () => {
     const text = sterilizationText("t3");
 
@@ -123,6 +149,14 @@ describe("ค่าที่ต้องบันทึกจริงของ�
   it("Control-A และ T3 ยังใช้น้ำปลอดเชื้อคนละ protocol", () => {
     expect(sterilizationText("control-a")).toContain("น้ำปลอดเชื้อ 3 รอบ");
     expect(sterilizationText("t3")).toContain("น้ำปลอดเชื้อ 3 รอบ");
+  });
+
+  it("Control-A มีเส้นทางล้างน้ำปลอดเชื้อและไม่มีคำว่าน้ำ rinse คลอรีนต่ำ", () => {
+    const step = projectTrialSteps(manual.steps, trialLot("control-a")).find((item) => item.id === "sterilize")!;
+    const instructions = step.executionInstructions ?? [];
+
+    expect(instructions.find((item) => item.container === "R1")?.action).toContain("น้ำปลอดเชื้อ");
+    expect(instructions.map((item) => item.action).join(" ")).not.toContain("น้ำล้างคลอรีนต่ำ");
   });
 
   it("T3 เก็บ actual ppm, volume, ชั่วโมงแช่ และจำนวนรอบล้าง", () => {

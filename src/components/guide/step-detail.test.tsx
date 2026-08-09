@@ -74,6 +74,14 @@ describe("StepDetail", () => {
     expect(without).not.toContain("จะทำอาหารเท่าไหร่");
   });
 
+  it("ขั้นฟอกมีเครื่องคำนวณปริมาณ Haiter อยู่ในหน้าปฏิบัติเดียวกัน", () => {
+    const html = renderStep(sterilize);
+
+    expect(html).toContain("ไฮเตอร์ / สารฟอกฆ่าเชื้อ");
+    expect(html).toContain("ความเข้มข้นบนฉลากขวด");
+    expect(html).toContain("ปริมาณที่ต้องใช้จะแสดงในเครื่องคำนวณ");
+  });
+
   it("ไม่มีปุ่มย้อนกลับที่ขั้นแรก และไม่มีปุ่มถัดไปที่ขั้นสุดท้าย", () => {
     const firstHtml = renderStep(first);
     const lastHtml = renderStep(last);

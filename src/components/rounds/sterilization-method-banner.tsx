@@ -11,7 +11,7 @@ export function SterilizationMethodBanner({ sterilization }: { sterilization: Lo
     return (
       <div className="pl-card" style={{ background: "var(--pl-stop)", marginTop: "18px" }}>
         <p className="pl-mono" style={{ color: "var(--pl-ink-2)" }}>แขนงนี้ข้ามขั้น Haiter ทั้งขั้น</p>
-        <p className="pl-lede" style={{ marginTop: "8px" }}>
+        <div className="pl-lede" style={{ marginTop: "8px" }}>
           <RichText
             source={
               "ขั้นตอนด้านล่างเขียนไว้สำหรับ Haiter ไม่ใช้กับแขนงนี้ ให้แช่ชิ้นพืชใน[[nadcc|NaDCC]] เจือจางให้ได้คลอรีนออกฤทธิ์ " +
@@ -20,7 +20,7 @@ export function SterilizationMethodBanner({ sterilization }: { sterilization: Lo
               "ทิ้งไปเลยได้ไหม ไม่ใช่การเสริม rinse หลัง Haiter แบบ T1/T2"
             }
           />
-        </p>
+        </div>
       </div>
     );
   }
@@ -28,15 +28,15 @@ export function SterilizationMethodBanner({ sterilization }: { sterilization: Lo
   const rinseMethod = sterilization.rinseWater?.method;
   if (rinseMethod === "low-dose-hypochlorite" || rinseMethod === "nadcc") {
     const termId = rinseMethod === "nadcc" ? "nadcc" : "";
+    const volume = sterilization.rinseWater?.volumePerContainerMl ?? 50;
+    const product = rinseMethod === "nadcc" ? "NaDCC" : "NaClO";
     return (
       <div className="pl-card" style={{ background: "var(--pl-sunk)", marginTop: "18px" }}>
-        <p className="pl-mono" style={{ color: "var(--pl-ink-2)" }}>แขนงนี้ใช้น้ำ rinse เพิ่มเติมหลังฟอก</p>
+        <p className="pl-mono" style={{ color: "var(--pl-ink-2)" }}>ขั้นทดลองเสริมหลังฟอก</p>
         <p className="pl-lede" style={{ marginTop: "8px" }}>
-          {rinseMethod === "nadcc" ? (
-            <RichText source={`หลังครบเวลาฟอกแล้ว ให้ล้างชิ้นพืชต่ออีก 3 รอบ รอบละประมาณหนึ่งนาที ด้วยน้ำ rinse [[${termId}|NaDCC]] เจือจางที่ 300 ppm ตาม protocol ทดลองนี้ ไม่ต้องเติม final rinse ด้วยน้ำปลอดเชื้อธรรมดา`} />
-          ) : (
-            "หลังครบเวลาฟอกแล้ว ให้ล้างชิ้นพืชต่ออีก 3 รอบ รอบละประมาณหนึ่งนาที ด้วยน้ำ rinse NaClO เจือจางที่ 300 ppm ตาม protocol ทดลองนี้ ไม่ต้องเติม final rinse ด้วยน้ำปลอดเชื้อธรรมดา"
-          )}
+          หลังครบเวลาฟอกแล้ว ให้ล้างชิ้นพืชใน R1–R3 ภาชนะละ {volume} mL รอบละ 1 นาที ด้วยน้ำล้างคลอรีนต่ำ {product} 300 ppm
+          {rinseMethod === "nadcc" ? <RichText source={` ([[${termId}|NaDCC]])`} /> : null}
+          น้ำนี้ไม่ใช่น้ำปลอดเชื้อและใช้เฉพาะแขนทดลองนี้ ไม่ต้องเติม final rinse ด้วยน้ำปลอดเชื้อธรรมดา
         </p>
       </div>
     );

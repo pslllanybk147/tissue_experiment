@@ -32,8 +32,10 @@ describe("SterilizationMethodBanner", () => {
       />,
     );
 
-    expect(html).toContain("ใช้น้ำ rinse เพิ่มเติมหลังฟอก");
+    expect(html).toContain("ขั้นทดลองเสริมหลังฟอก");
     expect(html).toContain("NaDCC");
+    expect(html).toContain("R1–R3");
+    expect(html).toContain("ไม่ใช่น้ำปลอดเชื้อ");
   });
 
   it("แสดงข้อความ rinse เสริมเมื่อมี rinseWater แบบ NaClO", () => {
@@ -49,6 +51,7 @@ describe("SterilizationMethodBanner", () => {
     );
 
     expect(html).toContain("NaClO");
+    expect(html).toContain("R1–R3");
   });
 
   it("ไม่แสดงอะไรสำหรับ Control-A ที่มี sterilization แต่ไม่มี rinseWater พิเศษ", () => {

@@ -65,6 +65,36 @@ describe("resolveManual", () => {
     expect(sterilize?.origin).toBe("override");
   });
 
+  it("รักษาคำสั่งปฏิบัติแบบมี metadata ผ่านการ resolve", () => {
+    const manual = resolveManual(
+      {
+        ...basePack,
+        overrides: {
+          sterilize: {
+            executionInstructions: [
+              {
+                label: "เตรียมภาชนะ S",
+                action: "วางกระปุก S ไว้ด้านซ้ายของพื้นที่ทำงาน",
+                container: "S",
+                completion: "กระปุก S มีป้ายตรงกับ protocol",
+              },
+            ],
+          },
+        },
+      },
+      { library },
+    );
+
+    expect(manual.steps.find((item) => item.id === "sterilize")?.executionInstructions).toEqual([
+      {
+        label: "เตรียมภาชนะ S",
+        action: "วางกระปุก S ไว้ด้านซ้ายของพื้นที่ทำงาน",
+        container: "S",
+        completion: "กระปุก S มีป้ายตรงกับ protocol",
+      },
+    ]);
+  });
+
   it("ใช้ขั้นที่แผ่นเสริมเขียนเองได้ และทำเครื่องหมายว่ามาจาก pack", () => {
     const manual = resolveManual(
       {

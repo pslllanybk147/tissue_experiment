@@ -1,4 +1,4 @@
-import type { ExperimentLot, TrialArmRole } from "@/lib/domain/models";
+import type { ExperimentLot, RinseWaterSnapshot, TrialArmRole } from "@/lib/domain/models";
 import type { EvidenceRef, Measurement, ResolvedStep } from "@/lib/manual/types";
 
 type BlankStepInput = {
@@ -175,7 +175,11 @@ const haiterEvidence: EvidenceRef = {
   note: "ช่วง Haiter เป็นจุดตั้งต้นระดับวงศ์และต้องบันทึกค่าที่ใช้จริง",
 };
 
-function fixedSterilizeStep(step: ResolvedStep, role: Exclude<TrialArmRole, "control-b">): ResolvedStep {
+function fixedSterilizeStep(
+  step: ResolvedStep,
+  role: Exclude<TrialArmRole, "control-b">,
+  rinseWater?: RinseWaterSnapshot,
+): ResolvedStep {
   const base = cloneStep(step);
 
   const batchFields: Measurement[] = [
@@ -187,6 +191,29 @@ function fixedSterilizeStep(step: ResolvedStep, role: Exclude<TrialArmRole, "con
   ];
 
   if (role === "t3") {
+    const executionInstructions = [
+      {
+        label: "เตรียมภาชนะ S",
+        action: "ติดป้ายกระปุก S ว่า NaDCC 300 ppm และวางไว้ในพื้นที่ทำงาน",
+        quantity: "เตรียมสารละลายให้มีคลอรีนออกฤทธิ์ 300 ppm ตามค่าที่ระบบคำนวณจากฉลากจริง",
+        container: "S",
+        completion: "กระปุกมีป้ายและสารละลายถูกเตรียมตาม batch ที่บันทึกไว้",
+      },
+      {
+        label: "แช่ชิ้นพืชใน S",
+        action: "ใส่ชิ้นพืชให้จมทั้งหมดในสารละลาย S แล้วเริ่มจับเวลา",
+        container: "S",
+        durationLabel: "24 ถึง 48 ชั่วโมง",
+        completion: "ครบเวลาที่เลือกแล้วและจดเวลาจริงไว้",
+      },
+      {
+        label: "ล้างหลังแช่",
+        action: "ย้ายชิ้นพืชลงภาชนะ R1, R2 และ R3 ตามลำดับ ใช้น้ำปลอดเชื้อภาชนะละหนึ่งรอบ",
+        quantity: "R1–R3 ภาชนะละ 50 mL",
+        container: "R1 → R2 → R3",
+        completion: "ล้างครบ 3 รอบแล้ว ไม่เติมน้ำล้างคลอรีนต่ำเพิ่ม",
+      },
+    ];
     return {
       ...base,
       summary: "แช่ชิ้นพืชด้วย NaDCC เดี่ยว แล้วล้างออกด้วยน้ำปลอดเชื้อ",
@@ -199,6 +226,7 @@ function fixedSterilizeStep(step: ResolvedStep, role: Exclude<TrialArmRole, "con
         "ครบเวลาแล้วล้างด้วยน้ำปลอดเชื้อ 3 รอบ",
         "จดความเข้มข้น เวลา และจำนวนรอบที่ทำจริง",
       ],
+      executionInstructions,
       passCriteria: ["ล้างครบตามจำนวนรอบที่จด", "เนื้อเยื่อยังไม่ขาวซีดหรือเปื่อย"],
       safetyNotes: ["สวมถุงมือและแว่นตา", "ห้ามผสม NaDCC กับกรด แอมโมเนีย หรือแอลกอฮอล์"],
       measurements: [
@@ -226,7 +254,47 @@ function fixedSterilizeStep(step: ResolvedStep, role: Exclude<TrialArmRole, "con
         ]
       : [
           "ครบเวลาแล้วล้างต่อด้วยน้ำ NaDCC 300 ppm จำนวน 3 รอบ รอบละประมาณหนึ่งนาที",
-        ];
+      ];
+  const rinseName = role === "control-a" ? "น้ำปลอดเชื้อ" : role === "t1" ? "น้ำล้างคลอรีนต่ำ 300 ppm จาก NaClO" : "น้ำล้างคลอรีนต่ำ 300 ppm จาก NaDCC";
+  const rinseVolume = rinseWater?.volumePerContainerMl ?? 50;
+  const executionInstructions = [
+    {
+      label: "เตรียมและติดป้ายภาชนะ",
+      action: "วางกระปุก S สำหรับฟอก และกระปุก R1, R2, R3 สำหรับล้างตามลำดับบนพื้นที่ทำงาน",
+      quantity: `S 1 ใบ · R1–R3 ภาชนะละ ${rinseVolume} mL`,
+      container: "S · R1 · R2 · R3",
+      completion: "ป้ายทุกใบอ่านได้และวางเรียงจาก S ไป R3",
+    },
+    {
+      label: "เตรียมน้ำยาฟอก",
+      action: "เตรียม Haiter ตามค่าที่ระบบคำนวณจากฉลากจริง แล้วเทสารละลายลงใน S",
+      quantity: "คลอรีนออกฤทธิ์จุดตั้งต้น 1.0% · ใช้ปริมาณจากเครื่องคำนวณ ไม่ต้องคำนวณเอง",
+      container: "S",
+      completion: "สารละลายอยู่ใน S และชิ้นพืชจะจมได้ทั้งหมด",
+    },
+    {
+      label: "ฟอกและเริ่มจับเวลา",
+      action: "ใส่ชิ้นพืชลงใน S ให้จมทั้งหมด แล้วเริ่มจับเวลาหลังใส่ชิ้นสุดท้าย",
+      container: "S",
+      durationMinutes: 12,
+      completion: "ครบ 12 นาทีและชิ้นพืชยังไม่ขาวซีดหรือเปื่อย",
+    },
+    {
+      label: "เขย่าเบา ๆ ระหว่างฟอก",
+      action: "เขย่าหรือหมุน S เบา ๆ เป็นระยะ เพื่อให้สารละลายสัมผัสผิวชิ้นพืชทั่วถึง",
+      container: "S",
+      durationMinutes: 12,
+      completion: "ทำต่อเนื่องจนหมดเวลาฟอก โดยไม่เขย่าแรง",
+    },
+    ...[1, 2, 3].map((round) => ({
+      label: `ล้างรอบที่ ${round}`,
+      action: `เทสารละลายจากรอบก่อนทิ้ง แล้วล้างชิ้นพืชด้วย${rinseName}ใน R${round}`,
+      quantity: `ภาชนะละ ${rinseVolume} mL`,
+      container: `R${round}`,
+      durationMinutes: 1,
+      completion: `ครบ 1 นาทีแล้วเทน้ำจาก R${round} ทิ้ง${round === 3 ? " และไปขั้นตัดแต่ง" : " ก่อนย้ายไปรอบถัดไป"}`,
+    })),
+  ];
 
   const rinseFields: Measurement[] = role === "control-a" ? [] : [
     { id: "rinse-product", label: "ผลิตภัณฑ์ที่ใช้ทำน้ำ rinse", unit: "text", kind: "text", required: true },
@@ -245,6 +313,7 @@ function fixedSterilizeStep(step: ResolvedStep, role: Exclude<TrialArmRole, "con
       ...(role === "t1" ? ["น้ำ NaClO 300 ppm"] : role === "t2" ? ["น้ำ NaDCC 300 ppm"] : []),
     ],
     actions: [...haiterActions, ...rinseActions, "จดเวลาและจำนวนรอบที่ทำจริง"],
+    executionInstructions,
     measurements: [
       ...batchFields,
       { id: "sterilize-minutes", label: "เวลาฟอกที่ใช้จริง", unit: "min", kind: "number", required: true, min: 1 },
@@ -272,7 +341,7 @@ function fixedSterilizeStep(step: ResolvedStep, role: Exclude<TrialArmRole, "con
   };
 }
 
-function projectArmStep(step: ResolvedStep, role: TrialArmRole): ResolvedStep {
+function projectArmStep(step: ResolvedStep, role: TrialArmRole, lot: ExperimentLot): ResolvedStep {
   if (step.id === "check-contamination" && (role === "t1" || role === "t2")) {
     return {
       ...cloneStep(step),
@@ -298,7 +367,7 @@ function projectArmStep(step: ResolvedStep, role: TrialArmRole): ResolvedStep {
     };
   }
   if (step.id !== "sterilize" || role === "control-b") return cloneStep(step);
-  return fixedSterilizeStep(step, role);
+  return fixedSterilizeStep(step, role, lot.sterilization?.rinseWater);
 }
 
 export function projectTrialSteps(steps: ResolvedStep[], lot: ExperimentLot): ResolvedStep[] {
@@ -312,5 +381,5 @@ export function projectTrialSteps(steps: ResolvedStep[], lot: ExperimentLot): Re
     return buildBlankSteps();
   }
 
-  return steps.map((step) => projectArmStep(step, lot.armRole!));
+  return steps.map((step) => projectArmStep(step, lot.armRole!, lot));
 }

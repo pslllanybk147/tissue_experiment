@@ -23,6 +23,21 @@ export type Measurement = {
   max?: number;
 };
 
+/** คำสั่งปฏิบัติที่แยกสิ่งที่ต้องทำออกจากปริมาณ ภาชนะ เวลา และเกณฑ์เสร็จ
+ * เพื่อให้มือใหม่ทำตามได้โดยไม่ต้องตีความจากย่อหน้าคำอธิบาย */
+export type ExecutionInstruction = {
+  label: string;
+  action: string;
+  materials?: string[];
+  quantity?: string;
+  container?: string;
+  durationMinutes?: number;
+  durationLabel?: string;
+  completion?: string;
+  next?: string;
+  tone?: "normal" | "warning" | "stop";
+};
+
 export type EvidenceRef = {
   level: EvidenceLevel;
   sourceIds: string[];
@@ -86,6 +101,7 @@ export type ManualStepDef = {
   why: string;
   materials: string[];
   actions: string[];
+  executionInstructions?: ExecutionInstruction[];
   passCriteria: string[];
   stopConditions: string[];
   safetyNotes: string[];
