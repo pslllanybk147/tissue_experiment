@@ -99,4 +99,15 @@ describe("manual registry", () => {
     expect(packBySlug("ไม่มีต้นนี้")).toBeNull();
     expect(resolveBySlug("ไม่มีต้นนี้")).toBeNull();
   });
+
+  it.each(allSlugs())("%s แสดงค่า pH ของสูตรจริงในคำสั่งเตรียมอาหาร", (slug) => {
+    const manual = resolveBySlug(slug)!;
+    const prepMedia = manual.steps.find((step) => step.id === "prep-media");
+    const instructions = prepMedia?.executionInstructions ?? [];
+    const phInstruction = instructions.find((item) => item.label === "ปรับ pH");
+
+    expect(phInstruction?.action).toContain("ปรับ pH ให้ตรงกับค่าเป้าหมายของสูตรที่เลือก");
+    expect(phInstruction?.quantity).toContain("pH");
+    expect(instructions.map((item) => item.action).join(" ")).not.toContain("ช่วงของสูตร");
+  });
 });

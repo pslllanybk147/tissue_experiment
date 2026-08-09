@@ -55,6 +55,46 @@ describe("resolveManual", () => {
     ]);
   });
 
+  it("สร้างคำสั่งเตรียมอาหารพร้อมค่า pH จริงของสูตรใน pack", () => {
+    const manual = resolveManual(
+      {
+        ...basePack,
+        sequence: ["prep-media"],
+        mediaRecipes: [
+          {
+            id: "establishment",
+            title: "ระยะตั้งต้น",
+            pH: "5.7 ถึง 5.8",
+            ingredients: [],
+            evidence: { level: "unsupported", sourceIds: [], searchedAt: "2026-08-09", searchQueries: ["test"] },
+          },
+          {
+            id: "rooting",
+            title: "ระยะออกราก",
+            pH: "6.5",
+            ingredients: [],
+            evidence: { level: "unsupported", sourceIds: [], searchedAt: "2026-08-09", searchQueries: ["test"] },
+          },
+        ],
+      },
+      {
+        library: {
+          ...library,
+          "prep-media": {
+            ...step("prep-media", "ทำอาหารและเตรียมของ"),
+          },
+        },
+      },
+    );
+
+    const instructions = manual.steps[0].executionInstructions ?? [];
+    const phInstruction = instructions.find((item) => item.label === "ปรับ pH");
+    expect(phInstruction?.action).toContain("ปรับ pH ให้ตรงกับค่าเป้าหมายของสูตรที่เลือก");
+    expect(phInstruction?.quantity).toContain("ระยะตั้งต้น: pH 5.7 ถึง 5.8");
+    expect(phInstruction?.quantity).toContain("ระยะออกราก: pH 6.5");
+    expect(instructions.map((item) => item.action).join(" ")).not.toContain("ช่วงของสูตร");
+  });
+
   it("ถอดขั้นที่ไม่อยู่ใน sequence ออก", () => {
     const manual = resolveManual({ ...basePack, sequence: ["receive", "sterilize"] }, { library });
 

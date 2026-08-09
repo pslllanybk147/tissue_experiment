@@ -189,7 +189,7 @@ button { cursor: pointer; }
 
 /* Zero-knowledge + senior-friendly Design B */
 :root {
-  --font-thai-ui: var(--font-thai), "Noto Sans Thai", "Leelawadee UI", Tahoma, sans-serif;
+  --font-thai-ui: var(--font-torsilp), var(--font-thai), "Noto Sans Thai", "Leelawadee UI", Tahoma, sans-serif;
   --font-metadata: var(--font-geist-mono), monospace;
   --text-body: 1.125rem;
   --text-label: 1rem;
