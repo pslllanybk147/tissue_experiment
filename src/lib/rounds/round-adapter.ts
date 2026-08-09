@@ -7,6 +7,7 @@ import type {
   TrialArmRole,
 } from "@/lib/domain/models";
 import type { MediaRecipe, ResolvedManual, ResolvedStep } from "@/lib/manual/types";
+import { projectTrialSteps } from "@/lib/trials/project-trial-steps";
 
 /** รุ่นของโครงเนื้อหาที่ใช้ตอนบันทึก เก็บไว้เพื่อให้ย้อนดูได้ว่ารอบนั้นเดินตามคู่มือรุ่นไหน */
 export const MANUAL_VERSION_ID = "manual-v1";
@@ -48,11 +49,6 @@ const emptyState = (stepId: string): RoundStepState => ({
   measurements: {},
 });
 
-/** กระปุกควบคุมแบบไม่มี explant (Control-B ของชุดทดลองเปรียบเทียบ) ไม่ต้องเลือกหรือตัด explant
- *  เพราะไม่มีชิ้นพืชให้ทำ แต่ยังต้องผ่านฟอกฆ่าเชื้อ ลงอาหาร และเฝ้าดูปนเปื้อนเหมือนกระปุกอื่น
- *  เพราะนั่นคือจุดประสงค์ของกระปุกเปล่า คือแยกว่าปนเปื้อนมาจากอาหาร/ภาชนะ ไม่ใช่จาก explant */
-const BLANK_SKIP_STEP_IDS = new Set(["select-explant", "cut"]);
-
 /**
  * ประกอบมุมมองของรอบเพาะจาก lot ที่เก็บไว้ บวกบันทึกรายขั้น บวกคู่มือที่ resolve แล้ว
  * บันทึกที่อ้างขั้นซึ่งไม่มีในคู่มือแล้วจะถูกข้าม เพื่อให้คู่มือที่แก้ลำดับขั้นภายหลัง
@@ -62,9 +58,7 @@ export function buildRoundView(lot: ExperimentLot, runs: ProtocolStepRun[], manu
   const byStepId = new Map<string, ProtocolStepRun>();
   for (const run of runs) byStepId.set(run.stepId, run);
 
-  const applicableSteps = lot.isBlank
-    ? manual.steps.filter((step) => !BLANK_SKIP_STEP_IDS.has(step.id))
-    : manual.steps;
+  const applicableSteps = projectTrialSteps(manual.steps, lot);
 
   const steps: RoundStep[] = applicableSteps.map((step, index) => {
     const run = byStepId.get(step.id);
