@@ -45,6 +45,11 @@ export function T3LockPanel({
         <p className="pl-meta" style={{ marginTop: "6px" }}>
           {eligibility.reason === "override" ? "ปลดล็อกจากการยืนยันความเสี่ยง" : "มีผล T1 และ T2 ครบแล้ว"}
         </p>
+        {demoMode ? (
+          <p className="pl-mono" style={{ marginTop: "8px" }}>
+            demo-only · ทดสอบหน้าจอได้ แต่ไม่ถูกนับเป็นผลทดลองจริง
+          </p>
+        ) : null}
       </section>
     );
   }

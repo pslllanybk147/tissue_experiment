@@ -69,6 +69,15 @@ describe("buildTrialOverview", () => {
     expect(overview[0].methodLabel).toBe("NaDCC เดี่ยว 300 ppm นาน 24-48 ชม. (แทน Haiter ทั้งขั้น)");
   });
 
+  it("Control-B อธิบาย blank workflow โดยไม่อ้างการฟอกผิวด้วย Haiter", () => {
+    const overview = buildTrialOverview([
+      lot({ id: "lot-cb", armRole: "control-b", armLabel: "Control-B", isBlank: true, stage: "blank-prepare" }),
+    ], new Map());
+
+    expect(overview[0].methodLabel).toBe("Blank control · อาหารและกระปุกเปล่า ไม่มีการฟอกผิว");
+    expect(overview[0].stage).toBe("blank-prepare");
+  });
+
   it("ดึงบันทึกล่าสุดของแต่ละ lot มาแสดง โดยถือว่า observations ที่ส่งเข้ามาเรียงใหม่ไปเก่าแล้ว", () => {
     const lots = [lot({ id: "lot-ca", armRole: "control-a", armLabel: "Control-A" })];
     const observations = new Map<string, Observation[]>([

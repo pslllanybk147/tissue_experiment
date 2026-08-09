@@ -47,4 +47,18 @@ describe("T3LockPanel", () => {
     expect(html).toContain("demo-only");
     expect(html).toContain("ไม่ถูกนับเป็นผลทดลองจริง");
   });
+
+  it("ยังติดป้าย demo-only หลังปลดล็อกในโหมดสาธิต", () => {
+    const html = renderToStaticMarkup(
+      <T3LockPanel
+        eligibility={{ ...locked, unlocked: true, reason: "override", missing: [] }}
+        demoMode
+        onOverride={async () => {}}
+      />,
+    );
+
+    expect(html).toContain("T3 ปลดล็อกแล้ว");
+    expect(html).toContain("demo-only");
+    expect(html).toContain("ไม่ถูกนับเป็นผลทดลองจริง");
+  });
 });

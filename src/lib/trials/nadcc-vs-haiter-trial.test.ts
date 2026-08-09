@@ -24,6 +24,8 @@ describe("buildNaDccVsHaiterTrialLotInputs", () => {
     const controlB = inputs.find((input) => input.armRole === "control-b")!;
 
     expect(controlB.isBlank).toBe(true);
+    expect(controlB.stage).toBe("blank-prepare");
+    expect(controlB.armLabel).toBe("Control-B · กระปุกเปล่า ไม่มีวัสดุพืช");
   });
 
   it("Control-A ไม่ตั้งค่าน้ำ rinse พิเศษ ใช้เส้นทางเดิมของระบบ", () => {

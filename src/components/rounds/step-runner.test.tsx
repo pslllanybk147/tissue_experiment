@@ -228,3 +228,29 @@ describe("T3 lock", () => {
     expect(html).toContain("รอผล T1 และ T2 ให้ครบ");
   });
 });
+
+describe("rendered trial protocol semantics", () => {
+  it("T3 ที่ project แล้วไม่มี corrective banner หรือข้อความ Haiter หลงเหลือ", () => {
+    const violin = resolveBySlug("violin-variegated")!;
+    const t3Lot: ExperimentLot = {
+      ...lot,
+      id: "round-t3",
+      plant: violin.commonName,
+      protocolId: violin.slug,
+      protocolTitle: violin.scientificName,
+      armRole: "t3",
+      sterilization: {
+        profileId: "nadcc-soak-v1",
+        profileVersion: "1.0.0",
+        method: "nadcc-soak",
+        targetChlorinePercent: 0.03,
+      },
+    };
+    const t3View = buildRoundView(t3Lot, [], violin);
+    const t3Step = t3View.steps.find((item) => item.id === "sterilize")!;
+    const html = renderToStaticMarkup(<StepRunner view={t3View} step={t3Step} onSave={noop} />);
+
+    expect(html).toContain("24 ถึง 48 ชั่วโมง");
+    expect(html).not.toMatch(/Haiter|ไฮเตอร์|NaOCl|NaClO/);
+  });
+});

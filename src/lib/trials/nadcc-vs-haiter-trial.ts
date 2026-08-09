@@ -33,7 +33,7 @@ type TrialArmDef = {
 
 const arms: TrialArmDef[] = [
   { armRole: "control-a", label: "Control-A · พื้นฐานเดิม (Haiter + น้ำปลอดเชื้อ)", isBlank: false, sterilizationOverride: "sterile-water" },
-  { armRole: "control-b", label: "Control-B · กระปุกเปล่า ไม่มี explant", isBlank: true, sterilizationOverride: "sterile-water" },
+  { armRole: "control-b", label: "Control-B · กระปุกเปล่า ไม่มีวัสดุพืช", isBlank: true, sterilizationOverride: "sterile-water" },
   { armRole: "t1", label: "T1 · Haiter + น้ำ rinse NaClO 300 ppm", isBlank: false, sterilizationOverride: "naclo-rinse" },
   { armRole: "t2", label: "T2 · Haiter + น้ำ rinse NaDCC 300 ppm", isBlank: false, sterilizationOverride: "nadcc-rinse" },
   { armRole: "t3", label: "T3 · NaDCC เดี่ยว 300 ppm นาน 24-48 ชม. แทน Haiter ทั้งขั้น", isBlank: false, sterilizationOverride: "nadcc-soak" },
@@ -98,7 +98,7 @@ export function buildNaDccVsHaiterTrialLotInputs(
       protocolId: manual.slug,
       protocolTitle: manual.scientificName,
       protocolVersionId: MANUAL_VERSION_ID,
-      stage: manual.steps[0]?.id ?? "",
+      stage: arm.armRole === "control-b" ? "blank-prepare" : (manual.steps[0]?.id ?? ""),
       status: "Healthy",
       startedAt,
       workflowVersion: "v2",

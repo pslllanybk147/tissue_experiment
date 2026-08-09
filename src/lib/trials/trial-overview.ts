@@ -25,6 +25,9 @@ const rinseMethodLabel: Record<RinseWaterMethod, string> = {
 /** lot ที่ไม่ได้ตั้งค่าฆ่าเชื้อพิเศษ (Control-A/B) ใช้เส้นทางเดิมของระบบ คือ Haiter + น้ำปลอดเชื้อธรรมดา
  *  T3 เปลี่ยนวิธีฆ่าเชื้อหลักเป็น NaDCC เดี่ยว ไม่ใช่แค่เสริม rinse จึงต้องเช็ค method ก่อนเช็ค rinseWater */
 function describeMethod(lot: ExperimentLot): string {
+  if (lot.armRole === "control-b" || lot.isBlank) {
+    return "Blank control · อาหารและกระปุกเปล่า ไม่มีการฟอกผิว";
+  }
   if (lot.sterilization?.method === "nadcc-soak") {
     return "NaDCC เดี่ยว 300 ppm นาน 24-48 ชม. (แทน Haiter ทั้งขั้น)";
   }

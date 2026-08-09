@@ -66,7 +66,7 @@ function CreateTrial() {
         <p className="pl-h2">ระบบจะเปิดห้ารอบพร้อมกัน</p>
         <ul style={{ margin: "10px 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "6px" }}>
           <li>Control-A · พื้นฐานเดิม (Haiter + น้ำปลอดเชื้อ)</li>
-          <li>Control-B · กระปุกเปล่า ไม่มี explant เพื่อแยกว่าปนเปื้อนมาจากอาหาร/ภาชนะ</li>
+          <li>Control-B · กระปุกเปล่า ไม่มีวัสดุพืช ใช้แยกเชื้อที่มาจากอาหาร ภาชนะ หรือขั้นตอนแบ่งอาหาร</li>
           <li>T1 · Haiter + น้ำ rinse NaClO 300 ppm</li>
           <li>T2 · Haiter + น้ำ rinse NaDCC 300 ppm</li>
           <li>T3 · NaDCC เดี่ยว 300 ppm นาน 24-48 ชม. แทน Haiter ทั้งขั้น</li>

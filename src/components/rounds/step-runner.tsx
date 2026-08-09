@@ -150,7 +150,9 @@ export function StepRunner({
       </p>
       <p className="pl-lede" style={{ marginTop: "12px" }}><RichText source={step.summary} /></p>
 
-      {step.id === "sterilize" ? <SterilizationMethodBanner sterilization={view.sterilization} /> : null}
+      {step.id === "sterilize" && !view.trialArmRole ? (
+        <SterilizationMethodBanner sterilization={view.sterilization} />
+      ) : null}
 
       {MEDIUM_CALCULATOR_STEP_IDS.has(step.id) ? (
         // อยู่ก่อนคำสั่งลงมือทำตั้งใจ เพราะขั้นตอนด้านล่างอ้างถึง "ตามสูตร"/"ตามที่คำนวณ" อยู่หลายจุด
