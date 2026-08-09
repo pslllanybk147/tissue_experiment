@@ -1,6 +1,6 @@
 import { collection, doc, getDoc, getDocs, writeBatch, type Firestore } from "firebase/firestore";
 
-import type { AuditEvent, CreateLotInput, ExperimentLot, Observation, ObservationInput, RinseWaterSnapshot } from "@/lib/domain/models";
+import type { AuditEvent, CreateLotInput, ExperimentLot, Observation, ObservationInput, RinseWaterSnapshot, T3Override } from "@/lib/domain/models";
 import { normalizeExperimentLot } from "../domain/experiment-migration";
 import type { ExperimentRepository } from "@/lib/repositories/experiment-repository";
 import { getFirebaseServices } from "./client";
@@ -161,6 +161,15 @@ export function createFirestoreExperimentRepository(uid: string, options: Reposi
     return lot;
   }
 
+  async function saveT3Override(ownerId: string, lotId: string, override: T3Override) {
+    assertOwner(ownerId);
+    const before = await requireLot(lotId);
+    if (before.armRole !== "t3") throw new Error("T3 override is only valid for a T3 lot");
+    const lot = removeUndefined<ExperimentLot>({ ...before, t3Override: override, updatedAt: now() });
+    await adapter.commitLotMutation(lot, audit(lotId, "lot", lotId, "updated", snapshot(before), snapshot(lot)));
+    return lot;
+  }
+
   async function restoreLot(ownerId: string, lotId: string) {
     assertOwner(ownerId);
     const before = await requireLot(lotId);
@@ -249,6 +258,7 @@ export function createFirestoreExperimentRepository(uid: string, options: Reposi
     getLot,
     createLot,
     updateRinseWater,
+    saveT3Override,
     softDeleteLot,
     restoreLot,
     listObservations,

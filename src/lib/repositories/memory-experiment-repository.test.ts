@@ -83,6 +83,25 @@ describe("memory experiment repository", () => {
     expect((await repo.listAuditEvents("owner-1", lot.id)).at(-1)).toMatchObject({ action: "updated" });
   });
 
+  it("บันทึก T3 override พร้อม audit โดยไม่แก้แขนงอื่น", async () => {
+    const repo = repository();
+    await repo.createLot("owner-1", { ...lot, armRole: "t3", trialId: "trial-1" });
+    const override = {
+      reason: "ต้องการทดสอบหลังประเมินความเสี่ยงครบถ้วนแล้ว",
+      acknowledged: true,
+      recordedAt: "2026-08-09T10:00:00.000Z",
+      mode: "risk-override" as const,
+    };
+
+    const updated = await repo.saveT3Override("owner-1", lot.id, override);
+
+    expect(updated.t3Override).toEqual(override);
+    expect((await repo.listAuditEvents("owner-1", lot.id)).at(-1)).toMatchObject({
+      action: "updated",
+      after: { t3Override: override },
+    });
+  });
+
   it("creates an observation and matching audit event", async () => {
     const repo = repository();
     await repo.createLot("owner-1", lot);

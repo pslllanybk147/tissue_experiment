@@ -53,6 +53,8 @@ export function StepRunner({
   photos,
   tools,
   remembered,
+  locked = false,
+  lockReason = "",
 }: {
   view: RoundView;
   step: RoundStep;
@@ -60,6 +62,8 @@ export function StepRunner({
   photos?: StepPhotoProps;
   tools?: { scaleMinimumMg: number; pipetteMinimumMl: number; msLabelRateGPerL: number };
   remembered?: CalibrationEntry | null;
+  locked?: boolean;
+  lockReason?: string;
 }) {
   const bracketPlan = buildBracketPlan(step);
   const number = step.displayNumber;
@@ -80,6 +84,7 @@ export function StepRunner({
     ...(gate.missingFieldIds.length > 0 ? ["กรอกช่องที่ระบุว่าต้องกรอกให้ครบ"] : []),
     ...(gate.missingPhotoCount > 0 ? ["ต้องแนบอย่างน้อย 1 รูป"] : []),
     ...(gate.missingCaptionCount > 0 ? ["ต้องมีคำบรรยายอย่างน้อย 1 รูป"] : []),
+    ...(locked ? [lockReason || "ขั้นนี้ยังถูกล็อก"] : []),
   ];
 
   // ปุ่มทั้งสองเป็น submit ปุ่มจริง แล้วแยกเจตนาด้วยค่า intent ที่ติดมากับปุ่ม
@@ -110,7 +115,7 @@ export function StepRunner({
     }
 
     const submissionGate = evaluateStepEvidence(step, measurements, evidenceMedia);
-    if (status === "Passed" && !submissionGate.canPass) {
+    if (status === "Passed" && (!submissionGate.canPass || locked)) {
       setSaved("ยังบันทึกว่าผ่านไม่ได้ กรุณากรอกข้อมูลและแนบหลักฐานให้ครบ");
       return;
     }
@@ -283,9 +288,9 @@ export function StepRunner({
         <div style={{ display: "flex", gap: "10px", marginTop: "16px", flexWrap: "wrap" }}>
           <button
             type="submit"
-            disabled={saving || !gate.canPass}
+            disabled={saving || !gate.canPass || locked}
             className="pl-chip"
-            style={{ background: "var(--pl-green)", cursor: saving || !gate.canPass ? "not-allowed" : "pointer", fontSize: "15px", padding: "10px 18px" }}
+            style={{ background: "var(--pl-green)", cursor: saving || !gate.canPass || locked ? "not-allowed" : "pointer", fontSize: "15px", padding: "10px 18px" }}
           >
             บันทึกว่าผ่าน
           </button>

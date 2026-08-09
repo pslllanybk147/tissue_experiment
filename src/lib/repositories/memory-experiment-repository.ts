@@ -1,4 +1,4 @@
-import type { AuditEvent, CreateLotInput, ExperimentLot, Observation, ObservationInput, RinseWaterSnapshot } from "@/lib/domain/models";
+import type { AuditEvent, CreateLotInput, ExperimentLot, Observation, ObservationInput, RinseWaterSnapshot, T3Override } from "@/lib/domain/models";
 import type { ExperimentRepository } from "./experiment-repository";
 import { demoStorageKey, readDemoState, writeDemoState } from "./demo-storage";
 
@@ -110,6 +110,16 @@ export function createMemoryExperimentRepository(uid: string, options: Repositor
     return clone(updated);
   }
 
+  async function saveT3Override(ownerId: string, lotId: string, override: T3Override) {
+    assertOwner(ownerId);
+    const current = requireLot(lotId);
+    if (current.armRole !== "t3") throw new Error("T3 override is only valid for a T3 lot");
+    const updated: ExperimentLot = { ...current, t3Override: clone(override), updatedAt: now() };
+    lots.set(lotId, updated);
+    addAudit(lotId, "lot", lotId, "updated", current as unknown as Record<string, unknown>, updated as unknown as Record<string, unknown>);
+    return clone(updated);
+  }
+
   async function restoreLot(ownerId: string, lotId: string) {
     assertOwner(ownerId);
     const current = requireLot(lotId);
@@ -192,6 +202,7 @@ export function createMemoryExperimentRepository(uid: string, options: Repositor
     getLot,
     createLot,
     updateRinseWater,
+    saveT3Override,
     softDeleteLot,
     restoreLot,
     listObservations,

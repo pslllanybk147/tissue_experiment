@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { AuditEvent, CreateLotInput, ExperimentLot, Observation, ObservationInput } from "@/lib/domain/models";
+import type { AuditEvent, CreateLotInput, ExperimentLot, Observation, ObservationInput, TrialArmRole } from "@/lib/domain/models";
 import {
   createFirestoreExperimentRepository,
   type ExperimentPersistenceAdapter,
@@ -35,8 +35,8 @@ const observationInput: ObservationInput = {
   contaminationCount: 0,
 };
 
-function harness() {
-  let lot: ExperimentLot = { ...lotInput, ownerId: "owner-1", createdAt: "t0", updatedAt: "t0" };
+function harness(armRole?: TrialArmRole) {
+  let lot: ExperimentLot = { ...lotInput, ownerId: "owner-1", createdAt: "t0", updatedAt: "t0", ...(armRole ? { armRole } : {}) };
   let observation: Observation | null = null;
   const mutations: ObservationMutation[] = [];
   const audits: AuditEvent[] = [];
@@ -101,6 +101,21 @@ describe("Firestore experiment repository contract", () => {
     });
     expect(updated.sterilization?.rinseWater?.targetChlorinePercent).toBe(0.003);
     expect(audits.at(-1)).toMatchObject({ action: "updated", after: { id: "PPP-001" } });
+  });
+
+  it("persists an audited T3 override", async () => {
+    const { repository, audits } = harness("t3");
+    const override = {
+      reason: "ต้องการทดสอบหลังประเมินความเสี่ยงครบถ้วนแล้ว",
+      acknowledged: true,
+      recordedAt: "2026-08-09T10:00:00.000Z",
+      mode: "risk-override" as const,
+    };
+
+    const updated = await repository.saveT3Override("owner-1", "PPP-001", override);
+
+    expect(updated.t3Override).toEqual(override);
+    expect(audits.at(-1)).toMatchObject({ action: "updated", after: { t3Override: override } });
   });
 
   it("pairs created observation and audit in one adapter mutation", async () => {

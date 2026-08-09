@@ -8,6 +8,7 @@ import { GuideShell } from "@/components/guide/guide-shell";
 import { ThemeToggle } from "@/components/guide/theme-toggle";
 import { useIsOnline } from "@/components/rounds/online-status";
 import { StepRunner, type StepSaveInput } from "@/components/rounds/step-runner";
+import { T3LockPanel } from "@/components/trials/t3-lock-panel";
 import { calibrationKey, type CalibrationEntry } from "@/lib/domain/calibration";
 import type { ObservationMedia } from "@/lib/domain/models";
 import { resolveBySlug } from "@/lib/manual/registry";
@@ -19,7 +20,7 @@ import {
   type BracketResult,
 } from "@/lib/rounds/bracket";
 import { getCalibrationRepository } from "@/lib/repositories/calibration-repository-factory";
-import { buildRoundView, MANUAL_VERSION_ID, type RoundView } from "@/lib/rounds/round-adapter";
+import { buildRoundView, MANUAL_VERSION_ID, type RoundTrialContext, type RoundView } from "@/lib/rounds/round-adapter";
 import { defaultKit, type EquipmentKit } from "@/lib/equipment/resolve-path";
 import { evidenceObservationInput, findEvidenceObservation } from "@/lib/rounds/step-evidence";
 import { getExperimentRepository } from "@/lib/repositories/experiment-repository-factory";
@@ -62,7 +63,13 @@ export default function RoundStepPage() {
         return;
       }
       const stepRuns = await runs.list(ownerId, roundId);
-      const nextView = buildRoundView(lot, stepRuns, manual);
+      let trialContext: RoundTrialContext | undefined;
+      if (lot.armRole === "t3" && lot.trialId) {
+        const trialLots = (await lots.listLots(ownerId)).filter((item) => item.trialId === lot.trialId);
+        const trialRuns = (await Promise.all(trialLots.map((item) => runs.list(ownerId, item.id)))).flat();
+        trialContext = { trialLots, trialRuns };
+      }
+      const nextView = buildRoundView(lot, stepRuns, manual, trialContext);
       if (!active) return;
       setView(nextView);
 
@@ -166,6 +173,9 @@ export default function RoundStepPage() {
 
   const save = useCallback(async (input: StepSaveInput) => {
     if (!view || !current) return;
+    if (view.trialArmRole === "t3" && view.t3Eligibility && !view.t3Eligibility.unlocked && input.status === "Passed") {
+      throw new Error("T3 ยังถูกล็อก รอผล T1 และ T2 หรือยืนยันความเสี่ยงก่อน");
+    }
     await runs.save(ownerId, {
       lotId: view.lotId,
       protocolId: view.slug,
@@ -213,6 +223,17 @@ export default function RoundStepPage() {
     setReloadKey((key) => key + 1);
   }, [calibration, current, evidenceObservationId, media, ownerId, runs, view]);
 
+  const overrideT3 = useCallback(async (reason: string) => {
+    if (!view || view.trialArmRole !== "t3") throw new Error("รอบนี้ไม่ใช่ T3");
+    await lots.saveT3Override(ownerId, view.lotId, {
+      reason,
+      acknowledged: true,
+      recordedAt: new Date().toISOString(),
+      mode: authenticated ? "risk-override" : "demo-only",
+    });
+    setReloadKey((key) => key + 1);
+  }, [authenticated, lots, ownerId, view]);
+
   return (
     <AuthGate>
       <GuideShell action={<ThemeToggle />}>
@@ -226,14 +247,21 @@ export default function RoundStepPage() {
           </p>
         ) : null}
         {view && current ? (
-          <StepRunner
-            view={view}
-            step={current}
-            onSave={save}
-            photos={{ observationId: evidenceObservationId, media, canAttach, reason: attachReason, onUploaded }}
-            tools={{ scaleMinimumMg: kit.scaleMinimumMg, pipetteMinimumMl: kit.pipetteMinimumMl, msLabelRateGPerL: kit.msLabelRateGPerL }}
-            remembered={remembered}
-          />
+          <>
+            {view.t3Eligibility ? (
+              <T3LockPanel eligibility={view.t3Eligibility} demoMode={!authenticated} onOverride={overrideT3} />
+            ) : null}
+            <StepRunner
+              view={view}
+              step={current}
+              onSave={save}
+              photos={{ observationId: evidenceObservationId, media, canAttach, reason: attachReason, onUploaded }}
+              tools={{ scaleMinimumMg: kit.scaleMinimumMg, pipetteMinimumMl: kit.pipetteMinimumMl, msLabelRateGPerL: kit.msLabelRateGPerL }}
+              remembered={remembered}
+              locked={Boolean(view.t3Eligibility && !view.t3Eligibility.unlocked)}
+              lockReason="T3 ยังถูกล็อก รอผล T1 และ T2 ให้ครบ หรือยืนยันความเสี่ยงก่อน"
+            />
+          </>
         ) : null}
       </GuideShell>
     </AuthGate>

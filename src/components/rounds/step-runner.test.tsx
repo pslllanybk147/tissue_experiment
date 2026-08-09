@@ -199,3 +199,32 @@ describe("หลักฐานขั้นต่ำก่อนบันทึ�
     expect(openingButton(html, "บันทึกว่าผ่าน")).not.toContain("disabled");
   });
 });
+
+describe("T3 lock", () => {
+  it("ปิดเฉพาะปุ่มผ่านและอธิบายเหตุผล โดยยังบันทึกปัญหาได้", () => {
+    const completeStep = {
+      ...receive,
+      state: {
+        ...receive.state,
+        measurements: Object.fromEntries(receive.measurements.map((measurement) => [measurement.id, 1])),
+      },
+    };
+    const html = renderToStaticMarkup(
+      <StepRunner
+        view={view}
+        step={completeStep}
+        onSave={noop}
+        locked
+        lockReason="รอผล T1 และ T2 ให้ครบ"
+      />,
+    );
+    const passAt = html.indexOf("บันทึกว่าผ่าน");
+    const passButton = html.slice(html.lastIndexOf("<button", passAt), passAt);
+    const failAt = html.indexOf("ติดปัญหา", passAt);
+    const failButton = html.slice(html.lastIndexOf("<button", failAt), failAt);
+
+    expect(passButton).toContain("disabled");
+    expect(failButton).not.toContain("disabled");
+    expect(html).toContain("รอผล T1 และ T2 ให้ครบ");
+  });
+});
