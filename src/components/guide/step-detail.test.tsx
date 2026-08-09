@@ -32,15 +32,15 @@ describe("StepDetail", () => {
   it("แสดงสิ่งที่ต้องลงมือ เกณฑ์ผ่าน และจุดที่ต้องหยุด", () => {
     const html = renderStep(sterilize);
 
-    expect(html).toContain("ลงมือทำ");
+    expect(html).toContain("ทำทีละข้อ");
     expect(html).toContain("ผ่านเมื่อ");
-    expect(html).toContain("หยุดทันทีถ้า");
+    expect(html).toContain("หยุดเมื่อ");
   });
 
   it("เตือนความปลอดภัยก่อนรายการลงมือทำ", () => {
     const html = renderStep(sterilize);
 
-    expect(html.indexOf("แอมโมเนีย")).toBeLessThan(html.indexOf("ลงมือทำ"));
+    expect(html.indexOf("แอมโมเนีย")).toBeLessThan(html.indexOf("ทำทีละข้อ"));
   });
 
   it("มีภาพประกอบของขั้นนั้น", () => {

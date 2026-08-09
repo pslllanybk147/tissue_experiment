@@ -19,6 +19,7 @@ import { BracketTable } from "./bracket-table";
 import { MediumCalculator } from "./medium-calculator";
 import { OnlineStatus } from "./online-status";
 import { StepPhotos } from "./step-photos";
+import { StepSections } from "./step-section";
 import { SterilizationMethodBanner } from "./sterilization-method-banner";
 
 export type StepPhotoProps = {
@@ -35,18 +36,6 @@ export type StepSaveInput = {
   measurements: Record<string, number | null>;
   responses: StepResponses;
 };
-
-function List({ title, items }: { title: string; items: string[] }) {
-  if (items.length === 0) return null;
-  return (
-    <section style={{ marginTop: "18px" }}>
-      <h2 className="pl-h2">{title}</h2>
-      <ul style={{ margin: "8px 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "6px" }}>
-        {items.map((item) => <li key={item}><RichText source={item} /></li>)}
-      </ul>
-    </section>
-  );
-}
 
 export function StepRunner({
   view,
@@ -158,51 +147,25 @@ export function StepRunner({
           <>{" "}<span className="pl-mono">ใช้เวลาราว {formatDurationMinutes(step.durationMinutes)}</span></>
         ) : null}
       </p>
-      <p className="pl-lede" style={{ marginTop: "12px" }}><RichText source={step.summary} /></p>
-
-      {step.id === "sterilize" && !view.trialArmRole ? (
-        <SterilizationMethodBanner sterilization={view.sterilization} />
-      ) : null}
-
-      {MEDIUM_CALCULATOR_STEP_IDS.has(step.id) ? (
-        // อยู่ก่อนคำสั่งลงมือทำตั้งใจ เพราะขั้นตอนด้านล่างอ้างถึง "ตามสูตร"/"ตามที่คำนวณ" อยู่หลายจุด
-        // (เช่น pH, ปริมาณสาร) ผู้ใช้ต้องเห็นตัวเลขจริงก่อนจะอ่านคำสั่งที่อ้างถึงมัน ไม่ใช่ไล่หาทีหลัง
-        // ชุดอุปกรณ์โหลดมาแบบ async หลังหน้าเรนเดอร์แล้ว การใส่ key ทำให้เครื่องคำนวณ
-        // เริ่มใหม่ด้วยค่าที่โหลดมาจริง แทนที่จะค้างอยู่กับค่าเริ่มต้นตอน mount
-        <MediumCalculator
-          key={`${step.id}-${tools?.scaleMinimumMg ?? ""}-${tools?.pipetteMinimumMl ?? ""}-${tools?.msLabelRateGPerL ?? ""}`}
-          recipes={view.mediaRecipes}
-          initialRecipeId={initialRecipeIdForStep(step.id)}
-          tools={tools}
-        />
-      ) : null}
-
-      {step.illustrationId ? (
-        <div className="pl-card" style={{ marginTop: "18px", padding: 0, overflow: "hidden" }}>
-          <Illustration id={step.illustrationId} />
-        </div>
-      ) : null}
-
-      {step.safetyNotes.length > 0 ? (
-        <div className="pl-card" style={{ background: "var(--pl-stop)", marginTop: "18px" }}>
-          <p className="pl-mono" style={{ color: "var(--pl-ink-2)" }}>ความปลอดภัย</p>
-          <ul style={{ margin: "8px 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "6px" }}>
-            {step.safetyNotes.map((item) => <li key={item}><RichText source={item} /></li>)}
-          </ul>
-        </div>
-      ) : null}
-
-      <List title="ของที่ต้องเตรียม" items={step.materials} />
-
-      <section style={{ marginTop: "18px" }}>
-        <h2 className="pl-h2">ลงมือทำ</h2>
-        <ol style={{ margin: "8px 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "8px" }}>
-          {step.actions.map((action) => <li key={action}><RichText source={action} /></li>)}
-        </ol>
-      </section>
-
-      <List title="ผ่านเมื่อ" items={step.passCriteria} />
-      <List title="หยุดทันทีถ้า" items={step.stopConditions} />
+      <StepSections
+        step={step}
+        actionPrelude={(
+          <>
+            {step.id === "sterilize" && !view.trialArmRole ? <SterilizationMethodBanner sterilization={view.sterilization} /> : null}
+            {MEDIUM_CALCULATOR_STEP_IDS.has(step.id) ? (
+              <MediumCalculator
+                key={`${step.id}-${tools?.scaleMinimumMg ?? ""}-${tools?.pipetteMinimumMl ?? ""}-${tools?.msLabelRateGPerL ?? ""}`}
+                recipes={view.mediaRecipes}
+                initialRecipeId={initialRecipeIdForStep(step.id)}
+                tools={tools}
+              />
+            ) : null}
+            {step.illustrationId ? (
+              <div className="pl-card" style={{ marginTop: "18px", padding: 0, overflow: "hidden" }}><Illustration id={step.illustrationId} /></div>
+            ) : null}
+          </>
+        )}
+      />
 
       {troubleshooting.length > 0 ? (
         <section style={{ marginTop: "24px" }}>
@@ -230,7 +193,7 @@ export function StepRunner({
         style={{ marginTop: "26px" }}
         onSubmit={(event) => void submit(event)}
       >
-        <h2 className="pl-h2">บันทึกผลของขั้นนี้</h2>
+        <h2 className="pl-h2">บันทึกผล</h2>
 
         {/* ตารางทดสอบช่วงต้องอยู่ในฟอร์มนี้ ไม่ใช่ข้างนอก ไม่งั้น FormData มองไม่เห็นช่องของมัน
             แล้วค่าที่ผู้ใช้กรอกจะถูกบันทึกเป็น null เงียบ ๆ */}
