@@ -1,11 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AuthGate } from "@/components/auth/auth-gate";
 import { useAuth } from "@/components/auth/auth-provider";
 import { GuideShell } from "@/components/guide/guide-shell";
 import { ThemeToggle } from "@/components/guide/theme-toggle";
+import { ReadinessGate } from "@/components/trials/readiness-gate";
+import { resolveTrialReadiness, type TrialReadiness } from "@/lib/equipment/trial-readiness";
 import { resolveBySlug } from "@/lib/manual/registry";
 import {
   NADCC_VS_HAITER_TRIAL_CAVEAT,
@@ -13,6 +15,7 @@ import {
   buildNaDccVsHaiterTrialLotInputs,
 } from "@/lib/trials/nadcc-vs-haiter-trial";
 import { getExperimentRepository } from "@/lib/repositories/experiment-repository-factory";
+import { getEquipmentRepository } from "@/lib/repositories/equipment-repository-factory";
 
 // เนื้อหาทดลอง NaDCC vs Haiter (new_idea.md หัวข้อ 15) มี doses["sterilize.dose.nadcc"] ให้ทดสอบช่วงจริง
 // ในระบบแค่พันธุ์เดียวตอนนี้ จึงล็อกไว้ที่พันธุ์นี้ก่อน ไม่ใช่เพราะแม่แบบผูกกับพันธุ์นี้ถาวร
@@ -24,14 +27,37 @@ function CreateTrial() {
   const ownerId = session.user?.uid ?? "demo-owner";
   const authenticated = session.status === "authenticated";
   const repository = useMemo(() => getExperimentRepository(ownerId, authenticated), [ownerId, authenticated]);
+  const equipmentRepository = useMemo(() => getEquipmentRepository(ownerId, authenticated), [ownerId, authenticated]);
   const manual = resolveBySlug(TARGET_SLUG);
   const [starting, setStarting] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState("");
+  const [readiness, setReadiness] = useState<TrialReadiness | null>(null);
+  const [loadingReadiness, setLoadingReadiness] = useState(true);
+  const [confirmed, setConfirmed] = useState(false);
+
+  useEffect(() => {
+    if (!["demo", "authenticated"].includes(session.status)) return;
+    let active = true;
+    equipmentRepository.get(ownerId)
+      .then((profile) => {
+        if (!active) return;
+        setReadiness(profile ? resolveTrialReadiness(profile) : null);
+        setLoadingReadiness(false);
+      })
+      .catch((error: unknown) => {
+        if (!active) return;
+        setFailed(`ตรวจอุปกรณ์ไม่สำเร็จ: ${error instanceof Error ? error.message : "ไม่ทราบสาเหตุ"}`);
+        setReadiness(null);
+        setLoadingReadiness(false);
+      });
+    return () => { active = false; };
+  }, [equipmentRepository, ownerId, session.status]);
 
   async function start() {
-    if (!manual || starting) return;
+    const allowed = readiness?.overall === "ready" || (readiness?.overall === "experimental" && confirmed);
+    if (!manual || starting || !allowed) return;
     setStarting(true);
-    setFailed(false);
+    setFailed("");
     try {
       const startedAt = new Date().toISOString().slice(0, 10);
       const inputs = buildNaDccVsHaiterTrialLotInputs(manual, startedAt);
@@ -39,8 +65,8 @@ function CreateTrial() {
       const trialId = lots[0]?.trialId;
       if (!trialId) throw new Error("สร้างชุดทดลองไม่สำเร็จ");
       router.replace(`/my/trials/${trialId}`);
-    } catch {
-      setFailed(true);
+    } catch (error) {
+      setFailed(`เปิดชุดทดลองไม่สำเร็จ: ${error instanceof Error ? error.message : "ไม่ทราบสาเหตุ"}`);
       setStarting(false);
     }
   }
@@ -77,21 +103,18 @@ function CreateTrial() {
 
       {failed ? (
         <p className="pl-card" role="alert" style={{ background: "var(--pl-stop)", marginTop: "14px" }}>
-          เปิดชุดทดลองไม่สำเร็จ ลองใหม่อีกครั้ง
+          {failed}
         </p>
       ) : null}
 
-      <p style={{ marginTop: "18px" }}>
-        <button
-          type="button"
-          className="pl-chip"
-          disabled={starting}
-          onClick={() => void start()}
-          style={{ background: "var(--pl-yellow)", cursor: starting ? "default" : "pointer", fontSize: "15px", padding: "10px 18px" }}
-        >
-          {starting ? "กำลังเปิดห้ารอบ…" : "เริ่มชุดทดลอง"}
-        </button>
-      </p>
+      <ReadinessGate
+        loading={loadingReadiness}
+        readiness={readiness}
+        starting={starting}
+        confirmed={confirmed}
+        onConfirmed={setConfirmed}
+        onStart={() => void start()}
+      />
     </GuideShell>
   );
 }
