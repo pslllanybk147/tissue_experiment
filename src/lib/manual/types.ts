@@ -9,13 +9,16 @@ import type { Dose } from "./forms/types";
  *  แต่ยังบังคับให้ระบุ sourceIds เหมือนเดิม */
 export type EvidenceLevel = "species-direct" | "adapted" | "unsupported" | "botanical-fact";
 
-export type MeasurementUnit = "mL" | "g" | "mg/L" | "%" | "min" | "°C" | "pH" | "count";
+export type MeasurementUnit = "mL" | "g" | "mg/L" | "%" | "min" | "°C" | "pH" | "count" | "ppm" | "hour" | "day" | "boolean" | "text" | "date";
+export type MeasurementKind = "number" | "select" | "checkbox" | "text" | "date";
 
 export type Measurement = {
   id: string;
   label: string;
   unit: MeasurementUnit;
   required: boolean;
+  kind?: MeasurementKind;
+  options?: Array<{ value: string; label: string }>;
   min?: number;
   max?: number;
 };

@@ -9,6 +9,7 @@ import type {
 import type { MediaRecipe, ResolvedManual, ResolvedStep } from "@/lib/manual/types";
 import { projectTrialSteps } from "@/lib/trials/project-trial-steps";
 import { evaluateT3Eligibility, type T3Eligibility } from "@/lib/trials/t3-eligibility";
+import { decodeStepValues, type StepResponses } from "./field-values";
 
 /** รุ่นของโครงเนื้อหาที่ใช้ตอนบันทึก เก็บไว้เพื่อให้ย้อนดูได้ว่ารอบนั้นเดินตามคู่มือรุ่นไหน */
 export const MANUAL_VERSION_ID = "manual-v1";
@@ -18,6 +19,7 @@ export type RoundStepState = {
   status: GuidedStepStatus;
   note: string;
   measurements: Record<string, number | null>;
+  responses?: StepResponses;
   observedAt?: string;
 };
 
@@ -54,6 +56,7 @@ const emptyState = (stepId: string): RoundStepState => ({
   status: "Pending",
   note: "",
   measurements: {},
+  responses: {},
 });
 
 /**
@@ -80,6 +83,7 @@ export function buildRoundView(
           status: run.status,
           note: run.note,
           measurements: { ...run.measurements },
+          responses: decodeStepValues(run),
           observedAt: run.observedAt,
         }
       : emptyState(step.id);

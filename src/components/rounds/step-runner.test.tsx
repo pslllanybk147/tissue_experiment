@@ -104,6 +104,27 @@ describe("StepRunner", () => {
 
     expect(html).toContain("ขั้นที่ 8 จาก 15");
   });
+
+  it("render ช่อง number, text, date, checkbox และ select ตามชนิด ไม่บังคับทุกอย่างเป็นตัวเลข", () => {
+    const typedStep = {
+      ...receive,
+      measurements: [
+        { id: "ppm", label: "ppm จริง", unit: "ppm" as const, required: true, kind: "number" as const },
+        { id: "batch", label: "batch", unit: "text" as const, required: true, kind: "text" as const },
+        { id: "date", label: "วันที่", unit: "date" as const, required: true, kind: "date" as const },
+        { id: "confirmed", label: "ยืนยันฉลาก", unit: "boolean" as const, required: true, kind: "checkbox" as const },
+        { id: "result", label: "ผล", unit: "text" as const, required: true, kind: "select" as const, options: [{ value: "clean", label: "ใส" }] },
+      ],
+    };
+    const html = renderToStaticMarkup(<StepRunner view={view} step={typedStep} onSave={noop} />);
+
+    expect(html).toContain('name="ppm"');
+    expect(html).toContain('type="number"');
+    expect(html).toContain('<textarea id="batch"');
+    expect(html).toContain('type="date"');
+    expect(html).toContain('type="checkbox"');
+    expect(html).toContain('<select id="result"');
+  });
 });
 
 describe("ตารางทดสอบช่วงต้องอยู่ในฟอร์ม", () => {

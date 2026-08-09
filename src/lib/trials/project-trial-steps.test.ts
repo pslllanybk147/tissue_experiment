@@ -93,3 +93,23 @@ describe("projectTrialSteps", () => {
     expect(JSON.stringify(projected)).not.toMatch(/explant|ชิ้นพืช|ตัดข้อ|ฟอกผิว|วางชิ้น/);
   });
 });
+
+describe("ค่าที่ต้องบันทึกจริงของแขน NaDCC", () => {
+  it("T2 เก็บ product, batch, actual ppm, volume, rinse count และ final rinse", () => {
+    const sterilize = projectTrialSteps(manual.steps, trialLot("t2")).find((step) => step.id === "sterilize")!;
+    const ids = sterilize.measurements.map((field) => field.id);
+
+    expect(ids).toEqual(expect.arrayContaining([
+      "stock-product", "stock-batch", "rinse-product", "rinse-batch", "rinse-actual-ppm",
+      "rinse-stock-volume-ml", "rinse-final-volume-ml", "sterile-rinses", "final-rinse",
+    ]));
+    expect(sterilize.measurements.find((field) => field.id === "final-rinse")?.kind).toBe("checkbox");
+  });
+
+  it("T3 เก็บ actual ppm, volume, ชั่วโมงแช่ และจำนวนรอบล้าง", () => {
+    const sterilize = projectTrialSteps(manual.steps, trialLot("t3")).find((step) => step.id === "sterilize")!;
+    expect(sterilize.measurements.map((field) => field.id)).toEqual(expect.arrayContaining([
+      "stock-product", "stock-batch", "nadcc-actual-ppm", "stock-volume-ml", "final-volume-ml", "soak-hours", "sterile-washes",
+    ]));
+  });
+});

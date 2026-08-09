@@ -113,6 +113,19 @@ function buildBlankSteps(): ResolvedStep[] {
       measurements: [
         { id: "container-total", label: "จำนวนกระปุกทั้งหมด", unit: "count", required: true, min: 1 },
         { id: "container-clean", label: "จำนวนกระปุกที่ยังใส", unit: "count", required: true, min: 0 },
+        { id: "observed-date", label: "วันที่ตรวจผล", unit: "date", kind: "date", required: true },
+        {
+          id: "contamination-result",
+          label: "ผลรวมที่เห็น",
+          unit: "text",
+          kind: "select",
+          required: true,
+          options: [
+            { value: "clean", label: "ยังใสทุกกระปุก" },
+            { value: "mixed", label: "มีทั้งใสและปนเปื้อน" },
+            { value: "contaminated", label: "ปนเปื้อนทั้งหมด" },
+          ],
+        },
       ],
       durationMinutes: 10,
     },
@@ -164,6 +177,14 @@ const haiterEvidence: EvidenceRef = {
 function fixedSterilizeStep(step: ResolvedStep, role: Exclude<TrialArmRole, "control-b">): ResolvedStep {
   const base = cloneStep(step);
 
+  const batchFields: Measurement[] = [
+    { id: "stock-product", label: "ชื่อผลิตภัณฑ์ที่ใช้จริง", unit: "text", kind: "text", required: true },
+    { id: "stock-batch", label: "เลข batch/lot หรือข้อความบนฉลาก", unit: "text", kind: "text", required: true },
+    { id: "active-chlorine-percent", label: "คลอรีนออกฤทธิ์ที่ใช้จริง", unit: "%", kind: "number", required: true, min: 0.01 },
+    { id: "stock-volume-ml", label: "ปริมาตร stock ที่ตวงจริง", unit: "mL", kind: "number", required: true, min: 0 },
+    { id: "final-volume-ml", label: "ปริมาตรรวมที่เตรียมจริง", unit: "mL", kind: "number", required: true, min: 1 },
+  ];
+
   if (role === "t3") {
     return {
       ...base,
@@ -179,9 +200,12 @@ function fixedSterilizeStep(step: ResolvedStep, role: Exclude<TrialArmRole, "con
       ],
       passCriteria: ["ล้างครบตามจำนวนรอบที่จด", "เนื้อเยื่อยังไม่ขาวซีดหรือเปื่อย"],
       safetyNotes: ["สวมถุงมือและแว่นตา", "ห้ามผสม NaDCC กับกรด แอมโมเนีย หรือแอลกอฮอล์"],
-      measurements: base.measurements.map((measurement) =>
-        measurement.id === "sterile-rinses" ? { ...measurement, id: "sterile-washes", label: "จำนวนรอบที่ล้าง" } : measurement,
-      ),
+      measurements: [
+        ...batchFields,
+        { id: "nadcc-actual-ppm", label: "NaDCC ที่ได้จริง", unit: "ppm", kind: "number", required: true, min: 1 },
+        { id: "soak-hours", label: "เวลาแช่จริง", unit: "hour", kind: "number", required: true, min: 1 },
+        { id: "sterile-washes", label: "จำนวนรอบที่ล้างจริง", unit: "count", kind: "number", required: true, min: 1 },
+      ],
       evidence: {
         level: "adapted",
         sourceIds: ["source-nadcc-explant-sterilisation"],
@@ -207,6 +231,14 @@ function fixedSterilizeStep(step: ResolvedStep, role: Exclude<TrialArmRole, "con
           "ล้างครั้งสุดท้ายด้วยน้ำปลอดเชื้อ",
         ];
 
+  const rinseFields: Measurement[] = role === "control-a" ? [] : [
+    { id: "rinse-product", label: "ผลิตภัณฑ์ที่ใช้ทำน้ำ rinse", unit: "text", kind: "text", required: true },
+    { id: "rinse-batch", label: "เลข batch/lot ของสาร rinse", unit: "text", kind: "text", required: true },
+    { id: "rinse-actual-ppm", label: "คลอรีนในน้ำ rinse ที่ได้จริง", unit: "ppm", kind: "number", required: true, min: 1 },
+    { id: "rinse-stock-volume-ml", label: "ปริมาตร stock rinse ที่ตวงจริง", unit: "mL", kind: "number", required: true, min: 0 },
+    { id: "rinse-final-volume-ml", label: "ปริมาตรน้ำ rinse รวม", unit: "mL", kind: "number", required: true, min: 1 },
+  ];
+
   return {
     ...base,
     materials: [
@@ -214,6 +246,13 @@ function fixedSterilizeStep(step: ResolvedStep, role: Exclude<TrialArmRole, "con
       ...(role === "t1" ? ["น้ำ NaClO 300 ppm"] : role === "t2" ? ["น้ำ NaDCC 300 ppm"] : []),
     ],
     actions: [...haiterActions, ...rinseActions, "จดเวลาและจำนวนรอบที่ทำจริง"],
+    measurements: [
+      ...batchFields,
+      { id: "sterilize-minutes", label: "เวลาฟอกที่ใช้จริง", unit: "min", kind: "number", required: true, min: 1 },
+      ...rinseFields,
+      { id: "sterile-rinses", label: "จำนวนรอบที่ล้างจริง", unit: "count", kind: "number", required: true, min: 1 },
+      { id: "final-rinse", label: "ทำ final rinse ด้วยน้ำปลอดเชื้อ", unit: "boolean", kind: "checkbox", required: role !== "control-a" },
+    ],
     safetyNotes: role === "t2"
       ? base.safetyNotes
       : base.safetyNotes.filter((note) => !/NaDCC|nadcc/.test(note)),
@@ -241,6 +280,19 @@ function projectArmStep(step: ResolvedStep, role: TrialArmRole): ResolvedStep {
         { id: "container-total", label: "จำนวนกระปุกทั้งหมด", unit: "count", required: true, min: 1 },
         { id: "container-clean", label: "จำนวนกระปุกไม่ติดเชื้อ", unit: "count", required: true, min: 0 },
         { id: "container-usable", label: "จำนวนที่ยังใช้ได้", unit: "count", required: true, min: 0 },
+        { id: "observed-date", label: "วันที่ตรวจผล", unit: "date", kind: "date", required: true },
+        {
+          id: "contamination-result",
+          label: "ผลรวมที่เห็น",
+          unit: "text",
+          kind: "select",
+          required: true,
+          options: [
+            { value: "clean", label: "ยังใสทุกกระปุก" },
+            { value: "mixed", label: "มีทั้งใสและปนเปื้อน" },
+            { value: "contaminated", label: "ปนเปื้อนทั้งหมด" },
+          ],
+        },
       ],
       evidenceRequirement: "photo-with-caption",
     };

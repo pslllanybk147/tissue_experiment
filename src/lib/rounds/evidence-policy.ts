@@ -19,7 +19,7 @@ export function evaluateStepEvidence(
   media: EvidenceMedia[],
 ): EvidenceGateResult {
   const missingFieldIds = step.measurements
-    .filter((field) => field.required && isEmpty(values[field.id]))
+    .filter((field) => field.required && (field.kind === "checkbox" ? values[field.id] !== true : isEmpty(values[field.id])))
     .map((field) => field.id);
   const requirement = step.evidenceRequirement ?? "none";
   const missingPhotoCount = requirement !== "none" && media.length === 0 ? 1 : 0;

@@ -184,6 +184,7 @@ export default function RoundStepPage() {
       status: input.status,
       note: input.note,
       measurements: input.measurements,
+      responses: input.responses,
       mediaIds: media.filter((item) => !item.deletedAt).map((item) => item.id),
       evidenceObservationId: evidenceObservationId ?? undefined,
       observedAt: new Date().toISOString(),

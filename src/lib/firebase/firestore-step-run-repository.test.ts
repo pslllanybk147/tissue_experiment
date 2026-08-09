@@ -50,4 +50,16 @@ describe("Firestore step-run serialization", () => {
       carryForwardTargetStepId: "step-9",
     });
   });
+
+  it("เก็บ typed responses โดยไม่แปลงข้อความ วันที่ หรือ boolean เป็นตัวเลข", () => {
+    expect(removeUndefinedStepRunFields({
+      stepId: "sterilize",
+      measurements: { "actual-ppm": 300 },
+      responses: { "actual-ppm": 300, batch: "N60-A", date: "2026-08-09", "final-rinse": false },
+    })).toEqual({
+      stepId: "sterilize",
+      measurements: { "actual-ppm": 300 },
+      responses: { "actual-ppm": 300, batch: "N60-A", date: "2026-08-09", "final-rinse": false },
+    });
+  });
 });

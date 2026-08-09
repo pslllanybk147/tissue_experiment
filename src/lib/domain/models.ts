@@ -201,6 +201,7 @@ export type ProtocolStepRun = {
   status: GuidedStepStatus;
   note: string;
   measurements: Record<string, number | null>;
+  responses?: Record<string, number | string | boolean | null>;
   mediaIds: string[];
   evidenceObservationId?: string;
   timerStartedAt?: string;

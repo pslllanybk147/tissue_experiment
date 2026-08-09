@@ -13,6 +13,7 @@ import type { CalibrationEntry } from "@/lib/domain/calibration";
 import type { RoundStep, RoundView } from "@/lib/rounds/round-adapter";
 import { bracketKey, buildBracketPlan, jarsPerArmKey } from "@/lib/rounds/bracket";
 import { evaluateStepEvidence } from "@/lib/rounds/evidence-policy";
+import { encodeStepValues, type StepResponses } from "@/lib/rounds/field-values";
 import { MEDIUM_CALCULATOR_STEP_IDS, initialRecipeIdForStep } from "@/lib/rounds/medium-steps";
 import { BracketTable } from "./bracket-table";
 import { MediumCalculator } from "./medium-calculator";
@@ -32,6 +33,7 @@ export type StepSaveInput = {
   status: GuidedStepStatus;
   note: string;
   measurements: Record<string, number | null>;
+  responses: StepResponses;
 };
 
 function List({ title, items }: { title: string; items: string[] }) {
@@ -75,8 +77,8 @@ export function StepRunner({
   const demoSkipHref = next ? `/my/rounds/${view.lotId}/step/${next}` : `/my/rounds/${view.lotId}`;
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState("");
-  const [measurementValues, setMeasurementValues] = useState<Record<string, number | null>>(
-    () => ({ ...step.state.measurements }),
+  const [measurementValues, setMeasurementValues] = useState<StepResponses>(
+    () => ({ ...step.state.measurements, ...(step.state.responses ?? {}) }),
   );
   const [evidenceMedia, setEvidenceMedia] = useState<ObservationMedia[]>(
     () => (photos?.media ?? []).filter((item) => !item.deletedAt),
@@ -97,10 +99,14 @@ export function StepRunner({
     const submitter = (event.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null;
     const status: GuidedStepStatus = submitter?.value === "failed" ? "Failed" : "Passed";
     const form = new FormData(event.currentTarget);
-    const measurements: Record<string, number | null> = {};
+    const values: StepResponses = {};
     for (const measurement of step.measurements) {
-      const raw = String(form.get(measurement.id) ?? "").trim();
-      measurements[measurement.id] = raw === "" ? null : Number(raw);
+      if (measurement.kind === "checkbox") {
+        values[measurement.id] = form.has(measurement.id);
+      } else {
+        const raw = String(form.get(measurement.id) ?? "").trim();
+        values[measurement.id] = raw === "" ? null : measurement.kind && measurement.kind !== "number" ? raw : Number(raw);
+      }
     }
     // ค่าของตารางทดสอบช่วงใช้ name ที่มาจากฟังก์ชันสร้างคีย์ จึงอ่านด้วยวิธีเดียวกับช่องอื่น
     if (bracketPlan) {
@@ -109,15 +115,15 @@ export function StepRunner({
         for (const field of ["clean", "alive", "usable"] as const) keys.push(bracketKey(arm.armId, field));
         // ความเข้มข้นระบบเป็นคนเขียน ไม่ใช่ผู้ใช้กรอก เก็บไว้ให้ย้อนดูได้ว่ารอบนั้นทดสอบค่าอะไร
         // แม้คู่มือจะแก้ช่วงภายหลัง
-        measurements[bracketKey(arm.armId, "dose")] = arm.dose;
+        values[bracketKey(arm.armId, "dose")] = arm.dose;
       }
       for (const key of keys) {
         const raw = String(form.get(key) ?? "").trim();
-        measurements[key] = raw === "" ? null : Number(raw);
+        values[key] = raw === "" ? null : Number(raw);
       }
     }
 
-    const submissionGate = evaluateStepEvidence(step, measurements, evidenceMedia);
+    const submissionGate = evaluateStepEvidence(step, values, evidenceMedia);
     if (status === "Passed" && (!submissionGate.canPass || locked)) {
       setSaved("ยังบันทึกว่าผ่านไม่ได้ กรุณากรอกข้อมูลและแนบหลักฐานให้ครบ");
       return;
@@ -126,7 +132,8 @@ export function StepRunner({
     setSaving(true);
     setSaved("");
     try {
-      await onSave({ status, note: String(form.get("note") ?? ""), measurements });
+      const encoded = encodeStepValues(values);
+      await onSave({ status, note: String(form.get("note") ?? ""), ...encoded });
       setSaved(status === "Passed" ? "บันทึกว่าผ่านแล้ว" : "บันทึกปัญหาไว้แล้ว");
     } finally {
       setSaving(false);
@@ -231,41 +238,76 @@ export function StepRunner({
           <BracketTable plan={bracketPlan} saved={step.state.measurements} remembered={remembered ?? null} />
         ) : null}
 
-        {step.measurements.map((measurement) => (
-          <p key={measurement.id} style={{ marginTop: "14px" }}>
-            <label htmlFor={measurement.id} style={{ display: "block", fontWeight: 600, marginBottom: "6px" }}>
-              {measurement.label} ({measurement.unit}){measurement.required ? " · ต้องกรอก" : ""}
-            </label>
-            <input
-              id={measurement.id}
-              name={measurement.id}
-              type="number"
-              step="any"
-              inputMode="decimal"
-              defaultValue={step.state.measurements[measurement.id] ?? ""}
-              onChange={(event) => {
-                const raw = event.currentTarget.value.trim();
-                setMeasurementValues((current) => ({
-                  ...current,
-                  [measurement.id]: raw === "" ? null : Number(raw),
-                }));
-              }}
-              aria-required={measurement.required ? "true" : undefined}
-              required={measurement.required}
-              min={measurement.min}
-              max={measurement.max}
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                border: "2.5px solid var(--pl-line)",
-                borderRadius: "10px",
-                background: "var(--pl-sunk)",
-                color: "var(--pl-ink)",
-                fontSize: "16px",
-              }}
-            />
-          </p>
-        ))}
+        {step.measurements.map((measurement) => {
+          const kind = measurement.kind ?? "number";
+          const savedValue = step.state.responses?.[measurement.id] ?? step.state.measurements[measurement.id];
+          const fieldStyle = {
+            width: "100%",
+            padding: "10px 12px",
+            border: "2.5px solid var(--pl-line)",
+            borderRadius: "10px",
+            background: "var(--pl-sunk)",
+            color: "var(--pl-ink)",
+            fontSize: "16px",
+          } as const;
+          const label = `${measurement.label}${["number"].includes(kind) ? ` (${measurement.unit})` : ""}${measurement.required ? " · ต้องกรอก" : ""}`;
+          const updateText = (raw: string) => setMeasurementValues((currentValues) => ({
+            ...currentValues,
+            [measurement.id]: raw.trim() === "" ? null : raw,
+          }));
+
+          if (kind === "checkbox") {
+            return (
+              <label key={measurement.id} htmlFor={measurement.id} className="pl-card" style={{ display: "flex", gap: "10px", alignItems: "flex-start", marginTop: "14px", cursor: "pointer" }}>
+                <input
+                  id={measurement.id}
+                  name={measurement.id}
+                  type="checkbox"
+                  defaultChecked={savedValue === true}
+                  onChange={(event) => setMeasurementValues((currentValues) => ({ ...currentValues, [measurement.id]: event.currentTarget.checked }))}
+                  aria-required={measurement.required ? "true" : undefined}
+                  style={{ width: "22px", height: "22px", flex: "none" }}
+                />
+                <span>{label}</span>
+              </label>
+            );
+          }
+
+          return (
+            <p key={measurement.id} style={{ marginTop: "14px" }}>
+              <label htmlFor={measurement.id} style={{ display: "block", fontWeight: 600, marginBottom: "6px" }}>{label}</label>
+              {kind === "select" ? (
+                <select id={measurement.id} name={measurement.id} defaultValue={typeof savedValue === "string" ? savedValue : ""} onChange={(event) => updateText(event.currentTarget.value)} required={measurement.required} aria-required={measurement.required ? "true" : undefined} style={fieldStyle}>
+                  <option value="">เลือก…</option>
+                  {(measurement.options ?? []).map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                </select>
+              ) : kind === "text" ? (
+                <textarea id={measurement.id} name={measurement.id} rows={3} defaultValue={typeof savedValue === "string" ? savedValue : ""} onChange={(event) => updateText(event.currentTarget.value)} required={measurement.required} aria-required={measurement.required ? "true" : undefined} style={{ ...fieldStyle, fontFamily: "inherit" }} />
+              ) : (
+                <input
+                  id={measurement.id}
+                  name={measurement.id}
+                  type={kind === "date" ? "date" : "number"}
+                  step={kind === "number" ? "any" : undefined}
+                  inputMode={kind === "number" ? "decimal" : undefined}
+                  defaultValue={savedValue == null ? "" : String(savedValue)}
+                  onChange={(event) => {
+                    const raw = event.currentTarget.value.trim();
+                    setMeasurementValues((currentValues) => ({
+                      ...currentValues,
+                      [measurement.id]: raw === "" ? null : kind === "number" ? Number(raw) : raw,
+                    }));
+                  }}
+                  aria-required={measurement.required ? "true" : undefined}
+                  required={measurement.required}
+                  min={measurement.min}
+                  max={measurement.max}
+                  style={fieldStyle}
+                />
+              )}
+            </p>
+          );
+        })}
 
         <p style={{ marginTop: "14px" }}>
           <label htmlFor="note" style={{ display: "block", fontWeight: 600, marginBottom: "6px" }}>
