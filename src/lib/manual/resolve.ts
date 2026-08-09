@@ -8,6 +8,15 @@ export type ResolveContext = {
   genus?: GenusPack | null;
 };
 
+/** ข้อความทางเลือก rinse รุ่นเก่าเคยยัดเหตุผล คำสั่ง และทางถอยไว้ในบรรทัดเดียว
+ * แบ่งที่หัวประโยคซึ่งมีความหมายชัด เพื่อให้หนึ่งรายการอ่านเป็นหนึ่งความคิดในทุก plant pack */
+function beginnerActionLines(actions: string[]): string[] {
+  return actions.flatMap((action) => action
+    .split(/(?=แนวคิดคือ|ถ้าไม่มั่นใจ|หมายเหตุ:)/g)
+    .map((part) => part.trim())
+    .filter(Boolean));
+}
+
 /** ประกอบคู่มือโดยทับค่าจากบนลงล่าง core → form → genus → species
  *  ชั้นล่างชนะเสมอ และฟิลด์ที่ชั้นล่างไม่พูดถึงจะตกทอดจากชั้นบนมาเอง
  *
@@ -57,7 +66,7 @@ export function resolveManual(pack: PlantPack, context: ResolveContext): Resolve
       ...(override?.doses ?? {}),
     };
 
-    return {
+    const resolved = {
       ...structuredClone(base),
       ...(formLayer ?? {}),
       ...(genusLayer ?? {}),
@@ -67,6 +76,7 @@ export function resolveManual(pack: PlantPack, context: ResolveContext): Resolve
       order: index,
       origin,
     };
+    return { ...resolved, actions: beginnerActionLines(resolved.actions) };
   });
 
   return {
