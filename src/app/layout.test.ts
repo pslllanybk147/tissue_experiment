@@ -37,3 +37,17 @@ describe("guide tokens", () => {
     expect(declared.every((name) => name.startsWith("--pl-"))).toBe(true);
   });
 });
+
+describe("global button theme tokens", () => {
+  const css = readFileSync(new URL("./globals.css", import.meta.url), "utf8");
+
+  it("keeps lab buttons visible in both themes", () => {
+    expect(css).toContain("--button-primary-bg: #a3e635");
+    expect(css).toContain("--button-primary-ink: #172a05");
+    expect(css).toContain("--button-secondary-bg: #101d33");
+    expect(css).toMatch(/\.primary-button\s*\{[^}]*background:\s*var\(--button-primary-bg\)/s);
+    expect(css).toMatch(/\.secondary-button\s*\{[^}]*background:\s*var\(--button-secondary-bg\)/s);
+    expect(css).toMatch(/\.text-button\s*\{[^}]*color:\s*var\(--button-text\)/s);
+    expect(css).toMatch(/\.square-button\s*\{[^}]*background:\s*var\(--button-secondary-bg\)/s);
+  });
+});
