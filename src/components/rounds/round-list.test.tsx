@@ -21,6 +21,13 @@ describe("RoundList", () => {
     expect(html).toContain('href="/my/rounds/round-1"');
   });
 
+  it("แสดงปุ่มลบรอบเมื่อหน้าหลักส่ง handler มาให้", () => {
+    const html = renderToStaticMarkup(<RoundList rounds={rounds} onDelete={async () => {}} />);
+
+    expect(html).toContain("ลบรอบนี้");
+    expect(html).toContain('aria-label="ลบรอบ ฟิโลเดนดรอน พิงค์ปริ๊นเซส"');
+  });
+
   it("รอบเก่าที่คู่มือใหม่ไม่รู้จัก ต้องยังเห็นได้ ไม่ใช่หายไปเฉย ๆ", () => {
     const html = renderToStaticMarkup(
       <RoundList rounds={[]} legacy={[{ lotId: "old-1", title: "ล็อตเดิม", startedAt: "2026-07-01" }]} />,
