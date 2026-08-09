@@ -12,6 +12,7 @@ type BlankStepInput = {
   stopConditions: string[];
   measurements?: Measurement[];
   evidenceRequirement?: "none" | "one-photo" | "photo-with-caption";
+  illustrationId?: string;
   durationMinutes: number;
 };
 
@@ -75,6 +76,7 @@ function buildBlankSteps(): ResolvedStep[] {
       actions: ["เปิดฝากระปุกให้น้อยที่สุด", "แบ่งอาหารปริมาตรเดียวกับแขนงอื่น", "ไม่ใส่วัสดุพืชลงในกระปุก"],
       passCriteria: ["แบ่งอาหารครบและไม่ใส่วัสดุพืช"],
       stopConditions: ["มีสิ่งอื่นตกลงในกระปุก", "อาหารหกที่ขอบฝา"],
+      illustrationId: "blank-control-compare",
       durationMinutes: 10,
     },
     {
@@ -269,6 +271,7 @@ function fixedSterilizeStep(step: ResolvedStep, role: Exclude<TrialArmRole, "con
         },
     doses: undefined,
     evidenceRequirement: "one-photo",
+    illustrationId: "sterilant-sequence",
   };
 }
 

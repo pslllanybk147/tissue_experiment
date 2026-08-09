@@ -1,4 +1,5 @@
 import type { ReactElement, ReactNode } from "react";
+import { illustrationMetaById } from "@/lib/manual/illustration-metadata";
 
 const LINE = "var(--pl-line)";
 
@@ -288,6 +289,41 @@ function BrowningCompare() {
   );
 }
 
+function SterilantSequence() {
+  return (
+    <Frame>
+      <path d="M22 76h72v42H22z" fill="var(--pl-card)" />
+      <path d="M26 94h64v20H26z" fill="var(--pl-agar)" />
+      <circle cx="58" cy="104" r="8" fill="var(--pl-leaf)" />
+      <path d="M104 76h30M124 68l10 8-10 8" />
+      <path d="M146 50h52v52h-52z" fill="var(--pl-card)" />
+      <path d="M150 78h44v20h-44z" fill="var(--pl-sky)" />
+      <path d="M208 76h30M228 68l10 8-10 8" />
+      <path d="M250 50h48v52h-48z" fill="var(--pl-card)" />
+      <path d="M254 78h40v20h-40z" fill="var(--pl-agar)" />
+      <path d="M118 126h118" stroke="var(--pl-red)" />
+      <path d="M177 118v16" stroke="var(--pl-red)" />
+    </Frame>
+  );
+}
+
+function BlankExplantCompare() {
+  return (
+    <Frame tone="var(--pl-sunk)">
+      <rect x="34" y="34" width="102" height="92" rx="9" fill="var(--pl-card)" />
+      <rect x="42" y="96" width="86" height="24" rx="5" fill="var(--pl-agar)" />
+      <circle cx="85" cy="68" r="19" fill="var(--pl-sky)" />
+      <path d="M76 68h18" />
+      <rect x="184" y="34" width="102" height="92" rx="9" fill="var(--pl-card)" />
+      <rect x="192" y="96" width="86" height="24" rx="5" fill="var(--pl-agar)" />
+      <path d="M235 96V66" />
+      <path d="M235 78c-13 0-19-7-19-15 11-3 19 5 19 15z" fill="var(--pl-leaf)" />
+      <circle cx="235" cy="65" r="7" fill="var(--pl-yellow)" />
+      <path d="M153 50v62" strokeDasharray="6 7" />
+    </Frame>
+  );
+}
+
 export const illustrations: Record<string, () => ReactElement> = {
   "browning-compare": BrowningCompare,
   "receive-baseline": ReceiveBaseline,
@@ -298,7 +334,9 @@ export const illustrations: Record<string, () => ReactElement> = {
   "cut-explant-violin-bipennifolium": CutExplantViolinTraced,
   "prep-media": PrepMedia,
   "sterilize-timer": SterilizeTimer,
+  "sterilant-sequence": SterilantSequence,
   "medium-placement": MediumPlacement,
+  "blank-control-compare": BlankExplantCompare,
   "contamination-compare": ContaminationCompare,
   "multiply-shoots": MultiplyShoots,
   rooting: Rooting,
@@ -319,5 +357,15 @@ export const illustrationCredits: Partial<Record<string, string>> = {
 export function Illustration({ id }: { id?: string }): ReactElement | null {
   if (!id) return null;
   const Component = illustrations[id];
-  return Component ? <Component /> : null;
+  const meta = illustrationMetaById(id);
+  return Component ? (
+    <figure aria-label={meta?.altTh} style={{ margin: 0 }}>
+      <Component />
+      {meta ? (
+        <figcaption className="pl-lede" style={{ padding: "10px 14px", fontSize: "13px" }}>
+          <strong>{meta.purpose}</strong><br />{meta.disclaimer}
+        </figcaption>
+      ) : null}
+    </figure>
+  ) : null;
 }

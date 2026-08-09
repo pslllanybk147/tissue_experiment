@@ -34,6 +34,13 @@ describe("illustrations", () => {
     expect(html).toContain('aria-hidden="true"');
   });
 
+  it("แสดงคำอธิบายและคำเตือนเป็นข้อความจริงใต้ภาพ", () => {
+    const html = renderToStaticMarkup(<Illustration id="sterilant-sequence" />);
+    expect(html).toContain("แสดงว่าสองสารเป็นคนละลำดับ");
+    expect(html).toContain("ภาพประกอบ ไม่ใช่ภาพตัวอย่างผลทดลองจริง");
+    expect(html).toContain("<figcaption");
+  });
+
   it("คืนค่าว่างเมื่อไม่มีภาพของ id นั้น", () => {
     expect(renderToStaticMarkup(<Illustration id="ไม่มีภาพนี้" />)).toBe("");
     expect(renderToStaticMarkup(<Illustration />)).toBe("");
