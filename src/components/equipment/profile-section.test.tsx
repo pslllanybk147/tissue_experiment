@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { USER_REPORTED_PROFILE } from "@/lib/equipment/equipment-profile";
 import { ProfileSection } from "./profile-section";
-import { canConfirmRinsePreparation } from "./rinse-preparation-card";
+import { canConfirmRinsePreparation, RinsePreparationCard } from "./rinse-preparation-card";
 
 describe("ProfileSection", () => {
   const html = renderToStaticMarkup(<ProfileSection profile={USER_REPORTED_PROFILE} onChange={() => {}} />);
@@ -57,5 +57,12 @@ describe("ProfileSection", () => {
       containerCount: 3,
       volumePerContainerMl: 50,
     })).toBe(false);
+  });
+
+  it("ทำให้การ์ดและช่องกรอก rinse แยกจากพื้นหลัง section อย่างชัดเจน", () => {
+    const rinseHtml = renderToStaticMarkup(<RinsePreparationCard method="nadcc" value={null} onChange={() => {}} />);
+
+    expect(rinseHtml).toContain("background:var(--pl-card)");
+    expect(rinseHtml).toContain("border:2.5px solid var(--pl-line)");
   });
 });
