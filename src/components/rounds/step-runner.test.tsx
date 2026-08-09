@@ -142,3 +142,60 @@ describe("ตารางทดสอบช่วงต้องอยู่ใ�
     expect(html).not.toContain('name="bracket-b-usable"');
   });
 });
+
+describe("หลักฐานขั้นต่ำก่อนบันทึกว่าผ่าน", () => {
+  const requiredPhotoStep = {
+    ...sterilize,
+    evidenceRequirement: "one-photo" as const,
+    state: {
+      ...sterilize.state,
+      measurements: Object.fromEntries(sterilize.measurements.map((measurement) => [measurement.id, 1])),
+    },
+  };
+
+  function openingButton(html: string, label: string): string {
+    const labelAt = html.indexOf(label);
+    const buttonAt = html.lastIndexOf("<button", labelAt);
+    return html.slice(buttonAt, labelAt);
+  }
+
+  it("ปิดเฉพาะปุ่มผ่านเมื่อยังขาดรูป แต่ปุ่มติดปัญหายังใช้ได้", () => {
+    const html = renderToStaticMarkup(
+      <StepRunner view={view} step={requiredPhotoStep} onSave={noop} photos={photos} />,
+    );
+
+    expect(openingButton(html, "บันทึกว่าผ่าน")).toContain("disabled");
+    expect(openingButton(html, "ติดปัญหา")).not.toContain("disabled");
+    expect(html).toContain("ต้องแนบอย่างน้อย 1 รูป");
+  });
+
+  it("เปิดปุ่มผ่านเมื่อช่องบังคับและรูปครบ", () => {
+    const html = renderToStaticMarkup(
+      <StepRunner
+        view={view}
+        step={requiredPhotoStep}
+        onSave={noop}
+        photos={{ ...photos, media: [{
+          id: "media-1",
+          ownerId: "owner-1",
+          lotId: "round-1",
+          observationId: "obs-1",
+          cloudinaryPublicId: "evidence/media-1",
+          secureUrl: "https://example.com/media-1.jpg",
+          width: 800,
+          height: 600,
+          format: "jpg",
+          bytes: 1000,
+          caption: "",
+          capturedAt: null,
+          createdBy: "owner-1",
+          createdAt: "2026-08-09T00:00:00.000Z",
+          updatedAt: "2026-08-09T00:00:00.000Z",
+          deletedAt: null,
+        }] }}
+      />,
+    );
+
+    expect(openingButton(html, "บันทึกว่าผ่าน")).not.toContain("disabled");
+  });
+});

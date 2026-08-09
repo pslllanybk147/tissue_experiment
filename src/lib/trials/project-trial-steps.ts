@@ -11,6 +11,7 @@ type BlankStepInput = {
   passCriteria: string[];
   stopConditions: string[];
   measurements?: Measurement[];
+  evidenceRequirement?: "none" | "one-photo" | "photo-with-caption";
   durationMinutes: number;
 };
 
@@ -85,6 +86,7 @@ function buildBlankSteps(): ResolvedStep[] {
       actions: ["ปิดฝาให้สนิท", "ตรวจฉลากอีกครั้ง", "ถ่ายภาพกระปุกหลังปิดฝา"],
       passCriteria: ["ฝาปิดสนิท ฉลากอ่านได้ และมีภาพเริ่มต้น"],
       stopConditions: ["ฝาหลวม", "ไม่มีรหัส Control-B บนกระปุก"],
+      evidenceRequirement: "one-photo",
       durationMinutes: 5,
     },
     {
@@ -107,6 +109,7 @@ function buildBlankSteps(): ResolvedStep[] {
       actions: ["ตรวจความขุ่น เมือก และเส้นใยโดยไม่เปิดฝา", "ถ่ายภาพกระปุกที่ผิดปกติ", "แยกกระปุกที่ผิดปกติออกจากพื้นที่สะอาด", "จดจำนวนทั้งหมดและจำนวนที่ยังใส"],
       passCriteria: ["ตรวจและบันทึกครบทุกกระปุก"],
       stopConditions: ["เปิดฝากระปุกในพื้นที่สะอาด"],
+      evidenceRequirement: "photo-with-caption",
       measurements: [
         { id: "container-total", label: "จำนวนกระปุกทั้งหมด", unit: "count", required: true, min: 1 },
         { id: "container-clean", label: "จำนวนกระปุกที่ยังใส", unit: "count", required: true, min: 0 },
@@ -186,6 +189,7 @@ function fixedSterilizeStep(step: ResolvedStep, role: Exclude<TrialArmRole, "con
       },
       durationMinutes: 2880,
       doses: undefined,
+      evidenceRequirement: "one-photo",
     };
   }
 
@@ -225,6 +229,7 @@ function fixedSterilizeStep(step: ResolvedStep, role: Exclude<TrialArmRole, "con
             : "แขนงนี้ใช้ Haiter แล้วทดสอบน้ำ NaDCC 300 ppm เพิ่มเติม ยังไม่มีงานตรงพันธุ์",
         },
     doses: undefined,
+    evidenceRequirement: "one-photo",
   };
 }
 

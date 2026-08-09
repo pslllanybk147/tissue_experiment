@@ -81,6 +81,8 @@ export type ManualStepDef = {
   stopConditions: string[];
   safetyNotes: string[];
   measurements: Measurement[];
+  /** หลักฐานขั้นต่ำก่อนบันทึกสถานะ Passed; ไม่กระทบการบันทึกว่าติดปัญหา */
+  evidenceRequirement?: "none" | "one-photo" | "photo-with-caption";
   /** ค่าเชิงปริมาณเป็นช่วง คีย์เช่น "sterilize.dose" รวมมาจากชั้นทรงและชั้นสกุลตอน resolve
    *  ขั้นที่มีค่านี้และหลักฐานไม่ใช่ตรงพันธุ์ จะมีขั้นทดสอบช่วงกำกับ */
   doses?: Record<string, Dose>;

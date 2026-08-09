@@ -12,6 +12,7 @@ import type { ObservationMedia } from "@/lib/domain/models";
 import type { CalibrationEntry } from "@/lib/domain/calibration";
 import type { RoundStep, RoundView } from "@/lib/rounds/round-adapter";
 import { bracketKey, buildBracketPlan, jarsPerArmKey } from "@/lib/rounds/bracket";
+import { evaluateStepEvidence } from "@/lib/rounds/evidence-policy";
 import { MEDIUM_CALCULATOR_STEP_IDS, initialRecipeIdForStep } from "@/lib/rounds/medium-steps";
 import { BracketTable } from "./bracket-table";
 import { MediumCalculator } from "./medium-calculator";
@@ -67,6 +68,19 @@ export function StepRunner({
   const next = number < total ? number + 1 : null;
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState("");
+  const [measurementValues, setMeasurementValues] = useState<Record<string, number | null>>(
+    () => ({ ...step.state.measurements }),
+  );
+  const [evidenceMedia, setEvidenceMedia] = useState<ObservationMedia[]>(
+    () => (photos?.media ?? []).filter((item) => !item.deletedAt),
+  );
+  const gate = evaluateStepEvidence(step, measurementValues, evidenceMedia);
+
+  const gateMessages = [
+    ...(gate.missingFieldIds.length > 0 ? ["กรอกช่องที่ระบุว่าต้องกรอกให้ครบ"] : []),
+    ...(gate.missingPhotoCount > 0 ? ["ต้องแนบอย่างน้อย 1 รูป"] : []),
+    ...(gate.missingCaptionCount > 0 ? ["ต้องมีคำบรรยายอย่างน้อย 1 รูป"] : []),
+  ];
 
   // ปุ่มทั้งสองเป็น submit ปุ่มจริง แล้วแยกเจตนาด้วยค่า intent ที่ติดมากับปุ่ม
   // วิธีนี้ทำให้กด Enter ในฟอร์มแล้วได้ผลเดียวกับกดปุ่มผ่าน และไม่ต้องปลอม event
@@ -93,6 +107,12 @@ export function StepRunner({
         const raw = String(form.get(key) ?? "").trim();
         measurements[key] = raw === "" ? null : Number(raw);
       }
+    }
+
+    const submissionGate = evaluateStepEvidence(step, measurements, evidenceMedia);
+    if (status === "Passed" && !submissionGate.canPass) {
+      setSaved("ยังบันทึกว่าผ่านไม่ได้ กรุณากรอกข้อมูลและแนบหลักฐานให้ครบ");
+      return;
     }
 
     setSaving(true);
@@ -213,6 +233,13 @@ export function StepRunner({
               step="any"
               inputMode="decimal"
               defaultValue={step.state.measurements[measurement.id] ?? ""}
+              onChange={(event) => {
+                const raw = event.currentTarget.value.trim();
+                setMeasurementValues((current) => ({
+                  ...current,
+                  [measurement.id]: raw === "" ? null : Number(raw),
+                }));
+              }}
               aria-required={measurement.required ? "true" : undefined}
               required={measurement.required}
               min={measurement.min}
@@ -256,9 +283,9 @@ export function StepRunner({
         <div style={{ display: "flex", gap: "10px", marginTop: "16px", flexWrap: "wrap" }}>
           <button
             type="submit"
-            disabled={saving}
+            disabled={saving || !gate.canPass}
             className="pl-chip"
-            style={{ background: "var(--pl-green)", cursor: "pointer", fontSize: "15px", padding: "10px 18px" }}
+            style={{ background: "var(--pl-green)", cursor: saving || !gate.canPass ? "not-allowed" : "pointer", fontSize: "15px", padding: "10px 18px" }}
           >
             บันทึกว่าผ่าน
           </button>
@@ -276,6 +303,15 @@ export function StepRunner({
           </button>
         </div>
 
+        {gateMessages.length > 0 ? (
+          <div className="pl-soft-card" role="alert" style={{ marginTop: "12px", background: "var(--pl-stop)" }}>
+            <p style={{ margin: 0, fontWeight: 700 }}>ยังบันทึกว่าผ่านไม่ได้</p>
+            <ul style={{ margin: "6px 0 0", paddingLeft: "20px" }}>
+              {gateMessages.map((message) => <li key={message}>{message}</li>)}
+            </ul>
+          </div>
+        ) : null}
+
         {saved ? <p className="pl-mono" role="status" style={{ marginTop: "12px" }}>{saved}</p> : null}
       </form>
 
@@ -283,10 +319,13 @@ export function StepRunner({
         <StepPhotos
           lotId={view.lotId}
           observationId={photos.observationId}
-          media={photos.media}
+          media={evidenceMedia}
           canAttach={photos.canAttach}
           reason={photos.reason}
-          onUploaded={photos.onUploaded}
+          onUploaded={async (item) => {
+            await photos.onUploaded(item);
+            setEvidenceMedia((current) => [...current.filter((mediaItem) => mediaItem.id !== item.id), item]);
+          }}
         />
       ) : null}
 
