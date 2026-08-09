@@ -109,7 +109,7 @@ export type ProtocolTemplate = {
 };
 
 export type SterilizationMethod = "haiter-chemical" | "pressure-sterilization";
-export type RinseWaterMethod = "low-dose-hypochlorite" | "commercial-sterile" | "pressure-steam";
+export type RinseWaterMethod = "low-dose-hypochlorite" | "nadcc" | "commercial-sterile" | "pressure-steam";
 export type BlankDecision = "completed" | "skipped";
 export type WorkspaceType = "still-air-box" | "laminar-flow-cabinet";
 export type WorkspaceDisinfectant = "alcohol-70" | "haiter-label";
@@ -245,6 +245,10 @@ export type ObservationMedia={id:string;ownerId:string;lotId:string;observationI
 export type ExperimentStatus = "Healthy" | "Review" | "At risk" | "Contaminated";
 export type LotStatus = ExperimentStatus;
 
+/** บทบาทของแต่ละแขนงในชุดทดลองเปรียบเทียบ ล็อกตาม new_idea.md หัวข้อ 15
+ *  ยังไม่ใช่ enum ทั่วไปสำหรับสร้างชุดทดลองเองได้ทุกแบบ แค่พอสำหรับแม่แบบนี้แม่แบบเดียว */
+export type TrialArmRole = "control-a" | "control-b" | "t1" | "t2" | "t3";
+
 export type ExperimentLot = {
   id: string;
   ownerId: string;
@@ -264,6 +268,14 @@ export type ExperimentLot = {
   method?: "shoot-tip" | "nodal" | "generic";
   sterilization?: LotSterilizationSnapshot;
   workflowVersion?: "v1" | "v2";
+  /** lot หลายใบที่มี trialId เดียวกันคือแขนงต่าง ๆ ของชุดทดลองเปรียบเทียบเดียวกัน
+   *  ไม่มี entity แยกสำหรับชุดทดลอง กลุ่มคือ lot ที่ trialId ตรงกันเท่านั้น */
+  trialId?: string;
+  armRole?: TrialArmRole;
+  armLabel?: string;
+  /** true เฉพาะกระปุกควบคุมที่ไม่มี explant ใช้แยกว่าปนเปื้อนมาจากอาหาร/ภาชนะ ไม่ใช่จาก explant
+   *  ตัวแปรนี้ตัดสินว่า Guided Runner ข้ามขั้นที่ต้องมี explant หรือไม่ (ดู round-adapter.ts) */
+  isBlank?: boolean;
 };
 
 export type CreateLotInput = Omit<ExperimentLot, "ownerId" | "createdAt" | "updatedAt">;

@@ -78,6 +78,23 @@ describe("buildRoundView", () => {
     expect(view.steps).toHaveLength(15);
     expect(view.passedCount).toBe(0);
   });
+
+  it("กระปุกเปล่า (isBlank) ข้ามขั้นเลือกและตัด explant เพราะไม่มีชิ้นพืชให้ทำ", () => {
+    const blankLot: ExperimentLot = { ...lot, isBlank: true };
+    const view = buildRoundView(blankLot, [], manual);
+
+    expect(view.steps.some((step) => step.id === "select-explant")).toBe(false);
+    expect(view.steps.some((step) => step.id === "cut")).toBe(false);
+    expect(view.steps).toHaveLength(13);
+  });
+
+  it("กระปุกเปล่ายังต้องผ่านฟอกฆ่าเชื้อและเฝ้าดูปนเปื้อนเหมือนกระปุกอื่น", () => {
+    const blankLot: ExperimentLot = { ...lot, isBlank: true };
+    const view = buildRoundView(blankLot, [], manual);
+
+    expect(view.steps.some((step) => step.id === "sterilize")).toBe(true);
+    expect(view.steps.some((step) => step.id === "check-contamination")).toBe(true);
+  });
 });
 
 describe("newLotInput", () => {

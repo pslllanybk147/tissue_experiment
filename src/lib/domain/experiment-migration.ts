@@ -22,5 +22,9 @@ export function normalizeExperimentLot(input: LegacyLot, now = new Date()): Expe
     ...(input.workflowVersion === "v1" || input.workflowVersion === "v2"
       ? { workflowVersion: input.workflowVersion }
       : {}),
+    ...(input.trialId ? { trialId: input.trialId } : {}),
+    ...(input.armRole ? { armRole: input.armRole } : {}),
+    ...(input.armLabel ? { armLabel: input.armLabel } : {}),
+    ...(input.isBlank ? { isBlank: input.isBlank } : {}),
   };
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { AuthGate } from "@/components/auth/auth-gate";
 import { useAuth } from "@/components/auth/auth-provider";
@@ -78,7 +79,11 @@ export default function MyRoundsPage() {
       <GuideShell action={<ThemeToggle />}>
         <OnlineStatus />
         <h1 className="pl-h1">รอบเพาะของฉัน</h1>
-        <p className="pl-lede" style={{ marginBottom: "22px" }}>ทุกรอบที่เริ่มไว้ พร้อมความคืบหน้าของแต่ละรอบ</p>
+        <p className="pl-lede">ทุกรอบที่เริ่มไว้ พร้อมความคืบหน้าของแต่ละรอบ</p>
+        <p className="pl-meta" style={{ marginTop: "8px", marginBottom: "22px" }}>
+          อยากเทียบวิธีฟอกฆ่าเชื้อ?{" "}
+          <Link className="pl-link" href="/my/trials/new">เริ่มชุดทดลอง NaDCC เทียบ Haiter</Link>
+        </p>
         {failed ? (
           <p className="pl-card" role="alert" style={{ background: "var(--pl-stop)" }}>
             โหลดรายการรอบไม่สำเร็จ ลองรีเฟรชหน้านี้อีกครั้ง

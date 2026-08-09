@@ -32,6 +32,11 @@ const emptyState = (stepId: string): RoundStepState => ({
   measurements: {},
 });
 
+/** กระปุกควบคุมแบบไม่มี explant (Control-B ของชุดทดลองเปรียบเทียบ) ไม่ต้องเลือกหรือตัด explant
+ *  เพราะไม่มีชิ้นพืชให้ทำ แต่ยังต้องผ่านฟอกฆ่าเชื้อ ลงอาหาร และเฝ้าดูปนเปื้อนเหมือนกระปุกอื่น
+ *  เพราะนั่นคือจุดประสงค์ของกระปุกเปล่า คือแยกว่าปนเปื้อนมาจากอาหาร/ภาชนะ ไม่ใช่จาก explant */
+const BLANK_SKIP_STEP_IDS = new Set(["select-explant", "cut"]);
+
 /**
  * ประกอบมุมมองของรอบเพาะจาก lot ที่เก็บไว้ บวกบันทึกรายขั้น บวกคู่มือที่ resolve แล้ว
  * บันทึกที่อ้างขั้นซึ่งไม่มีในคู่มือแล้วจะถูกข้าม เพื่อให้คู่มือที่แก้ลำดับขั้นภายหลัง
@@ -41,7 +46,11 @@ export function buildRoundView(lot: ExperimentLot, runs: ProtocolStepRun[], manu
   const byStepId = new Map<string, ProtocolStepRun>();
   for (const run of runs) byStepId.set(run.stepId, run);
 
-  const steps: RoundStep[] = manual.steps.map((step) => {
+  const applicableSteps = lot.isBlank
+    ? manual.steps.filter((step) => !BLANK_SKIP_STEP_IDS.has(step.id))
+    : manual.steps;
+
+  const steps: RoundStep[] = applicableSteps.map((step) => {
     const run = byStepId.get(step.id);
     const state: RoundStepState = run
       ? {

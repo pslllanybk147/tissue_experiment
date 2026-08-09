@@ -56,4 +56,27 @@ describe("normalizeExperimentLot", () => {
 
     expect(lot.workflowVersion).toBe("v2");
   });
+
+  it("preserves trial-arm fields, ไม่งั้นทุกครั้งที่ Firestore อ่าน lot กลับมา แขนงของชุดทดลองจะหายเงียบ ๆ", () => {
+    const lot = normalizeExperimentLot({
+      id: "LOT-TRIAL",
+      ownerId: "u1",
+      plant: "ฟิโลเดนดรอน ไวโอลิน ด่าง",
+      protocolId: "violin-variegated",
+      protocolTitle: "Philodendron bipennifolium 'Violin' variegated",
+      stage: "sterilize",
+      status: "Healthy",
+      trialId: "trial-nadcc-vs-haiter-1",
+      armRole: "control-b",
+      armLabel: "Control-B · กระปุกเปล่า",
+      isBlank: true,
+    });
+
+    expect(lot).toMatchObject({
+      trialId: "trial-nadcc-vs-haiter-1",
+      armRole: "control-b",
+      armLabel: "Control-B · กระปุกเปล่า",
+      isBlank: true,
+    });
+  });
 });
