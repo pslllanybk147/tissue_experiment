@@ -14,7 +14,7 @@ describe("memory equipment repository", () => {
 
     await repo.save("owner-1", kit);
 
-    expect(await repo.get("owner-1")).toEqual(kit);
+    expect(await repo.get("owner-1")).toMatchObject({ ...kit, schemaVersion: 2, msRateGPerL: 4.4 });
   });
 
   it("บันทึกทับของเดิมได้", async () => {
