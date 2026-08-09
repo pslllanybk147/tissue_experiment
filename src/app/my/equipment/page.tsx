@@ -68,9 +68,9 @@ export default function EquipmentPage() {
         <p style={{ marginTop: "14px" }}>
           <button
             type="button"
-            className="pl-chip"
+            className="pl-chip pl-chip-neutral"
             onClick={() => { setProfile(structuredClone(USER_REPORTED_PROFILE)); setSaved("เติมค่าจากรายการที่แจ้งไว้แล้ว กรุณาตรวจอีกครั้งก่อนบันทึก"); }}
-            style={{ background: "var(--pl-sunk)", cursor: "pointer", fontSize: "15px", padding: "10px 18px" }}
+            style={{ cursor: "pointer", fontSize: "15px", padding: "10px 18px" }}
           >
             เติมค่าจากรายการที่แจ้งไว้
           </button>

@@ -169,6 +169,36 @@ async function verifyDirectRoutes(page, viewportName) {
     await page.goto(`${baseUrl}${route}`, { waitUntil: "domcontentloaded" });
     await page.locator("main").first().waitFor({ state: "visible" });
     await inspectPage(page, viewportName, route);
+    if (route === "/my/equipment") await verifyEquipmentActionContrast(page, viewportName);
+  }
+}
+
+async function verifyEquipmentActionContrast(page, viewportName) {
+  for (const theme of ["light", "dark"]) {
+    await page.evaluate((value) => document.documentElement.setAttribute("data-theme", value), theme);
+    for (const label of ["เติมค่าจากรายการที่แจ้งไว้", "บันทึกของที่มี"]) {
+      const button = page.getByRole("button", { name: label });
+      await button.hover();
+      await button.focus();
+      const contrast = await button.evaluate((element) => {
+        const channel = (value) => {
+          const normalized = value / 255;
+          return normalized <= 0.04045 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
+        };
+        const luminance = (color) => {
+          const [red, green, blue] = color.match(/\d+(?:\.\d+)?/g).slice(0, 3).map(Number);
+          return 0.2126 * channel(red) + 0.7152 * channel(green) + 0.0722 * channel(blue);
+        };
+        const style = getComputedStyle(element);
+        const foreground = luminance(style.color);
+        const background = luminance(style.backgroundColor);
+        return (Math.max(foreground, background) + 0.05) / (Math.min(foreground, background) + 0.05);
+      });
+      assert(
+        contrast >= 4.5,
+        `${viewportName} /my/equipment ${theme} “${label}”: contrast ${contrast.toFixed(2)} ต่ำกว่า 4.5:1`,
+      );
+    }
   }
 }
 
