@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { allTermIds, parseTerms, plainText, termIdsIn } from "./terms";
+import { allTermIds, contextualTermById, parseContextualTerms, parseTerms, plainText, termIdsIn } from "./terms";
 
 describe("การห่อคำศัพท์ในเนื้อหา", () => {
   it("ข้อความที่ไม่มีคำห่อ คืนชิ้นเดียว", () => {
@@ -53,5 +53,15 @@ describe("การห่อคำศัพท์ในเนื้อหา", (
     expect(allTermIds().has("axillary-bud")).toBe(true);
     expect(allTermIds().has("ascorbic-acid")).toBe(true);
     expect(allTermIds().has("ไม่มีคำนี้")).toBe(false);
+  });
+
+  it("แยกศัพท์บริบทที่ไม่ได้ห่อด้วยมือได้โดยไม่จับข้อความรอบข้าง", () => {
+    expect(parseContextualTerms("เตรียมน้ำปลอดเชื้อ 300 ppm")).toEqual([
+      { kind: "text", text: "เตรียม" },
+      { kind: "term", termId: "sterile-water", text: "น้ำปลอดเชื้อ" },
+      { kind: "text", text: " 300 " },
+      { kind: "term", termId: "ppm", text: "ppm" },
+    ]);
+    expect(contextualTermById("blank-control")?.practicalCue).toContain("Control-B");
   });
 });
