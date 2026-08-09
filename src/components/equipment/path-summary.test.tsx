@@ -1,6 +1,8 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { resolvePath } from "@/lib/equipment/resolve-path";
+import { USER_REPORTED_PROFILE } from "@/lib/equipment/equipment-profile";
+import { resolveTrialReadiness } from "@/lib/equipment/trial-readiness";
 import { PathSummary } from "./path-summary";
 
 const kit = (owned: string[]) => ({
@@ -39,5 +41,15 @@ describe("PathSummary", () => {
     const html = renderToStaticMarkup(<PathSummary path={resolvePath(kit(["bleach"]))} />);
 
     expect(html).toContain("กระปุกเปล่าคุม");
+  });
+
+  it("อธิบาย readiness ทีละหัวข้อว่ามีอะไร ขาดอะไร และทำอะไรต่อ", () => {
+    const html = renderToStaticMarkup(<PathSummary readiness={resolveTrialReadiness(USER_REPORTED_PROFILE)} />);
+
+    expect(html).toContain("ยังเริ่มชุดทดลองจริงไม่ได้");
+    expect(html).toContain("มีอะไร");
+    expect(html).toContain("ยังขาดอะไร");
+    expect(html).toContain("ทำอะไรต่อ");
+    expect(html).toContain("น้ำ 15 ppm ยังไม่ใช่น้ำปลอดเชื้อ");
   });
 });

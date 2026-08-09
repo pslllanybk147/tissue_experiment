@@ -1,8 +1,46 @@
 import { EvidenceBadge, evidenceLabel } from "@/components/guide/evidence-badge";
 import { capabilityLabel, equipmentLabel } from "@/lib/equipment/capabilities";
 import type { ResolvedPath } from "@/lib/equipment/resolve-path";
+import type { ReadinessStatus, TrialReadiness } from "@/lib/equipment/trial-readiness";
 
-export function PathSummary({ path }: { path: ResolvedPath }) {
+const readinessLabel: Record<ReadinessStatus, string> = {
+  ready: "พร้อม",
+  experimental: "ใช้ได้แบบทดลอง",
+  blocked: "ยังทำไม่ได้",
+  unknown: "ยังไม่ทราบ",
+};
+
+function ReadinessSummary({ readiness }: { readiness: TrialReadiness }) {
+  return (
+    <section style={{ marginTop: "24px" }}>
+      <div className="pl-card" style={{ background: readiness.overall === "blocked" ? "var(--pl-stop)" : "var(--pl-yellow)" }}>
+        <h2 className="pl-h2">{readiness.overall === "blocked" ? "ยังเริ่มชุดทดลองจริงไม่ได้" : "สถานะความพร้อมของชุดทดลอง"}</h2>
+        <p className="pl-lede" style={{ marginTop: "6px" }}>สถานะรวม: {readinessLabel[readiness.overall]} · ดูเหตุผลแยกทีละหัวข้อด้านล่าง</p>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "12px" }}>
+        {readiness.capabilities.map((item) => (
+          <article className="pl-card" key={item.id} style={{ background: item.status === "blocked" ? "var(--pl-stop)" : "var(--pl-card)" }}>
+            <p className="pl-mono">{readinessLabel[item.status]}</p>
+            <h3 className="pl-h2" style={{ marginTop: "4px" }}>{item.title}</h3>
+            <p className="pl-lede" style={{ marginTop: "8px" }}><strong>มีอะไร</strong> {item.have}</p>
+            <p className="pl-lede" style={{ marginTop: "6px" }}><strong>ยังขาดอะไร</strong> {item.missing}</p>
+            <p className="pl-lede" style={{ marginTop: "6px" }}><strong>ทำอะไรต่อ</strong> {item.next}</p>
+          </article>
+        ))}
+      </div>
+      <div className="pl-card" style={{ marginTop: "14px", background: "var(--pl-stop)" }}>
+        <h3 className="pl-h2">ข้อควรระวังที่ห้ามข้าม</h3>
+        <ul style={{ margin: "8px 0 0", paddingLeft: "20px" }}>
+          {readiness.cautions.map((item) => <li key={item}>{item}</li>)}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+export function PathSummary({ path, readiness }: { path?: ResolvedPath; readiness?: TrialReadiness }) {
+  if (readiness) return <ReadinessSummary readiness={readiness} />;
+  if (!path) return null;
   return (
     <section style={{ marginTop: "24px" }}>
       <h2 className="pl-h2">เส้นทางที่ระบบจัดให้</h2>
