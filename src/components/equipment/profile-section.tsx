@@ -1,6 +1,7 @@
 "use client";
 
 import type { EquipmentItemId, EquipmentProfileV2 } from "@/lib/equipment/equipment-profile";
+import { RinsePreparationCard } from "./rinse-preparation-card";
 
 const inputStyle = {
   width: "100%",
@@ -97,6 +98,19 @@ export function ProfileSection({ profile, onChange }: { profile: EquipmentProfil
           <input id="water-sterile" type="checkbox" checked={profile.water.sterile} onChange={(event) => changed({ ...profile, water: { ...profile.water, sterile: event.currentTarget.checked } })} style={{ width: "22px", height: "22px" }} />
           <span>น้ำนี้ผ่านการฆ่าเชื้อแล้ว</span>
         </label>
+      </Card>
+
+      <Card title="น้ำ rinse สำหรับชุดทดลอง" note="บันทึกแยกจากน้ำปลอดเชื้อ ใช้เฉพาะ T1/T2 และต้องยืนยันการเตรียมจริงก่อนระบบจะถือว่าพร้อม">
+        <RinsePreparationCard
+          method="low-dose-hypochlorite"
+          value={profile.rinseWater.lowDoseHypochlorite}
+          onChange={(rinseWater) => changed({ ...profile, rinseWater: { ...profile.rinseWater, lowDoseHypochlorite: rinseWater } })}
+        />
+        <RinsePreparationCard
+          method="nadcc"
+          value={profile.rinseWater.nadcc}
+          onChange={(rinseWater) => changed({ ...profile, rinseWater: { ...profile.rinseWater, nadcc: rinseWater } })}
+        />
       </Card>
 
       <Card title="เครื่องมือวัด">

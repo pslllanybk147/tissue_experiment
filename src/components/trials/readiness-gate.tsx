@@ -32,9 +32,26 @@ export function ReadinessGate({ loading, readiness, starting, confirmed, onConfi
             {readiness.blockers.map((item) => (
               <li key={item.id}><strong>{item.title}</strong> — {item.missing}. {item.next}</li>
             ))}
+            {readiness.armBlockers.map((item) => (
+              <li key={`arm-${item.armRole}`}><strong>{item.title}</strong> — {item.blockers.join(" · ")}. {item.next}</li>
+            ))}
           </ul>
           <p style={{ marginTop: "12px" }}><Link className="pl-link" href="/my/equipment">ไปบันทึกและแก้อุปกรณ์</Link></p>
         </>
+      ) : null}
+
+      {readiness ? (
+        <section className="pl-card" style={{ marginTop: "12px", background: "var(--pl-sunk)" }}>
+          <h3 className="pl-h2">ความพร้อมแยกตามแขนทดลอง</h3>
+          <p className="pl-meta" style={{ marginTop: "6px" }}>น้ำ rinse chlorinated เป็นวิธีทดลองเฉพาะ T1/T2 ไม่ใช่น้ำปลอดเชื้อ</p>
+          <ul style={{ margin: "10px 0 0", paddingLeft: "20px" }}>
+            {readiness.arms.map((item) => (
+              <li key={item.armRole} style={{ marginTop: "6px" }}>
+                <strong>{item.title}</strong> — {item.status === "blocked" ? `ยังขาด ${item.blockers.join(" · ")}` : item.status === "experimental" ? "พร้อมแบบทดลอง" : "พร้อม"}
+              </li>
+            ))}
+          </ul>
+        </section>
       ) : null}
 
       {experimental ? (

@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { USER_REPORTED_PROFILE } from "@/lib/equipment/equipment-profile";
 import { ProfileSection } from "./profile-section";
+import { canConfirmRinsePreparation } from "./rinse-preparation-card";
 
 describe("ProfileSection", () => {
   const html = renderToStaticMarkup(<ProfileSection profile={USER_REPORTED_PROFILE} onChange={() => {}} />);
@@ -40,5 +41,21 @@ describe("ProfileSection", () => {
     expect(html).toContain("ยังไม่ได้เลือก");
     expect(html).not.toContain('<option value="haiter-chemical" selected=""');
     expect(html).not.toContain('<option value="nadcc-chemical" selected=""');
+  });
+
+  it("แสดงฟอร์มยืนยันน้ำ rinse แยกจากน้ำปลอดเชื้อ", () => {
+    expect(html).toContain("น้ำ rinse ทดลอง 300 ppm");
+    expect(html).toContain("NaClO / Haiter");
+    expect(html).toContain("NaDCC");
+    expect(html).toContain("น้ำ rinse ไม่ใช่น้ำปลอดเชื้อ");
+  });
+
+  it("ไม่ยืนยัน rinse ถ้าข้อมูลการเตรียมจริงยังไม่ครบ", () => {
+    expect(canConfirmRinsePreparation({
+      method: "nadcc",
+      status: "planned",
+      containerCount: 3,
+      volumePerContainerMl: 50,
+    })).toBe(false);
   });
 });

@@ -1,6 +1,6 @@
 import type { EvidenceRef } from "@/lib/manual/types";
 
-/** สี่อย่างที่กระบวนการเพาะเลี้ยงเนื้อเยื่อต้องได้ ไม่ว่าจะได้มาด้วยอุปกรณ์อะไร */
+/** ความสามารถหลักที่กระบวนการเพาะเลี้ยงเนื้อเยื่อต้องได้ ไม่ว่าจะได้มาด้วยอุปกรณ์อะไร */
 export const capabilityIds = [
   "sterile-medium",
   "sterile-water",
@@ -8,7 +8,8 @@ export const capabilityIds = [
   "surface-decontam",
   "sterile-tools",
 ] as const;
-export type CapabilityId = (typeof capabilityIds)[number];
+export const optionalCapabilityIds = ["chlorinated-rinse"] as const;
+export type CapabilityId = (typeof capabilityIds | typeof optionalCapabilityIds)[number];
 
 export const capabilityLabel: Record<CapabilityId, string> = {
   "sterile-medium": "อาหารปลอดเชื้อ",
@@ -16,6 +17,7 @@ export const capabilityLabel: Record<CapabilityId, string> = {
   "sterile-vessel": "ภาชนะและฝาปลอดเชื้อ",
   "surface-decontam": "ผิวชิ้นพืชสะอาด",
   "sterile-tools": "คีมและใบมีดปลอดเชื้อ",
+  "chlorinated-rinse": "น้ำ rinse คลอรีนต่ำสำหรับ T1/T2",
 };
 
 /** ถามเป็นของที่หาซื้อได้จริง ไม่ใช่ศัพท์ห้องแล็บ */
@@ -134,18 +136,30 @@ export const capabilityMethods: CapabilityMethod[] = [
   },
   {
     id: "water-bleach",
-    capability: "sterile-water",
-    title: "เติมไฮเตอร์ลงน้ำแล้วตั้งทิ้งไว้",
+    capability: "chlorinated-rinse",
+    title: "เตรียมน้ำ NaClO 300 ppm สำหรับ T1",
     requires: ["bleach"],
     evidence: {
       level: "adapted",
       sourceIds: ["source-teng-nonautoclave-vessels", "source-cmu-rose-home-tc"],
       note:
-        "ใช้ความเข้มข้นเดียวกับที่เติมลงอาหาร แล้วตั้งทิ้งไว้อย่างน้อยหนึ่งชั่วโมงก่อนใช้ " +
-        "เป็นทางเดียวที่ทำน้ำสำหรับล้างได้เองโดยไม่มีหม้อนึ่ง ต่างจากการต้มซึ่งไม่ฆ่าสปอร์",
+        "เจือให้ได้คลอรีนออกฤทธิ์ 300 ppm แล้วตั้งทิ้งไว้อย่างน้อยหนึ่งชั่วโมงก่อนใช้ " +
+        "เป็นน้ำ rinse ทดลอง ไม่ใช่น้ำปลอดเชื้อและไม่ใช้แทน Control-A/T3",
     },
     caution:
       "คลอรีนที่ค้างในน้ำล้างจะตามเข้าไปกับชิ้นพืช ถ้าชิ้นซีดขาวหลังลงอาหาร ให้ลดความเข้มข้นของน้ำล้างก่อนอย่างอื่น",
+  },
+  {
+    id: "water-nadcc-rinse",
+    capability: "chlorinated-rinse",
+    title: "เตรียมน้ำ NaDCC 300 ppm สำหรับ T2",
+    requires: ["nadcc-tablet"],
+    evidence: {
+      level: "adapted",
+      sourceIds: ["source-nadcc-explant-sterilisation"],
+      note: "เจือจาก NaDCC ตาม available chlorine ให้ได้ 300 ppm และเตรียมสดตามบันทึกของชุดทดลอง",
+    },
+    caution: "เม็ดเชิงพาณิชย์อาจมีสารเสริม จึงเป็นวิธีทดลองและไม่ใช่น้ำปลอดเชื้อ",
   },
   {
     id: "tools-boil-alcohol",

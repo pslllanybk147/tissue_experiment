@@ -28,6 +28,21 @@ function ReadinessSummary({ readiness }: { readiness: TrialReadiness }) {
           </article>
         ))}
       </div>
+      <div className="pl-card" style={{ marginTop: "14px" }}>
+        <h3 className="pl-h2">ความพร้อมแยกตามแขนทดลอง</h3>
+        <p className="pl-meta" style={{ marginTop: "6px" }}>chlorinated rinse เป็นน้ำ rinse ทดลอง ไม่ใช่น้ำปลอดเชื้อ และไม่ปลดล็อกแขนที่ต้องใช้น้ำปลอดเชื้อ</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "12px" }}>
+          {readiness.arms.map((arm) => (
+            <article key={arm.armRole} className="pl-card" style={{ background: arm.status === "blocked" ? "var(--pl-stop)" : "var(--pl-sunk)" }}>
+              <p className="pl-mono">{readinessLabel[arm.status]}</p>
+              <h4 className="pl-h2" style={{ marginTop: "4px" }}>{arm.title}</h4>
+              <p className="pl-lede" style={{ marginTop: "6px" }}><strong>ต้องใช้</strong> {arm.requiredResources.join(" · ")}</p>
+              {arm.blockers.length > 0 ? <p className="pl-lede" style={{ marginTop: "6px" }}><strong>ยังขาด</strong> {arm.blockers.join(" · ")}</p> : null}
+              <p className="pl-lede" style={{ marginTop: "6px" }}><strong>ทำอะไรต่อ</strong> {arm.next}</p>
+            </article>
+          ))}
+        </div>
+      </div>
       <div className="pl-card" style={{ marginTop: "14px", background: "var(--pl-stop)" }}>
         <h3 className="pl-h2">ข้อควรระวังที่ห้ามข้าม</h3>
         <ul style={{ margin: "8px 0 0", paddingLeft: "20px" }}>

@@ -112,6 +112,7 @@ export type ProtocolTemplate = {
  *  ไม่ใช่ rinse หลัง Haiter แบบ RinseWaterMethod ("nadcc") ซึ่งเป็นคนละกลไกกัน */
 export type SterilizationMethod = "haiter-chemical" | "pressure-sterilization" | "nadcc-soak";
 export type RinseWaterMethod = "low-dose-hypochlorite" | "nadcc" | "commercial-sterile" | "pressure-steam";
+export type RinsePreparationStatus = "planned" | "prepared";
 export type BlankDecision = "completed" | "skipped";
 export type WorkspaceType = "still-air-box" | "laminar-flow-cabinet";
 export type WorkspaceDisinfectant = "alcohol-70" | "haiter-label";
@@ -146,11 +147,19 @@ export type MediumBatchSnapshot = {
 
 export type RinseWaterSnapshot = {
   method: RinseWaterMethod;
+  /** Legacy lots may omit this; omitted means planned, never prepared. */
+  status?: RinsePreparationStatus;
   containerCount: 3;
   volumePerContainerMl: number;
   preparationVolumeMl?: number;
   targetChlorinePercent?: number;
   minimumWaitMinutes?: number;
+  productName?: string;
+  batchOrLot?: string;
+  actualChlorinePpm?: number;
+  stockVolumeMl?: number;
+  finalVolumeMl?: number;
+  preparedAt?: string;
 };
 
 export type SterilizationProfile = {

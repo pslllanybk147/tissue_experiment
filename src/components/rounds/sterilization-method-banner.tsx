@@ -33,9 +33,9 @@ export function SterilizationMethodBanner({ sterilization }: { sterilization: Lo
         <p className="pl-mono" style={{ color: "var(--pl-ink-2)" }}>แขนงนี้ใช้น้ำ rinse เพิ่มเติมหลังฟอก</p>
         <p className="pl-lede" style={{ marginTop: "8px" }}>
           {rinseMethod === "nadcc" ? (
-            <RichText source={`หลังล้างสารฟอกออกตามปกติแล้ว ให้ล้างต่ออีก 3 รอบ รอบละประมาณหนึ่งนาที ด้วยน้ำ rinse [[${termId}|NaDCC]] เจือจางที่ 300 ppm แทนน้ำปลอดเชื้อธรรมดารอบสุดท้าย`} />
+            <RichText source={`หลังครบเวลาฟอกแล้ว ให้ล้างชิ้นพืชต่ออีก 3 รอบ รอบละประมาณหนึ่งนาที ด้วยน้ำ rinse [[${termId}|NaDCC]] เจือจางที่ 300 ppm ตาม protocol ทดลองนี้ ไม่ต้องเติม final rinse ด้วยน้ำปลอดเชื้อธรรมดา`} />
           ) : (
-            "หลังล้างสารฟอกออกตามปกติแล้ว ให้ล้างต่ออีก 3 รอบ รอบละประมาณหนึ่งนาที ด้วยน้ำ rinse NaClO เจือจางที่ 300 ppm แทนน้ำปลอดเชื้อธรรมดารอบสุดท้าย"
+            "หลังครบเวลาฟอกแล้ว ให้ล้างชิ้นพืชต่ออีก 3 รอบ รอบละประมาณหนึ่งนาที ด้วยน้ำ rinse NaClO เจือจางที่ 300 ppm ตาม protocol ทดลองนี้ ไม่ต้องเติม final rinse ด้วยน้ำปลอดเชื้อธรรมดา"
           )}
         </p>
       </div>

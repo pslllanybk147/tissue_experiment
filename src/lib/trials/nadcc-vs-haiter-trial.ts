@@ -1,4 +1,4 @@
-import type { CreateLotInput, LotSterilizationSnapshot, TrialArmRole } from "@/lib/domain/models";
+import type { CreateLotInput, LotSterilizationSnapshot, RinseWaterSnapshot, TrialArmRole } from "@/lib/domain/models";
 import {
   CHLORINATED_RINSE_TARGET_PERCENT,
   buildLowDoseRinseWaterSnapshot,
@@ -49,6 +49,7 @@ function buildTrialId(): string {
 function buildSterilization(
   override: SterilizationOverride,
   volumePerContainerMl: number,
+  preparedRinse?: RinseWaterSnapshot | null,
 ): LotSterilizationSnapshot | undefined {
   if (override === "sterile-water") return undefined;
 
@@ -57,7 +58,9 @@ function buildSterilization(
       profileId: "haiter-chemical-v1",
       profileVersion: "1.0.0",
       method: "haiter-chemical",
-      rinseWater: buildLowDoseRinseWaterSnapshot(volumePerContainerMl),
+      rinseWater: preparedRinse?.method === "low-dose-hypochlorite" && preparedRinse.status === "prepared"
+        ? preparedRinse
+        : buildLowDoseRinseWaterSnapshot(volumePerContainerMl),
     };
   }
 
@@ -66,7 +69,9 @@ function buildSterilization(
       profileId: "haiter-chemical-v1",
       profileVersion: "1.0.0",
       method: "haiter-chemical",
-      rinseWater: buildNaDccRinseWaterSnapshot(volumePerContainerMl),
+      rinseWater: preparedRinse?.method === "nadcc" && preparedRinse.status === "prepared"
+        ? preparedRinse
+        : buildNaDccRinseWaterSnapshot(volumePerContainerMl),
     };
   }
 
@@ -87,11 +92,16 @@ export function buildNaDccVsHaiterTrialLotInputs(
   startedAt: string,
   volumePerContainerMl = 50,
   containerPlan?: { total: number; reserved: number; allocations: Partial<Record<TrialArmRole, number>> },
+  preparedRinse?: { lowDoseHypochlorite?: RinseWaterSnapshot | null; nadcc?: RinseWaterSnapshot | null },
 ): CreateLotInput[] {
   const trialId = buildTrialId();
 
   return arms.map((arm) => {
-    const sterilization = buildSterilization(arm.sterilizationOverride, volumePerContainerMl);
+    const sterilization = buildSterilization(
+      arm.sterilizationOverride,
+      volumePerContainerMl,
+      arm.sterilizationOverride === "naclo-rinse" ? preparedRinse?.lowDoseHypochlorite : arm.sterilizationOverride === "nadcc-rinse" ? preparedRinse?.nadcc : undefined,
+    );
 
     return {
       id: `${trialId}-${arm.armRole}`,
