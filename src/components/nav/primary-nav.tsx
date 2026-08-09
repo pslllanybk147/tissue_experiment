@@ -23,6 +23,15 @@ function EquipmentIcon() {
   );
 }
 
+function RoundsIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <path d="M7 4h10M8 4v3l-2 3v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-8l-2-3V4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M7 10h10M9 14h6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function ProblemIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
@@ -46,6 +55,7 @@ function CalculatorIcon() {
  *  แล้วพังทั้งหน้าโดยไม่มีอะไรบอกว่าเพราะอะไร มีเทสต์บังคับใน nav-items.test.ts */
 export const linkIcons: Record<string, () => React.JSX.Element> = {
   home: HomeIcon,
+  rounds: RoundsIcon,
   problem: ProblemIcon,
   equipment: EquipmentIcon,
 };

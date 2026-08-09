@@ -46,7 +46,15 @@ function LegacyRounds({ legacy }: { legacy: LegacyRoundSummary[] }) {
   );
 }
 
-export function RoundList({ rounds, legacy = [] }: { rounds: RoundSummary[]; legacy?: LegacyRoundSummary[] }) {
+export function RoundList({
+  rounds,
+  legacy = [],
+  onDelete,
+}: {
+  rounds: RoundSummary[];
+  legacy?: LegacyRoundSummary[];
+  onDelete?: (round: RoundSummary) => void | Promise<void>;
+}) {
   if (rounds.length === 0) {
     return (
       <div className="pl-card">
@@ -69,17 +77,34 @@ export function RoundList({ rounds, legacy = [] }: { rounds: RoundSummary[]; leg
     <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: "14px" }}>
       {rounds.map((round) => (
         <li key={round.lotId}>
-          <Link
-            className="pl-card pl-link"
-            href={`/my/rounds/${round.lotId}`}
-            style={{ display: "block", color: "inherit", textDecoration: "none" }}
-          >
-            <p className="pl-h2">{round.title}</p>
-            <p className="pl-meta" style={{ marginTop: "4px" }}>เริ่ม {round.startedAt}</p>
-            <p className="pl-mono" style={{ marginTop: "10px" }}>
-              ผ่านแล้ว {round.passedCount} จาก {round.stepCount} ขั้น
-            </p>
-          </Link>
+          <div className="pl-card" style={{ display: "flex", flexDirection: "column" }}>
+            <Link
+              className="pl-link"
+              href={`/my/rounds/${round.lotId}`}
+              style={{ display: "block", color: "inherit", textDecoration: "none" }}
+            >
+              <p className="pl-h2">{round.title}</p>
+              <p className="pl-meta" style={{ marginTop: "4px" }}>เริ่ม {round.startedAt}</p>
+              <p className="pl-mono" style={{ marginTop: "10px" }}>
+                ผ่านแล้ว {round.passedCount} จาก {round.stepCount} ขั้น
+              </p>
+            </Link>
+            {onDelete ? (
+              <button
+                type="button"
+                className="pl-chip pl-chip-neutral"
+                aria-label={`ลบรอบ ${round.title}`}
+                onClick={() => {
+                  if (window.confirm(`ลบรอบ “${round.title}” ออกจากรายการหรือไม่?`)) {
+                    void onDelete(round);
+                  }
+                }}
+                style={{ alignSelf: "flex-start", marginTop: "14px", cursor: "pointer", fontSize: "14px", padding: "8px 14px" }}
+              >
+                ลบรอบนี้
+              </button>
+            ) : null}
+          </div>
         </li>
       ))}
       <li><EquipmentLink /></li>

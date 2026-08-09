@@ -52,7 +52,15 @@ export function StepRunner({
   step: RoundStep;
   onSave: (input: StepSaveInput) => Promise<void>;
   photos?: StepPhotoProps;
-  tools?: { scaleMinimumMg: number; pipetteMinimumMl: number; msLabelRateGPerL: number };
+  tools?: {
+    scaleMinimumMg: number;
+    pipetteMinimumMl: number;
+    msLabelRateGPerL: number;
+    bcdLabelRateGPerL?: number;
+    naaStockMgPerMl?: number;
+    baStockMgPerMl?: number;
+    ibaStockMgPerMl?: number;
+  };
   remembered?: CalibrationEntry | null;
   locked?: boolean;
   lockReason?: string;
@@ -154,7 +162,7 @@ export function StepRunner({
             {step.id === "sterilize" && !view.trialArmRole ? <SterilizationMethodBanner sterilization={view.sterilization} /> : null}
             {MEDIUM_CALCULATOR_STEP_IDS.has(step.id) ? (
               <MediumCalculator
-                key={`${step.id}-${tools?.scaleMinimumMg ?? ""}-${tools?.pipetteMinimumMl ?? ""}-${tools?.msLabelRateGPerL ?? ""}`}
+                key={`${step.id}-${tools?.scaleMinimumMg ?? ""}-${tools?.pipetteMinimumMl ?? ""}-${tools?.msLabelRateGPerL ?? ""}-${tools?.bcdLabelRateGPerL ?? ""}-${tools?.naaStockMgPerMl ?? ""}-${tools?.baStockMgPerMl ?? ""}-${tools?.ibaStockMgPerMl ?? ""}`}
                 recipes={view.mediaRecipes}
                 initialRecipeId={initialRecipeIdForStep(step.id)}
                 tools={tools}

@@ -81,4 +81,10 @@ describe("HaiterCalculator · หน่วยบนฉลาก", () => {
 
     expect(html).toContain("w/w");
   });
+
+  it("รับหน่วยเริ่มต้นจากโปรไฟล์ผู้ใช้ได้ เพื่อไม่ให้ 6% w/w ถูกคำนวณเหมือน 6% w/v", () => {
+    const html = renderToStaticMarkup(<HaiterCalculator initialLabelBasis="w/w" />);
+
+    expect(html).toContain("หลังคูณความหนาแน่น");
+  });
 });

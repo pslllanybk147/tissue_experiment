@@ -149,8 +149,8 @@ export const thaiConstellationPack: PlantPack = {
         { name: "MS basal salts", amountPerLiter: 1, unit: "×" },
         { name: "Sucrose", amountPerLiter: 30, unit: "g/L" },
         { name: "Agar", amountPerLiter: 7.5, unit: "g/L" },
-        { name: "Thidiazuron (TDZ)", amountPerLiter: 0.88, unit: "mg/L", note: "เท่ากับ 4 µM" },
-        { name: "NAA", amountPerLiter: 0.37, unit: "mg/L", note: "เท่ากับ 2 µM" },
+        { name: "Thidiazuron (TDZ)", amountPerLiter: 4, unit: "µM", molecularWeightGPerMol: 220.25, note: "ค่าตามงานวิจัยโดยตรง ระบบแปลงเป็นมวลให้" },
+        { name: "NAA", amountPerLiter: 2, unit: "µM", molecularWeightGPerMol: 186.21, note: "ค่าตามงานวิจัยโดยตรง ระบบแปลงเป็นมวลให้" },
       ],
       evidence: {
         level: "species-direct",
@@ -158,6 +158,23 @@ export const thaiConstellationPack: PlantPack = {
         note:
           "ความเข้มข้นของฮอร์โมนมาจากงานปี 2023 โดยตรง ส่วนน้ำตาล วุ้น และ pH เป็นค่ามาตรฐานของสูตร MS " +
           "ที่งานนั้นไม่ได้ระบุแยก ตัวเลข mg/L คำนวณจากค่าไมโครโมลาร์ด้วยมวลโมเลกุลของสารแต่ละตัว",
+      },
+    },
+    {
+      id: "rooting",
+      title: "ระยะออกราก",
+      pH: "5.7 ถึง 5.8",
+      ingredients: [
+        { name: "MS basal salts", amountPerLiter: 1, unit: "×" },
+        { name: "Sucrose", amountPerLiter: 30, unit: "g/L" },
+        { name: "Agar", amountPerLiter: 7.5, unit: "g/L" },
+        { name: "Activated charcoal", amountPerLiter: 0.5, unit: "g/L", note: "ผงถ่านกัมมันต์ตามงานวิจัย" },
+        { name: "IBA", amountPerLiter: 8, unit: "µM", molecularWeightGPerMol: 203.24, note: "ค่าตามงานวิจัยโดยตรง ระบบแปลงเป็นมวลให้" },
+      ],
+      evidence: {
+        level: "species-direct",
+        sourceIds: ["source-monstera-thai-constellation-2023"],
+        note: "ผงถ่าน 0.5 g/L และ IBA 8 µM มาจากสูตรออกรากที่ให้ผลดีที่สุดในงานที่ทำกับ Monstera Thai Constellation โดยตรง",
       },
     },
   ],

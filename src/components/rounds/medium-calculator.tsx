@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { EvidenceBadge } from "@/components/guide/evidence-badge";
 import type { MediaRecipe } from "@/lib/manual/types";
 import { planMediumBatch, type IngredientLine } from "@/lib/rounds/medium-plan";
+import { antiBrowningOptions, batchRange } from "@/lib/rounds/anti-browning";
 
 const inputStyle = {
   width: "100%",
@@ -77,20 +79,18 @@ function Line({ line }: { line: IngredientLine }) {
   return (
     <div className="pl-card" style={{ background: "var(--pl-stop)" }}>
       <p style={{ margin: 0, fontWeight: 700 }}>
-        {line.name} · ชั่งไม่ได้
+        {line.name} · ใช้น้ำยาแม่
       </p>
       <p className="pl-lede" style={{ marginTop: "6px" }}>
-        สูตรต้องการ {round(line.requiredMg, 4)} มิลลิกรัม ซึ่งต่ำกว่าที่เครื่องชั่งของคุณอ่านได้ ต้องทำน้ำยาแม่แล้วตวงแทน
+        สูตรต้องการสาร {round(line.requiredMg, 4)} มิลลิกรัม
+        {line.stockConcentrationMgPerMl > 0
+          ? ` · stock ที่บันทึกไว้เข้มข้น ${round(line.stockConcentrationMgPerMl, 4)} mg/mL`
+          : " · ยังไม่มี stock ที่ระบุความเข้มข้นได้"}
       </p>
       {line.plan.state === "blocked" ? (
         <p className="pl-lede" style={{ marginTop: "8px" }}>{line.plan.reason} · {line.plan.safeAction}</p>
       ) : (
         <ol style={{ margin: "10px 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "6px" }}>
-          <li>
-            ถ้ายังไม่มีน้ำยาแม่ ให้ชั่งผง {line.name} {round(line.sourceStock.massMg, 0)} มิลลิกรัม
-            ละลายน้ำเป็น {round(line.sourceStock.volumeMl, 0)} มิลลิลิตร จะได้ความเข้มข้น{" "}
-            {line.sourceStock.concentrationMgPerMl} mg/mL
-          </li>
           {line.plan.actions.map((action) => <li key={action}>{action}</li>)}
         </ol>
       )}
@@ -106,9 +106,20 @@ export function MediumCalculator({
   recipes: MediaRecipe[];
   initialRecipeId?: string;
   /** ค่าจากชุดอุปกรณ์ที่ผู้ใช้บันทึกไว้ ถ้าไม่ส่งมาจะใช้ค่ากลางแล้วให้แก้เอง */
-  tools?: { scaleMinimumMg: number; pipetteMinimumMl: number; msLabelRateGPerL: number };
+  tools?: {
+    scaleMinimumMg: number;
+    pipetteMinimumMl: number;
+    msLabelRateGPerL: number;
+    bcdLabelRateGPerL?: number;
+    naaStockMgPerMl?: number;
+    baStockMgPerMl?: number;
+    ibaStockMgPerMl?: number;
+  };
 }) {
-  const [recipeId, setRecipeId] = useState(initialRecipeId ?? recipes[0]?.id ?? "");
+  const initialRecipe = initialRecipeId
+    ? recipes.find((item) => item.id === initialRecipeId)
+    : recipes[0];
+  const [recipeId, setRecipeId] = useState(initialRecipe?.id ?? "");
   const [cultureJars, setCultureJars] = useState(4);
   const [blankJars, setBlankJars] = useState(1);
   const [spareJars, setSpareJars] = useState(1);
@@ -117,8 +128,12 @@ export function MediumCalculator({
   const [scaleMinimumMg, setScaleMinimumMg] = useState(tools?.scaleMinimumMg ?? 10);
   const [pipetteMinimumMl, setPipetteMinimumMl] = useState(tools?.pipetteMinimumMl ?? 0.2);
   const [msLabelRateGPerL, setMsLabelRateGPerL] = useState(tools?.msLabelRateGPerL ?? 4.43);
+  const [bcdLabelRateGPerL, setBcdLabelRateGPerL] = useState(tools?.bcdLabelRateGPerL ?? 0);
+  const [naaStockMgPerMl, setNaaStockMgPerMl] = useState(tools?.naaStockMgPerMl ?? 0);
+  const [baStockMgPerMl, setBaStockMgPerMl] = useState(tools?.baStockMgPerMl ?? 0);
+  const [ibaStockMgPerMl, setIbaStockMgPerMl] = useState(tools?.ibaStockMgPerMl ?? 0);
 
-  const recipe = recipes.find((item) => item.id === recipeId) ?? recipes[0];
+  const recipe = recipeId ? recipes.find((item) => item.id === recipeId) : undefined;
 
   const plan = useMemo(() => {
     if (!recipe) return null;
@@ -126,14 +141,23 @@ export function MediumCalculator({
       return planMediumBatch(
         recipe,
         { cultureJars, blankJars, spareJars, mlPerJar, lossPercent },
-        { scaleMinimumMg, pipetteMinimumMl, msLabelRateGPerL },
+        { scaleMinimumMg, pipetteMinimumMl, msLabelRateGPerL, bcdLabelRateGPerL, naaStockMgPerMl, baStockMgPerMl, ibaStockMgPerMl },
       );
     } catch {
       return null;
     }
-  }, [blankJars, cultureJars, lossPercent, mlPerJar, msLabelRateGPerL, pipetteMinimumMl, recipe, scaleMinimumMg, spareJars]);
+  }, [baStockMgPerMl, bcdLabelRateGPerL, blankJars, cultureJars, ibaStockMgPerMl, lossPercent, mlPerJar, msLabelRateGPerL, naaStockMgPerMl, pipetteMinimumMl, recipe, scaleMinimumMg, spareJars]);
 
-  if (!recipe) return null;
+  if (!recipe) {
+    return (
+      <section style={{ marginTop: "26px" }}>
+        <h2 className="pl-h2">ยังไม่มีสูตรอาหารของขั้นนี้ในระบบ</h2>
+        <p className="pl-card" role="alert" style={{ marginTop: "14px", background: "var(--pl-stop)" }}>
+          คู่มือยังไม่มีตัวเลขที่ตรวจสอบได้สำหรับขั้นนี้ ระบบจึงไม่แสดงสูตรของขั้นอื่นแทน และไม่ควรเดาค่าเอง
+        </p>
+      </section>
+    );
+  }
 
   return (
     <section style={{ marginTop: "26px" }}>
@@ -141,6 +165,7 @@ export function MediumCalculator({
       <p className="pl-lede" style={{ marginTop: "6px" }}>
         บอกจำนวนกระปุกที่อยากได้ ระบบคิดปริมาตรและปริมาณสารให้ พร้อมบอกตรง ๆ เมื่อสารบางตัวน้อยจนชั่งไม่ได้
       </p>
+      <p style={{ marginTop: "10px" }}><EvidenceBadge level={recipe.evidence.level} /></p>
 
       <div className="pl-card" style={{ marginTop: "14px", background: "var(--pl-sunk)", display: "flex", flexDirection: "column", gap: "12px" }}>
         <p style={{ margin: 0 }}>
@@ -164,6 +189,10 @@ export function MediumCalculator({
           <Field id="scale-min" label="เครื่องชั่งอ่านต่ำสุด (มก.)" value={scaleMinimumMg} onChange={setScaleMinimumMg} step="any" />
           <Field id="pipette-min" label="ตวงได้ละเอียดสุด (มล.)" value={pipetteMinimumMl} onChange={setPipetteMinimumMl} step="any" />
           <Field id="ms-label" label="อัตรา MS บนฉลาก (ก./ล.)" value={msLabelRateGPerL} onChange={setMsLabelRateGPerL} step="any" hint="ดูจากถุงที่คุณซื้อมา" />
+          <Field id="bcd-label" label="อัตรา BCD บนฉลาก (ก./ล.)" value={bcdLabelRateGPerL} onChange={setBcdLabelRateGPerL} step="any" hint="ถ้าไม่มี ให้ใช้สูตรที่แจกแจงสาร BCD ทีละตัว" />
+          <Field id="naa-stock" label="NAA stock (มก./มล.)" value={naaStockMgPerMl} onChange={setNaaStockMgPerMl} step="any" />
+          <Field id="ba-stock" label="BA/BAP stock (มก./มล.)" value={baStockMgPerMl} onChange={setBaStockMgPerMl} step="any" />
+          <Field id="iba-stock" label="IBA stock (มก./มล.)" value={ibaStockMgPerMl} onChange={setIbaStockMgPerMl} step="any" />
         </div>
       </div>
 
@@ -190,6 +219,22 @@ export function MediumCalculator({
           </div>
 
           <p className="pl-meta" style={{ marginTop: "12px" }}>ปรับ pH ให้อยู่ในช่วง {recipe.pH} ก่อนใส่วุ้น</p>
+          <div className="pl-card" style={{ marginTop: "10px", background: "var(--pl-sunk)" }}>
+            <p style={{ margin: 0, fontWeight: 700 }}>ถ้าเจอชิ้นพืชดำ: ทางเลือกทดลอง ไม่ใช่ส่วนบังคับของสูตร</p>
+            <p className="pl-meta" style={{ marginTop: "6px" }}>
+              ค่านี้เป็นช่วงจากงานคนละชนิดพืช ระบบจึงไม่แอบเติมลงอาหารให้ และควรเริ่มค่าต่ำสุดก่อน
+            </p>
+            <ul style={{ margin: "10px 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "7px" }}>
+              {antiBrowningOptions.map((option) => {
+                const [low, high] = batchRange(option, plan.totalVolumeMl);
+                return (
+                  <li key={option.id}>
+                    <strong>{option.name}:</strong> {round(low, option.unit === "g/L" ? 3 : 2)}–{round(high, option.unit === "g/L" ? 3 : 2)} {option.unit.replace("/L", "")} สำหรับ batch นี้ · {option.use}. {option.note}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         </>
       ) : (
         <p className="pl-card" role="alert" style={{ marginTop: "14px", background: "var(--pl-stop)" }}>

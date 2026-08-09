@@ -16,7 +16,15 @@ const recipe: MediaRecipe = {
 };
 
 const jars = { cultureJars: 4, blankJars: 1, spareJars: 1, mlPerJar: 25, lossPercent: 15 };
-const tools = { scaleMinimumMg: 10, pipetteMinimumMl: 0.2, msLabelRateGPerL: 4.43 };
+const tools = {
+  scaleMinimumMg: 10,
+  pipetteMinimumMl: 0.2,
+  msLabelRateGPerL: 4.43,
+  bcdLabelRateGPerL: 1.2,
+  naaStockMgPerMl: 1,
+  baStockMgPerMl: 1,
+  ibaStockMgPerMl: 1,
+};
 
 describe("planMediumBatch", () => {
   it("รวมกระปุกทุกชนิดแล้วเผื่อสูญเสียตามที่ตั้งไว้", () => {
@@ -42,6 +50,18 @@ describe("planMediumBatch", () => {
     expect((ms as { amount: number }).amount).toBeCloseTo(0.766, 3);
   });
 
+  it("BCD ที่หน่วยเป็นเท่าใช้ค่า BCD ของตัวเอง ไม่ใช้ค่า MS เป็น fallback", () => {
+    const bcdRecipe: MediaRecipe = {
+      ...recipe,
+      ingredients: [{ name: "BCD basal salts", base: "BCD", amountPerLiter: 1, unit: "×" }],
+    };
+    const plan = planMediumBatch(bcdRecipe, jars, tools);
+    const bcd = plan.lines.find((line) => line.name === "BCD basal salts");
+
+    expect(bcd).toMatchObject({ kind: "weigh", unit: "g" });
+    expect((bcd as { amount: number }).amount).toBeCloseTo(0.2076, 4);
+  });
+
   it("ถ้ายังไม่กรอกอัตราบนฉลาก ต้องขอค่านั้นก่อน ห้ามเดา", () => {
     const plan = planMediumBatch(recipe, jars, { ...tools, msLabelRateGPerL: 0 });
     const ms = plan.lines.find((line) => line.name === "MS basal salts");
@@ -57,14 +77,52 @@ describe("planMediumBatch", () => {
     expect((bap as { requiredMg: number }).requiredMg).toBeCloseTo(0.173, 3);
   });
 
-  it("บอกวิธีทำน้ำยาแม่ตั้งต้นด้วย เพราะผู้ใช้ที่บ้านยังไม่มีของชิ้นนั้น", () => {
-    const plan = planMediumBatch(recipe, jars, tools);
-    const bap = plan.lines.find((line) => line.name === "BAP") as { sourceStock: { massMg: number; volumeMl: number; concentrationMgPerMl: number } };
+  it("ฮอร์โมนใช้ความเข้มข้น BA stock จากอุปกรณ์จริง ไม่ hard-code 1 mg/mL", () => {
+    const plan = planMediumBatch(recipe, jars, { ...tools, baStockMgPerMl: 2 });
+    const bap = plan.lines.find((line) => line.name === "BAP") as { plan: { state: string; workingDoseMl?: number } };
 
-    expect(bap.sourceStock.concentrationMgPerMl).toBe(1);
-    expect(bap.sourceStock.massMg).toBe(bap.sourceStock.volumeMl);
-    // มวลที่สั่งให้ชั่งต้องสูงกว่าที่เครื่องชั่งอ่านได้อย่างมีระยะเผื่อ ไม่ใช่พอดีเป๊ะ
-    expect(bap.sourceStock.massMg).toBeGreaterThanOrEqual(tools.scaleMinimumMg * 2);
+    expect(bap.plan.state).toBe("working-dilution");
+    expect(bap.plan.workingDoseMl).toBeCloseTo(0.865, 3);
+  });
+
+  it("ถ้าไม่มี stock ของฮอร์โมนตรงตัว ต้องบอกว่าคำนวณต่อไม่ได้", () => {
+    const plan = planMediumBatch(recipe, jars, { ...tools, baStockMgPerMl: 0 });
+    const bap = plan.lines.find((line) => line.name === "BAP") as { plan: { state: string } };
+
+    expect(bap.plan.state).toBe("blocked");
+  });
+
+  it("ฮอร์โมนที่ผู้ใช้ไม่มี stock ห้ามตกไปเป็นผงชั่ง แม้มวลรวมจะชั่งได้", () => {
+    const tdzRecipe: MediaRecipe = {
+      ...recipe,
+      ingredients: [{ name: "TDZ", amountPerLiter: 4, unit: "mg/L" }],
+    };
+    const plan = planMediumBatch(tdzRecipe, jars, tools);
+    const tdz = plan.lines[0] as { kind: string; plan: { state: string } };
+
+    expect(tdz.kind).toBe("working-stock");
+    expect(tdz.plan.state).toBe("blocked");
+  });
+
+  it("หน่วย mM แปลงเป็นมวลตาม molecular weight ไม่ใช่ตีความเป็น mg/L", () => {
+    const saltRecipe: MediaRecipe = {
+      ...recipe,
+      ingredients: [{ name: "KNO3", amountPerLiter: 10, unit: "mM", molecularWeightGPerMol: 101.10 }],
+    };
+    const plan = planMediumBatch(saltRecipe, jars, tools);
+    const salt = plan.lines[0] as { kind: string; amount: number };
+
+    expect(salt.kind).toBe("weigh");
+    expect(salt.amount).toBeCloseTo(0.175, 3);
+  });
+
+  it("บอกความเข้มข้น stock ที่ใช้จริง ไม่สมมติผงตั้งต้น 1 mg/mL", () => {
+    const plan = planMediumBatch(recipe, jars, tools);
+    const bap = plan.lines.find((line) => line.name === "BAP") as { stockConcentrationMgPerMl: number; plan: { state: string; workingDoseMl?: number } };
+
+    expect(bap.stockConcentrationMgPerMl).toBe(1);
+    expect(bap.plan.state).toBe("working-dilution");
+    expect(bap.plan.workingDoseMl).toBeCloseTo(1.73, 3);
   });
 
   it("เตือนเมื่อไม่มีกระปุกเปล่าคุม", () => {

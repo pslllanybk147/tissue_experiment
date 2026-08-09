@@ -105,6 +105,8 @@ function blankV2(legacy: EquipmentKit): EquipmentProfileV2 {
       agarBrand: "ยังไม่ได้บันทึก",
       sterilizationMethod: null,
     },
+    bleachLabelBasis: "w/v",
+    bleachDensityGPerMl: 1.08,
     phone: { model: "ยังไม่ได้บันทึก", available: false },
     inventory: equipmentItemIds.map((id) => ({ id, quantity: 0, unit: "piece" as const, note: "ยังไม่ได้บันทึกจำนวน" })),
     msRateGPerL: legacy.msLabelRateGPerL,
@@ -120,6 +122,11 @@ export function normalizeEquipmentProfile(value: EquipmentKit | EquipmentProfile
       msLabelRateGPerL: value.msRateGPerL,
       scaleMinimumMg: value.instruments.balanceResolutionG * 1000,
       pipetteMinimumMl: value.instruments.syringeResolutionMl,
+      naaStockMgPerMl: value.medium.naaMgPerMl,
+      baStockMgPerMl: value.medium.baMgPerMl,
+      ibaStockMgPerMl: value.medium.ibaMgPerMl,
+      bleachLabelBasis: value.chemicals.bleach.percentWw > 0 ? "w/w" : "w/v",
+      bleachDensityGPerMl: 1.08,
     });
   }
   return blankV2(structuredClone(value ?? defaultKit));
@@ -138,6 +145,11 @@ export const USER_REPORTED_PROFILE: EquipmentProfileV2 = {
   scaleMinimumMg: 10,
   pipetteMinimumMl: 0.1,
   msLabelRateGPerL: 4.43,
+  naaStockMgPerMl: 1,
+  baStockMgPerMl: 1,
+  ibaStockMgPerMl: 1,
+  bleachLabelBasis: "w/w",
+  bleachDensityGPerMl: 1.08,
   msRateGPerL: 4.43,
   chemicals: {
     nadcc: {

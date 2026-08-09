@@ -6,6 +6,12 @@ export type EquipmentKit = {
   scaleMinimumMg: number;
   pipetteMinimumMl: number;
   msLabelRateGPerL: number;
+  bcdLabelRateGPerL?: number;
+  naaStockMgPerMl?: number;
+  baStockMgPerMl?: number;
+  ibaStockMgPerMl?: number;
+  bleachLabelBasis?: "w/v" | "w/w";
+  bleachDensityGPerMl?: number;
 };
 
 export type ResolvedCapability = {

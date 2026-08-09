@@ -53,7 +53,7 @@ export function CalculatorOverlay() {
 
   if (!state.isOpen) return null;
 
-  const toolsKey = `${kit.scaleMinimumMg}-${kit.pipetteMinimumMl}-${kit.msLabelRateGPerL}`;
+  const toolsKey = `${kit.scaleMinimumMg}-${kit.pipetteMinimumMl}-${kit.msLabelRateGPerL}-${kit.bcdLabelRateGPerL ?? 0}-${kit.naaStockMgPerMl ?? 0}-${kit.baStockMgPerMl ?? 0}-${kit.ibaStockMgPerMl ?? 0}-${kit.bleachLabelBasis ?? "w/v"}`;
   const selectedPlant = plantPacks.find((pack) => pack.slug === selectedPlantSlug) ?? plantPacks[0];
 
   return (
@@ -123,7 +123,7 @@ export function CalculatorOverlay() {
           ) : null}
 
           {state.screen === "haiter" ? (
-            <HaiterCalculator key={toolsKey} initialInput={{ minimumMeasurableMl: kit.pipetteMinimumMl }} />
+            <HaiterCalculator key={toolsKey} initialInput={{ minimumMeasurableMl: kit.pipetteMinimumMl }} initialLabelBasis={kit.bleachLabelBasis} />
           ) : null}
 
           {state.screen === "nadcc" ? (

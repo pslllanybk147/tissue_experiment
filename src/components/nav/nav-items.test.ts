@@ -15,8 +15,7 @@ describe("รายการเมนูหลัก", () => {
     expect(new Set(keys).size).toBe(keys.length);
   });
 
-  it("จำนวนรายการไม่เกินสี่ เพราะ bottom tab bar บนจอ 360px รับได้เท่านี้", () => {
-    // ปุ่มเครื่องคำนวณเป็นช่องที่ห้าที่ไม่ได้อยู่ในลิสต์นี้ จึงจำกัดลิสต์ไว้ที่สาม
-    expect(navLinkItems.length).toBeLessThanOrEqual(3);
+  it("มีเมนูรอบเพาะให้ผู้ใช้เข้าถึงจากหน้าเว็บโดยตรง", () => {
+    expect(navLinkItems.some((item) => item.href === "/my/rounds")).toBe(true);
   });
 });

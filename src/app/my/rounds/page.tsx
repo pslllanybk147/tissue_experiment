@@ -24,6 +24,7 @@ export default function MyRoundsPage() {
   const [rounds, setRounds] = useState<RoundSummary[] | null>(null);
   const [legacy, setLegacy] = useState<LegacyRoundSummary[]>([]);
   const [failed, setFailed] = useState(false);
+  const [actionError, setActionError] = useState(false);
   const calibration = useMemo(() => getCalibrationRepository(ownerId, authenticated), [ownerId, authenticated]);
   const [calibrations, setCalibrations] = useState<CalibrationEntry[]>([]);
 
@@ -74,6 +75,16 @@ export default function MyRoundsPage() {
     };
   }, [calibration, ownerId, session.status]);
 
+  async function deleteRound(round: RoundSummary) {
+    setActionError(false);
+    try {
+      await repository.softDeleteLot(ownerId, round.lotId);
+      setRounds((current) => current?.filter((item) => item.lotId !== round.lotId) ?? current);
+    } catch {
+      setActionError(true);
+    }
+  }
+
   return (
     <AuthGate>
       <GuideShell action={<ThemeToggle />}>
@@ -89,8 +100,13 @@ export default function MyRoundsPage() {
             โหลดรายการรอบไม่สำเร็จ ลองรีเฟรชหน้านี้อีกครั้ง
           </p>
         ) : null}
+        {actionError ? (
+          <p className="pl-card" role="alert" style={{ background: "var(--pl-stop)" }}>
+            ลบรอบไม่สำเร็จ ลองอีกครั้งโดยตรวจสอบการเชื่อมต่ออินเทอร์เน็ต
+          </p>
+        ) : null}
         {rounds === null && !failed ? <p className="pl-lede" role="status">กำลังโหลด…</p> : null}
-        {rounds !== null ? <RoundList rounds={rounds} legacy={legacy} /> : null}
+        {rounds !== null ? <RoundList rounds={rounds} legacy={legacy} onDelete={deleteRound} /> : null}
 
         <section style={{ marginTop: "26px" }}>
           <h2 className="pl-h2">ค่าที่คุณทดสอบได้เอง</h2>
