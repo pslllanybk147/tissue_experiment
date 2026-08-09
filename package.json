@@ -10,6 +10,7 @@
     "test": "vitest run",
     "ui:verify": "node scripts/verify-accessible-ui.mjs",
     "terms:report": "node scripts/report-unwrapped-terms.mjs",
+    "manuals:verify": "vitest run src/lib/manual/all-manuals-human.test.ts",
     "firebase:emulators": "firebase emulators:start --only auth,firestore --project demo-philodendron-lab",
     "firebase:verify": "firebase emulators:exec --only auth,firestore --project demo-philodendron-lab \"npm test\""
   },
