@@ -19,7 +19,7 @@ export function TermHelp({ termId, children }: { termId: string; children: React
 
   return (
     <details className="pl-term">
-      <summary className="pl-term-word">{children}</summary>
+      <summary className="pl-term-word" style={{ minWidth: "48px", justifyContent: "center" }}>{children}</summary>
       <div className="pl-term-body" role="definition">
         {contextual ? (
           <>

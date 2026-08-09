@@ -14,4 +14,9 @@ describe("TermHelp", () => {
       expect(html).toContain("ดูจากของจริงอย่างไร");
     },
   );
+
+  it("ให้คำสั้นมีพื้นที่กดกว้างอย่างน้อย 48 พิกเซล", () => {
+    const html = renderToStaticMarkup(<TermHelp termId="node">ข้อ</TermHelp>);
+    expect(html).toContain("min-width:48px");
+  });
 });
