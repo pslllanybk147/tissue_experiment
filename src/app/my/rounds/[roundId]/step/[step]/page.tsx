@@ -260,6 +260,7 @@ export default function RoundStepPage() {
               remembered={remembered}
               locked={Boolean(view.t3Eligibility && !view.t3Eligibility.unlocked)}
               lockReason="T3 ยังถูกล็อก รอผล T1 และ T2 ให้ครบ หรือยืนยันความเสี่ยงก่อน"
+              demoMode={!authenticated}
             />
           </>
         ) : null}

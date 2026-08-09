@@ -55,6 +55,7 @@ export function StepRunner({
   remembered,
   locked = false,
   lockReason = "",
+  demoMode = false,
 }: {
   view: RoundView;
   step: RoundStep;
@@ -64,12 +65,14 @@ export function StepRunner({
   remembered?: CalibrationEntry | null;
   locked?: boolean;
   lockReason?: string;
+  demoMode?: boolean;
 }) {
   const bracketPlan = buildBracketPlan(step);
   const number = step.displayNumber;
   const total = view.steps.length;
   const previous = number > 1 ? number - 1 : null;
   const next = number < total ? number + 1 : null;
+  const demoSkipHref = next ? `/my/rounds/${view.lotId}/step/${next}` : `/my/rounds/${view.lotId}`;
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState("");
   const [measurementValues, setMeasurementValues] = useState<Record<string, number | null>>(
@@ -316,6 +319,17 @@ export function StepRunner({
             <ul style={{ margin: "6px 0 0", paddingLeft: "20px" }}>
               {gateMessages.map((message) => <li key={message}>{message}</li>)}
             </ul>
+          </div>
+        ) : null}
+
+        {demoMode && (!gate.canPass || locked) ? (
+          <div className="pl-soft-card" style={{ marginTop: "12px", background: "var(--pl-sunk)" }}>
+            <Link className="pl-link" href={demoSkipHref} style={{ fontWeight: 800 }}>
+              ข้ามเพื่อทดสอบหน้าจอ
+            </Link>
+            <p className="pl-meta" style={{ marginTop: "6px" }}>
+              ไปดูขั้นถัดไปเท่านั้น ระบบไม่บันทึกว่าผ่านและไม่นับเป็นผลทดลองจริง
+            </p>
           </div>
         ) : null}
 

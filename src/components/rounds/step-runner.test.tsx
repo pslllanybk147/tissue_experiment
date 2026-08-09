@@ -198,6 +198,22 @@ describe("หลักฐานขั้นต่ำก่อนบันทึ�
 
     expect(openingButton(html, "บันทึกว่าผ่าน")).not.toContain("disabled");
   });
+
+  it("โหมดสาธิตมีทางข้ามแยกจากการบันทึกผ่าน และบอกว่าไม่บันทึกผล", () => {
+    const html = renderToStaticMarkup(
+      <StepRunner
+        view={view}
+        step={requiredPhotoStep}
+        onSave={noop}
+        photos={{ ...photos, canAttach: false, reason: "โหมดสาธิตแนบรูปไม่ได้" }}
+        demoMode
+      />,
+    );
+
+    expect(html).toContain("ข้ามเพื่อทดสอบหน้าจอ");
+    expect(html).toContain("ไม่บันทึกว่าผ่าน");
+    expect(html).toContain(`/my/rounds/${view.lotId}/step/${requiredPhotoStep.displayNumber + 1}`);
+  });
 });
 
 describe("T3 lock", () => {
