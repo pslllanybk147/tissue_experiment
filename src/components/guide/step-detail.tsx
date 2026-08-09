@@ -4,6 +4,8 @@ import { RichText } from "./rich-text";
 import { troubleshootingById } from "@/lib/manual/troubleshooting";
 import type { ResolvedManual, ResolvedStep } from "@/lib/manual/types";
 import { MediumCalculator } from "@/components/rounds/medium-calculator";
+import { formatDurationMinutes } from "@/lib/manual/duration";
+import { MEDIUM_CALCULATOR_STEP_IDS, initialRecipeIdForStep } from "@/lib/rounds/medium-steps";
 import { BracketNotice } from "./bracket-notice";
 import { EvidenceBadge } from "./evidence-badge";
 import { Illustration, illustrationCredits } from "./illustrations";
@@ -62,11 +64,22 @@ export function StepDetail({ manual, step }: { manual: ResolvedManual; step: Res
         {" · "}ขั้นที่ {number} จาก {total}
       </p>
       <h1 className="pl-h1" style={{ marginTop: "8px" }}>{step.title}</h1>
-      <p style={{ marginTop: "6px" }}><EvidenceBadge level={step.evidence.level} /></p>
+      <p style={{ marginTop: "6px" }}>
+        <EvidenceBadge level={step.evidence.level} />
+        {step.durationMinutes != null ? (
+          <>{" "}<span className="pl-mono">ใช้เวลาราว {formatDurationMinutes(step.durationMinutes)}</span></>
+        ) : null}
+      </p>
       <p className="pl-lede" style={{ marginTop: "12px" }}><RichText source={step.summary} /></p>
 
       <BracketNotice step={step} />
       <p className="pl-lede" style={{ marginTop: "8px" }}><RichText source={step.why} /></p>
+
+      {MEDIUM_CALCULATOR_STEP_IDS.has(step.id) ? (
+        // อยู่ก่อนคำสั่งลงมือทำตั้งใจ เพราะขั้นตอนด้านล่างอ้างถึง "ตามสูตร"/"ตามที่คำนวณ" อยู่หลายจุด
+        // ผู้ใช้ต้องเห็นตัวเลขจริงก่อนจะอ่านคำสั่งที่อ้างถึงมัน ไม่ใช่ไล่หาทีหลัง
+        <MediumCalculator recipes={manual.mediaRecipes} initialRecipeId={initialRecipeIdForStep(step.id)} />
+      ) : null}
 
       {step.illustrationId ? (
         <div className="pl-card" style={{ marginTop: "18px", padding: 0, overflow: "hidden" }}>
@@ -99,8 +112,6 @@ export function StepDetail({ manual, step }: { manual: ResolvedManual; step: Res
 
       <List title="ผ่านเมื่อ" items={step.passCriteria} />
       <List title="หยุดทันทีถ้า" items={step.stopConditions} />
-
-      {step.id === "prep-media" ? <MediumCalculator recipes={manual.mediaRecipes} /> : null}
 
       <Troubleshooting ids={step.troubleshootingIds ?? []} />
 

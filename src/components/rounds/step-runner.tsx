@@ -5,12 +5,14 @@ import { useState, type FormEvent } from "react";
 import { EvidenceBadge } from "@/components/guide/evidence-badge";
 import { Illustration } from "@/components/guide/illustrations";
 import { RichText } from "@/components/guide/rich-text";
+import { formatDurationMinutes } from "@/lib/manual/duration";
 import { troubleshootingById } from "@/lib/manual/troubleshooting";
 import type { GuidedStepStatus } from "@/lib/domain/models";
 import type { ObservationMedia } from "@/lib/domain/models";
 import type { CalibrationEntry } from "@/lib/domain/calibration";
 import type { RoundStep, RoundView } from "@/lib/rounds/round-adapter";
 import { bracketKey, buildBracketPlan, jarsPerArmKey } from "@/lib/rounds/bracket";
+import { MEDIUM_CALCULATOR_STEP_IDS, initialRecipeIdForStep } from "@/lib/rounds/medium-steps";
 import { BracketTable } from "./bracket-table";
 import { MediumCalculator } from "./medium-calculator";
 import { OnlineStatus } from "./online-status";
@@ -115,10 +117,28 @@ export function StepRunner({
         {" · "}ขั้นที่ {number} จาก {total}
       </p>
       <h1 className="pl-h1" style={{ marginTop: "8px" }}>{step.title}</h1>
-      <p style={{ marginTop: "6px" }}><EvidenceBadge level={step.evidence.level} /></p>
+      <p style={{ marginTop: "6px" }}>
+        <EvidenceBadge level={step.evidence.level} />
+        {step.durationMinutes != null ? (
+          <>{" "}<span className="pl-mono">ใช้เวลาราว {formatDurationMinutes(step.durationMinutes)}</span></>
+        ) : null}
+      </p>
       <p className="pl-lede" style={{ marginTop: "12px" }}><RichText source={step.summary} /></p>
 
       {step.id === "sterilize" ? <SterilizationMethodBanner sterilization={view.sterilization} /> : null}
+
+      {MEDIUM_CALCULATOR_STEP_IDS.has(step.id) ? (
+        // อยู่ก่อนคำสั่งลงมือทำตั้งใจ เพราะขั้นตอนด้านล่างอ้างถึง "ตามสูตร"/"ตามที่คำนวณ" อยู่หลายจุด
+        // (เช่น pH, ปริมาณสาร) ผู้ใช้ต้องเห็นตัวเลขจริงก่อนจะอ่านคำสั่งที่อ้างถึงมัน ไม่ใช่ไล่หาทีหลัง
+        // ชุดอุปกรณ์โหลดมาแบบ async หลังหน้าเรนเดอร์แล้ว การใส่ key ทำให้เครื่องคำนวณ
+        // เริ่มใหม่ด้วยค่าที่โหลดมาจริง แทนที่จะค้างอยู่กับค่าเริ่มต้นตอน mount
+        <MediumCalculator
+          key={`${step.id}-${tools?.scaleMinimumMg ?? ""}-${tools?.pipetteMinimumMl ?? ""}-${tools?.msLabelRateGPerL ?? ""}`}
+          recipes={view.mediaRecipes}
+          initialRecipeId={initialRecipeIdForStep(step.id)}
+          tools={tools}
+        />
+      ) : null}
 
       {step.illustrationId ? (
         <div className="pl-card" style={{ marginTop: "18px", padding: 0, overflow: "hidden" }}>
@@ -146,16 +166,6 @@ export function StepRunner({
 
       <List title="ผ่านเมื่อ" items={step.passCriteria} />
       <List title="หยุดทันทีถ้า" items={step.stopConditions} />
-
-      {step.id === "prep-media" ? (
-        // ชุดอุปกรณ์โหลดมาแบบ async หลังหน้าเรนเดอร์แล้ว การใส่ key ทำให้เครื่องคำนวณ
-        // เริ่มใหม่ด้วยค่าที่โหลดมาจริง แทนที่จะค้างอยู่กับค่าเริ่มต้นตอน mount
-        <MediumCalculator
-          key={`${tools?.scaleMinimumMg ?? ""}-${tools?.pipetteMinimumMl ?? ""}-${tools?.msLabelRateGPerL ?? ""}`}
-          recipes={view.mediaRecipes}
-          tools={tools}
-        />
-      ) : null}
 
       {troubleshooting.length > 0 ? (
         <section style={{ marginTop: "24px" }}>

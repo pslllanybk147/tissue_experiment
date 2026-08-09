@@ -163,6 +163,15 @@ export const violinVariegatedPack: PlantPack = {
       },
     },
     root: {
+      // ค่าตั้งต้นของทรงคือ 14 วัน แต่งานที่อ้างอิงของพันธุ์นี้บ่มจริงหนึ่งเดือน (ดู evidence.note)
+      // ต้อง override ทั้ง durationMinutes และคำสั่งด้านล่าง ไม่งั้นแบดจ์เวลาที่หน้าเว็บแสดงจะขัดกับตัวเลขจริง
+      durationMinutes: 43200,
+      actions: [
+        "เลือกยอดที่มีใบและไม่ผิดรูป",
+        "ย้ายลงอาหารสูตรออกราก",
+        "นับจำนวนรากและวัดความยาวรากที่ยาวที่สุดเมื่อครบหนึ่งเดือน ตามระยะที่งานอ้างอิงบ่มจริง",
+      ],
+      stopConditions: ["โคนยอดเน่า", "ไม่มีรากเลยหลังครบหนึ่งเดือน"],
       evidence: {
         level: "adapted",
         sourceIds: ["source-selfheading-philodendron-2012", "source-cannifolium-2008"],
