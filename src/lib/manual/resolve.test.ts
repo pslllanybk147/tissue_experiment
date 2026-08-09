@@ -46,6 +46,15 @@ describe("resolveManual", () => {
     expect(manual.steps.every((item) => item.origin === "core")).toBe(true);
   });
 
+  it("สร้างรายการทำตามลำดับให้ขั้นที่ยังไม่มี execution metadata", () => {
+    const manual = resolveManual(basePack, { library });
+    const receive = manual.steps.find((item) => item.id === "receive")!;
+
+    expect(receive.executionInstructions).toEqual([
+      { label: "ข้อ 1", action: "ลงมือทำตามตัวอย่าง" },
+    ]);
+  });
+
   it("ถอดขั้นที่ไม่อยู่ใน sequence ออก", () => {
     const manual = resolveManual({ ...basePack, sequence: ["receive", "sterilize"] }, { library });
 
@@ -63,6 +72,36 @@ describe("resolveManual", () => {
     expect(sterilize?.durationMinutes).toBe(30);
     expect(sterilize?.summary).toBe("สรุปของ ฟอกฆ่าเชื้อ");
     expect(sterilize?.origin).toBe("override");
+  });
+
+  it("รักษาคำสั่งปฏิบัติแบบมี metadata ผ่านการ resolve", () => {
+    const manual = resolveManual(
+      {
+        ...basePack,
+        overrides: {
+          sterilize: {
+            executionInstructions: [
+              {
+                label: "เตรียมภาชนะ S",
+                action: "วางกระปุก S ไว้ด้านซ้ายของพื้นที่ทำงาน",
+                container: "S",
+                completion: "กระปุก S มีป้ายตรงกับ protocol",
+              },
+            ],
+          },
+        },
+      },
+      { library },
+    );
+
+    expect(manual.steps.find((item) => item.id === "sterilize")?.executionInstructions).toEqual([
+      {
+        label: "เตรียมภาชนะ S",
+        action: "วางกระปุก S ไว้ด้านซ้ายของพื้นที่ทำงาน",
+        container: "S",
+        completion: "กระปุก S มีป้ายตรงกับ protocol",
+      },
+    ]);
   });
 
   it("ใช้ขั้นที่แผ่นเสริมเขียนเองได้ และทำเครื่องหมายว่ามาจาก pack", () => {

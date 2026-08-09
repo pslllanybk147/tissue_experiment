@@ -10,6 +10,19 @@ import { BracketNotice } from "./bracket-notice";
 import { EvidenceBadge } from "./evidence-badge";
 import { Illustration, illustrationCredits } from "./illustrations";
 import { StepSections } from "@/components/rounds/step-section";
+import { HaiterCalculator } from "@/components/calculators/haiter-calculator";
+
+function SterilizationCalculator() {
+  return (
+    <section className="pl-card" style={{ marginTop: "18px" }}>
+      <p className="pl-mono" style={{ margin: 0 }}>คำนวณก่อนลงมือ</p>
+      <p className="pl-lede" style={{ marginTop: "6px" }}>
+        กรอกค่าจากฉลากและปริมาตรรวมที่รอบนี้ต้องใช้ ปริมาณที่ต้องใช้จะแสดงในเครื่องคำนวณ แล้วจึงตวงตามผลที่แสดง
+      </p>
+      <HaiterCalculator initialInput={{ sourcePercent: 6, targetPercent: 1, finalVolumeMl: 100, minimumMeasurableMl: 1 }} initialLabelBasis="w/w" />
+    </section>
+  );
+}
 
 function Troubleshooting({ ids }: { ids: string[] }) {
   const entries = ids.map((id) => troubleshootingById(id)).filter((entry) => entry !== null);
@@ -63,6 +76,7 @@ export function StepDetail({ manual, step }: { manual: ResolvedManual; step: Res
         step={step}
         actionPrelude={(
           <>
+            {step.id === "sterilize" ? <SterilizationCalculator /> : null}
             <BracketNotice step={step} />
             {MEDIUM_CALCULATOR_STEP_IDS.has(step.id) ? (
               <MediumCalculator recipes={manual.mediaRecipes} initialRecipeId={initialRecipeIdForStep(step.id)} />

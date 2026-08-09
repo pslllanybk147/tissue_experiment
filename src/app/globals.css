@@ -1136,3 +1136,25 @@ button:disabled { cursor: not-allowed; }
   object-fit: contain;
   background: #fff;
 }
+
+.execution-instructions { display:grid; gap:12px; margin:8px 0 0; padding:0; list-style:none; counter-reset:execution-step; }
+.execution-instruction { counter-increment:execution-step; padding:14px 16px; border:1px solid var(--line); border-left:3px solid var(--blue); background:var(--soft); }
+.execution-instruction-warning { border-left-color:var(--button-secondary-border); }
+.execution-instruction-stop { border-left-color:var(--danger); background:var(--pl-stop); }
+.execution-instruction-heading { display:flex; align-items:baseline; gap:10px; }
+.execution-instruction-number { flex:0 0 auto; color:var(--muted); font:11px var(--font-geist-mono),monospace; }
+.execution-instruction-heading h3 { margin:0; font-size:14px; font-weight:700; }
+.execution-instruction-action { margin:8px 0 0; font-size:13px; line-height:1.7; }
+.execution-instruction-details { display:grid; grid-template-columns:max-content minmax(0,1fr); gap:5px 14px; margin:10px 0 0; font-size:12px; }
+.execution-instruction-details dt { color:var(--muted); }
+.execution-instruction-details dd { margin:0; min-width:0; }
+.execution-instruction-details dd ul { margin:0; padding-left:16px; }
+.execution-instruction-container { font:12px var(--font-geist-mono),monospace; font-weight:700; }
+.execution-instruction-completion,.execution-instruction-next { margin:10px 0 0; font-size:12px; line-height:1.6; }
+.execution-instruction-next { color:var(--muted); }
+
+@media (max-width: 600px) {
+  .execution-instruction { padding:12px; }
+  .execution-instruction-details { grid-template-columns:1fr; gap:2px; }
+  .execution-instruction-details dt { margin-top:6px; }
+}

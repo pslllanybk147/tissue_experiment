@@ -23,10 +23,10 @@ export function BracketNotice({ step }: { step: ResolvedStep }) {
 
   return (
     <div className="pl-card" style={{ marginTop: "18px", background: "var(--pl-sunk)" }}>
-      <p style={{ margin: 0, fontWeight: 700 }}>ยังไม่มีงานตรงพันธุ์ของต้นนี้ — อย่าเดา ให้ต้นบอกเอง</p>
+      <p style={{ margin: 0, fontWeight: 700 }}>ชุดทดลองเสริม — ไม่ใช่เส้นทางหลัก</p>
       <p className="pl-lede" style={{ marginTop: "8px" }}>
-        แบ่งชิ้นพืชเป็น 3 ชุด ชุดละ 3 กระปุก ใช้{dose.form} แช่นาน {formatDurationMinRange(dose.durationMin)}{" "}
-        นาทีเท่ากันทุกชุด ต่างกันแค่ความเข้มข้น
+        ยังไม่มีงานตรงพันธุ์ของต้นนี้ จึงใช้เฉพาะเมื่อกำลังทำรอบทดลองเปรียบเทียบ แบ่งชิ้นพืชเป็น 3 ชุด ชุดละ 3 กระปุก
+        ใช้{dose.form} แช่นาน {formatDurationMinRange(dose.durationMin)} นาทีเท่ากันทุกชุด ต่างกันแค่ความเข้มข้น
       </p>
       <ul style={{ margin: "10px 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "4px" }}>
         {plan.arms.map((arm) => (
@@ -46,17 +46,25 @@ export function BracketNotice({ step }: { step: ResolvedStep }) {
         </p>
       ) : null}
       {dose.method ? (
-        <button
-          type="button"
-          className="pl-soft-card pl-link"
-          style={{ marginTop: "10px", fontWeight: 700, cursor: "pointer" }}
-          onClick={() => {
-            open();
-            select(dose.method!);
-          }}
-        >
-          เปิดเครื่องคำนวณ{methodLabel[dose.method]}
-        </button>
+        <>
+          <div className="pl-soft-card" style={{ marginTop: "10px" }}>
+            <p style={{ margin: 0, fontWeight: 700 }}>หลังฟอก: เตรียมน้ำล้างทดลอง</p>
+            <p className="pl-lede" style={{ marginTop: "6px" }}>
+              เตรียมภาชนะ R1–R3 ภาชนะละ 50 mL แล้วล้างชิ้นพืชรอบละ 1 นาที น้ำนี้ไม่ใช่น้ำปลอดเชื้อ และใช้เฉพาะแขนทดลองนี้
+            </p>
+          </div>
+          <button
+            type="button"
+            className="pl-soft-card pl-link"
+            style={{ marginTop: "10px", fontWeight: 700, cursor: "pointer" }}
+            onClick={() => {
+              open();
+              select(dose.method!);
+            }}
+          >
+            เปิดเครื่องคำนวณ{methodLabel[dose.method]}
+          </button>
+        </>
       ) : null}
       <p className="pl-lede" style={{ marginTop: "10px" }}>
         ดูผลใน 14 วัน แล้วบันทึกลงรอบเพาะ ชุดที่ไม่ติดเชื้อและชิ้นยังเขียว คือค่าของต้นคุณ

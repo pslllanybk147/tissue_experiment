@@ -76,7 +76,15 @@ export function resolveManual(pack: PlantPack, context: ResolveContext): Resolve
       order: index,
       origin,
     };
-    return { ...resolved, actions: beginnerActionLines(resolved.actions) };
+    const actions = beginnerActionLines(resolved.actions);
+    return {
+      ...resolved,
+      actions,
+      executionInstructions: resolved.executionInstructions ?? actions.map((action, actionIndex) => ({
+        label: `ข้อ ${actionIndex + 1}`,
+        action,
+      })),
+    };
   });
 
   return {

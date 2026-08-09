@@ -39,7 +39,7 @@ describe("StepRunner", () => {
     const html = renderToStaticMarkup(<StepRunner view={view} step={sterilize} onSave={noop} />);
 
     expect(html).toContain("ฟอกฆ่าเชื้อ");
-    expect(html).toContain("ทำทีละข้อ");
+    expect(html).toContain("ทำตามลำดับ");
     expect(html).toContain("ผ่านเมื่อ");
     expect(html).toContain("หยุดเมื่อ");
   });

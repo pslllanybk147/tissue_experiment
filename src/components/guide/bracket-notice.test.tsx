@@ -64,6 +64,8 @@ describe("กล่องบอกว่าต้องทดสอบช่ว�
     expect(html).toContain("0.8");
     expect(html).toContain("1.4");
     expect(html).toContain("2");
+    expect(html).toContain("ชุดทดลองเสริม");
+    expect(html).toContain("ไม่ใช่เส้นทางหลัก");
   });
 
   it("บอกชื่อและรูปแบบของสารที่ใช้จริง ไม่ใช่ตัวเลขลอย ๆ", () => {
@@ -105,5 +107,17 @@ describe("กล่องบอกว่าต้องทดสอบช่ว�
     const html = withProvider(oneMinuteRinse);
     expect(html).toContain("แช่นาน 1 นาที");
     expect(html).not.toContain("1 ถึง 1");
+  });
+
+  it("บอกปริมาตรและลำดับภาชนะสำหรับ rinse ทดลอง", () => {
+    const oneMinuteRinse: ResolvedStep = {
+      ...base,
+      doses: { "sterilize.dose.nadcc": { ...dose, durationMin: [1, 1], method: "nadcc" } },
+    };
+    const html = withProvider(oneMinuteRinse);
+
+    expect(html).toContain("R1–R3");
+    expect(html).toContain("ภาชนะละ 50 mL");
+    expect(html).toContain("รอบละ 1 นาที");
   });
 });

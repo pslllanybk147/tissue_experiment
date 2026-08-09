@@ -32,7 +32,7 @@ describe("StepDetail", () => {
   it("แสดงสิ่งที่ต้องลงมือ เกณฑ์ผ่าน และจุดที่ต้องหยุด", () => {
     const html = renderStep(sterilize);
 
-    expect(html).toContain("ทำทีละข้อ");
+    expect(html).toContain("ทำตามลำดับ");
     expect(html).toContain("ผ่านเมื่อ");
     expect(html).toContain("หยุดเมื่อ");
   });
@@ -40,7 +40,7 @@ describe("StepDetail", () => {
   it("เตือนความปลอดภัยก่อนรายการลงมือทำ", () => {
     const html = renderStep(sterilize);
 
-    expect(html.indexOf("แอมโมเนีย")).toBeLessThan(html.indexOf("ทำทีละข้อ"));
+    expect(html.indexOf("แอมโมเนีย")).toBeLessThan(html.indexOf("ทำตามลำดับ"));
   });
 
   it("มีภาพประกอบของขั้นนั้น", () => {
@@ -72,6 +72,14 @@ describe("StepDetail", () => {
 
     expect(withCalculator).toContain("จะทำอาหารเท่าไหร่");
     expect(without).not.toContain("จะทำอาหารเท่าไหร่");
+  });
+
+  it("ขั้นฟอกมีเครื่องคำนวณปริมาณ Haiter อยู่ในหน้าปฏิบัติเดียวกัน", () => {
+    const html = renderStep(sterilize);
+
+    expect(html).toContain("ไฮเตอร์ / สารฟอกฆ่าเชื้อ");
+    expect(html).toContain("ความเข้มข้นบนฉลากขวด");
+    expect(html).toContain("ปริมาณที่ต้องใช้จะแสดงในเครื่องคำนวณ");
   });
 
   it("ไม่มีปุ่มย้อนกลับที่ขั้นแรก และไม่มีปุ่มถัดไปที่ขั้นสุดท้าย", () => {
