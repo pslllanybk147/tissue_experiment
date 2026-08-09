@@ -46,6 +46,15 @@ describe("resolveManual", () => {
     expect(manual.steps.every((item) => item.origin === "core")).toBe(true);
   });
 
+  it("สร้างรายการทำตามลำดับให้ขั้นที่ยังไม่มี execution metadata", () => {
+    const manual = resolveManual(basePack, { library });
+    const receive = manual.steps.find((item) => item.id === "receive")!;
+
+    expect(receive.executionInstructions).toEqual([
+      { label: "ข้อ 1", action: "ลงมือทำตามตัวอย่าง" },
+    ]);
+  });
+
   it("ถอดขั้นที่ไม่อยู่ใน sequence ออก", () => {
     const manual = resolveManual({ ...basePack, sequence: ["receive", "sterilize"] }, { library });
 
