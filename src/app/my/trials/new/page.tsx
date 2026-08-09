@@ -7,7 +7,11 @@ import { useAuth } from "@/components/auth/auth-provider";
 import { GuideShell } from "@/components/guide/guide-shell";
 import { ThemeToggle } from "@/components/guide/theme-toggle";
 import { resolveBySlug } from "@/lib/manual/registry";
-import { NADCC_VS_HAITER_TRIAL_CAVEAT, buildNaDccVsHaiterTrialLotInputs } from "@/lib/trials/nadcc-vs-haiter-trial";
+import {
+  NADCC_VS_HAITER_TRIAL_CAVEAT,
+  T3_RISK_NOTE,
+  buildNaDccVsHaiterTrialLotInputs,
+} from "@/lib/trials/nadcc-vs-haiter-trial";
 import { getExperimentRepository } from "@/lib/repositories/experiment-repository-factory";
 
 // เนื้อหาทดลอง NaDCC vs Haiter (new_idea.md หัวข้อ 15) มี doses["sterilize.dose.nadcc"] ให้ทดสอบช่วงจริง
@@ -55,18 +59,20 @@ function CreateTrial() {
     <GuideShell action={<ThemeToggle />}>
       <h1 className="pl-h1">เริ่มชุดทดลอง NaDCC เทียบ Haiter</h1>
       <p className="pl-lede" style={{ marginTop: "8px" }}>
-        เปรียบเทียบน้ำ rinse คลอรีนต่ำสองแบบหลังฟอกฆ่าเชื้อหลักด้วย Haiter บน{manual.commonName} ตามแบบชุดทดลองในหัวข้อ 15 ของ new_idea.md
+        เปรียบเทียบวิธีฟอกฆ่าเชื้อและน้ำ rinse คลอรีนต่ำบน{manual.commonName} ตามแบบชุดทดลองในหัวข้อ 15 ของ new_idea.md
       </p>
 
       <div className="pl-card" style={{ marginTop: "18px" }}>
-        <p className="pl-h2">ระบบจะเปิดสี่รอบพร้อมกัน</p>
+        <p className="pl-h2">ระบบจะเปิดห้ารอบพร้อมกัน</p>
         <ul style={{ margin: "10px 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "6px" }}>
           <li>Control-A · พื้นฐานเดิม (Haiter + น้ำปลอดเชื้อ)</li>
           <li>Control-B · กระปุกเปล่า ไม่มี explant เพื่อแยกว่าปนเปื้อนมาจากอาหาร/ภาชนะ</li>
           <li>T1 · Haiter + น้ำ rinse NaClO 300 ppm</li>
           <li>T2 · Haiter + น้ำ rinse NaDCC 300 ppm</li>
+          <li>T3 · NaDCC เดี่ยว 300 ppm นาน 24-48 ชม. แทน Haiter ทั้งขั้น</li>
         </ul>
-        <p className="pl-meta" style={{ marginTop: "12px" }}>{NADCC_VS_HAITER_TRIAL_CAVEAT}</p>
+        <p className="pl-meta" style={{ marginTop: "12px" }}>{T3_RISK_NOTE}</p>
+        <p className="pl-meta" style={{ marginTop: "8px" }}>{NADCC_VS_HAITER_TRIAL_CAVEAT}</p>
       </div>
 
       {failed ? (
@@ -83,7 +89,7 @@ function CreateTrial() {
           onClick={() => void start()}
           style={{ background: "var(--pl-yellow)", cursor: starting ? "default" : "pointer", fontSize: "15px", padding: "10px 18px" }}
         >
-          {starting ? "กำลังเปิดสี่รอบ…" : "เริ่มชุดทดลอง"}
+          {starting ? "กำลังเปิดห้ารอบ…" : "เริ่มชุดทดลอง"}
         </button>
       </p>
     </GuideShell>

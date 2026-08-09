@@ -5,11 +5,11 @@ import { NADCC_VS_HAITER_TRIAL_ARM_COUNT, buildNaDccVsHaiterTrialLotInputs } fro
 const manual = resolveBySlug("violin-variegated")!;
 
 describe("buildNaDccVsHaiterTrialLotInputs", () => {
-  it("สร้างสี่แขนงตามหัวข้อ 15 ของ new_idea.md", () => {
+  it("สร้างห้าแขนงตามหัวข้อ 15 ของ new_idea.md รวม T3", () => {
     const inputs = buildNaDccVsHaiterTrialLotInputs(manual, "2026-08-09");
 
     expect(inputs).toHaveLength(NADCC_VS_HAITER_TRIAL_ARM_COUNT);
-    expect(inputs.map((input) => input.armRole)).toEqual(["control-a", "control-b", "t1", "t2"]);
+    expect(inputs.map((input) => input.armRole)).toEqual(["control-a", "control-b", "t1", "t2", "t3"]);
   });
 
   it("ทุกแขนงใช้ trialId เดียวกันเพื่อให้หน้าภาพรวมค้นกลุ่มได้", () => {
@@ -42,5 +42,15 @@ describe("buildNaDccVsHaiterTrialLotInputs", () => {
     expect(t2.sterilization?.rinseWater?.method).toBe("nadcc");
     expect(t1.sterilization?.rinseWater?.targetChlorinePercent).toBe(0.03);
     expect(t2.sterilization?.rinseWater?.targetChlorinePercent).toBe(0.03);
+  });
+
+  it("T3 ใช้ NaDCC เดี่ยวแทน Haiter ทั้งขั้น จึงไม่มี rinseWater เสริม", () => {
+    const inputs = buildNaDccVsHaiterTrialLotInputs(manual, "2026-08-09");
+    const t3 = inputs.find((input) => input.armRole === "t3")!;
+
+    expect(t3.sterilization?.method).toBe("nadcc-soak");
+    expect(t3.sterilization?.targetChlorinePercent).toBe(0.03);
+    expect(t3.sterilization?.rinseWater).toBeUndefined();
+    expect(t3.isBlank).toBe(false);
   });
 });

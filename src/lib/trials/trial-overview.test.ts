@@ -50,8 +50,23 @@ describe("buildTrialOverview", () => {
 
     const overview = buildTrialOverview(lots, new Map());
 
-    expect(overview.find((item) => item.armRole === "control-a")?.rinseMethodLabel).toBe("น้ำปลอดเชื้อธรรมดา (ค่าเริ่มต้นของระบบ)");
-    expect(overview.find((item) => item.armRole === "t1")?.rinseMethodLabel).toBe("น้ำ rinse NaClO 300 ppm");
+    expect(overview.find((item) => item.armRole === "control-a")?.methodLabel).toBe("Haiter + น้ำปลอดเชื้อธรรมดา (ค่าเริ่มต้นของระบบ)");
+    expect(overview.find((item) => item.armRole === "t1")?.methodLabel).toBe("Haiter + น้ำ rinse NaClO 300 ppm");
+  });
+
+  it("T3 แสดงว่าเปลี่ยนวิธีฆ่าเชื้อหลักเป็น NaDCC เดี่ยว ไม่ใช่แค่เสริม rinse", () => {
+    const lots = [
+      lot({
+        id: "lot-t3",
+        armRole: "t3",
+        armLabel: "T3",
+        sterilization: { profileId: "nadcc-soak-v1", profileVersion: "1.0.0", method: "nadcc-soak", targetChlorinePercent: 0.03 },
+      }),
+    ];
+
+    const overview = buildTrialOverview(lots, new Map());
+
+    expect(overview[0].methodLabel).toBe("NaDCC เดี่ยว 300 ppm นาน 24-48 ชม. (แทน Haiter ทั้งขั้น)");
   });
 
   it("ดึงบันทึกล่าสุดของแต่ละ lot มาแสดง โดยถือว่า observations ที่ส่งเข้ามาเรียงใหม่ไปเก่าแล้ว", () => {

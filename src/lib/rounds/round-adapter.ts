@@ -1,4 +1,11 @@
-import type { CreateLotInput, ExperimentLot, GuidedStepStatus, ProtocolStepRun } from "@/lib/domain/models";
+import type {
+  CreateLotInput,
+  ExperimentLot,
+  GuidedStepStatus,
+  LotSterilizationSnapshot,
+  ProtocolStepRun,
+  TrialArmRole,
+} from "@/lib/domain/models";
 import type { MediaRecipe, ResolvedManual, ResolvedStep } from "@/lib/manual/types";
 
 /** รุ่นของโครงเนื้อหาที่ใช้ตอนบันทึก เก็บไว้เพื่อให้ย้อนดูได้ว่ารอบนั้นเดินตามคู่มือรุ่นไหน */
@@ -23,6 +30,11 @@ export type RoundView = {
   mediaRecipes: MediaRecipe[];
   currentStepNumber: number;
   passedCount: number;
+  /** มีค่าเมื่อรอบนี้เป็นแขนงหนึ่งของชุดทดลองเปรียบเทียบ (ดู src/lib/trials) ใช้แสดงแบนเนอร์
+   *  บอกวิธีฟอกฆ่าเชื้อของแขนงนี้ตรงขั้นฟอกฆ่าเชื้อ โดยไม่ต้องแยกเนื้อหาคู่มือเป็นคนละชุดต่อแขนง */
+  trialArmRole?: TrialArmRole;
+  trialArmLabel?: string;
+  sterilization?: LotSterilizationSnapshot;
 };
 
 const emptyState = (stepId: string): RoundStepState => ({
@@ -77,6 +89,9 @@ export function buildRoundView(lot: ExperimentLot, runs: ProtocolStepRun[], manu
     mediaRecipes: manual.mediaRecipes,
     currentStepNumber,
     passedCount,
+    ...(lot.armRole ? { trialArmRole: lot.armRole } : {}),
+    ...(lot.armLabel ? { trialArmLabel: lot.armLabel } : {}),
+    ...(lot.sterilization ? { sterilization: lot.sterilization } : {}),
   };
 }
 

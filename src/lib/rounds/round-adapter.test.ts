@@ -95,6 +95,27 @@ describe("buildRoundView", () => {
     expect(view.steps.some((step) => step.id === "sterilize")).toBe(true);
     expect(view.steps.some((step) => step.id === "check-contamination")).toBe(true);
   });
+
+  it("รอบที่เป็นแขนงของชุดทดลองพก trialArmRole/trialArmLabel/sterilization ติดไปด้วย", () => {
+    const trialLot: ExperimentLot = {
+      ...lot,
+      armRole: "t3",
+      armLabel: "T3 · NaDCC เดี่ยว 300 ppm นาน 24-48 ชม. แทน Haiter ทั้งขั้น",
+      sterilization: { profileId: "nadcc-soak-v1", profileVersion: "1.0.0", method: "nadcc-soak", targetChlorinePercent: 0.03 },
+    };
+    const view = buildRoundView(trialLot, [], manual);
+
+    expect(view.trialArmRole).toBe("t3");
+    expect(view.trialArmLabel).toBe("T3 · NaDCC เดี่ยว 300 ppm นาน 24-48 ชม. แทน Haiter ทั้งขั้น");
+    expect(view.sterilization?.method).toBe("nadcc-soak");
+  });
+
+  it("รอบปกติที่ไม่ใช่แขนงของชุดทดลองไม่มี trialArmRole", () => {
+    const view = buildRoundView(lot, [], manual);
+
+    expect(view.trialArmRole).toBeUndefined();
+    expect(view.sterilization).toBeUndefined();
+  });
 });
 
 describe("newLotInput", () => {

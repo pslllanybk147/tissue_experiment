@@ -15,6 +15,7 @@ import { BracketTable } from "./bracket-table";
 import { MediumCalculator } from "./medium-calculator";
 import { OnlineStatus } from "./online-status";
 import { StepPhotos } from "./step-photos";
+import { SterilizationMethodBanner } from "./sterilization-method-banner";
 
 export type StepPhotoProps = {
   observationId: string | null;
@@ -116,6 +117,8 @@ export function StepRunner({
       <h1 className="pl-h1" style={{ marginTop: "8px" }}>{step.title}</h1>
       <p style={{ marginTop: "6px" }}><EvidenceBadge level={step.evidence.level} /></p>
       <p className="pl-lede" style={{ marginTop: "12px" }}><RichText source={step.summary} /></p>
+
+      {step.id === "sterilize" ? <SterilizationMethodBanner sterilization={view.sterilization} /> : null}
 
       {step.illustrationId ? (
         <div className="pl-card" style={{ marginTop: "18px", padding: 0, overflow: "hidden" }}>

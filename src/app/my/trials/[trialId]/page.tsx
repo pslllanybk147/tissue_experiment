@@ -21,7 +21,7 @@ function TrialArmCard({ arm }: { arm: TrialArmSummary }) {
         style={{ display: "block", color: "inherit", textDecoration: "none" }}
       >
         <p className="pl-h2">{arm.armLabel}</p>
-        <p className="pl-meta" style={{ marginTop: "4px" }}>{arm.rinseMethodLabel}</p>
+        <p className="pl-meta" style={{ marginTop: "4px" }}>{arm.methodLabel}</p>
         <p className="pl-mono" style={{ marginTop: "10px" }}>ขั้นปัจจุบัน: {arm.stage} · สถานะ: {arm.status}</p>
         {arm.latestObservationNote ? (
           <p className="pl-lede" style={{ marginTop: "8px" }}>

@@ -108,7 +108,9 @@ export type ProtocolTemplate = {
   protocolId?: string;
 };
 
-export type SterilizationMethod = "haiter-chemical" | "pressure-sterilization";
+/** "nadcc-soak" คือ T3 ของ new_idea.md หัวข้อ 15: แช่ NaDCC 300 ppm นาน 24-48 ชม. แทนขั้น Haiter ทั้งขั้น
+ *  ไม่ใช่ rinse หลัง Haiter แบบ RinseWaterMethod ("nadcc") ซึ่งเป็นคนละกลไกกัน */
+export type SterilizationMethod = "haiter-chemical" | "pressure-sterilization" | "nadcc-soak";
 export type RinseWaterMethod = "low-dose-hypochlorite" | "nadcc" | "commercial-sterile" | "pressure-steam";
 export type BlankDecision = "completed" | "skipped";
 export type WorkspaceType = "still-air-box" | "laminar-flow-cabinet";
