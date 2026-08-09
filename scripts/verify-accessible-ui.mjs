@@ -134,6 +134,47 @@ async function inspectPage(page, viewportName, route) {
       `${prefix} “${control.text}”: expected 48x48 target, got ${control.width}x${control.height}`,
     );
   }
+  await verifyButtonContrast(page, viewportName, route);
+}
+
+async function verifyButtonContrast(page, viewportName, route) {
+  for (const theme of ["light", "dark"]) {
+    await page.evaluate((value) => document.documentElement.setAttribute("data-theme", value), theme);
+    const controls = await page.evaluate(() => {
+      const visible = (element) => {
+        const rect = element.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        return rect.width > 0 && rect.height > 0 && style.visibility !== "hidden" && style.display !== "none";
+      };
+      const channel = (value) => {
+        const normalized = value / 255;
+        return normalized <= 0.04045 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
+      };
+      const luminance = (color) => {
+        const values = color.match(/\d+(?:\.\d+)?/g);
+        if (!values || values.length < 3) return null;
+        const [red, green, blue] = values.slice(0, 3).map(Number);
+        return 0.2126 * channel(red) + 0.7152 * channel(green) + 0.0722 * channel(blue);
+      };
+      return [...document.querySelectorAll(".primary-button, .secondary-button, .accessible-action, .photo-action")]
+        .filter(visible)
+        .map((element) => {
+          const style = getComputedStyle(element);
+          const foreground = luminance(style.color);
+          const background = luminance(style.backgroundColor);
+          return { text: (element.textContent ?? "").trim().slice(0, 60), foreground, background };
+        });
+    });
+    for (const control of controls) {
+      if (control.foreground === null || control.background === null) continue;
+      const contrast = (Math.max(control.foreground, control.background) + 0.05)
+        / (Math.min(control.foreground, control.background) + 0.05);
+      assert(
+        contrast >= 4.5,
+        `${viewportName} ${route} ${theme} “${control.text}”: contrast ${contrast.toFixed(2)} ต่ำกว่า 4.5:1`,
+      );
+    }
+  }
 }
 
 async function verifyPublicGuide(page, viewportName) {
