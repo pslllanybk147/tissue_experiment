@@ -145,7 +145,17 @@ export type NadccAutoInput = {
 };
 
 export type NadccAutoResult =
-  | { mode: "direct"; stockPpm: number; sourceVolumeMl: number; formula: string }
+  | {
+      mode: "direct";
+      stockPpm: number;
+      sourceVolumeMl: number;
+      formula: string;
+      calculatedVolumeMl: number;
+      actionableVolumeMl: number;
+      resolutionMl: number;
+      roundingDirection: "up" | "down" | "none";
+      actionableTargetPpm: number;
+    }
   | {
       mode: "working-dilution";
       stockPpm: number;
@@ -155,10 +165,26 @@ export type NadccAutoResult =
       sourceVolumeMl: number;
       diluentVolumeMl: number;
       workingDoseMl: number;
+      calculatedVolumeMl: number;
+      actionableVolumeMl: number;
+      resolutionMl: number;
+      roundingDirection: "up" | "down" | "none";
+      actionableTargetPpm: number;
     };
 
 const nadccDilutionFactors = [2, 3, 4, 5, 6, 8, 10, 15, 20, 25, 30, 40, 50, 75, 100, 150, 200, 300, 500, 1000];
 const nadccWorkingVolumesMl = [20, 50, 100, 200, 500, 1000];
+
+function actionableVolume(calculatedVolumeMl: number, resolutionMl: number) {
+  const decimalPlaces = Math.max(0, (String(resolutionMl).split(".")[1] ?? "").length);
+  const actionableVolumeMl = Number((Math.round(calculatedVolumeMl / resolutionMl) * resolutionMl).toFixed(decimalPlaces));
+  const roundingDirection = actionableVolumeMl === calculatedVolumeMl
+    ? "none" as const
+    : actionableVolumeMl > calculatedVolumeMl
+      ? "up" as const
+      : "down" as const;
+  return { calculatedVolumeMl, actionableVolumeMl, resolutionMl, roundingDirection };
+}
 
 /** คำนวณให้ครบตั้งแต่เม็ดจนถึงปริมาณที่ตวงจริงในขั้นตอนเดียว เหมือน planHaiterCleaningDose
  *  ต่างกันแค่ต้องแปลง "เม็ด → stock ppm" ก่อนเป็นก้าวแรกเสมอ */
@@ -175,7 +201,15 @@ export function planNadccCleaningDose(input: NadccAutoInput): NadccAutoResult {
     minimumMeasurableMl: input.minimumMeasurableMl,
   });
   if (!dose.needsWorkingDilution) {
-    return { mode: "direct", stockPpm, sourceVolumeMl: dose.sourceVolumeMl, formula: dose.formula };
+    const roundedDose = actionableVolume(dose.sourceVolumeMl, input.minimumMeasurableMl);
+    return {
+      mode: "direct",
+      stockPpm,
+      sourceVolumeMl: dose.sourceVolumeMl,
+      formula: dose.formula,
+      ...roundedDose,
+      actionableTargetPpm: round((stockPpm * roundedDose.actionableVolumeMl) / input.finalVolumeMl),
+    };
   }
 
   for (const dilutionFactor of nadccDilutionFactors) {
@@ -200,6 +234,7 @@ export function planNadccCleaningDose(input: NadccAutoInput): NadccAutoResult {
         continue;
       }
 
+      const roundedDose = actionableVolume(candidate.workingDoseMl, input.minimumMeasurableMl);
       return {
         mode: "working-dilution",
         stockPpm,
@@ -209,6 +244,8 @@ export function planNadccCleaningDose(input: NadccAutoInput): NadccAutoResult {
         sourceVolumeMl: candidate.sourceVolumeMl,
         diluentVolumeMl: candidate.diluentVolumeMl,
         workingDoseMl: candidate.workingDoseMl,
+        ...roundedDose,
+        actionableTargetPpm: round((candidate.workingPpm * roundedDose.actionableVolumeMl) / input.finalVolumeMl),
       };
     }
   }

@@ -74,6 +74,26 @@ describe("planNadccWorkingDilution", () => {
 });
 
 describe("planNadccCleaningDose", () => {
+  test("แยกค่าคำนวณจากค่าที่ตวงได้จริงตามความละเอียด 0.1 mL", () => {
+    const result = planNadccCleaningDose({
+      tabletMg: 2970,
+      availableChlorinePercent: 60,
+      stockVolumeMl: 100,
+      targetPpm: 300,
+      finalVolumeMl: 1000,
+      minimumMeasurableMl: 0.1,
+    });
+
+    expect(result).toMatchObject({
+      mode: "direct",
+      calculatedVolumeMl: 16.835017,
+      actionableVolumeMl: 16.8,
+      actionableTargetPpm: 299.376,
+      resolutionMl: 0.1,
+      roundingDirection: "down",
+    });
+  });
+
   test("ตวงตรงจาก stock ได้อยู่แล้ว ไม่ต้องเจือจาง", () => {
     const result = planNadccCleaningDose({
       tabletMg: 2970,

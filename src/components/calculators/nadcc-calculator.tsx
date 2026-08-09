@@ -57,6 +57,9 @@ export function NadccCalculator({
       <p className="pl-lede" style={{ marginTop: "6px" }}>
         ทางเลือกทดลอง ยังไม่มีงานยืนยันเจาะจงพืชส่วนใหญ่ในระบบ ใช้เป็นจุดเริ่มต้นการทดสอบเอง ไม่ใช่สูตรสำเร็จ
       </p>
+      <p className="pl-meta" style={{ marginTop: "8px" }}>
+        ค่าตั้งต้นจากฉลากที่ผู้ใช้ส่ง: เม็ดทั้งเม็ด 5.4 g มี NaDCC 2.97 g และระบุคลอรีนออกฤทธิ์ 60%
+      </p>
 
       <div className="pl-soft-card" style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "12px" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "12px" }}>
@@ -111,9 +114,16 @@ export function NadccCalculator({
         {plan.ok && plan.result.mode === "direct" ? (
           <div className="pl-soft-card" style={{ background: "var(--pl-sunk)" }}>
             <p className="pl-mono">{plan.result.formula}</p>
-            <p style={{ margin: "4px 0 0", fontSize: "26px", fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>
-              {plan.result.sourceVolumeMl} mL
+            <p className="pl-meta" style={{ marginTop: "8px" }}>
+              ค่าคำนวณก่อนปัด {plan.result.calculatedVolumeMl} mL
             </p>
+            <p style={{ margin: "4px 0 0", fontSize: "26px", fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>
+              ตวงจริง {plan.result.actionableVolumeMl} mL
+            </p>
+            <p className="pl-meta" style={{ marginTop: "6px" }}>
+              ความละเอียด {plan.result.resolutionMl} mL · {plan.result.roundingDirection === "up" ? "ปัดขึ้น" : plan.result.roundingDirection === "down" ? "ปัดลง" : "ไม่ต้องปัด"}
+            </p>
+            <p className="pl-meta" style={{ marginTop: "4px" }}>หลังปัดจะได้ประมาณ {plan.result.actionableTargetPpm} ppm ไม่ใช่ 300 ppm พอดี</p>
           </div>
         ) : null}
 
@@ -126,11 +136,12 @@ export function NadccCalculator({
             </p>
             <p className="pl-mono" style={{ marginTop: "12px" }}>ขั้น 2: จากที่เจือจางไว้</p>
             <p style={{ margin: "4px 0 0" }}>
-              ตวง {plan.result.workingDoseMl} mL ผสมน้ำให้ครบ {finalVolumeMl} mL
+              ค่าคำนวณก่อนปัด {plan.result.calculatedVolumeMl} mL; ตวงจริง {plan.result.actionableVolumeMl} mL แล้วผสมน้ำให้ครบ {finalVolumeMl} mL
             </p>
             <p className="pl-meta" style={{ marginTop: "10px" }}>
-              (เจือจาง 1:{plan.result.dilutionFactor} ได้ {plan.result.workingPpm} ppm)
+              ความละเอียด {plan.result.resolutionMl} mL · {plan.result.roundingDirection === "up" ? "ปัดขึ้น" : plan.result.roundingDirection === "down" ? "ปัดลง" : "ไม่ต้องปัด"} · เจือจาง 1:{plan.result.dilutionFactor} ได้ {plan.result.workingPpm} ppm
             </p>
+            <p className="pl-meta" style={{ marginTop: "4px" }}>หลังปัดจะได้ประมาณ {plan.result.actionableTargetPpm} ppm</p>
           </div>
         ) : null}
 
