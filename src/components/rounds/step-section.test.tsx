@@ -45,4 +45,14 @@ describe("StepSections", () => {
     expect(html).toContain("1 นาที");
     expect(html).toContain("ครบ 1 นาทีแล้วเทน้ำทิ้ง");
   });
+
+  it("ไม่ครอบ term help แบบ block ด้วย paragraph ที่ทำให้ hydration ผิด", () => {
+    const base = resolveBySlug("violin-variegated")!.steps.find((item) => item.id === "sterilize")!;
+    const html = renderToStaticMarkup(
+      <StepSections step={{ ...base, summary: "ล้างด้วย[[sterile-water|น้ำปลอดเชื้อ]]" }} />,
+    );
+
+    expect(html).toContain("<details");
+    expect(html).toContain('<div class="pl-lede" style="margin-top:8px"><span>ล้างด้วย</span><details');
+  });
 });

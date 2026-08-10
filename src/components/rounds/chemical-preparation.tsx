@@ -21,7 +21,10 @@ function calculatedDose(plan: HaiterAutoResult | NadccAutoResult | null): DoseVa
 }
 
 function dateTimeValue(value?: string) {
-  return value ? value.slice(0, 16) : "";
+  if (!value) return "";
+  const date = new Date(value);
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  return local.toISOString().slice(0, 16);
 }
 
 export function ChemicalPreparation({
@@ -132,7 +135,9 @@ export function ChemicalPreparation({
               stockVolumeMl: preparation.stockVolumeMl ?? 100,
               targetPpm: target,
               finalVolumeMl: volume,
-              minimumMeasurableMl: sterilization.minimumToolVolumeMl,
+              ...(sterilization.minimumToolVolumeMl !== undefined
+                ? { minimumMeasurableMl: sterilization.minimumToolVolumeMl }
+                : {}),
             }}
             onPlanChange={onNadccPlanChange}
           />
@@ -142,7 +147,9 @@ export function ChemicalPreparation({
               sourcePercent: preparation.labelConcentration,
               targetPercent: target / 10_000,
               finalVolumeMl: volume,
-              minimumMeasurableMl: sterilization.minimumToolVolumeMl,
+              ...(sterilization.minimumToolVolumeMl !== undefined
+                ? { minimumMeasurableMl: sterilization.minimumToolVolumeMl }
+                : {}),
             }}
             initialLabelBasis={preparation.labelBasis === "w/w" ? "w/w" : "w/v"}
             onPlanChange={onHaiterPlanChange}

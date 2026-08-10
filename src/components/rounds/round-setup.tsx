@@ -45,7 +45,7 @@ const choiceStyle = {
 
 const selectedChoiceStyle = {
   ...choiceStyle,
-  borderColor: "var(--pl-neon-2)",
+  border: "2px solid var(--pl-neon-2)",
   background: "var(--pl-card)",
   boxShadow: "inset 4px 0 0 var(--pl-neon-2)",
 };

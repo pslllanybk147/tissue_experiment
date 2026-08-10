@@ -54,7 +54,7 @@ export function StepSections({ step, actionPrelude, mediumContext }: { step: Res
   return (
     <>
       <Section title="ขั้นนี้ต้องได้อะไร">
-        <p className="pl-lede" style={{ marginTop: "8px" }}><RichText source={step.summary} /></p>
+        <div className="pl-lede" style={{ marginTop: "8px" }}><RichText source={step.summary} /></div>
       </Section>
 
       <Section title="เตรียมของ">
@@ -79,7 +79,7 @@ export function StepSections({ step, actionPrelude, mediumContext }: { step: Res
       )}
 
       <Section title="ทำไปทำไม">
-        <p className="pl-lede" style={{ marginTop: "8px" }}><RichText source={step.why} /></p>
+        <div className="pl-lede" style={{ marginTop: "8px" }}><RichText source={step.why} /></div>
       </Section>
 
       <Section title="ผ่านเมื่อ">

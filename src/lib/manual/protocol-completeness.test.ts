@@ -4,6 +4,13 @@ import { allSlugs, resolveBySlug } from "./registry";
 const vaguePlaceholders = /ตามสูตรที่เลือก|ตามค่าเริ่มต้น|ช่วงของสูตร|เลือกวิธีใดวิธีหนึ่ง/;
 
 describe("every plant has a runnable beginner protocol", () => {
+  it("generic manual instructions never tell a locked round to choose externally", () => {
+    for (const slug of allSlugs()) {
+      const text = JSON.stringify(resolveBySlug(slug)?.steps ?? []);
+      expect(text).not.toContain("ห้ามเปิดเครื่องคำนวณแยกจาก protocol");
+    }
+  });
+
   it.each(allSlugs())("%s exposes complete execution instructions for every step", (slug) => {
     const manual = resolveBySlug(slug);
     expect(manual, `${slug} must resolve`).not.toBeNull();

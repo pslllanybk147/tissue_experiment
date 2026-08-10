@@ -302,30 +302,42 @@ try {
       if (/hydrat/i.test(text) && /caret-color/i.test(text)) return;
       consoleErrors.push(text);
     });
-    // หน้าแรกสาธารณะ (hero + ธีม + fallback 3D) ตรวจก่อนเข้าโหมดสาธิต เพราะไม่ต้องล็อกอิน
-    await verifyThemeAndHero(page, viewport.name);
+    let lastCompletedAction = "browser page created";
+    try {
+      // หน้าแรกสาธารณะ (hero + ธีม + fallback 3D) ตรวจก่อนเข้าโหมดสาธิต เพราะไม่ต้องล็อกอิน
+      await verifyThemeAndHero(page, viewport.name);
+      lastCompletedAction = "verified public hero and themes";
 
-    await enterDemo(page);
-    await inspectPage(page, viewport.name, "/my");
-    await verifyCompactMenu(page, viewport.name);
-    await page.keyboard.press("Tab");
-    const focusTag = await page.evaluate(() => document.activeElement?.tagName ?? "BODY");
-    assert(focusTag !== "BODY", `${viewport.name}: keyboard focus ไม่เข้าสู่ interactive element`);
+      await enterDemo(page);
+      lastCompletedAction = "entered demo mode";
+      await inspectPage(page, viewport.name, "/my");
+      lastCompletedAction = "inspected /my";
+      await verifyCompactMenu(page, viewport.name);
+      await page.keyboard.press("Tab");
+      const focusTag = await page.evaluate(() => document.activeElement?.tagName ?? "BODY");
+      assert(focusTag !== "BODY", `${viewport.name}: keyboard focus ไม่เข้าสู่ interactive element`);
 
-    for (const route of routes.slice(1)) {
-      await ensureMainNav(page);
-      await page.locator(`nav:visible a[href='${route.href}']`).first().click();
-      await page.waitForURL(`**${route.href}`);
-      await inspectPage(page, viewport.name, route.href);
+      for (const route of routes.slice(1)) {
+        await ensureMainNav(page);
+        await page.locator(`nav:visible a[href='${route.href}']`).first().click();
+        await page.waitForURL(`**${route.href}`);
+        await inspectPage(page, viewport.name, route.href);
+        lastCompletedAction = `inspected ${route.href}`;
+      }
+
+      await verifyDirectRoutes(page, viewport.name);
+      lastCompletedAction = "verified direct routes";
+      await returnToApp(page);
+      await verifyPublicGuide(page, viewport.name);
+      lastCompletedAction = "verified public guide routes";
+      assert(
+        consoleErrors.length === 0,
+        `${viewport.name}: console errors: ${consoleErrors.join(" | ")}`,
+      );
+    } catch (error) {
+      const route = new URL(page.url()).pathname;
+      failures.push(`${viewport.name} ${route}: ${error instanceof Error ? error.message : error}; last completed action: ${lastCompletedAction}`);
     }
-
-    await verifyDirectRoutes(page, viewport.name);
-    await returnToApp(page);
-    await verifyPublicGuide(page, viewport.name);
-    assert(
-      consoleErrors.length === 0,
-      `${viewport.name}: console errors: ${consoleErrors.join(" | ")}`,
-    );
     await page.close();
   }
 } finally {
