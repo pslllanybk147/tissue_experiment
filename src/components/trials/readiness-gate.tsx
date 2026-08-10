@@ -16,7 +16,7 @@ export function ReadinessGate({ loading, readiness, starting, confirmed, onConfi
   const canStart = !loading && !additionalBlocker && Boolean(readiness) && (readiness?.overall === "ready" || (experimental && confirmed));
 
   return (
-    <section className="pl-card" style={{ marginTop: "18px", background: readiness?.overall === "blocked" ? "var(--pl-stop)" : "var(--pl-sunk)" }}>
+    <section className="cl-readiness-gate" data-status={readiness?.overall ?? "loading"}>
       <h2 className="pl-h2">ตรวจความพร้อมก่อนสร้างห้ารอบ</h2>
 
       {loading ? <p className="pl-lede" role="status" style={{ marginTop: "8px" }}>กำลังตรวจอุปกรณ์และวิธีฆ่าเชื้อ…</p> : null}
@@ -41,7 +41,7 @@ export function ReadinessGate({ loading, readiness, starting, confirmed, onConfi
       ) : null}
 
       {readiness ? (
-        <section className="pl-card" style={{ marginTop: "12px", background: "var(--pl-sunk)" }}>
+        <section className="cl-equipment-subsection">
           <h3 className="pl-h2">ความพร้อมแยกตามแขนทดลอง</h3>
           <p className="pl-meta" style={{ marginTop: "6px" }}>น้ำ rinse chlorinated เป็นวิธีทดลองเฉพาะ T1/T2 ไม่ใช่น้ำปลอดเชื้อ</p>
           <ul style={{ margin: "10px 0 0", paddingLeft: "20px" }}>
@@ -55,7 +55,7 @@ export function ReadinessGate({ loading, readiness, starting, confirmed, onConfi
       ) : null}
 
       {experimental ? (
-        <label className="pl-card" style={{ display: "flex", gap: "10px", alignItems: "flex-start", marginTop: "12px", cursor: "pointer" }}>
+        <label className="cl-confirmation-row">
           <input type="checkbox" checked={confirmed} onChange={(event) => onConfirmed(event.currentTarget.checked)} style={{ width: "22px", height: "22px", flex: "none" }} />
           <span>ฉันอ่านข้อจำกัดแล้วและยอมรับว่าวิธีนี้เป็นการทดลอง ต้องทำกระปุกเปล่าควบคุมและบันทึกค่าที่ทำจริง</span>
         </label>
@@ -63,11 +63,11 @@ export function ReadinessGate({ loading, readiness, starting, confirmed, onConfi
 
       {readiness?.overall === "ready" ? <p className="pl-lede" style={{ marginTop: "8px" }}>อุปกรณ์และวิธีหลักพร้อมสำหรับเริ่มชุดทดลอง</p> : null}
 
-      {additionalBlocker ? <p className="pl-card" role="alert" style={{ marginTop: "12px", background: "var(--pl-stop)" }}>{additionalBlocker}</p> : null}
+      {additionalBlocker ? <p className="cl-status-notice" data-tone="blocked" role="alert">{additionalBlocker}</p> : null}
 
       <button
         type="button"
-        className="pl-action-primary"
+        className="cl-button-primary"
         disabled={!canStart || starting}
         onClick={onStart}
         style={{ marginTop: "14px", cursor: canStart && !starting ? "pointer" : "not-allowed", fontSize: "15px", padding: "10px 18px" }}

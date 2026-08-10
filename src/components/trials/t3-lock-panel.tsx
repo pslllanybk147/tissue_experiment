@@ -40,7 +40,7 @@ export function T3LockPanel({
 
   if (eligibility.unlocked) {
     return (
-      <section className="pl-card" style={{ marginTop: "18px", background: "var(--pl-sunk)" }}>
+      <section className="cl-status-notice" data-tone="success">
         <p className="pl-h2">T3 ปลดล็อกแล้ว</p>
         <p className="pl-meta" style={{ marginTop: "6px" }}>
           {eligibility.reason === "override" ? "ปลดล็อกจากการยืนยันความเสี่ยง" : "มีผล T1 และ T2 ครบแล้ว"}
@@ -72,7 +72,7 @@ export function T3LockPanel({
   const valid = canSubmitT3Override(acknowledged, reason);
 
   return (
-    <section className="pl-card" style={{ marginTop: "18px", background: "var(--pl-stop)" }}>
+    <section className="cl-readiness-gate" data-status="blocked">
       <h2 className="pl-h2">T3 ยังถูกล็อก</h2>
       <p className="pl-lede" style={{ marginTop: "8px" }}>
         อ่าน protocol ได้ แต่ยังเริ่มจับเวลาหรือบันทึกว่าผ่านไม่ได้ จนกว่า T1 และ T2 จะมีผลครบ

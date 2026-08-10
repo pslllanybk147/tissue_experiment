@@ -12,14 +12,14 @@ const readinessLabel: Record<ReadinessStatus, string> = {
 
 function ReadinessSummary({ readiness }: { readiness: TrialReadiness }) {
   return (
-    <section style={{ marginTop: "24px" }}>
-      <div className="pl-card" style={{ background: readiness.overall === "blocked" ? "var(--pl-stop)" : "var(--pl-yellow)" }}>
+    <section className="cl-workspace-section">
+      <div className="cl-status-notice" data-tone={readiness.overall === "blocked" ? "blocked" : "success"}>
         <h2 className="pl-h2">{readiness.overall === "blocked" ? "ยังเริ่มชุดทดลองจริงไม่ได้" : "สถานะความพร้อมของชุดทดลอง"}</h2>
         <p className="pl-lede" style={{ marginTop: "6px" }}>สถานะรวม: {readinessLabel[readiness.overall]} · ดูเหตุผลแยกทีละหัวข้อด้านล่าง</p>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "12px" }}>
+      <div className="cl-readiness-list">
         {readiness.capabilities.map((item) => (
-          <article className="pl-card" key={item.id} style={{ background: item.status === "blocked" ? "var(--pl-stop)" : "var(--pl-card)" }}>
+          <article className="cl-readiness-item" data-status={item.status} key={item.id}>
             <p className="pl-mono">{readinessLabel[item.status]}</p>
             <h3 className="pl-h2" style={{ marginTop: "4px" }}>{item.title}</h3>
             <p className="pl-lede" style={{ marginTop: "8px" }}><strong>มีอะไร</strong> {item.have}</p>
@@ -28,12 +28,12 @@ function ReadinessSummary({ readiness }: { readiness: TrialReadiness }) {
           </article>
         ))}
       </div>
-      <div className="pl-card" style={{ marginTop: "14px" }}>
+      <section className="cl-equipment-section">
         <h3 className="pl-h2">ความพร้อมแยกตามแขนทดลอง</h3>
         <p className="pl-meta" style={{ marginTop: "6px" }}>chlorinated rinse เป็นน้ำ rinse ทดลอง ไม่ใช่น้ำปลอดเชื้อ และไม่ปลดล็อกแขนที่ต้องใช้น้ำปลอดเชื้อ</p>
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "12px" }}>
+        <div className="cl-readiness-list">
           {readiness.arms.map((arm) => (
-            <article key={arm.armRole} className="pl-card" style={{ background: arm.status === "blocked" ? "var(--pl-stop)" : "var(--pl-sunk)" }}>
+            <article key={arm.armRole} className="cl-readiness-item" data-status={arm.status}>
               <p className="pl-mono">{readinessLabel[arm.status]}</p>
               <h4 className="pl-h2" style={{ marginTop: "4px" }}>{arm.title}</h4>
               <p className="pl-lede" style={{ marginTop: "6px" }}><strong>ต้องใช้</strong> {arm.requiredResources.join(" · ")}</p>
@@ -42,8 +42,8 @@ function ReadinessSummary({ readiness }: { readiness: TrialReadiness }) {
             </article>
           ))}
         </div>
-      </div>
-      <div className="pl-card" style={{ marginTop: "14px", background: "var(--pl-stop)" }}>
+      </section>
+      <div className="cl-status-notice" data-tone="warning">
         <h3 className="pl-h2">ข้อควรระวังที่ห้ามข้าม</h3>
         <ul style={{ margin: "8px 0 0", paddingLeft: "20px" }}>
           {readiness.cautions.map((item) => <li key={item}>{item}</li>)}
@@ -57,15 +57,15 @@ export function PathSummary({ path, readiness }: { path?: ResolvedPath; readines
   if (readiness) return <ReadinessSummary readiness={readiness} />;
   if (!path) return null;
   return (
-    <section style={{ marginTop: "24px" }}>
+    <section className="cl-workspace-section">
       <h2 className="pl-h2">เส้นทางที่ระบบจัดให้</h2>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "12px" }}>
+      <div className="cl-readiness-list">
         {path.capabilities.map((item) => (
           <article
-            className="pl-card"
+            className="cl-readiness-item"
             key={item.capability}
-            style={{ background: item.method ? "var(--pl-card)" : "var(--pl-stop)" }}
+            data-status={item.method ? "ready" : "blocked"}
           >
             <p className="pl-mono">{capabilityLabel[item.capability]}</p>
 

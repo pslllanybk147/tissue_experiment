@@ -30,14 +30,12 @@ export function LegacyRoundView({
   const nothingRecorded = visibleObservations.length === 0 && runs.length === 0;
 
   return (
-    <>
-      <p className="pl-chip pl-chip-adapted" style={{ display: "inline-block" }}>รอบเก่า · อ่านอย่างเดียว</p>
-      <h1 className="pl-h1" style={{ marginTop: "10px" }}>{lot.plant || lot.protocolTitle}</h1>
-      <p className="pl-meta" style={{ marginTop: "4px" }}>เริ่ม {lot.startedAt}</p>
-      <p className="pl-lede" style={{ marginTop: "10px" }}>
+    <article className="cl-guide-article">
+      <header className="cl-guide-header"><p>ข้อมูล legacy · รอบเก่า · อ่านอย่างเดียว</p><h1>{lot.plant || lot.protocolTitle}</h1><small>เริ่ม {lot.startedAt}</small><p>
         รอบนี้เริ่มไว้ก่อนระบบคู่มือใหม่ จึงเดินต่อในระบบใหม่ไม่ได้ แต่ข้อมูลที่บันทึกไว้ยังอยู่ครบและแสดงอยู่ด้านล่าง
         ถ้าจะทำต่อ ให้เริ่มรอบใหม่จากหน้าคู่มือ
-      </p>
+      </p></header>
+      <aside className="cl-status-notice" data-tone="warning"><div><strong>ไม่มีข้อมูลที่ล็อกไว้</strong><p className="cl-status-copy">รอบนี้ไม่มี method snapshot แบบระบบใหม่ จึงแสดงเฉพาะข้อมูลที่บันทึกจริงและไม่เติมค่าที่คาดเดา</p></div></aside>
 
       {nothingRecorded ? (
         <p className="pl-card" style={{ marginTop: "18px" }}>ไม่มีบันทึกในรอบนี้</p>
@@ -79,6 +77,6 @@ export function LegacyRoundView({
           </ul>
         </section>
       ) : null}
-    </>
+    </article>
   );
 }

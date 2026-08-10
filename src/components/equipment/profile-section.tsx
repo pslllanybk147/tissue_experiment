@@ -5,11 +5,11 @@ import { RinsePreparationCard } from "./rinse-preparation-card";
 
 const inputStyle = {
   width: "100%",
-  padding: "9px 11px",
-  border: "2.5px solid var(--pl-line)",
-  borderRadius: "10px",
-  background: "var(--pl-card)",
-  color: "var(--pl-ink)",
+  padding: "10px 12px",
+  border: "1px solid var(--cl-border-strong)",
+  borderRadius: "4px",
+  background: "var(--cl-surface)",
+  color: "var(--cl-text)",
   fontSize: "16px",
 } as const;
 
@@ -50,22 +50,21 @@ function NumberField({ id, label, value, onValue, min = 0, step = "any" }: {
   step?: string;
 }) {
   return (
-    <p style={{ margin: 0 }}>
-      <label htmlFor={id} style={{ display: "block", fontWeight: 700, marginBottom: "5px" }}>{label}</label>
+    <p className="cl-field-group">
+      <label htmlFor={id}>{label}</label>
       <input id={id} type="number" min={min} step={step} value={value} onChange={(event) => onValue(Number(event.currentTarget.value))} style={inputStyle} />
     </p>
   );
 }
 
 function FieldGrid({ children }: { children: React.ReactNode }) {
-  return <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: "12px", marginTop: "12px" }}>{children}</div>;
+  return <div className="cl-field-grid">{children}</div>;
 }
 
 function Card({ title, note, children }: { title: string; note?: string; children: React.ReactNode }) {
   return (
-    <section className="pl-card" style={{ marginTop: "14px", background: "var(--pl-sunk)" }}>
-      <h2 className="pl-h2">{title}</h2>
-      {note ? <p className="pl-lede" style={{ marginTop: "6px" }}>{note}</p> : null}
+    <section className="cl-equipment-section">
+      <header className="cl-section-heading"><h2>{title}</h2>{note ? <p>{note}</p> : null}</header>
       {children}
     </section>
   );
@@ -77,7 +76,7 @@ export function ProfileSection({ profile, onChange }: { profile: EquipmentProfil
     <>
       <Card title="ฉลากสารเคมี" note="กรอกตามฉลาก ห้ามเดาจากชื่อสินค้า และระบบจะไม่เปลี่ยน 75% ให้เป็น 70% เอง">
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "14px", marginTop: "12px" }}>
-          <section className="pl-card" style={{ margin: 0, background: "var(--pl-card)", borderTop: "4px solid var(--pl-neon)" }}>
+          <section className="cl-equipment-subsection">
             <h3 className="pl-h2">NaDCC {profile.chemicals.nadcc.availableChlorinePercent}% (เม็ดฟู่)</h3>
             <FieldGrid>
               <NumberField id="nadcc-chlorine" label="NaDCC คลอรีนออกฤทธิ์ (%)" value={profile.chemicals.nadcc.availableChlorinePercent} onValue={(value) => changed({ ...profile, chemicals: { ...profile.chemicals, nadcc: { ...profile.chemicals.nadcc, availableChlorinePercent: value } } })} />
@@ -86,7 +85,7 @@ export function ProfileSection({ profile, onChange }: { profile: EquipmentProfil
               <NumberField id="nadcc-count" label="จำนวนเม็ดในกระปุก (เม็ด)" value={profile.chemicals.nadcc.tabletCount} onValue={(value) => changed({ ...profile, chemicals: { ...profile.chemicals, nadcc: { ...profile.chemicals.nadcc, tabletCount: value } } })} />
             </FieldGrid>
           </section>
-          <section className="pl-card" style={{ margin: 0, background: "var(--pl-card)", borderTop: "4px solid var(--pl-neon-2)" }}>
+          <section className="cl-equipment-subsection">
             <h3 className="pl-h2">Haiter / NaOCl</h3>
             <FieldGrid>
               <NumberField id="bleach-percent" label="Haiter (% w/w)" value={profile.chemicals.bleach.percentWw} onValue={(value) => changed({ ...profile, chemicals: { ...profile.chemicals, bleach: { ...profile.chemicals.bleach, percentWw: value } } })} />

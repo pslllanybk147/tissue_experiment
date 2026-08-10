@@ -54,6 +54,8 @@ describe("LegacyRoundView", () => {
 
     expect(html).toContain("รอบเก่า");
     expect(html).toContain("อ่านอย่างเดียว");
+    expect(html).toContain("ข้อมูล legacy");
+    expect(html).toContain("ไม่มีข้อมูลที่ล็อกไว้");
   });
 
   it("แสดงข้อมูลหัวรอบที่ผู้ใช้เคยบันทึกไว้", () => {

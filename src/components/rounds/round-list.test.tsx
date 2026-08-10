@@ -26,6 +26,9 @@ describe("RoundList", () => {
 
     expect(html).toContain("ลบรอบนี้");
     expect(html).toContain('aria-label="ลบรอบ ฟิโลเดนดรอน พิงค์ปริ๊นเซส"');
+    expect(html).toContain("cl-data-row");
+    expect(html).toContain("เปิดรอบ");
+    expect(html).toContain("cl-button-danger");
   });
 
   it("รอบเก่าที่คู่มือใหม่ไม่รู้จัก ต้องยังเห็นได้ ไม่ใช่หายไปเฉย ๆ", () => {
