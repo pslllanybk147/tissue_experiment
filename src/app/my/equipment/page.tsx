@@ -68,7 +68,7 @@ export default function EquipmentPage() {
         <p style={{ marginTop: "14px" }}>
           <button
             type="button"
-            className="pl-chip pl-chip-neutral"
+            className="pl-action-secondary"
             onClick={() => { setProfile(structuredClone(USER_REPORTED_PROFILE)); setSaved("เติมค่าจากรายการที่แจ้งไว้แล้ว กรุณาตรวจอีกครั้งก่อนบันทึก"); }}
             style={{ cursor: "pointer", fontSize: "15px", padding: "10px 18px" }}
           >
@@ -79,10 +79,10 @@ export default function EquipmentPage() {
         <p style={{ marginTop: "16px", display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
           <button
             type="button"
-            className="pl-chip"
+            className="pl-action-success"
             onClick={() => void persist()}
             disabled={saving}
-            style={{ background: "var(--pl-green)", cursor: saving ? "wait" : "pointer", fontSize: "15px", padding: "10px 18px" }}
+            style={{ cursor: saving ? "wait" : "pointer", fontSize: "15px", padding: "10px 18px" }}
           >
             {saving ? "กำลังบันทึก…" : "บันทึกของที่มี"}
           </button>

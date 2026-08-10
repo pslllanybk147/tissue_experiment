@@ -112,9 +112,9 @@ export function T3LockPanel({
           />
           <button
             type="submit"
-            className="pl-chip"
+            className="pl-action-danger"
             disabled={!valid || saving}
-            style={{ marginTop: "12px", background: "var(--pl-red)", cursor: valid && !saving ? "pointer" : "not-allowed" }}
+            style={{ marginTop: "12px", cursor: valid && !saving ? "pointer" : "not-allowed" }}
           >
             {saving ? "กำลังบันทึก…" : "ยืนยันและปลดล็อก"}
           </button>

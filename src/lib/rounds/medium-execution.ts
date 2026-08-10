@@ -1,0 +1,117 @@
+import type { MediaRecipe } from "@/lib/manual/types";
+import { formatVolume } from "@/lib/domain/working-stock-calculator";
+import { planMediumBatch, type IngredientLine, type MediumPlan, type ToolLimits } from "./medium-plan";
+
+export type MediumExecutionContext = {
+  recipe: MediaRecipe;
+  plan: MediumPlan;
+  mlPerJar: number;
+};
+
+export type MediumInstructionOverride = {
+  action: string;
+  quantity: string;
+  completion?: string;
+  next?: string;
+};
+
+/** สร้าง snapshot เดียวกับค่าตั้งต้นของเครื่องคำนวณ เพื่อให้การ์ดขั้นตอนมีตัวเลขตั้งแต่ render แรก */
+export function defaultMediumExecutionContext(
+  recipes: MediaRecipe[],
+  initialRecipeId?: string,
+  tools?: Partial<ToolLimits>,
+): MediumExecutionContext | null {
+  const recipe = (initialRecipeId ? recipes.find((item) => item.id === initialRecipeId) : undefined) ?? recipes[0];
+  if (!recipe) return null;
+  const resolvedTools: ToolLimits = {
+    scaleMinimumMg: tools?.scaleMinimumMg ?? 10,
+    pipetteMinimumMl: tools?.pipetteMinimumMl ?? 0.2,
+    msLabelRateGPerL: tools?.msLabelRateGPerL ?? 4.43,
+    bcdLabelRateGPerL: tools?.bcdLabelRateGPerL ?? 0,
+    naaStockMgPerMl: tools?.naaStockMgPerMl ?? 0,
+    baStockMgPerMl: tools?.baStockMgPerMl ?? 0,
+    ibaStockMgPerMl: tools?.ibaStockMgPerMl ?? 0,
+  };
+  try {
+    return {
+      recipe,
+      plan: planMediumBatch(recipe, { cultureJars: 4, blankJars: 1, spareJars: 1, mlPerJar: 25, lossPercent: 15 }, resolvedTools),
+      mlPerJar: 25,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function amount(value: number, unit: string): string {
+  const digits = unit === "g" ? 3 : 2;
+  const scale = 10 ** digits;
+  const rounded = Math.round((value + Number.EPSILON) * scale) / scale;
+  return `${rounded} ${unit}`;
+}
+
+function lineText(line: IngredientLine): string {
+  if (line.kind === "weigh" || line.kind === "measure") return `${line.name} ${amount(line.amount, line.unit)}`;
+  if (line.kind === "needs-label-rate") return `${line.name}: ${line.message}`;
+  if (line.plan.state === "blocked") return `${line.name}: ${line.plan.reason}`;
+  if (line.plan.state === "direct") return `${line.name}: ตวง stock เดิม ${formatVolume(line.plan.directDoseMl)} mL`;
+  return `${line.name}: เตรียม working stock โดยใช้ stock เดิม ${formatVolume(line.plan.sourceVolumeMl)} mL + ตัวทำละลาย ${formatVolume(line.plan.diluentVolumeMl)} mL แล้วตวง working stock ${formatVolume(line.plan.workingDoseMl)} mL`;
+}
+
+function isAgar(line: IngredientLine): boolean {
+  return line.name.toLowerCase().includes("agar") || line.name.includes("วุ้น");
+}
+
+export function mediumInstructionOverride(label: string, context: MediumExecutionContext): MediumInstructionOverride {
+  const { plan, recipe } = context;
+  const agar = plan.lines.find(isAgar);
+  const main = plan.lines.filter((line) => !isAgar(line) && line.kind !== "working-stock");
+  const stocks = plan.lines.filter((line) => line.kind === "working-stock");
+  const mainText = main.length > 0 ? main.map(lineText).join(" · ") : "ไม่มีส่วนผสมหลักที่ต้องชั่งในสูตรนี้";
+  const stockText = stocks.length > 0 ? stocks.map(lineText).join(" · ") : "สูตรนี้ไม่มีน้ำยาแม่ฮอร์โมน";
+  const agarText = agar ? lineText(agar) : "สูตรนี้ไม่มี Agar";
+
+  if (label === "เลือกสูตรและคำนวณ batch") {
+    return {
+      action: `เลือกสูตร ${recipe.title} แล้วทำอาหารทั้งหมด ${plan.totalVolumeMl} mL ตามค่าด้านล่าง`,
+      quantity: `${recipe.title} · ${plan.totalVolumeMl} mL · ${plan.totalJars} กระปุก × ${context.mlPerJar} mL + เผื่อสูญเสีย`,
+      completion: `เครื่องคำนวณแสดง ${plan.totalVolumeMl} mL และปริมาณส่วนผสมของสูตร ${recipe.title} แล้ว`,
+    };
+  }
+  if (label === "ละลายส่วนผสมหลัก") {
+    return {
+      action: `ตวงน้ำสำหรับ batch ${plan.totalVolumeMl} mL แล้วละลาย ${mainText} ให้ใสก่อนเติมส่วนผสมถัดไป`,
+      quantity: mainText,
+    };
+  }
+  if (label === "เติมน้ำยาแม่") {
+    return {
+      action: stocks.length > 0
+        ? `เตรียมและเติมน้ำยาแม่ตามปริมาณจริงนี้: ${stockText}`
+        : `สูตรนี้ไม่มีน้ำยาแม่ฮอร์โมน ให้ข้ามข้อนี้ไป`,
+      quantity: stockText,
+    };
+  }
+  if (label === "ปรับ pH") {
+    return {
+      action: `วัด pH ของสารละลาย แล้วใช้ pH up/down ทีละน้อยจนได้ pH ${recipe.pH}`,
+      quantity: `${recipe.title}: pH ${recipe.pH}`,
+      completion: `ค่า pH อยู่ที่ ${recipe.pH} ก่อนใส่วุ้น`,
+      next: "เมื่อ pH ถึงเป้าหมายแล้วจึงใส่ผงวุ้น",
+    };
+  }
+  if (label === "เติมผงวุ้น") {
+    return {
+      action: `หลัง pH ถึงเป้าหมายแล้ว ชั่ง ${agarText} เติมลงในสารละลาย แล้วคนให้กระจายตัว`,
+      quantity: agarText,
+    };
+  }
+  if (label === "แบ่งและติดป้าย") {
+    return {
+      action: `แบ่งอาหารทั้งหมด ${plan.totalVolumeMl} mL ลง ${plan.totalJars} กระปุก กระปุกละ ${context.mlPerJar} mL แล้วติดป้ายทุกใบ`,
+      quantity: `${plan.totalJars} กระปุก · ${context.mlPerJar} mL ต่อกระปุก · รวม ${plan.totalVolumeMl} mL`,
+      completion: `${plan.totalJars} กระปุกมีอาหารกระปุกละ ${context.mlPerJar} mL และติดป้ายครบ`,
+    };
+  }
+  return { action: "", quantity: "" };
+}

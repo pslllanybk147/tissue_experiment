@@ -22,6 +22,16 @@
   --pl-neon-2: #a3e635;
   --pl-glow: rgba(34, 211, 238, 0.45);
   --pl-grid: rgba(34, 211, 238, 0.05);
+  --pl-action-primary-bg: #a3e635;
+  --pl-action-primary-fg: #172a05;
+  --pl-action-primary-hover: #bef264;
+  --pl-action-secondary-bg: #164e63;
+  --pl-action-secondary-fg: #f0fdff;
+  --pl-action-secondary-hover: #1f6073;
+  --pl-action-success-bg: #34d399;
+  --pl-action-success-fg: #042f2e;
+  --pl-action-danger-bg: #b91c1c;
+  --pl-action-danger-fg: #fff7ed;
 }
 
 @media (prefers-color-scheme: light) {
@@ -49,6 +59,16 @@
     --pl-neon-2: #4d7c0f;
     --pl-glow: rgba(8, 145, 178, 0.25);
     --pl-grid: rgba(8, 145, 178, 0.05);
+    --pl-action-primary-bg: #3f6212;
+    --pl-action-primary-fg: #f7fee7;
+    --pl-action-primary-hover: #4d7c0f;
+    --pl-action-secondary-bg: #ffffff;
+    --pl-action-secondary-fg: #0f2436;
+    --pl-action-secondary-hover: #e9eff5;
+    --pl-action-success-bg: #166534;
+    --pl-action-success-fg: #f0fdf4;
+    --pl-action-danger-bg: #b42318;
+    --pl-action-danger-fg: #fff7ed;
   }
 }
 
@@ -76,6 +96,16 @@
   --pl-neon-2: #a3e635;
   --pl-glow: rgba(34, 211, 238, 0.45);
   --pl-grid: rgba(34, 211, 238, 0.05);
+  --pl-action-primary-bg: #a3e635;
+  --pl-action-primary-fg: #172a05;
+  --pl-action-primary-hover: #bef264;
+  --pl-action-secondary-bg: #164e63;
+  --pl-action-secondary-fg: #f0fdff;
+  --pl-action-secondary-hover: #1f6073;
+  --pl-action-success-bg: #34d399;
+  --pl-action-success-fg: #042f2e;
+  --pl-action-danger-bg: #b91c1c;
+  --pl-action-danger-fg: #fff7ed;
 }
 
 :root[data-theme="light"] {
@@ -102,6 +132,16 @@
   --pl-neon-2: #4d7c0f;
   --pl-glow: rgba(8, 145, 178, 0.25);
   --pl-grid: rgba(8, 145, 178, 0.05);
+  --pl-action-primary-bg: #3f6212;
+  --pl-action-primary-fg: #f7fee7;
+  --pl-action-primary-hover: #4d7c0f;
+  --pl-action-secondary-bg: #ffffff;
+  --pl-action-secondary-fg: #0f2436;
+  --pl-action-secondary-hover: #e9eff5;
+  --pl-action-success-bg: #166534;
+  --pl-action-success-fg: #f0fdf4;
+  --pl-action-danger-bg: #b42318;
+  --pl-action-danger-fg: #fff7ed;
 }
 
 .pl-root {
@@ -316,6 +356,72 @@
 .pl-toggle:focus-visible {
   outline: 3px solid var(--pl-ink);
   outline-offset: 3px;
+}
+
+/* ทุกปุ่มการทำงานใช้คู่สี semantic เดียวกันทั้ง light/dark ไม่รับสีตัวอักษรจาก .pl-link หรือ .pl-chip */
+.pl-action-primary,
+.pl-action-secondary,
+.pl-action-success,
+.pl-action-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  font: inherit;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 2px 2px 0 var(--pl-shadow);
+}
+
+.pl-action-primary,
+.pl-action-primary.pl-link {
+  background: var(--pl-action-primary-bg);
+  color: var(--pl-action-primary-fg);
+  border-color: var(--pl-action-primary-bg);
+}
+
+.pl-action-secondary,
+.pl-action-secondary.pl-link {
+  background: var(--pl-action-secondary-bg);
+  color: var(--pl-action-secondary-fg);
+  border-color: var(--pl-line);
+}
+
+.pl-action-success,
+.pl-action-success.pl-link {
+  background: var(--pl-action-success-bg);
+  color: var(--pl-action-success-fg);
+  border-color: var(--pl-action-success-bg);
+}
+
+.pl-action-danger,
+.pl-action-danger.pl-link {
+  background: var(--pl-action-danger-bg);
+  color: var(--pl-action-danger-fg);
+  border-color: var(--pl-action-danger-bg);
+}
+
+.pl-action-primary:hover { background: var(--pl-action-primary-hover); }
+.pl-action-secondary:hover { background: var(--pl-action-secondary-hover); }
+.pl-action-primary:focus-visible,
+.pl-action-secondary:focus-visible,
+.pl-action-success:focus-visible,
+.pl-action-danger:focus-visible {
+  outline: 3px solid var(--pl-ink);
+  outline-offset: 3px;
+}
+
+.pl-action-primary:disabled,
+.pl-action-secondary:disabled,
+.pl-action-success:disabled,
+.pl-action-danger:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  box-shadow: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

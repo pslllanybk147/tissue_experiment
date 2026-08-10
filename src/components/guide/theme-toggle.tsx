@@ -24,10 +24,10 @@ export function ThemeToggle() {
   return (
     <button
       type="button"
-      className="pl-chip pl-toggle"
+      className="pl-action-secondary pl-toggle"
       aria-label="สลับระหว่างโหมดสว่างและโหมดมืด"
       onClick={toggle}
-      style={{ background: "var(--pl-card)", cursor: "pointer", color: "var(--pl-ink)" }}
+      style={{ cursor: "pointer" }}
     >
       <span className="pl-when-light">โหมดมืด</span>
       <span className="pl-when-dark">โหมดสว่าง</span>

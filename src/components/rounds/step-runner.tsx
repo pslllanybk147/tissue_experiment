@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type FormEvent } from "react";
+import { useCallback, useState, type FormEvent } from "react";
 import { EvidenceBadge } from "@/components/guide/evidence-badge";
 import { Illustration } from "@/components/guide/illustrations";
 import { RichText } from "@/components/guide/rich-text";
@@ -15,6 +15,7 @@ import { bracketKey, buildBracketPlan, jarsPerArmKey } from "@/lib/rounds/bracke
 import { evaluateStepEvidence } from "@/lib/rounds/evidence-policy";
 import { encodeStepValues, type StepResponses } from "@/lib/rounds/field-values";
 import { MEDIUM_CALCULATOR_STEP_IDS, initialRecipeIdForStep } from "@/lib/rounds/medium-steps";
+import { defaultMediumExecutionContext, type MediumExecutionContext } from "@/lib/rounds/medium-execution";
 import { BracketTable } from "./bracket-table";
 import { MediumCalculator } from "./medium-calculator";
 import { OnlineStatus } from "./online-status";
@@ -74,6 +75,12 @@ export function StepRunner({
   const demoSkipHref = next ? `/my/rounds/${view.lotId}/step/${next}` : `/my/rounds/${view.lotId}`;
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState("");
+  const [mediumContext, setMediumContext] = useState<MediumExecutionContext | null>(() => (
+    MEDIUM_CALCULATOR_STEP_IDS.has(step.id)
+      ? defaultMediumExecutionContext(view.mediaRecipes, initialRecipeIdForStep(step.id), tools)
+      : null
+  ));
+  const onMediumPlanChange = useCallback((context: MediumExecutionContext | null) => setMediumContext(context), []);
   const [measurementValues, setMeasurementValues] = useState<StepResponses>(
     () => ({ ...step.state.measurements, ...(step.state.responses ?? {}) }),
   );
@@ -157,6 +164,7 @@ export function StepRunner({
       </p>
       <StepSections
         step={step}
+        mediumContext={mediumContext}
         actionPrelude={(
           <>
             {step.id === "sterilize" && !view.trialArmRole ? <SterilizationMethodBanner sterilization={view.sterilization} /> : null}
@@ -166,6 +174,7 @@ export function StepRunner({
                 recipes={view.mediaRecipes}
                 initialRecipeId={initialRecipeIdForStep(step.id)}
                 tools={tools}
+                onPlanChange={onMediumPlanChange}
               />
             ) : null}
             {step.illustrationId ? (
@@ -307,8 +316,8 @@ export function StepRunner({
           <button
             type="submit"
             disabled={saving || !gate.canPass || locked}
-            className="pl-chip"
-            style={{ background: "var(--pl-green)", cursor: saving || !gate.canPass || locked ? "not-allowed" : "pointer", fontSize: "15px", padding: "10px 18px" }}
+            className="pl-action-success"
+            style={{ cursor: saving || !gate.canPass || locked ? "not-allowed" : "pointer", fontSize: "15px", padding: "10px 18px" }}
           >
             บันทึกว่าผ่าน
           </button>
@@ -319,8 +328,8 @@ export function StepRunner({
             disabled={saving}
             // ตอนติดปัญหาอาจยังไม่มีค่าให้กรอก จึงต้องข้ามการบังคับกรอกของฟอร์ม
             formNoValidate
-            className="pl-chip"
-            style={{ background: "var(--pl-red)", cursor: "pointer", fontSize: "15px", padding: "10px 18px" }}
+            className="pl-action-danger"
+            style={{ cursor: "pointer", fontSize: "15px", padding: "10px 18px" }}
           >
             ติดปัญหา
           </button>
@@ -375,9 +384,9 @@ export function StepRunner({
         ) : null}
         {next ? (
           <Link
-            className="pl-card pl-link"
+            className="pl-card pl-action-primary pl-link"
             href={`/my/rounds/${view.lotId}/step/${next}`}
-            style={{ flex: 1, textAlign: "center", background: "var(--pl-yellow)", color: "var(--pl-chip-ink)", textDecoration: "none", fontWeight: 700 }}
+            style={{ flex: 1, textAlign: "center", textDecoration: "none", fontWeight: 700 }}
           >
             ขั้นที่ {next} ›
           </Link>

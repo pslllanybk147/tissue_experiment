@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { EvidenceBadge } from "@/components/guide/evidence-badge";
 import type { MediaRecipe } from "@/lib/manual/types";
 import { planMediumBatch, type IngredientLine } from "@/lib/rounds/medium-plan";
 import { antiBrowningOptions, batchRange } from "@/lib/rounds/anti-browning";
+import type { MediumExecutionContext } from "@/lib/rounds/medium-execution";
 
 const inputStyle = {
   width: "100%",
@@ -52,7 +53,8 @@ function Field({
 }
 
 function round(value: number, digits: number): string {
-  return Number(value.toFixed(digits)).toString();
+  const scale = 10 ** digits;
+  return (Math.round((value + Number.EPSILON) * scale) / scale).toString();
 }
 
 function Line({ line }: { line: IngredientLine }) {
@@ -102,6 +104,7 @@ export function MediumCalculator({
   recipes,
   initialRecipeId,
   tools,
+  onPlanChange,
 }: {
   recipes: MediaRecipe[];
   initialRecipeId?: string;
@@ -115,6 +118,7 @@ export function MediumCalculator({
     baStockMgPerMl?: number;
     ibaStockMgPerMl?: number;
   };
+  onPlanChange?: (context: MediumExecutionContext | null) => void;
 }) {
   const initialRecipe = initialRecipeId
     ? recipes.find((item) => item.id === initialRecipeId)
@@ -147,6 +151,10 @@ export function MediumCalculator({
       return null;
     }
   }, [baStockMgPerMl, bcdLabelRateGPerL, blankJars, cultureJars, ibaStockMgPerMl, lossPercent, mlPerJar, msLabelRateGPerL, naaStockMgPerMl, pipetteMinimumMl, recipe, scaleMinimumMg, spareJars]);
+
+  useEffect(() => {
+    onPlanChange?.(plan && recipe ? { recipe, plan, mlPerJar } : null);
+  }, [mlPerJar, onPlanChange, plan, recipe]);
 
   if (!recipe) {
     return (

@@ -25,6 +25,7 @@ describe("StepMap", () => {
     const html = renderToStaticMarkup(<StepMap manual={manual} />);
 
     expect(html).toContain("เริ่มรอบเพาะของฉัน");
+    expect(html).toContain("pl-action-primary");
     expect(html).toContain('href="/my/rounds/new?slug=pink-princess"');
     expect(html).toContain("ล็อกอิน");
   });
