@@ -782,3 +782,41 @@
 .pl-hero-canvas { position: absolute; inset: 0; z-index: 1; opacity: 0; animation: pl-fade-in 0.8s ease forwards; }
 @keyframes pl-fade-in { to { opacity: 1; } }
 .pl-hero-note { margin-top: 10px; font-size: 13px; color: var(--pl-ink-3); text-align: center; }
+
+/* Calm Lab execution-card reading scale. Keep card labels as prominent as
+   the surrounding section headings, with supporting details still readable. */
+.cl-protocol .execution-instruction-heading h3 {
+  margin: 0;
+  font-size: var(--cl-text-h2);
+  line-height: 1.25;
+}
+
+.cl-protocol .execution-instruction-number {
+  font-size: var(--cl-text-label);
+  line-height: 1.3;
+}
+
+.cl-protocol .execution-instruction-action {
+  margin-block-start: var(--cl-space-3);
+  font-size: var(--cl-text-body);
+  line-height: 1.65;
+}
+
+.cl-protocol .execution-instruction-details {
+  margin-block-start: var(--cl-space-4);
+  font-size: var(--cl-text-compact);
+  line-height: 1.55;
+}
+
+.cl-protocol .execution-instruction-container {
+  font-family: var(--font-chaeo-hon), Tahoma, sans-serif;
+  font-size: var(--cl-text-compact);
+  line-height: 1.55;
+}
+
+.cl-protocol .execution-instruction-completion,
+.cl-protocol .execution-instruction-next {
+  margin-block-start: var(--cl-space-4);
+  font-size: var(--cl-text-compact);
+  line-height: 1.6;
+}

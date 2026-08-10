@@ -44,4 +44,12 @@ describe("Calm Lab contract", () => {
     expect(css).toContain("Highlight");
     expect(css).toContain("CanvasText");
   });
+
+  it("keeps execution-card typography at the same readable scale as section headings", () => {
+    const css = fs.readFileSync(guidePath, "utf8");
+    expect(css).toContain(".cl-protocol .execution-instruction-heading h3");
+    expect(css).toContain("font-size: var(--cl-text-h2)");
+    expect(css).toContain(".cl-protocol .execution-instruction-action");
+    expect(css).toContain("font-size: var(--cl-text-body)");
+  });
 });
