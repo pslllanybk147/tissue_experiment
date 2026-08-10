@@ -11,6 +11,7 @@ import { projectTrialSteps } from "@/lib/trials/project-trial-steps";
 import { evaluateT3Eligibility, type T3Eligibility } from "@/lib/trials/t3-eligibility";
 import { decodeStepValues, type StepResponses } from "./field-values";
 import { buildRoundSterilizationSnapshot, type RoundSetupInput } from "./round-setup";
+import { resolveSterilizationStep } from "./sterilization-plan";
 
 /** รุ่นของโครงเนื้อหาที่ใช้ตอนบันทึก เก็บไว้เพื่อให้ย้อนดูได้ว่ารอบนั้นเดินตามคู่มือรุ่นไหน */
 export const MANUAL_VERSION_ID = "manual-v1";
@@ -74,7 +75,14 @@ export function buildRoundView(
   const byStepId = new Map<string, ProtocolStepRun>();
   for (const run of runs) byStepId.set(run.stepId, run);
 
-  const applicableSteps = projectTrialSteps(manual.steps, lot);
+  const projectedSteps = projectTrialSteps(manual.steps, lot);
+  const applicableSteps = lot.isBlank
+    ? projectedSteps
+    : projectedSteps.map((step) =>
+        lot.armRole && step.id === "sterilize"
+          ? step
+          : resolveSterilizationStep(step, lot.sterilization),
+      );
 
   const steps: RoundStep[] = applicableSteps.map((step, index) => {
     const run = byStepId.get(step.id);

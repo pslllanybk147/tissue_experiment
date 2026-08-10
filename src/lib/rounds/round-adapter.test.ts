@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { resolveBySlug } from "@/lib/manual/registry";
 import type { ExperimentLot, ProtocolStepRun } from "@/lib/domain/models";
 import { USER_REPORTED_PROFILE } from "@/lib/equipment/equipment-profile";
-import { buildRoundSetupInput } from "./round-setup";
+import { buildRoundSetupInput, buildRoundSterilizationSnapshot } from "./round-setup";
 import { buildRoundView, newLotInput } from "./round-adapter";
 
 const manual = resolveBySlug("pink-princess")!;
@@ -133,6 +133,28 @@ describe("buildRoundView", () => {
 
     expect(view.trialArmRole).toBeUndefined();
     expect(view.sterilization).toBeUndefined();
+  });
+
+  it("resolves a normal round step from the methods locked in its snapshot", () => {
+    const setup = buildRoundSetupInput(
+      { mediumMethod: "nadcc-chemical", surfaceMethod: "haiter-chemical", rinseMethod: "nadcc" },
+      USER_REPORTED_PROFILE,
+      "2026-08-10T10:00:00.000Z",
+    );
+    const view = buildRoundView(
+      { ...lot, sterilization: buildRoundSterilizationSnapshot(setup) },
+      [],
+      manual,
+    );
+    const prepMedia = view.steps.find((step) => step.id === "prep-media")!;
+    const text = JSON.stringify({
+      materials: prepMedia.materials,
+      actions: prepMedia.actions,
+      executionInstructions: prepMedia.executionInstructions,
+    });
+
+    expect(text).toContain("NaDCC");
+    expect(text).not.toMatch(/Haiter|NaOCl|121°C/);
   });
 
   it("แนบสถานะล็อก T3 เมื่อส่งบริบทของแขนงพี่น้องมาให้", () => {

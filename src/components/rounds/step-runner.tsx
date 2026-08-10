@@ -21,7 +21,6 @@ import { MediumCalculator } from "./medium-calculator";
 import { OnlineStatus } from "./online-status";
 import { StepPhotos } from "./step-photos";
 import { StepSections } from "./step-section";
-import { SterilizationMethodBanner } from "./sterilization-method-banner";
 
 export type StepPhotoProps = {
   observationId: string | null;
@@ -167,7 +166,6 @@ export function StepRunner({
         mediumContext={mediumContext}
         actionPrelude={(
           <>
-            {step.id === "sterilize" && !view.trialArmRole ? <SterilizationMethodBanner sterilization={view.sterilization} /> : null}
             {MEDIUM_CALCULATOR_STEP_IDS.has(step.id) ? (
               <MediumCalculator
                 key={`${step.id}-${tools?.scaleMinimumMg ?? ""}-${tools?.pipetteMinimumMl ?? ""}-${tools?.msLabelRateGPerL ?? ""}-${tools?.bcdLabelRateGPerL ?? ""}-${tools?.naaStockMgPerMl ?? ""}-${tools?.baStockMgPerMl ?? ""}-${tools?.ibaStockMgPerMl ?? ""}`}

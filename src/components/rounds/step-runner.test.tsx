@@ -1,8 +1,10 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { ExperimentLot } from "@/lib/domain/models";
+import { USER_REPORTED_PROFILE } from "@/lib/equipment/equipment-profile";
 import { resolveBySlug } from "@/lib/manual/registry";
 import { buildRoundView } from "@/lib/rounds/round-adapter";
+import { buildRoundSetupInput, buildRoundSterilizationSnapshot } from "@/lib/rounds/round-setup";
 import { StepRunner } from "./step-runner";
 
 const manual = resolveBySlug("pink-princess")!;
@@ -267,6 +269,24 @@ describe("T3 lock", () => {
 });
 
 describe("rendered trial protocol semantics", () => {
+  it("normal NaDCC-soak round renders the resolved protocol without a corrective banner", () => {
+    const setup = buildRoundSetupInput(
+      { mediumMethod: "nadcc-chemical", surfaceMethod: "nadcc-soak", rinseMethod: "commercial-sterile" },
+      USER_REPORTED_PROFILE,
+      "2026-08-10T10:00:00.000Z",
+    );
+    const nadccView = buildRoundView(
+      { ...lot, sterilization: buildRoundSterilizationSnapshot(setup) },
+      [],
+      manual,
+    );
+    const nadccStep = nadccView.steps.find((item) => item.id === "sterilize")!;
+    const html = renderToStaticMarkup(<StepRunner view={nadccView} step={nadccStep} onSave={noop} />);
+
+    expect(html).toContain("24 ถึง 48 ชั่วโมง");
+    expect(html).not.toMatch(/Haiter|ไฮเตอร์|NaOCl|ขั้นตอนด้านล่าง/);
+  });
+
   it("T3 ที่ project แล้วไม่มี corrective banner หรือข้อความ Haiter หลงเหลือ", () => {
     const violin = resolveBySlug("violin-variegated")!;
     const t3Lot: ExperimentLot = {
