@@ -1,36 +1,56 @@
 "use client";
 
-type Theme = "light" | "dark";
+import { useEffect, useState } from "react";
+import {
+  oppositeTheme,
+  resolveInitialTheme,
+  themeToggleLabel,
+  THEME_STORAGE_KEY,
+  type Theme,
+} from "@/lib/theme/theme";
 
-function currentTheme(): Theme {
-  const attribute = document.documentElement.getAttribute("data-theme");
-  if (attribute === "dark" || attribute === "light") return attribute;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
-
-// ป้ายบนปุ่มสลับด้วย CSS ไม่ใช่ state เพราะธีมปัจจุบันเป็นสถานะของ DOM
-// การอ่านมาเก็บใน state จะทำให้ค่าที่ render บนเซิร์ฟเวอร์ไม่ตรงกับบนเบราว์เซอร์
 export function ThemeToggle() {
+  const [theme, setTheme] = useState<Theme | null>(null);
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      const applied = document.documentElement.dataset.theme;
+      setTheme(resolveInitialTheme(applied ?? null, window.matchMedia("(prefers-color-scheme: dark)").matches));
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
   function toggle() {
-    const next: Theme = currentTheme() === "dark" ? "light" : "dark";
-    document.documentElement.setAttribute("data-theme", next);
+    if (!theme) return;
+    const next = oppositeTheme(theme);
+    document.documentElement.dataset.theme = next;
+    document.documentElement.style.colorScheme = next;
+    setTheme(next);
     try {
-      localStorage.setItem("pl-theme", next);
+      localStorage.setItem(THEME_STORAGE_KEY, next);
     } catch {
-      // โหมดส่วนตัวของเบราว์เซอร์ปิดการเก็บค่า ธีมยังสลับได้แต่จะไม่จำข้ามหน้า
+      // The current page still changes when storage is unavailable.
     }
   }
 
+  if (!theme) {
+    return (
+      <button type="button" className="pl-action-secondary pl-toggle" disabled>
+        กำลังตรวจสอบธีม
+      </button>
+    );
+  }
+
+  const label = themeToggleLabel(theme);
   return (
     <button
       type="button"
       className="pl-action-secondary pl-toggle"
-      aria-label="สลับระหว่างโหมดสว่างและโหมดมืด"
+      aria-label={label}
+      aria-pressed={theme === "dark"}
       onClick={toggle}
-      style={{ cursor: "pointer" }}
     >
-      <span className="pl-when-light">โหมดมืด</span>
-      <span className="pl-when-dark">โหมดสว่าง</span>
+      {label}
     </button>
   );
 }
