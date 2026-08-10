@@ -70,18 +70,20 @@ export function StepDetail({ manual, step }: { manual: ResolvedManual; step: Res
   const onMediumPlanChange = useCallback((context: MediumExecutionContext | null) => setMediumContext(context), []);
 
   return (
-    <>
-      <p className="pl-mono">
-        <Link className="pl-link" href={`/guide/${manual.slug}`} style={{ color: "inherit" }}>{manual.commonName}</Link>
+    <article className="cl-guide-article">
+      <header className="cl-guide-header">
+      <p>
+        <Link href={`/guide/${manual.slug}`}>{manual.commonName}</Link>
         {" · "}ขั้นที่ {number} จาก {total}
       </p>
-      <h1 className="pl-h1" style={{ marginTop: "8px" }}>{step.title}</h1>
-      <p style={{ marginTop: "6px" }}>
+      <h1>{step.title}</h1>
+      <p>
         <EvidenceBadge level={step.evidence.level} />
         {step.durationMinutes != null ? (
-          <>{" "}<span className="pl-mono">ใช้เวลาราว {formatDurationMinutes(step.durationMinutes)}</span></>
+          <>{" "}<span>ใช้เวลาราว {formatDurationMinutes(step.durationMinutes)}</span></>
         ) : null}
       </p>
+      </header>
       <StepSections
         step={step}
         mediumContext={mediumContext}
@@ -147,26 +149,24 @@ export function StepDetail({ manual, step }: { manual: ResolvedManual; step: Res
         </section>
       ) : null}
 
-      <nav style={{ display: "flex", gap: "12px", marginTop: "28px" }}>
+      <nav className="cl-step-navigation" aria-label="เปลี่ยนขั้นคู่มือ">
         {previous ? (
           <Link
-            className="pl-card pl-link"
+            className="cl-button-secondary"
             href={`/guide/${manual.slug}/step/${previous}`}
-            style={{ flex: 1, textAlign: "center", color: "inherit", textDecoration: "none", fontWeight: 700 }}
           >
             ‹ ขั้นที่ {previous}
           </Link>
         ) : null}
         {next ? (
           <Link
-            className="pl-card pl-action-primary pl-link"
+            className="cl-button-primary"
             href={`/guide/${manual.slug}/step/${next}`}
-            style={{ flex: 1, textAlign: "center", textDecoration: "none", fontWeight: 700 }}
           >
             ขั้นที่ {next} ›
           </Link>
         ) : null}
       </nav>
-    </>
+    </article>
   );
 }

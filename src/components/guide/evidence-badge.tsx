@@ -7,13 +7,6 @@ export const evidenceLabel: Record<EvidenceLevel, string> = {
   "botanical-fact": "ข้อมูลจากตำรา",
 };
 
-const evidenceClass: Record<EvidenceLevel, string> = {
-  "species-direct": "pl-chip pl-chip-direct",
-  adapted: "pl-chip pl-chip-adapted",
-  unsupported: "pl-chip pl-chip-unsupported",
-  "botanical-fact": "pl-chip pl-chip-fact",
-};
-
 export function EvidenceBadge({ level }: { level: EvidenceLevel }) {
-  return <span className={evidenceClass[level]}>ระดับหลักฐาน {evidenceLabel[level]}</span>;
+  return <span className="cl-evidence-badge" data-level={level}>ระดับหลักฐาน {evidenceLabel[level]}</span>;
 }

@@ -9,10 +9,10 @@ describe("EvidenceBadge", () => {
     expect(evidenceLabel.unsupported).toBe("ยังไม่มีงานรองรับ");
   });
 
-  it("ใช้คลาสสีต่างกันตามระดับ", () => {
-    expect(renderToStaticMarkup(<EvidenceBadge level="species-direct" />)).toContain("pl-chip-direct");
-    expect(renderToStaticMarkup(<EvidenceBadge level="adapted" />)).toContain("pl-chip-adapted");
-    expect(renderToStaticMarkup(<EvidenceBadge level="unsupported" />)).toContain("pl-chip-unsupported");
+  it("ใช้สถานะ Calm Lab ที่มีข้อความกำกับทุกระดับ", () => {
+    expect(renderToStaticMarkup(<EvidenceBadge level="species-direct" />)).toContain("cl-evidence-badge");
+    expect(renderToStaticMarkup(<EvidenceBadge level="adapted" />)).toContain('data-level="adapted"');
+    expect(renderToStaticMarkup(<EvidenceBadge level="unsupported" />)).toContain('data-level="unsupported"');
   });
 
   it("บอกความหมายให้โปรแกรมอ่านหน้าจอ ไม่ใช่สื่อด้วยสีอย่างเดียว", () => {

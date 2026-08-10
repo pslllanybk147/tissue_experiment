@@ -21,6 +21,11 @@ function renderStep(step: ResolvedStep, forManual: ResolvedManual = manual) {
 }
 
 describe("StepDetail", () => {
+  it("ใช้คอลัมน์อ่าน Calm Lab และ navigation ที่มีป้ายชัดเจน", () => {
+    const html = renderStep(sterilize);
+    expect(html).toContain("cl-guide-article");
+    expect(html).toContain("cl-step-navigation");
+  });
   it("แสดงหมายเลขขั้นแบบเริ่มจาก 1 พร้อมชื่อและเหตุผล", () => {
     const html = renderStep(sterilize);
 

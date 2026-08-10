@@ -11,6 +11,9 @@ describe("StepMap", () => {
 
     expect(html).toContain("Pink Princess");
     expect(html).toContain("15 ขั้น");
+    expect(html).toContain("cl-step-map");
+    expect(html).toContain("<ol");
+    expect(html).not.toContain("pl-card");
   });
 
   it("ลิงก์ทุกขั้นด้วยหมายเลขที่เริ่มจาก 1", () => {
@@ -25,7 +28,7 @@ describe("StepMap", () => {
     const html = renderToStaticMarkup(<StepMap manual={manual} />);
 
     expect(html).toContain("เริ่มรอบเพาะของฉัน");
-    expect(html).toContain("pl-action-primary");
+    expect(html).toContain("cl-button-primary");
     expect(html).toContain('href="/my/rounds/new?slug=pink-princess"');
     expect(html).toContain("ล็อกอิน");
   });

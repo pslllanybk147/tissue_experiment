@@ -590,6 +590,36 @@ body {
 .cl-reference-list > li { padding-block: var(--cl-space-6); border-block-end: 1px solid var(--cl-border); }
 .cl-reference-list h2 { margin: 0; font-size: var(--cl-text-h2); }
 .cl-reference-list p { margin-block: var(--cl-space-2) 0; }
+.cl-guide-header { display: grid; gap: var(--cl-space-2); padding-block-end: var(--cl-space-6); border-block-end: 1px solid var(--cl-border); }
+.cl-guide-header h1 { margin: 0; font-size: var(--cl-text-display); line-height: 1.2; }
+.cl-guide-header p,
+.cl-guide-header small { margin: 0; color: var(--cl-text-muted); }
+.cl-guide-scientific { font-style: italic; }
+.cl-step-map { display: grid; margin: 0; padding: 0; list-style: none; }
+.cl-step-map li { border-block-end: 1px solid var(--cl-border); }
+.cl-step-map a { display: grid; grid-template-columns: 2.5rem minmax(0, 1fr) auto; gap: var(--cl-space-3); align-items: center; padding-block: var(--cl-space-4); color: var(--cl-text); text-decoration: none; }
+.cl-step-map a:hover { background: var(--cl-surface-hover); }
+.cl-step-number { display: grid; width: 2rem; height: 2rem; place-items: center; border: 1px solid var(--cl-border-strong); }
+.cl-step-copy { display: grid; gap: var(--cl-space-1); min-width: 0; }
+.cl-step-copy strong { font-size: var(--cl-text-h3); }
+.cl-step-copy > span { color: var(--cl-text-muted); }
+.cl-evidence-badge { display: inline-flex; width: fit-content; padding: var(--cl-space-1) var(--cl-space-2); border: 1px solid var(--cl-border-strong); color: var(--cl-text-muted); font-size: var(--cl-text-meta); white-space: nowrap; }
+.cl-evidence-badge[data-level="species-direct"] { border-color: var(--cl-success); color: var(--cl-success); }
+.cl-evidence-badge[data-level="unsupported"] { border-color: var(--cl-warning); color: var(--cl-warning); }
+.cl-guide-start { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--cl-space-3) var(--cl-space-6); align-items: center; padding: var(--cl-space-6); border-block: 1px solid var(--cl-border); background: var(--cl-surface-subtle); }
+.cl-guide-start h2,
+.cl-guide-start p { margin: 0; }
+.cl-guide-start small { grid-column: 1 / -1; color: var(--cl-text-muted); }
+.cl-step-navigation { display: flex; gap: var(--cl-space-3); padding-block-start: var(--cl-space-4); border-block-start: 1px solid var(--cl-border); }
+.cl-step-navigation a { flex: 1; text-align: center; }
+
+@media (max-width: 640px) {
+  .cl-step-map a { grid-template-columns: 2.5rem minmax(0, 1fr); }
+  .cl-step-map .cl-evidence-badge { grid-column: 2; white-space: normal; }
+  .cl-guide-start { grid-template-columns: 1fr; }
+  .cl-guide-start .cl-button-primary { width: 100%; }
+  .cl-guide-start small { grid-column: auto; }
+}
 
 @media (max-width: 560px) {
   .cl-search-form { align-items: stretch; flex-direction: column; }
