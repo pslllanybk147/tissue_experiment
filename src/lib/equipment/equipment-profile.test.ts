@@ -29,11 +29,13 @@ describe("normalizeEquipmentProfile", () => {
 
     expect(profile.chemicals.alcohol.percent).toBe(75);
     expect(profile.chemicals.bleach.percentWw).toBe(6);
+    expect(profile.chemicals.bleach.batchOrLot).toBe("");
     expect(profile.chemicals.nadcc).toMatchObject({
       availableChlorinePercent: 60,
       tabletMassG: 5.4,
       nadccMassGPerTablet: 2.97,
       tabletCount: 15,
+      batchOrLot: "",
     });
     expect(profile.water).toMatchObject({ sourcePpm: 15, sterile: false, sterilizationMethod: null });
     expect(profile.rinseWater).toEqual({ lowDoseHypochlorite: null, nadcc: null });

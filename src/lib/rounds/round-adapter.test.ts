@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { resolveBySlug } from "@/lib/manual/registry";
 import type { ExperimentLot, ProtocolStepRun } from "@/lib/domain/models";
-import type { RoundSetupInput } from "./round-setup";
+import { USER_REPORTED_PROFILE } from "@/lib/equipment/equipment-profile";
+import { buildRoundSetupInput } from "./round-setup";
 import { buildRoundView, newLotInput } from "./round-adapter";
 
 const manual = resolveBySlug("pink-princess")!;
@@ -171,17 +172,11 @@ describe("newLotInput", () => {
   });
 
   it("ล็อกวิธีและค่าของ NaDCC/Haiter ไว้กับรอบ", () => {
-    const setup: RoundSetupInput = {
-      mediumMethod: "nadcc-chemical",
-      surfaceMethod: "haiter-chemical",
-      rinseMethod: "nadcc",
-      chemistry: {
-        bleachPercentWw: 6,
-        nadccAvailableChlorinePercent: 60,
-        nadccTabletMassG: 5.4,
-        nadccMassGPerTablet: 2.97,
-      },
-    };
+    const setup = buildRoundSetupInput(
+      { mediumMethod: "nadcc-chemical", surfaceMethod: "haiter-chemical", rinseMethod: "nadcc" },
+      USER_REPORTED_PROFILE,
+      "2026-08-10T10:00:00.000Z",
+    );
     const input = newLotInput(manual, "2026-08-10", setup);
 
     expect(input.sterilization?.mediumSterilizationMethod).toBe("nadcc-chemical");

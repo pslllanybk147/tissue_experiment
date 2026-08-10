@@ -124,6 +124,6 @@ export function newLotInput(manual: ResolvedManual, startedAt: string, setup?: R
     status: "Healthy",
     startedAt,
     workflowVersion: "v2",
-    ...(setup ? { sterilization: buildRoundSterilizationSnapshot(setup, setup.chemistry) } : {}),
+    ...(setup ? { sterilization: buildRoundSterilizationSnapshot(setup) } : {}),
   };
 }

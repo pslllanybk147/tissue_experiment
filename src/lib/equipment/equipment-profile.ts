@@ -42,8 +42,9 @@ export type EquipmentProfileV2 = EquipmentKit & {
       nadccMassGPerTablet: number;
       tabletCount: number;
       labelText: string;
+      batchOrLot: string;
     };
-    bleach: { productName: string; percentWw: number };
+    bleach: { productName: string; percentWw: number; batchOrLot: string };
     alcohol: { percent: number };
   };
   water: { sourcePpm: number; sterile: boolean; sterilizationMethod: string | null };
@@ -67,7 +68,7 @@ export type EquipmentProfileV2 = EquipmentKit & {
     baMgPerMl: number;
     ibaMgPerMl: number;
     agarBrand: string;
-    sterilizationMethod: "haiter-chemical" | "nadcc-chemical" | null;
+    sterilizationMethod: "haiter-chemical" | "nadcc-chemical" | "pressure-sterilization" | null;
   };
   phone: { model: string; available: boolean };
   inventory: Array<{ id: EquipmentItemId; quantity: number; unit: InventoryUnit; note: string }>;
@@ -87,8 +88,9 @@ function blankV2(legacy: EquipmentKit): EquipmentProfileV2 {
         nadccMassGPerTablet: 0,
         tabletCount: 0,
         labelText: "ยังไม่ได้บันทึกฉลาก",
+        batchOrLot: "",
       },
-      bleach: { productName: "ยังไม่ได้บันทึก", percentWw: 0 },
+      bleach: { productName: "ยังไม่ได้บันทึก", percentWw: 0, batchOrLot: "" },
       alcohol: { percent: 0 },
     },
     water: { sourcePpm: 0, sterile: false, sterilizationMethod: null },
@@ -124,6 +126,13 @@ export function normalizeEquipmentProfile(value: EquipmentKit | EquipmentProfile
     const defaults = blankV2(value);
     return structuredClone({
       ...value,
+      chemicals: {
+        ...defaults.chemicals,
+        ...value.chemicals,
+        nadcc: { ...defaults.chemicals.nadcc, ...value.chemicals.nadcc },
+        bleach: { ...defaults.chemicals.bleach, ...value.chemicals.bleach },
+        alcohol: { ...defaults.chemicals.alcohol, ...value.chemicals.alcohol },
+      },
       rinseWater: { ...defaults.rinseWater, ...value.rinseWater },
       medium: { ...defaults.medium, ...value.medium, sterilizationMethod: value.medium.sterilizationMethod ?? null },
       msLabelRateGPerL: value.msRateGPerL,
@@ -166,8 +175,9 @@ export const USER_REPORTED_PROFILE: EquipmentProfileV2 = {
       nadccMassGPerTablet: 2.97,
       tabletCount: 15,
       labelText: "NaDCC เม็ดฟู่ คลอรีน 60%; 1 เม็ด 5.4 g มี sodium dichloroisocyanurate 2.97 g",
+      batchOrLot: "",
     },
-    bleach: { productName: "Haiter", percentWw: 6 },
+    bleach: { productName: "Haiter", percentWw: 6, batchOrLot: "" },
     alcohol: { percent: 75 },
   },
   water: { sourcePpm: 15, sterile: false, sterilizationMethod: null },

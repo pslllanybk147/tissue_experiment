@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import type { EquipmentProfileV2 } from "@/lib/equipment/equipment-profile";
+import { resolvePath } from "@/lib/equipment/resolve-path";
 import type { ResolvedManual } from "@/lib/manual/types";
 import type { RoundSetupChemistry } from "@/lib/domain/models";
-import type { RoundSetupInput, RoundSetupSelection } from "@/lib/rounds/round-setup";
+import { buildRoundSetupInput, type RoundSetupInput, type RoundSetupSelection } from "@/lib/rounds/round-setup";
 
 type Props = {
   profile: EquipmentProfileV2;
@@ -105,9 +106,9 @@ function ChemicalCards({ profile, onChange }: { profile: EquipmentProfileV2; onC
   );
 }
 
-function Choice({ selected, title, description, tag, onClick, disabled = false }: { selected: boolean; title: string; description: string; tag?: string; onClick: () => void; disabled?: boolean }) {
+function Choice({ method, selected, title, description, tag, onClick, disabled = false }: { method: string; selected: boolean; title: string; description: string; tag?: string; onClick: () => void; disabled?: boolean }) {
   return (
-    <button type="button" disabled={disabled} aria-pressed={selected} onClick={onClick} style={{ ...(selected ? selectedChoiceStyle : choiceStyle), ...(disabled ? { opacity: 0.5, cursor: "not-allowed" } : {}) }}>
+    <button type="button" data-method={method} disabled={disabled} aria-pressed={selected} onClick={onClick} style={{ ...(selected ? selectedChoiceStyle : choiceStyle), ...(disabled ? { opacity: 0.5, cursor: "not-allowed" } : {}) }}>
       <span aria-hidden="true" style={{ width: "20px", height: "20px", border: `2px solid ${selected ? "var(--pl-neon-2)" : "var(--pl-ink-3)"}`, borderRadius: "50%", position: "relative", marginTop: "1px" }}>
         {selected ? <span style={{ position: "absolute", inset: "4px", borderRadius: "50%", background: "var(--pl-neon-2)" }} /> : null}
       </span>
@@ -136,7 +137,7 @@ function MethodGroup({ title, note, group, value, options, onSelect, onClear }: 
       </div>
       <div style={{ display: "grid", gap: "10px", marginTop: "12px" }}>
         {options.map((option) => (
-          <Choice key={option.value} selected={value === option.value} title={option.title} description={option.description} tag={option.tag} disabled={option.disabled} onClick={() => onSelect(group, option.value)} />
+          <Choice key={option.value} method={option.value} selected={value === option.value} title={option.title} description={option.description} tag={option.tag} disabled={option.disabled} onClick={() => onSelect(group, option.value)} />
         ))}
       </div>
     </fieldset>
@@ -151,15 +152,18 @@ export function RoundSetup({ profile, manual, onConfirm, onBack }: Props) {
     rinseMethod: null,
   });
   const complete = Boolean(selection.mediumMethod && selection.surfaceMethod && selection.rinseMethod);
-  const chemistry: RoundSetupChemistry = {
-    bleachPercentWw: draftProfile.chemicals.bleach.percentWw,
-    nadccAvailableChlorinePercent: draftProfile.chemicals.nadcc.availableChlorinePercent,
-    nadccTabletMassG: draftProfile.chemicals.nadcc.tabletMassG,
-    nadccMassGPerTablet: draftProfile.chemicals.nadcc.nadccMassGPerTablet,
-  };
+  const sterileMediumMethod = resolvePath(draftProfile).capabilities.find((item) => item.capability === "sterile-medium")?.method;
+  const pressureAvailable = sterileMediumMethod?.id === "medium-autoclave" || sterileMediumMethod?.id === "medium-pressure-cooker";
+  const chlorinatedRinseDisabled = selection.surfaceMethod === "nadcc-soak";
 
   function select(group: SelectionGroup, value: string) {
-    setSelection((current) => ({ ...current, [group]: value } as RoundSetupSelection));
+    setSelection((current) => {
+      const next = { ...current, [group]: value } as RoundSetupSelection;
+      if (group === "surfaceMethod" && value === "nadcc-soak" && ["nadcc", "low-dose-hypochlorite"].includes(current.rinseMethod ?? "")) {
+        next.rinseMethod = null;
+      }
+      return next;
+    });
   }
 
   function clear(group: SelectionGroup) {
@@ -184,7 +188,7 @@ export function RoundSetup({ profile, manual, onConfirm, onBack }: Props) {
           onSelect={select}
           onClear={clear}
           options={[
-            { value: "pressure-sterilization", title: "หม้อนึ่งแรงดัน", description: "121°C · 15 psi · 15–20 นาที", tag: "ยังไม่มีอุปกรณ์", disabled: true },
+            { value: "pressure-sterilization", title: "หม้อนึ่งแรงดัน", description: "121°C · 15 psi · 15–20 นาที", tag: pressureAvailable ? "อุปกรณ์พร้อม" : "ยังไม่มีอุปกรณ์", disabled: !pressureAvailable },
             { value: "haiter-chemical", title: "Haiter / NaOCl ในอาหาร", description: "ใช้ข้อมูล Haiter ด้านบน ระบบจะคำนวณปริมาณให้", tag: "เลือกได้" },
             { value: "nadcc-chemical", title: "NaDCC ในอาหาร", description: "ใช้ข้อมูล NaDCC ด้านบน ระบบจะคำนวณจำนวนเม็ด/กรัมให้", tag: "ทดลอง" },
           ]}
@@ -210,8 +214,8 @@ export function RoundSetup({ profile, manual, onConfirm, onBack }: Props) {
           onClear={clear}
           options={[
             { value: "commercial-sterile", title: "น้ำปลอดเชื้อธรรมดา", description: "3 รอบ · รอบละ 1 นาที", tag: "ค่าเริ่มต้น" },
-            { value: "nadcc", title: "NaDCC rinse 300 ppm", description: "ใช้ข้อมูล NaDCC ด้านบนคำนวณน้ำ rinse · ล้างน้ำปลอดเชื้อใน R4 ต่อ", tag: "ทดลอง" },
-            { value: "low-dose-hypochlorite", title: "NaOCl / Haiter rinse 300 ppm", description: "ใช้ข้อมูล Haiter ด้านบนคำนวณน้ำ rinse · ล้างน้ำปลอดเชื้อใน R4 ต่อ", tag: "ทดลอง" },
+            { value: "nadcc", title: "NaDCC rinse 300 ppm", description: chlorinatedRinseDisabled ? "ใช้ไม่ได้หลัง NaDCC soak ซึ่งต้องล้างด้วยน้ำปลอดเชื้อ 3 รอบ" : "ใช้ข้อมูล NaDCC ด้านบนคำนวณน้ำ rinse · R1–R3 รอบละประมาณ 1 นาที", tag: "ทดลอง", disabled: chlorinatedRinseDisabled },
+            { value: "low-dose-hypochlorite", title: "NaOCl / Haiter rinse 300 ppm", description: chlorinatedRinseDisabled ? "ใช้ไม่ได้หลัง NaDCC soak ซึ่งต้องล้างด้วยน้ำปลอดเชื้อ 3 รอบ" : "ใช้ข้อมูล Haiter ด้านบนคำนวณน้ำ rinse · R1–R3 รอบละประมาณ 1 นาที", tag: "ทดลอง", disabled: chlorinatedRinseDisabled },
           ]}
         />
       </section>
@@ -223,7 +227,7 @@ export function RoundSetup({ profile, manual, onConfirm, onBack }: Props) {
         </p>
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "14px" }}>
           <button type="button" className="pl-action-secondary" onClick={onBack} style={{ cursor: "pointer" }}>ย้อนกลับ</button>
-          <button type="button" className="pl-action-primary" disabled={!complete} onClick={() => complete && void onConfirm({ ...selection, chemistry, profile: draftProfile })} style={{ cursor: complete ? "pointer" : "not-allowed" }}>
+          <button type="button" className="pl-action-primary" disabled={!complete} onClick={() => complete && void onConfirm({ ...buildRoundSetupInput(selection, draftProfile, new Date().toISOString()), profile: draftProfile })} style={{ cursor: complete ? "pointer" : "not-allowed" }}>
             ยืนยันและเข้า protocol
           </button>
         </div>

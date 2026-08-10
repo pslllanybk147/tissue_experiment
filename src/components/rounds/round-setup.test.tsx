@@ -27,4 +27,23 @@ describe("RoundSetup", () => {
     expect(html).toContain("ต้องเลือกให้ครบทุกหมวด");
     expect(html).toContain('disabled=""');
   });
+
+  it("enables pressure sterilization when equipment capability exists", () => {
+    const profile = structuredClone(USER_REPORTED_PROFILE);
+    profile.owned = ["lab-autoclave", "heat-resistant-vessels"];
+    const html = renderToStaticMarkup(
+      <RoundSetup profile={profile} manual={manual} onConfirm={() => {}} onBack={() => {}} />,
+    );
+
+    expect(html).toContain('data-method="pressure-sterilization"');
+    expect(html).not.toContain("ยังไม่มีอุปกรณ์");
+  });
+
+  it("does not promise an R4 for chlorinated rinse", () => {
+    const html = renderToStaticMarkup(
+      <RoundSetup profile={USER_REPORTED_PROFILE} manual={manual} onConfirm={() => {}} onBack={() => {}} />,
+    );
+
+    expect(html).not.toMatch(/R4|final rinse|ล้างน้ำปลอดเชื้อ.*ต่อ/);
+  });
 });
