@@ -1,0 +1,155 @@
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --cl-canvas: #f4f6f2;
+  --cl-surface: #ffffff;
+  --cl-surface-subtle: #eaf0ec;
+  --cl-surface-hover: #e2ebe5;
+  --cl-text: #17251f;
+  --cl-text-muted: #52645b;
+  --cl-text-faint: #687a70;
+  --cl-border: #cdd8d1;
+  --cl-border-strong: #93a79b;
+  --cl-action: #1f6b52;
+  --cl-action-hover: #185640;
+  --cl-on-action: #ffffff;
+  --cl-accent: #287c86;
+  --cl-accent-subtle: #dceff0;
+  --cl-focus: #167b88;
+  --cl-success: #236c49;
+  --cl-success-subtle: #e1f1e7;
+  --cl-on-success: #ffffff;
+  --cl-warning: #9a5b13;
+  --cl-warning-subtle: #fff1d8;
+  --cl-on-warning: #ffffff;
+  --cl-danger: #a33a32;
+  --cl-danger-subtle: #fbe8e5;
+  --cl-on-danger: #ffffff;
+  --cl-disabled: #dfe6e1;
+  --cl-on-disabled: #65766d;
+  --cl-overlay: rgb(13 23 20 / 46%);
+  --cl-shadow-raised: 0 12px 32px rgb(23 37 31 / 12%);
+
+  --cl-space-1: 4px;
+  --cl-space-2: 8px;
+  --cl-space-3: 12px;
+  --cl-space-4: 16px;
+  --cl-space-6: 24px;
+  --cl-space-8: 32px;
+  --cl-space-12: 48px;
+  --cl-space-16: 64px;
+  --cl-radius-sm: 4px;
+  --cl-radius-md: 8px;
+  --cl-radius-lg: 12px;
+  --cl-text-display: clamp(32px, 4vw, 42px);
+  --cl-text-h2: 26px;
+  --cl-text-h3: 21px;
+  --cl-text-body: 17px;
+  --cl-text-compact: 16px;
+  --cl-text-label: 15px;
+  --cl-text-meta: 14px;
+  --cl-control-min: 44px;
+  --cl-content-reading: 48rem;
+  --cl-content-wide: 75rem;
+  --cl-gutter: 32px;
+  --cl-mobile-nav-height: 64px;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --cl-canvas: #0d1714;
+  --cl-surface: #13201c;
+  --cl-surface-subtle: #192923;
+  --cl-surface-hover: #22352d;
+  --cl-text: #f1f7f3;
+  --cl-text-muted: #a8bab0;
+  --cl-text-faint: #8da198;
+  --cl-border: #344a40;
+  --cl-border-strong: #587166;
+  --cl-action: #9bc8ad;
+  --cl-action-hover: #b3d7c0;
+  --cl-on-action: #10241c;
+  --cl-accent: #69b7bd;
+  --cl-accent-subtle: #17363a;
+  --cl-focus: #7dd3da;
+  --cl-success: #82c99f;
+  --cl-success-subtle: #173728;
+  --cl-on-success: #10241c;
+  --cl-warning: #f0b866;
+  --cl-warning-subtle: #3c2c16;
+  --cl-on-warning: #281806;
+  --cl-danger: #f08a82;
+  --cl-danger-subtle: #40211f;
+  --cl-on-danger: #2d0c09;
+  --cl-disabled: #2b3b34;
+  --cl-on-disabled: #91a39a;
+  --cl-overlay: rgb(3 9 7 / 72%);
+  --cl-shadow-raised: 0 12px 32px rgb(0 0 0 / 30%);
+}
+
+html {
+  background: var(--cl-canvas);
+}
+
+body,
+button,
+input,
+select,
+textarea,
+code,
+kbd,
+pre {
+  font-family: var(--font-torsilp), Tahoma, sans-serif;
+}
+
+/* Legacy feature CSS still declares former font roles during migration. */
+body * {
+  font-family: var(--font-torsilp), Tahoma, sans-serif !important;
+}
+
+body {
+  background: var(--cl-canvas);
+  color: var(--cl-text);
+  font-size: var(--cl-text-body);
+  line-height: 1.65;
+}
+
+:where(button, input, select, textarea, a):focus-visible {
+  outline: 3px solid var(--cl-focus);
+  outline-offset: 3px;
+}
+
+:where(button, input, select, textarea) {
+  min-height: var(--cl-control-min);
+}
+
+:where(input, select, textarea) {
+  font-size: max(16px, 1em);
+}
+
+@media (max-width: 1199px) {
+  :root { --cl-gutter: 24px; }
+}
+
+@media (max-width: 767px) {
+  :root { --cl-gutter: 16px; }
+}
+
+@media (forced-colors: active) {
+  :where(button, input, select, textarea, a):focus-visible {
+    outline-color: Highlight;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

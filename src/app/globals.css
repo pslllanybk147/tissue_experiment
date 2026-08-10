@@ -1,83 +1,46 @@
 @import "tailwindcss";
 
-/* --surface-2/--hover: เพิ่มเพื่อแทนพื้นผิวสีอ่อนที่เคยฝัง hex ตรง ๆ (เช่น #f7f7f5, #ebeae7)
-   ค่า light คงเดิมตามของเก่า ส่วน dark เลือกโทนเข้มกว่า --surface เล็กน้อยให้แยกชั้นได้
-   --paper/--soft: โทเคนที่โค้ดเดิมอ้างถึงแต่ไม่เคยประกาศไว้ (var() ไม่มี fallback = ไม่มีผล)
-   ผูกเป็น alias ของโทเคนที่มีอยู่แล้วเพื่อให้ background ที่เคยหายไปเงียบ ๆ กลับมาถูกกำหนดจริง */
-:root { --ink: #f0fdff; --muted: #9fb3c8; --faint: #6b7f94; --line: rgba(34,211,238,.35); --surface: #0b1424; --surface-2: #101d33; --hover: #16283f; --canvas: #070d1a; --paper: #070d1a; --soft: #101d33; --blue: #22d3ee; --blue-soft: #0e3a47; --green: #34d399; --green-soft: #0d3327; --orange: #fbbf24; --orange-soft: #3b2a10; --red: #f87171; --red-soft: #3b1620; --purple: #c084fc; }
-:root[data-theme="light"] { --ink: #0f2436; --muted: #46586a; --faint: #5c6f82; --line: #dbe5ee; --surface: #ffffff; --surface-2: #f7f7f5; --hover: #ebeae7; --canvas: #f4f7fa; --paper: #f4f7fa; --soft: #f7f7f5; --blue: #0891b2; --blue-soft: #d9f2f8; --green: #17834b; --green-soft: #e7f6ee; --orange: #b45309; --orange-soft: #fff7ed; --red: #b42318; --red-soft: #fff1f0; --purple: #7c3aed; }
-/* :root[data-theme="dark"] ซ้ำค่าเดียวกับ :root เปล่า ๆ ด้านบน ต้องมีไว้เพราะ selector attribute
-   มี specificity สูงกว่า :root เปล่าใน media query ด้านล่าง ถ้าไม่มี block นี้ ผู้ใช้ที่ระบบเป็นโหมดสว่าง
-   แต่กดเลือกธีมมืดเองจะโดน media query ทับกลับเป็นสว่างอยู่ดี (จุดเดียวกับที่ guide.css ป้องกันไว้แล้ว) */
-:root[data-theme="dark"] { --ink: #f0fdff; --muted: #9fb3c8; --faint: #6b7f94; --line: rgba(34,211,238,.35); --surface: #0b1424; --surface-2: #101d33; --hover: #16283f; --canvas: #070d1a; --paper: #070d1a; --soft: #101d33; --blue: #22d3ee; --blue-soft: #0e3a47; --green: #34d399; --green-soft: #0d3327; --orange: #fbbf24; --orange-soft: #3b2a10; --red: #f87171; --red-soft: #3b1620; --purple: #c084fc; }
-/* เดิม globals.css ไม่มี prefers-color-scheme เลย ต่างจาก guide.css ที่มี ทำให้ผู้ใช้ระบบโหมดสว่าง
-   เห็นคู่มือสาธารณะเป็นสว่างแต่ /my กับ /admin เป็นมืดแบบไม่ตรงกัน เพิ่ม block นี้ให้ตรงกับ guide.css
-   ทั้งนี้ data-theme บน html (ตั้งจาก theme-toggle) ยังคงชนะ media query นี้เสมอเพราะ specificity สูงกว่า */
-@media (prefers-color-scheme: light) {
-   :root { --ink: #0f2436; --muted: #46586a; --faint: #5c6f82; --line: #dbe5ee; --surface: #ffffff; --surface-2: #f7f7f5; --hover: #ebeae7; --canvas: #f4f7fa; --paper: #f4f7fa; --soft: #f7f7f5; --blue: #0891b2; --blue-soft: #d9f2f8; --green: #17834b; --green-soft: #e7f6ee; --orange: #b45309; --orange-soft: #fff7ed; --red: #b42318; --red-soft: #fff1f0; --purple: #7c3aed; }
-}
-
-/* Button surfaces must remain distinct from the page in both themes. */
-:root,
-:root[data-theme="dark"] {
-  --button-primary-bg: #a3e635;
-  --button-primary-hover: #bef264;
-  --button-primary-ink: #172a05;
-  --button-secondary-bg: #101d33;
-  --button-secondary-hover-bg: #16283f;
-  --button-secondary-ink: #f0fdff;
-  --button-secondary-border: #35cfe4;
-  --button-text: #9fb3c8;
-  --button-text-hover: #f0fdff;
-  --button-danger-bg: #3b1620;
-  --button-danger-border: #f87171;
-  --button-danger-ink: #fecaca;
-  --button-photo-bg: #0d3327;
-  --button-photo-border: #34d399;
-  --button-photo-ink: #d1fae5;
-}
-
-:root[data-theme="light"] {
-  --button-primary-bg: #171717;
-  --button-primary-hover: #343434;
-  --button-primary-ink: #ffffff;
-  --button-secondary-bg: #ffffff;
-  --button-secondary-hover-bg: #f7f7f5;
-  --button-secondary-ink: #333333;
-  --button-secondary-border: #dbe5ee;
-  --button-text: #46586a;
-  --button-text-hover: #0f2436;
-  --button-danger-bg: #fff4f2;
-  --button-danger-border: #9f1d16;
-  --button-danger-ink: #7d1712;
-  --button-photo-bg: #edf6ef;
-  --button-photo-border: #174f34;
-  --button-photo-ink: #0f3924;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    --button-primary-bg: #171717;
-    --button-primary-hover: #343434;
-    --button-primary-ink: #ffffff;
-    --button-secondary-bg: #ffffff;
-    --button-secondary-hover-bg: #f7f7f5;
-    --button-secondary-ink: #333333;
-    --button-secondary-border: #dbe5ee;
-    --button-text: #46586a;
-    --button-text-hover: #0f2436;
-    --button-danger-bg: #fff4f2;
-    --button-danger-border: #9f1d16;
-    --button-danger-ink: #7d1712;
-    --button-photo-bg: #edf6ef;
-    --button-photo-border: #174f34;
-    --button-photo-ink: #0f3924;
-  }
+/* Temporary compatibility aliases. Calm Lab is the only value source. */
+:root {
+  --ink: var(--cl-text);
+  --muted: var(--cl-text-muted);
+  --faint: var(--cl-text-faint);
+  --line: var(--cl-border);
+  --surface: var(--cl-surface);
+  --surface-2: var(--cl-surface-subtle);
+  --hover: var(--cl-surface-hover);
+  --canvas: var(--cl-canvas);
+  --paper: var(--cl-canvas);
+  --soft: var(--cl-surface-subtle);
+  --blue: var(--cl-accent);
+  --blue-soft: var(--cl-accent-subtle);
+  --green: var(--cl-success);
+  --green-soft: var(--cl-success-subtle);
+  --orange: var(--cl-warning);
+  --orange-soft: var(--cl-warning-subtle);
+  --red: var(--cl-danger);
+  --red-soft: var(--cl-danger-subtle);
+  --purple: var(--cl-accent);
+  --button-primary-bg: var(--cl-action);
+  --button-primary-hover: var(--cl-action-hover);
+  --button-primary-ink: var(--cl-on-action);
+  --button-secondary-bg: var(--cl-surface);
+  --button-secondary-hover-bg: var(--cl-surface-hover);
+  --button-secondary-ink: var(--cl-text);
+  --button-secondary-border: var(--cl-border-strong);
+  --button-text: var(--cl-text-muted);
+  --button-text-hover: var(--cl-text);
+  --button-danger-bg: var(--cl-danger-subtle);
+  --button-danger-border: var(--cl-danger);
+  --button-danger-ink: var(--cl-danger);
+  --button-photo-bg: var(--cl-success-subtle);
+  --button-photo-border: var(--cl-success);
+  --button-photo-ink: var(--cl-success);
 }
 * { box-sizing: border-box; }
 html { background: var(--canvas); }
-body { margin: 0; background: var(--canvas); color: var(--ink); font-family: var(--font-geist-sans), Tahoma, "Noto Sans Thai", "Leelawadee UI", Arial, sans-serif; }
-.auth-screen { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: linear-gradient(rgba(18,42,32,.04) 1px, transparent 1px), linear-gradient(90deg, rgba(18,42,32,.04) 1px, transparent 1px), #f3f5f1; background-size: 32px 32px; }
+body { margin: 0; background: var(--canvas); color: var(--ink); font-family: var(--font-torsilp), Tahoma, sans-serif; }
+.auth-screen { min-height: 100vh; display: grid; place-items: center; padding: 24px; background: var(--cl-canvas); }
 .auth-card { width: min(100%, 480px); padding: 40px; border: 1px solid var(--line); background: rgba(255,255,255,.96); box-shadow: 0 24px 70px rgba(24,45,35,.12); }
 .auth-mark { display: grid; width: 44px; height: 44px; margin-bottom: 28px; place-items: center; border-radius: 12px; background: #18392b; color: white; font-family: var(--font-geist-mono), monospace; font-weight: 700; }
 .auth-card h1 { margin: 8px 0 12px; font-size: clamp(28px, 5vw, 40px); letter-spacing: -.04em; }

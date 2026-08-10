@@ -1,19 +1,11 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
-import { Geist, Geist_Mono, IBM_Plex_Sans_Thai, Noto_Sans_Thai } from "next/font/google";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { ThemeScript } from "@/components/guide/theme-script";
+import "./calm-lab.css";
 import "./globals.css";
 import "./guide.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
-const notoSansThai = Noto_Sans_Thai({ variable: "--font-thai", subsets: ["thai", "latin"] });
-const plexSansThai = IBM_Plex_Sans_Thai({
-  variable: "--font-plex",
-  subsets: ["thai", "latin"],
-  weight: ["400", "600", "700"],
-});
 const torsilp = localFont({
   src: "../../public/fonts/torsilp/TorsilpThamnganMangThoe.ttf",
   variable: "--font-torsilp",
@@ -26,11 +18,8 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const fontVars = [geistSans, geistMono, notoSansThai, plexSansThai, torsilp]
-    .map((font) => font.variable)
-    .join(" ");
   return (
-    <html lang="th" className={fontVars} suppressHydrationWarning>
+    <html lang="th" className={torsilp.variable} suppressHydrationWarning>
       <body>
         <ThemeScript />
         <AuthProvider>{children}</AuthProvider>
