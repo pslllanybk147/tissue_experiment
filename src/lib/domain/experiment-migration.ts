@@ -1,9 +1,11 @@
 import type { ExperimentLot, ExperimentStatus } from "./models";
-import type { RinseWaterSnapshot } from "./models";
+import type { PreparationStatus, RinseWaterSnapshot } from "./models";
 
 type LegacyLot = Partial<ExperimentLot> & { day?: number; protocol?: string };
 const statuses: ExperimentStatus[] = ["Healthy", "Review", "At risk", "Contaminated"];
 const stringValue = (value: unknown, fallback: string) => typeof value === "string" && value.trim() ? value : fallback;
+const preparationStatus = (value: unknown): PreparationStatus =>
+  value === "prepared" || value === "verified" ? value : "planned";
 
 function normalizeRinseWaterSnapshot(value: unknown): RinseWaterSnapshot | undefined {
   if (!value || typeof value !== "object") return undefined;
@@ -12,7 +14,7 @@ function normalizeRinseWaterSnapshot(value: unknown): RinseWaterSnapshot | undef
   return {
     ...input,
     method: input.method as RinseWaterSnapshot["method"],
-    status: input.status === "prepared" ? "prepared" : "planned",
+    status: preparationStatus(input.status),
     containerCount: 3,
     volumePerContainerMl: input.volumePerContainerMl,
   };

@@ -113,7 +113,28 @@ export type ProtocolTemplate = {
 export type SterilizationMethod = "haiter-chemical" | "pressure-sterilization" | "nadcc-soak";
 export type RinseWaterMethod = "low-dose-hypochlorite" | "nadcc" | "commercial-sterile" | "pressure-steam";
 export type MediumSterilizationMethod = "haiter-chemical" | "nadcc-chemical" | "pressure-sterilization";
-export type RinsePreparationStatus = "planned" | "prepared";
+export type PreparationStatus = "planned" | "prepared" | "verified";
+export type RinsePreparationStatus = PreparationStatus;
+export type DoseValue = { value: number; unit: "mL" | "g" | "tablet" };
+export type ChemicalPreparationSnapshot = {
+  method: MediumSterilizationMethod | SterilizationMethod | RinseWaterMethod;
+  protocolVersion: string;
+  status: PreparationStatus;
+  productName?: string;
+  batchOrLot?: string;
+  labelConcentration?: number;
+  labelBasis?: "w/w" | "w/v" | "available-chlorine";
+  targetPpm?: number;
+  actualPpm?: number;
+  calculatedDose?: DoseValue;
+  actualDose?: DoseValue;
+  stockVolumeMl?: number;
+  finalVolumeMl?: number;
+  containerCount?: number;
+  preparedAt?: string;
+  confirmedAt?: string;
+  lockedAt: string;
+};
 export type BlankDecision = "completed" | "skipped";
 export type WorkspaceType = "still-air-box" | "laminar-flow-cabinet";
 export type WorkspaceDisinfectant = "alcohol-70" | "haiter-label";
@@ -150,6 +171,7 @@ export type RinseWaterSnapshot = {
   method: RinseWaterMethod;
   /** Legacy lots may omit this; omitted means planned, never prepared. */
   status?: RinsePreparationStatus;
+  protocolVersion?: string;
   containerCount: 3;
   volumePerContainerMl: number;
   preparationVolumeMl?: number;
@@ -160,7 +182,11 @@ export type RinseWaterSnapshot = {
   actualChlorinePpm?: number;
   stockVolumeMl?: number;
   finalVolumeMl?: number;
+  calculatedDose?: DoseValue;
+  actualDose?: DoseValue;
   preparedAt?: string;
+  confirmedAt?: string;
+  lockedAt?: string;
 };
 
 export type RoundSetupChemistry = {
@@ -196,6 +222,8 @@ export type LotSterilizationSnapshot = {
   minimumToolVolumeMl?: number;
   calculatedDoseMl?: number;
   mediumBatch?: MediumBatchSnapshot;
+  mediumPreparation?: ChemicalPreparationSnapshot;
+  surfacePreparation?: ChemicalPreparationSnapshot;
   rinseWater?: RinseWaterSnapshot;
   workspace?: WorkspaceSetupSnapshot;
   blankDecision?: BlankDecision;
