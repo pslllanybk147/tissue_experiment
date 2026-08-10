@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { AuthGate } from "@/components/auth/auth-gate";
 import { useAuth } from "@/components/auth/auth-provider";
+import { StatusNotice } from "@/components/common/status-notice";
 import { GuideShell } from "@/components/guide/guide-shell";
 import { ThemeToggle } from "@/components/guide/theme-toggle";
 import { RoundSetup, type RoundSetupResult } from "@/components/rounds/round-setup";
@@ -64,7 +65,7 @@ function CreateRound() {
   if (!manual) {
     return (
       <GuideShell action={<ThemeToggle />}>
-        <p className="pl-card" role="alert" style={{ background: "var(--pl-stop)" }}>ไม่รู้จักคู่มือที่ขอ กลับไปเลือกต้นจากหน้าแรกอีกครั้ง</p>
+        <StatusNotice tone="error" title="ไม่รู้จักคู่มือที่ขอ">กลับไปเลือกต้นจากหน้าแรกอีกครั้ง</StatusNotice>
       </GuideShell>
     );
   }
@@ -78,11 +79,11 @@ function CreateRound() {
   return (
     <GuideShell action={<ThemeToggle />}>
       {error ? (
-        <p className="pl-card" role="alert" style={{ background: "var(--pl-stop)" }}>{error}</p>
+        <StatusNotice tone="error" title="ดำเนินการไม่สำเร็จ">{error}</StatusNotice>
       ) : profile === null ? (
-        <p className="pl-lede" role="status">กำลังโหลดข้อมูลสารและอุปกรณ์…</p>
+        <StatusNotice title="กำลังโหลดข้อมูลสารและอุปกรณ์…" />
       ) : creating ? (
-        <p className="pl-lede" role="status">กำลังบันทึกค่าและสร้างรอบ…</p>
+        <StatusNotice title="กำลังบันทึกค่าและสร้างรอบ…" />
       ) : (
         <RoundSetup
           profile={profile}

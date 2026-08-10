@@ -1,11 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { ActionBar } from "@/components/common/action-bar";
+import { FieldGroup } from "@/components/common/field-group";
+import { MethodSelector, type MethodOption } from "@/components/common/method-selector";
+import { StatusNotice } from "@/components/common/status-notice";
+import { WorkflowShell } from "@/components/common/workflow-shell";
+import type { RoundSetupChemistry } from "@/lib/domain/models";
 import type { EquipmentProfileV2 } from "@/lib/equipment/equipment-profile";
 import { resolvePath } from "@/lib/equipment/resolve-path";
 import type { ResolvedManual } from "@/lib/manual/types";
-import type { RoundSetupChemistry } from "@/lib/domain/models";
 import { buildRoundSetupInput, type RoundSetupInput, type RoundSetupSelection } from "@/lib/rounds/round-setup";
+import { PreparationSummary } from "./preparation-summary";
 
 type Props = {
   profile: EquipmentProfileV2;
@@ -15,51 +21,18 @@ type Props = {
 };
 
 export type RoundSetupResult = RoundSetupInput & { profile: EquipmentProfileV2 };
-
 type SelectionGroup = "mediumMethod" | "surfaceMethod" | "rinseMethod";
 
-const inputStyle = {
-  width: "100%",
-  padding: "9px 10px",
-  border: "2px solid var(--pl-line)",
-  borderRadius: "9px",
-  background: "var(--pl-sunk)",
-  color: "var(--pl-ink)",
-  fontSize: "16px",
-} as const;
-
-const choiceStyle = {
-  display: "grid",
-  gridTemplateColumns: "auto 1fr auto",
-  gap: "12px",
-  alignItems: "start",
-  width: "100%",
-  padding: "14px",
-  border: "2px solid var(--pl-line)",
-  borderRadius: "12px",
-  background: "var(--pl-sunk)",
-  color: "inherit",
-  textAlign: "left" as const,
-  cursor: "pointer",
-};
-
-const selectedChoiceStyle = {
-  ...choiceStyle,
-  border: "2px solid var(--pl-neon-2)",
-  background: "var(--pl-card)",
-  boxShadow: "inset 4px 0 0 var(--pl-neon-2)",
-};
-
-function ChemicalField({ label, value, onChange, step = "any" }: { label: string; value: number; onChange: (value: number) => void; step?: string }) {
+function ChemicalField({ id, label, value, onChange, unit }: { id: string; label: string; value: number; onChange: (value: number) => void; unit: string }) {
+  const invalid = !Number.isFinite(value) || value <= 0;
   return (
-    <label style={{ display: "grid", gap: "5px", fontWeight: 700 }}>
-      {label}
-      <input type="number" min={0} step={step} value={value} onChange={(event) => onChange(Number(event.currentTarget.value))} style={inputStyle} />
-    </label>
+    <FieldGroup id={id} label={label} unit={unit} error={invalid ? "ต้องมากกว่าศูนย์" : undefined}>
+      <input id={id} type="number" min={0} step="any" value={value} aria-invalid={invalid} onChange={(event) => onChange(Number(event.currentTarget.value))} />
+    </FieldGroup>
   );
 }
 
-function ChemicalCards({ profile, onChange }: { profile: EquipmentProfileV2; onChange: (profile: EquipmentProfileV2) => void }) {
+function ChemicalFields({ profile, onChange }: { profile: EquipmentProfileV2; onChange: (profile: EquipmentProfileV2) => void }) {
   const updateChemistry = (chemistry: Partial<RoundSetupChemistry>) => {
     onChange({
       ...profile,
@@ -77,81 +50,63 @@ function ChemicalCards({ profile, onChange }: { profile: EquipmentProfileV2; onC
   };
 
   return (
-    <section className="pl-card" style={{ marginTop: "18px", background: "var(--pl-sunk)" }}>
-      <p className="pl-mono" style={{ margin: 0 }}>ข้อมูลสารที่มีในมือ</p>
-      <h2 className="pl-h2" style={{ marginTop: "5px" }}>NaDCC และ Haiter แสดงพร้อมกัน</h2>
-      <p className="pl-lede" style={{ marginTop: "6px" }}>กรอกข้อมูลสารที่มีไว้ก่อน การเลือกว่าจะใช้สารใดในแต่ละขั้นอยู่ด้านล่างและไม่ลบข้อมูลอีกตัว</p>
-
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "14px", marginTop: "14px" }}>
-        <article className="pl-card" style={{ background: "var(--pl-card)", borderTop: "4px solid var(--pl-neon)" }}>
-          <h3 className="pl-h2">NaDCC {profile.chemicals.nadcc.availableChlorinePercent}% <span className="pl-meta">เม็ดฟู่</span></h3>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "10px", marginTop: "12px" }}>
-            <ChemicalField label="คลอรีนออกฤทธิ์ (%)" value={profile.chemicals.nadcc.availableChlorinePercent} onChange={(value) => updateChemistry({ nadccAvailableChlorinePercent: value })} />
-            <ChemicalField label="น้ำหนักเม็ด (g)" value={profile.chemicals.nadcc.tabletMassG} onChange={(value) => updateChemistry({ nadccTabletMassG: value })} />
-            <ChemicalField label="สารออกฤทธิ์ (g/เม็ด)" value={profile.chemicals.nadcc.nadccMassGPerTablet} onChange={(value) => updateChemistry({ nadccMassGPerTablet: value })} />
-          </div>
-          <p className="pl-meta" style={{ marginTop: "10px" }}>ระบบจะใช้ค่าฉลากนี้คำนวณเมื่อเลือก NaDCC</p>
-        </article>
-
-        <article className="pl-card" style={{ background: "var(--pl-card)", borderTop: "4px solid var(--pl-neon-2)" }}>
-          <h3 className="pl-h2">Haiter / NaOCl <span className="pl-meta">สารละลาย</span></h3>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "10px", marginTop: "12px" }}>
-            <ChemicalField label="ความเข้มข้น (%)" value={profile.chemicals.bleach.percentWw} onChange={(value) => updateChemistry({ bleachPercentWw: value })} />
-            <p style={{ margin: 0 }}><label style={{ display: "grid", gap: "5px", fontWeight: 700 }}>ฐานฉลาก<input value="% w/w" readOnly style={inputStyle} /></label></p>
-          </div>
-          <p className="pl-meta" style={{ marginTop: "10px" }}>ระบบจะใช้ค่าฉลากนี้คำนวณเมื่อเลือก Haiter</p>
-        </article>
+    <section className="cl-setup-section" aria-labelledby="chemical-heading">
+      <header className="cl-section-heading">
+        <p>ขั้นที่ 1</p>
+        <h2 id="chemical-heading">ข้อมูลสารที่มีในมือ</h2>
+        <p>NaDCC และ Haiter แสดงพร้อมกันและจะไม่หายเมื่อเลือกวิธี</p>
+      </header>
+      <div className="cl-chemical-grid">
+        <section className="cl-chemical-group">
+          <h3>NaDCC {profile.chemicals.nadcc.availableChlorinePercent}%</h3>
+          <p>เม็ดฟู่ · ใช้ค่าฉลากนี้เมื่อเลือก NaDCC</p>
+          <ChemicalField id="nadcc-available-chlorine" label="คลอรีนออกฤทธิ์" unit="%" value={profile.chemicals.nadcc.availableChlorinePercent} onChange={(value) => updateChemistry({ nadccAvailableChlorinePercent: value })} />
+          <ChemicalField id="nadcc-tablet-mass" label="น้ำหนักเม็ด" unit="g" value={profile.chemicals.nadcc.tabletMassG} onChange={(value) => updateChemistry({ nadccTabletMassG: value })} />
+          <ChemicalField id="nadcc-active-mass" label="สารออกฤทธิ์ต่อเม็ด" unit="g/เม็ด" value={profile.chemicals.nadcc.nadccMassGPerTablet} onChange={(value) => updateChemistry({ nadccMassGPerTablet: value })} />
+        </section>
+        <section className="cl-chemical-group">
+          <h3>Haiter / NaOCl</h3>
+          <p>สารละลาย · ใช้ค่าฉลากนี้เมื่อเลือก Haiter</p>
+          <ChemicalField id="bleach-concentration" label="ความเข้มข้นตามฉลาก" unit="% w/w" value={profile.chemicals.bleach.percentWw} onChange={(value) => updateChemistry({ bleachPercentWw: value })} />
+        </section>
       </div>
     </section>
   );
 }
 
-function Choice({ method, selected, title, description, tag, onClick, disabled = false }: { method: string; selected: boolean; title: string; description: string; tag?: string; onClick: () => void; disabled?: boolean }) {
-  return (
-    <button type="button" data-method={method} disabled={disabled} aria-pressed={selected} onClick={onClick} style={{ ...(selected ? selectedChoiceStyle : choiceStyle), ...(disabled ? { opacity: 0.5, cursor: "not-allowed" } : {}) }}>
-      <span aria-hidden="true" style={{ width: "20px", height: "20px", border: `2px solid ${selected ? "var(--pl-neon-2)" : "var(--pl-ink-3)"}`, borderRadius: "50%", position: "relative", marginTop: "1px" }}>
-        {selected ? <span style={{ position: "absolute", inset: "4px", borderRadius: "50%", background: "var(--pl-neon-2)" }} /> : null}
-      </span>
-      <span><strong>{title}</strong><small style={{ display: "block", marginTop: "4px", color: "var(--pl-ink-2)", lineHeight: 1.5 }}>{description}</small></span>
-      {tag ? <span className="pl-choice-tag">{tag}</span> : <span />}
-    </button>
-  );
-}
-
-function MethodGroup({ title, note, group, value, options, onSelect, onClear }: {
-  title: string;
+function MethodGroup({ legend, note, group, value, options, onSelect, onClear }: {
+  legend: string;
   note: string;
   group: SelectionGroup;
   value: string | null;
-  options: Array<{ value: string; title: string; description: string; tag?: string; disabled?: boolean }>;
+  options: MethodOption[];
   onSelect: (group: SelectionGroup, value: string) => void;
   onClear: (group: SelectionGroup) => void;
 }) {
   return (
-    <fieldset className="pl-card" style={{ margin: 0, background: "var(--pl-card)" }}>
-      <legend className="pl-h2" style={{ padding: "0 8px" }}>{title}</legend>
-      <p className="pl-lede" style={{ marginTop: "0" }}>{note}</p>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: "10px", alignItems: "center", marginTop: "12px", padding: "9px 11px", background: "var(--pl-sunk)", borderRadius: "9px" }}>
-        <span className="pl-meta">สถานะ: <strong>{value ? "เลือกแล้ว" : "ยังไม่เลือก"}</strong></span>
-        <button type="button" className="pl-action-secondary" onClick={() => onClear(group)} disabled={!value} style={{ cursor: value ? "pointer" : "not-allowed", padding: "7px 10px", fontSize: "13px" }}>ยกเลิกการเลือก</button>
-      </div>
-      <div style={{ display: "grid", gap: "10px", marginTop: "12px" }}>
-        {options.map((option) => (
-          <Choice key={option.value} method={option.value} selected={value === option.value} title={option.title} description={option.description} tag={option.tag} disabled={option.disabled} onClick={() => onSelect(group, option.value)} />
-        ))}
-      </div>
-    </fieldset>
+    <section className="cl-method-group">
+      <p>{note}</p>
+      <MethodSelector legend={legend} name={group} value={value} options={options} onChange={(next) => onSelect(group, next)} />
+      <button className="cl-button-quiet" type="button" onClick={() => onClear(group)} disabled={!value}>ยกเลิกการเลือก</button>
+    </section>
   );
 }
 
 export function RoundSetup({ profile, manual, onConfirm, onBack }: Props) {
   const [draftProfile, setDraftProfile] = useState(() => structuredClone(profile));
+  const [currentStep, setCurrentStep] = useState(0);
   const [selection, setSelection] = useState<RoundSetupSelection>({
     mediumMethod: profile.medium.sterilizationMethod,
     surfaceMethod: null,
     rinseMethod: null,
   });
-  const complete = Boolean(selection.mediumMethod && selection.surfaceMethod && selection.rinseMethod);
+  const selectionsComplete = Boolean(selection.mediumMethod && selection.surfaceMethod && selection.rinseMethod);
+  const chemistryComplete = [
+    draftProfile.chemicals.nadcc.availableChlorinePercent,
+    draftProfile.chemicals.nadcc.tabletMassG,
+    draftProfile.chemicals.nadcc.nadccMassGPerTablet,
+    draftProfile.chemicals.bleach.percentWw,
+  ].every((value) => Number.isFinite(value) && value > 0);
   const sterileMediumMethod = resolvePath(draftProfile).capabilities.find((item) => item.capability === "sterile-medium")?.method;
   const pressureAvailable = sterileMediumMethod?.id === "medium-autoclave" || sterileMediumMethod?.id === "medium-pressure-cooker";
   const chlorinatedRinseDisabled = selection.surfaceMethod === "nadcc-soak";
@@ -159,9 +114,7 @@ export function RoundSetup({ profile, manual, onConfirm, onBack }: Props) {
   function select(group: SelectionGroup, value: string) {
     setSelection((current) => {
       const next = { ...current, [group]: value } as RoundSetupSelection;
-      if (group === "surfaceMethod" && value === "nadcc-soak" && ["nadcc", "low-dose-hypochlorite"].includes(current.rinseMethod ?? "")) {
-        next.rinseMethod = null;
-      }
+      if (group === "surfaceMethod" && value === "nadcc-soak" && ["nadcc", "low-dose-hypochlorite"].includes(current.rinseMethod ?? "")) next.rinseMethod = null;
       return next;
     });
   }
@@ -170,68 +123,59 @@ export function RoundSetup({ profile, manual, onConfirm, onBack }: Props) {
     setSelection((current) => ({ ...current, [group]: null } as RoundSetupSelection));
   }
 
+  const summaryValue = { manualName: manual.commonName, profile: draftProfile, selection };
+  const primaryAction = currentStep < 2 ? (
+    <button className="cl-button-primary" type="button" disabled={currentStep === 0 ? !chemistryComplete : !selectionsComplete} onClick={() => setCurrentStep((step) => Math.min(2, step + 1))}>
+      {currentStep === 0 ? "ต่อไป: เลือกวิธี" : "ต่อไป: ตรวจทาน"}
+    </button>
+  ) : (
+    <button className="cl-button-primary" type="button" disabled={!chemistryComplete || !selectionsComplete} onClick={() => void onConfirm({ ...buildRoundSetupInput(selection, draftProfile, new Date().toISOString()), profile: draftProfile })}>
+      ยืนยันและเข้า protocol
+    </button>
+  );
+
+  const secondaryAction = (
+    <button className="cl-button-secondary" type="button" onClick={currentStep === 0 ? onBack : () => setCurrentStep((step) => Math.max(0, step - 1))}>
+      {currentStep === 0 ? "ย้อนกลับ" : "กลับขั้นก่อนหน้า"}
+    </button>
+  );
+
   return (
-    <>
-      <p className="pl-mono">เริ่มรอบใหม่ · ตั้งค่าก่อนเข้า protocol</p>
-      <h1 className="pl-h1" style={{ marginTop: "8px" }}>ตั้งค่ารอบก่อนเริ่ม</h1>
-      <p className="pl-lede" style={{ marginTop: "6px" }}>{manual.commonName}</p>
-      <p className="pl-lede" style={{ marginTop: "8px" }}>เลือกวิธีที่คุณจะทำจริง ระบบจะล็อกค่าที่เลือกไว้กับรอบนี้ก่อนพาเข้า protocol</p>
-
-      <ChemicalCards profile={draftProfile} onChange={setDraftProfile} />
-
-      <section style={{ display: "grid", gap: "14px", marginTop: "18px" }}>
-        <MethodGroup
-          title="อาหารและกระปุก"
-          note="เลือกวิธีทำให้อาหารและกระปุกปลอดเชื้อ 1 วิธี"
-          group="mediumMethod"
-          value={selection.mediumMethod}
-          onSelect={select}
-          onClear={clear}
-          options={[
-            { value: "pressure-sterilization", title: "หม้อนึ่งแรงดัน", description: "121°C · 15 psi · 15–20 นาที", tag: pressureAvailable ? "อุปกรณ์พร้อม" : "ยังไม่มีอุปกรณ์", disabled: !pressureAvailable },
-            { value: "haiter-chemical", title: "Haiter / NaOCl ในอาหาร", description: "ใช้ข้อมูล Haiter ด้านบน ระบบจะคำนวณปริมาณให้", tag: "เลือกได้" },
-            { value: "nadcc-chemical", title: "NaDCC ในอาหาร", description: "ใช้ข้อมูล NaDCC ด้านบน ระบบจะคำนวณจำนวนเม็ด/กรัมให้", tag: "ทดลอง" },
-          ]}
-        />
-        <MethodGroup
-          title="ฟอกผิวชิ้นพืช"
-          note="เลือกวิธีฟอกผิว 1 วิธี ค่าจะไปอยู่ในขั้นฟอกโดยตรง"
-          group="surfaceMethod"
-          value={selection.surfaceMethod}
-          onSelect={select}
-          onClear={clear}
-          options={[
-            { value: "haiter-chemical", title: "Haiter / NaOCl", description: "ใช้ข้อมูล Haiter ด้านบน คำนวณปริมาณและเวลาใน protocol", tag: "ค่าเริ่มต้น" },
-            { value: "nadcc-soak", title: "NaDCC แช่ชิ้นพืช", description: "ใช้ข้อมูล NaDCC ด้านบน · เป้าหมายเริ่มต้น 300 ppm", tag: "ทดลอง" },
-          ]}
-        />
-        <MethodGroup
-          title="น้ำล้างหลังฟอก"
-          note="เลือกวิธีล้าง 1 วิธี ระบบจะใส่เป็นคำสั่ง R1–R3 ใน protocol"
-          group="rinseMethod"
-          value={selection.rinseMethod}
-          onSelect={select}
-          onClear={clear}
-          options={[
-            { value: "commercial-sterile", title: "น้ำปลอดเชื้อธรรมดา", description: "3 รอบ · รอบละ 1 นาที", tag: "ค่าเริ่มต้น" },
-            { value: "nadcc", title: "NaDCC rinse 300 ppm", description: chlorinatedRinseDisabled ? "ใช้ไม่ได้หลัง NaDCC soak ซึ่งต้องล้างด้วยน้ำปลอดเชื้อ 3 รอบ" : "ใช้ข้อมูล NaDCC ด้านบนคำนวณน้ำ rinse · R1–R3 รอบละประมาณ 1 นาที", tag: "ทดลอง", disabled: chlorinatedRinseDisabled },
-            { value: "low-dose-hypochlorite", title: "NaOCl / Haiter rinse 300 ppm", description: chlorinatedRinseDisabled ? "ใช้ไม่ได้หลัง NaDCC soak ซึ่งต้องล้างด้วยน้ำปลอดเชื้อ 3 รอบ" : "ใช้ข้อมูล Haiter ด้านบนคำนวณน้ำ rinse · R1–R3 รอบละประมาณ 1 นาที", tag: "ทดลอง", disabled: chlorinatedRinseDisabled },
-          ]}
-        />
-      </section>
-
-      <section className="pl-card" style={{ marginTop: "18px", background: complete ? "var(--pl-yellow)" : "var(--pl-stop)" }}>
-        <h2 className="pl-h2">{complete ? "พร้อมยืนยัน" : "ยังไม่พร้อมยืนยัน"}</h2>
-        <p className="pl-lede" style={{ marginTop: "6px", color: complete ? "var(--pl-chip-ink)" : undefined }}>
-          {complete ? "ระบบจะเก็บข้อมูล NaDCC และ Haiter ทั้งคู่ แล้วล็อกเฉพาะวิธีที่เลือกไว้ในรอบนี้" : "ต้องเลือกให้ครบทุกหมวด: อาหารและกระปุก, ฟอกผิวชิ้นพืช, น้ำล้าง"}
-        </p>
-        <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "14px" }}>
-          <button type="button" className="pl-action-secondary" onClick={onBack} style={{ cursor: "pointer" }}>ย้อนกลับ</button>
-          <button type="button" className="pl-action-primary" disabled={!complete} onClick={() => complete && void onConfirm({ ...buildRoundSetupInput(selection, draftProfile, new Date().toISOString()), profile: draftProfile })} style={{ cursor: complete ? "pointer" : "not-allowed" }}>
-            ยืนยันและเข้า protocol
-          </button>
-        </div>
-      </section>
-    </>
+    <WorkflowShell
+      title="ตั้งค่ารอบก่อนเริ่ม"
+      description={`${manual.commonName} · เลือกวิธีที่จะทำจริง ระบบจะล็อกค่ากับรอบนี้`}
+      steps={["ข้อมูลสาร", "เลือกวิธี", "ตรวจทาน"]}
+      currentStep={currentStep}
+      aside={<PreparationSummary value={summaryValue} />}
+      actions={<ActionBar secondary={secondaryAction} primary={primaryAction} />}
+    >
+      <div hidden={currentStep !== 0}><ChemicalFields profile={draftProfile} onChange={setDraftProfile} /></div>
+      <div className="cl-setup-section cl-method-stage" hidden={currentStep !== 1}>
+        <header className="cl-section-heading"><p>ขั้นที่ 2</p><h2>เลือกวิธีที่จะใช้จริง</h2><p>เลือกหนึ่งวิธีในแต่ละหมวด ตัวเลือกอื่นยังคงมองเห็นได้</p></header>
+        <MethodGroup legend="อาหารและกระปุก" note="เลือกวิธีทำให้อาหารและกระปุกปลอดเชื้อ 1 วิธี" group="mediumMethod" value={selection.mediumMethod} onSelect={select} onClear={clear} options={[
+          { value: "pressure-sterilization", label: "หม้อนึ่งแรงดัน", description: "121°C · 15 psi · 15–20 นาที", status: pressureAvailable ? "อุปกรณ์พร้อม" : undefined, disabled: !pressureAvailable, disabledReason: pressureAvailable ? undefined : "ยังไม่มีอุปกรณ์แรงดันที่รองรับ" },
+          { value: "haiter-chemical", label: "Haiter / NaOCl ในอาหาร", description: "ใช้ข้อมูล Haiter ด้านบน ระบบจะคำนวณปริมาณให้", status: "เลือกได้" },
+          { value: "nadcc-chemical", label: "NaDCC ในอาหาร", description: "ใช้ข้อมูล NaDCC ด้านบน ระบบจะคำนวณจำนวนเม็ดหรือกรัมให้", status: "ทดลอง" },
+        ]} />
+        <MethodGroup legend="ฟอกผิวชิ้นพืช" note="ค่าที่เลือกจะไปอยู่ในขั้นฟอกโดยตรง" group="surfaceMethod" value={selection.surfaceMethod} onSelect={select} onClear={clear} options={[
+          { value: "haiter-chemical", label: "Haiter / NaOCl", description: "คำนวณปริมาณและเวลาใน protocol", status: "ค่าเริ่มต้น" },
+          { value: "nadcc-soak", label: "NaDCC แช่ชิ้นพืช", description: "เป้าหมายเริ่มต้น 300 ppm", status: "ทดลอง" },
+        ]} />
+        <MethodGroup legend="น้ำล้างหลังฟอก" note="ระบบจะใส่เป็นคำสั่ง R1–R3 ใน protocol" group="rinseMethod" value={selection.rinseMethod} onSelect={select} onClear={clear} options={[
+          { value: "commercial-sterile", label: "น้ำปลอดเชื้อธรรมดา", description: "3 รอบ · รอบละ 1 นาที", status: "ค่าเริ่มต้น" },
+          { value: "nadcc", label: "NaDCC rinse 300 ppm", description: "R1–R3 รอบละประมาณ 1 นาที", status: "ทดลอง", disabled: chlorinatedRinseDisabled, disabledReason: chlorinatedRinseDisabled ? "หลัง NaDCC soak ต้องใช้น้ำปลอดเชื้อ" : undefined },
+          { value: "low-dose-hypochlorite", label: "NaOCl / Haiter rinse 300 ppm", description: "R1–R3 รอบละประมาณ 1 นาที", status: "ทดลอง", disabled: chlorinatedRinseDisabled, disabledReason: chlorinatedRinseDisabled ? "หลัง NaDCC soak ต้องใช้น้ำปลอดเชื้อ" : undefined },
+        ]} />
+      </div>
+      <div className="cl-setup-section" hidden={currentStep !== 2}>
+        <header className="cl-section-heading"><p>ขั้นที่ 3</p><h2>ตรวจทานก่อนล็อกค่ากับรอบ</h2></header>
+        <PreparationSummary value={summaryValue} />
+        {chemistryComplete && selectionsComplete ? (
+          <StatusNotice tone="success" title="พร้อมยืนยัน">ระบบจะเก็บข้อมูล NaDCC และ Haiter ทั้งคู่ แล้วล็อกเฉพาะวิธีที่เลือกไว้ในรอบนี้</StatusNotice>
+        ) : (
+          <StatusNotice tone="blocked" title="ยังไม่พร้อมยืนยัน">ต้องเลือกให้ครบทุกหมวด: อาหารและกระปุก, ฟอกผิวชิ้นพืช, น้ำล้าง</StatusNotice>
+        )}
+      </div>
+    </WorkflowShell>
   );
 }

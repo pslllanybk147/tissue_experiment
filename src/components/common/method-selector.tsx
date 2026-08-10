@@ -31,6 +31,7 @@ export function MethodSelector({ legend = "เลือกวิธี", name, v
             <label className="cl-method-option" data-selected={selected ? "true" : undefined} data-disabled={option.disabled ? "true" : undefined} htmlFor={id} key={option.value}>
               <input
                 checked={selected}
+                data-method={option.value}
                 disabled={option.disabled}
                 id={id}
                 name={name}

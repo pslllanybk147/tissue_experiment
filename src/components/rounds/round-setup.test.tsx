@@ -15,7 +15,28 @@ describe("RoundSetup", () => {
     expect(html).toContain("NaDCC 60%");
     expect(html).toContain("Haiter / NaOCl");
     expect(html).toContain("ยกเลิกการเลือก");
-    expect(html).toContain("pl-choice-tag");
+    expect(html).toContain("cl-method-selector");
+  });
+
+  it("renders the approved three-stage workflow and one primary action", () => {
+    const html = renderToStaticMarkup(
+      <RoundSetup profile={USER_REPORTED_PROFILE} manual={manual} onConfirm={() => {}} onBack={() => {}} />,
+    );
+
+    expect(html).toContain("1 ข้อมูลสาร");
+    expect(html).toContain("2 เลือกวิธี");
+    expect(html).toContain("3 ตรวจทาน");
+    expect((html.match(/cl-action-primary/g) ?? [])).toHaveLength(1);
+  });
+
+  it("uses native grouped methods without nested legacy cards", () => {
+    const html = renderToStaticMarkup(
+      <RoundSetup profile={USER_REPORTED_PROFILE} manual={manual} onConfirm={() => {}} onBack={() => {}} />,
+    );
+
+    expect(html).toContain("<fieldset");
+    expect(html).not.toContain('style="display:grid;grid-template-columns:auto 1fr auto');
+    expect(html).not.toContain("pl-card");
   });
 
   it("ยังไม่ให้ยืนยันจนกว่าจะเลือกครบทุกหมวด", () => {
