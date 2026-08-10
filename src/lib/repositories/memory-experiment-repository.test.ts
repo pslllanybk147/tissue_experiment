@@ -83,6 +83,36 @@ describe("memory experiment repository", () => {
     expect((await repo.listAuditEvents("owner-1", lot.id)).at(-1)).toMatchObject({ action: "updated" });
   });
 
+  it("audits a complete sterilization snapshot update", async () => {
+    const repo = repository();
+    await repo.createLot("owner-1", lot);
+    const current = (await repo.getLot("owner-1", lot.id))!.sterilization!;
+    const updated = await repo.updateSterilization("owner-1", lot.id, {
+      ...current,
+      mediumPreparation: {
+        method: "haiter-chemical",
+        protocolVersion: "haiter-medium-v1",
+        status: "verified",
+        productName: "Haiter",
+        batchOrLot: "H-42",
+        labelConcentration: 6,
+        labelBasis: "w/w",
+        targetPpm: 30,
+        actualPpm: 29,
+        calculatedDose: { value: 0.5, unit: "mL" },
+        actualDose: { value: 0.5, unit: "mL" },
+        finalVolumeMl: 1000,
+        preparedAt: "2026-08-10T09:00:00.000Z",
+        confirmedAt: "2026-08-10T09:10:00.000Z",
+        lockedAt: "2026-08-10T08:00:00.000Z",
+      },
+    });
+
+    expect(updated.sterilization?.mediumPreparation?.actualDose).toEqual({ value: 0.5, unit: "mL" });
+    expect((await repo.getLot("owner-1", lot.id))?.sterilization?.mediumPreparation?.batchOrLot).toBe("H-42");
+    expect((await repo.listAuditEvents("owner-1", lot.id)).at(-1)?.action).toBe("updated");
+  });
+
   it("บันทึก T3 override พร้อม audit โดยไม่แก้แขนงอื่น", async () => {
     const repo = repository();
     await repo.createLot("owner-1", { ...lot, armRole: "t3", trialId: "trial-1" });

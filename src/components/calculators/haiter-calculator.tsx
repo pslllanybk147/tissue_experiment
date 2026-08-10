@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   planHaiterCleaningDose,
   toWeightPerVolumePercent,
@@ -30,11 +30,13 @@ function tryPlan(input: HaiterAutoInput): Attempt<HaiterAutoResult> {
 export function HaiterCalculator({
   initialInput,
   initialLabelBasis,
+  onPlanChange,
 }: {
   /** ตั้งค่าเริ่มต้นจากอุปกรณ์ของผู้ใช้ (minimumMeasurableMl) และใช้ในเทสต์ */
   initialInput?: Partial<HaiterAutoInput>;
   /** ถ้าโปรไฟล์มีฉลาก 6% w/w ให้เปิดหน้าด้วยหน่วยนี้ ไม่บังคับให้ผู้ใช้จำได้เอง */
   initialLabelBasis?: LabelBasis;
+  onPlanChange?: (plan: HaiterAutoResult | null) => void;
 }) {
   const merged = { ...defaultInput, ...initialInput };
   const [sourcePercent, setSourcePercent] = useState(merged.sourcePercent);
@@ -61,6 +63,10 @@ export function HaiterCalculator({
       }),
     [effectiveSourcePercent, targetPercent, finalVolumeMl, minimumMeasurableMl],
   );
+
+  useEffect(() => {
+    onPlanChange?.(plan.ok ? plan.result : null);
+  }, [onPlanChange, plan]);
 
   return (
     <section>

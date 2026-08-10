@@ -103,6 +103,34 @@ describe("Firestore experiment repository contract", () => {
     expect(audits.at(-1)).toMatchObject({ action: "updated", after: { id: "PPP-001" } });
   });
 
+  it("audits a complete sterilization snapshot update", async () => {
+    const { repository, audits } = harness();
+    const current = (await repository.getLot("owner-1", "PPP-001"))!.sterilization!;
+    const updated = await repository.updateSterilization("owner-1", "PPP-001", {
+      ...current,
+      mediumPreparation: {
+        method: "nadcc-chemical",
+        protocolVersion: "nadcc-medium-v1",
+        status: "verified",
+        productName: "NaDCC tablet",
+        batchOrLot: "N-42",
+        labelConcentration: 60,
+        labelBasis: "available-chlorine",
+        targetPpm: 300,
+        actualPpm: 297,
+        calculatedDose: { value: 0.1515, unit: "g" },
+        actualDose: { value: 0.152, unit: "g" },
+        finalVolumeMl: 1000,
+        preparedAt: "2026-08-10T09:00:00.000Z",
+        confirmedAt: "2026-08-10T09:10:00.000Z",
+        lockedAt: "2026-08-10T08:00:00.000Z",
+      },
+    });
+
+    expect(updated.sterilization?.mediumPreparation?.actualDose).toEqual({ value: 0.152, unit: "g" });
+    expect(audits.at(-1)).toMatchObject({ action: "updated" });
+  });
+
   it("persists an audited T3 override", async () => {
     const { repository, audits } = harness("t3");
     const override = {

@@ -1,9 +1,10 @@
-import type { AuditEvent, CreateLotInput, ExperimentLot, Observation, ObservationInput, RinseWaterSnapshot, T3Override } from "@/lib/domain/models";
+import type { AuditEvent, CreateLotInput, ExperimentLot, LotSterilizationSnapshot, Observation, ObservationInput, RinseWaterSnapshot, T3Override } from "@/lib/domain/models";
 
 export interface ExperimentRepository {
   listLots(ownerId: string, includeDeleted?: boolean): Promise<ExperimentLot[]>;
   getLot(ownerId: string, lotId: string): Promise<ExperimentLot | null>;
   createLot(ownerId: string, input: CreateLotInput): Promise<ExperimentLot>;
+  updateSterilization(ownerId: string, lotId: string, sterilization: LotSterilizationSnapshot): Promise<ExperimentLot>;
   updateRinseWater(ownerId: string, lotId: string, rinseWater: RinseWaterSnapshot): Promise<ExperimentLot>;
   saveT3Override(ownerId: string, lotId: string, override: T3Override): Promise<ExperimentLot>;
   softDeleteLot(ownerId: string, lotId: string): Promise<ExperimentLot>;

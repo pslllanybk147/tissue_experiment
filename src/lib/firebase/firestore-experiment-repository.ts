@@ -1,6 +1,6 @@
 import { collection, doc, getDoc, getDocs, writeBatch, type Firestore } from "firebase/firestore";
 
-import type { AuditEvent, CreateLotInput, ExperimentLot, Observation, ObservationInput, RinseWaterSnapshot, T3Override } from "@/lib/domain/models";
+import type { AuditEvent, CreateLotInput, ExperimentLot, LotSterilizationSnapshot, Observation, ObservationInput, RinseWaterSnapshot, T3Override } from "@/lib/domain/models";
 import { normalizeExperimentLot } from "../domain/experiment-migration";
 import type { ExperimentRepository } from "@/lib/repositories/experiment-repository";
 import { getFirebaseServices } from "./client";
@@ -161,6 +161,15 @@ export function createFirestoreExperimentRepository(uid: string, options: Reposi
     return lot;
   }
 
+  async function updateSterilization(ownerId: string, lotId: string, sterilization: LotSterilizationSnapshot) {
+    assertOwner(ownerId);
+    const before = await requireLot(lotId);
+    if (!before.sterilization) throw new Error("Lot has no sterilization profile");
+    const lot = removeUndefined<ExperimentLot>({ ...before, sterilization, updatedAt: now() });
+    await adapter.commitLotMutation(lot, audit(lotId, "lot", lotId, "updated", snapshot(before), snapshot(lot)));
+    return lot;
+  }
+
   async function saveT3Override(ownerId: string, lotId: string, override: T3Override) {
     assertOwner(ownerId);
     const before = await requireLot(lotId);
@@ -257,6 +266,7 @@ export function createFirestoreExperimentRepository(uid: string, options: Reposi
     listLots,
     getLot,
     createLot,
+    updateSterilization,
     updateRinseWater,
     saveT3Override,
     softDeleteLot,

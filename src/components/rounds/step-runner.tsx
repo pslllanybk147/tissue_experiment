@@ -7,7 +7,7 @@ import { Illustration } from "@/components/guide/illustrations";
 import { RichText } from "@/components/guide/rich-text";
 import { formatDurationMinutes } from "@/lib/manual/duration";
 import { troubleshootingById } from "@/lib/manual/troubleshooting";
-import type { GuidedStepStatus } from "@/lib/domain/models";
+import type { GuidedStepStatus, LotSterilizationSnapshot } from "@/lib/domain/models";
 import type { ObservationMedia } from "@/lib/domain/models";
 import type { CalibrationEntry } from "@/lib/domain/calibration";
 import type { RoundStep, RoundView } from "@/lib/rounds/round-adapter";
@@ -17,6 +17,7 @@ import { encodeStepValues, type StepResponses } from "@/lib/rounds/field-values"
 import { MEDIUM_CALCULATOR_STEP_IDS, initialRecipeIdForStep } from "@/lib/rounds/medium-steps";
 import { defaultMediumExecutionContext, type MediumExecutionContext } from "@/lib/rounds/medium-execution";
 import { BracketTable } from "./bracket-table";
+import { ChemicalPreparation } from "./chemical-preparation";
 import { MediumCalculator } from "./medium-calculator";
 import { OnlineStatus } from "./online-status";
 import { StepPhotos } from "./step-photos";
@@ -47,6 +48,7 @@ export function StepRunner({
   locked = false,
   lockReason = "",
   demoMode = false,
+  onConfirmPreparation,
 }: {
   view: RoundView;
   step: RoundStep;
@@ -65,6 +67,7 @@ export function StepRunner({
   locked?: boolean;
   lockReason?: string;
   demoMode?: boolean;
+  onConfirmPreparation?: (snapshot: LotSterilizationSnapshot) => Promise<void>;
 }) {
   const bracketPlan = buildBracketPlan(step);
   const number = step.displayNumber;
@@ -166,6 +169,13 @@ export function StepRunner({
         mediumContext={mediumContext}
         actionPrelude={(
           <>
+            {view.sterilization && onConfirmPreparation && (step.id === "prep-media" || step.id === "sterilize") ? (
+              <ChemicalPreparation
+                stepId={step.id}
+                sterilization={view.sterilization}
+                onConfirm={onConfirmPreparation}
+              />
+            ) : null}
             {MEDIUM_CALCULATOR_STEP_IDS.has(step.id) ? (
               <MediumCalculator
                 key={`${step.id}-${tools?.scaleMinimumMg ?? ""}-${tools?.pipetteMinimumMl ?? ""}-${tools?.msLabelRateGPerL ?? ""}-${tools?.bcdLabelRateGPerL ?? ""}-${tools?.naaStockMgPerMl ?? ""}-${tools?.baStockMgPerMl ?? ""}-${tools?.ibaStockMgPerMl ?? ""}`}

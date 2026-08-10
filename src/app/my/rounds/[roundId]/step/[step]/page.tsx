@@ -10,7 +10,7 @@ import { useIsOnline } from "@/components/rounds/online-status";
 import { StepRunner, type StepSaveInput } from "@/components/rounds/step-runner";
 import { T3LockPanel } from "@/components/trials/t3-lock-panel";
 import { calibrationKey, type CalibrationEntry } from "@/lib/domain/calibration";
-import type { ObservationMedia } from "@/lib/domain/models";
+import type { LotSterilizationSnapshot, ObservationMedia } from "@/lib/domain/models";
 import { resolveBySlug } from "@/lib/manual/registry";
 import {
   bracketKey,
@@ -235,6 +235,12 @@ export default function RoundStepPage() {
     setReloadKey((key) => key + 1);
   }, [authenticated, lots, ownerId, view]);
 
+  const confirmPreparation = useCallback(async (snapshot: LotSterilizationSnapshot) => {
+    if (!view) return;
+    await lots.updateSterilization(ownerId, view.lotId, snapshot);
+    setReloadKey((key) => key + 1);
+  }, [lots, ownerId, view]);
+
   return (
     <AuthGate>
       <GuideShell action={<ThemeToggle />}>
@@ -256,6 +262,7 @@ export default function RoundStepPage() {
               view={view}
               step={current}
               onSave={save}
+              onConfirmPreparation={confirmPreparation}
               photos={{ observationId: evidenceObservationId, media, canAttach, reason: attachReason, onUploaded }}
               tools={{
                 scaleMinimumMg: kit.scaleMinimumMg,

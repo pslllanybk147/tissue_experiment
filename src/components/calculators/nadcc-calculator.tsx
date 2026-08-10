@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { planNadccCleaningDose, type NadccAutoInput, type NadccAutoResult } from "@/lib/domain/nadcc-calculations";
 import { CalculatorField } from "./calculator-field";
 
@@ -26,9 +26,11 @@ function tryPlan(input: NadccAutoInput): Attempt<NadccAutoResult> {
 
 export function NadccCalculator({
   initialInput,
+  onPlanChange,
 }: {
   /** ตั้งค่าเริ่มต้นจากอุปกรณ์ของผู้ใช้ (minimumMeasurableMl) และใช้ในเทสต์ */
   initialInput?: Partial<NadccAutoInput>;
+  onPlanChange?: (plan: NadccAutoResult | null) => void;
 }) {
   const merged = { ...defaultInput, ...initialInput };
   const [tabletMg, setTabletMg] = useState(merged.tabletMg);
@@ -50,6 +52,10 @@ export function NadccCalculator({
       }),
     [tabletMg, availableChlorinePercent, stockVolumeMl, targetPpm, finalVolumeMl, minimumMeasurableMl],
   );
+
+  useEffect(() => {
+    onPlanChange?.(plan.ok ? plan.result : null);
+  }, [onPlanChange, plan]);
 
   return (
     <section>

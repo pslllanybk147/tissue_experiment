@@ -269,6 +269,24 @@ describe("T3 lock", () => {
 });
 
 describe("rendered trial protocol semantics", () => {
+  it("renders the locked chemical preparation editor in the matching execution step", () => {
+    const setup = buildRoundSetupInput(
+      { mediumMethod: "nadcc-chemical", surfaceMethod: "nadcc-soak", rinseMethod: "commercial-sterile" },
+      USER_REPORTED_PROFILE,
+      "2026-08-10T10:00:00.000Z",
+    );
+    const snapshot = buildRoundSterilizationSnapshot(setup);
+    snapshot.surfacePreparation = { ...snapshot.surfacePreparation!, finalVolumeMl: 1000 };
+    const preparedView = buildRoundView({ ...lot, sterilization: snapshot }, [], manual);
+    const preparedStep = preparedView.steps.find((item) => item.id === "sterilize")!;
+    const html = renderToStaticMarkup(
+      <StepRunner view={preparedView} step={preparedStep} onSave={noop} onConfirmPreparation={noop} />,
+    );
+
+    expect(html).toContain("ยืนยันการเตรียมสาร");
+    expect(html).toContain("nadcc-soak-v1");
+  });
+
   it("normal NaDCC-soak round renders the resolved protocol without a corrective banner", () => {
     const setup = buildRoundSetupInput(
       { mediumMethod: "nadcc-chemical", surfaceMethod: "nadcc-soak", rinseMethod: "commercial-sterile" },
