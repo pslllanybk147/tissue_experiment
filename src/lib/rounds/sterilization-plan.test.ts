@@ -45,6 +45,24 @@ describe("resolveSterilizationStep", () => {
     expect(text).not.toMatch(excluded);
   });
 
+  it("แสดงปริมาณ Haiter ที่คำนวณไว้ใน instruction ของการเตรียมอาหาร", () => {
+    const resolved = resolveSterilizationStep(
+      prepMedia,
+      snapshot({
+        mediumPreparation: {
+          method: "haiter-chemical",
+          protocolVersion: "haiter-medium-v1",
+          status: "planned",
+          calculatedDose: { value: 4.25, unit: "mL" },
+          lockedAt: "2026-08-10T10:00:00.000Z",
+        },
+      }),
+    );
+    const instruction = resolved.executionInstructions?.find((item) => item.label === "ฆ่าเชื้ออาหารด้วย Haiter");
+
+    expect(instruction?.quantity).toBe("4.25 mL");
+  });
+
   it.each([
     ["nadcc", "น้ำ NaDCC 300 ppm", /NaOCl|น้ำปลอดเชื้อธรรมดา/],
     ["low-dose-hypochlorite", "น้ำ NaOCl 300 ppm", /NaDCC|น้ำปลอดเชื้อธรรมดา/],

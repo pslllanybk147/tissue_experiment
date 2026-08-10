@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { ActionBar } from "@/components/common/action-bar";
 import { FieldGroup } from "@/components/common/field-group";
 import { StatusNotice } from "@/components/common/status-notice";
@@ -34,10 +34,12 @@ export function ChemicalPreparation({
   stepId,
   sterilization,
   onConfirm,
+  onDoseChange,
 }: {
   stepId: EditableStepId;
   sterilization: LotSterilizationSnapshot;
   onConfirm: (snapshot: LotSterilizationSnapshot) => Promise<void>;
+  onDoseChange?: (dose: DoseValue | undefined) => void;
 }) {
   const key = stepId === "prep-media" ? "mediumPreparation" : "surfacePreparation";
   const preparation = sterilization[key];
@@ -54,6 +56,13 @@ export function ChemicalPreparation({
   const [saving, setSaving] = useState(false);
   const onHaiterPlanChange = useCallback((next: HaiterAutoResult | null) => setPlan(next), []);
   const onNadccPlanChange = useCallback((next: NadccAutoResult | null) => setPlan(next), []);
+  const dose = calculatedDose(plan) ?? preparation?.calculatedDose;
+  const doseValue = dose?.value;
+  const doseUnit = dose?.unit;
+
+  useEffect(() => {
+    onDoseChange?.(doseValue === undefined || doseUnit === undefined ? undefined : { value: doseValue, unit: doseUnit });
+  }, [doseUnit, doseValue, onDoseChange]);
 
   if (!preparation || preparation.method === "pressure-sterilization") return null;
 
@@ -61,7 +70,6 @@ export function ChemicalPreparation({
   const isNadcc = lockedPreparation.method === "nadcc-chemical" || lockedPreparation.method === "nadcc-soak";
   const target = Number(targetPpm);
   const volume = Number(finalVolumeMl);
-  const dose = calculatedDose(plan) ?? lockedPreparation.calculatedDose;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

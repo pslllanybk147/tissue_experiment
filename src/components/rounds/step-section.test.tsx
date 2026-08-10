@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { resolveBySlug } from "@/lib/manual/registry";
+import type { DoseValue } from "@/lib/domain/models";
 import type { ResolvedStep } from "@/lib/manual/types";
 import { StepSections } from "./step-section";
 
@@ -47,6 +48,25 @@ describe("StepSections", () => {
     expect(html).toContain("ภาชนะละ 50 mL");
     expect(html).toContain("1 นาที");
     expect(html).toContain("ครบ 1 นาทีแล้วเทน้ำทิ้ง");
+  });
+
+  it("แสดงปริมาณสารฆ่าเชื้อที่เครื่องคำนวณเพิ่งคำนวณได้ใน instruction", () => {
+    const base = resolveBySlug("pink-princess")!.steps.find((item) => item.id === "prep-media")!;
+    const html = renderToStaticMarkup(
+      <StepSections
+        step={{
+          ...base,
+          executionInstructions: [{
+            label: "ฆ่าเชื้ออาหารด้วย Haiter",
+            action: "เติม Haiter ลงในอาหาร",
+            materials: ["Haiter"],
+          }],
+        }}
+        chemicalDose={{ value: 4.25, unit: "mL" } satisfies DoseValue}
+      />,
+    );
+
+    expect(html).toContain("4.25 mL");
   });
 
   it("ไม่ครอบ term help แบบ block ด้วย paragraph ที่ทำให้ hydration ผิด", () => {

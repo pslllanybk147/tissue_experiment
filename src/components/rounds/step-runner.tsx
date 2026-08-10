@@ -9,7 +9,7 @@ import { Illustration } from "@/components/guide/illustrations";
 import { RichText } from "@/components/guide/rich-text";
 import { formatDurationMinutes } from "@/lib/manual/duration";
 import { troubleshootingById } from "@/lib/manual/troubleshooting";
-import type { GuidedStepStatus, LotSterilizationSnapshot } from "@/lib/domain/models";
+import type { DoseValue, GuidedStepStatus, LotSterilizationSnapshot } from "@/lib/domain/models";
 import type { ObservationMedia } from "@/lib/domain/models";
 import type { CalibrationEntry } from "@/lib/domain/calibration";
 import type { RoundStep, RoundView } from "@/lib/rounds/round-adapter";
@@ -85,6 +85,10 @@ export function StepRunner({
       ? defaultMediumExecutionContext(view.mediaRecipes, initialRecipeIdForStep(step.id), tools)
       : null
   ));
+  const preparationKey = step.id === "prep-media" ? "mediumPreparation" : "surfacePreparation";
+  const [chemicalDose, setChemicalDose] = useState<DoseValue | undefined>(
+    () => view.sterilization?.[preparationKey]?.calculatedDose,
+  );
   const onMediumPlanChange = useCallback((context: MediumExecutionContext | null) => setMediumContext(context), []);
   const [measurementValues, setMeasurementValues] = useState<StepResponses>(
     () => ({ ...step.state.measurements, ...(step.state.responses ?? {}) }),
@@ -164,6 +168,7 @@ export function StepRunner({
       <StepSections
         step={step}
         mediumContext={mediumContext}
+        chemicalDose={chemicalDose}
         actionPrelude={(
           <>
             {view.sterilization && onConfirmPreparation && (step.id === "prep-media" || step.id === "sterilize") ? (
@@ -171,6 +176,7 @@ export function StepRunner({
                 stepId={step.id}
                 sterilization={view.sterilization}
                 onConfirm={onConfirmPreparation}
+                onDoseChange={setChemicalDose}
               />
             ) : null}
             {MEDIUM_CALCULATOR_STEP_IDS.has(step.id) ? (

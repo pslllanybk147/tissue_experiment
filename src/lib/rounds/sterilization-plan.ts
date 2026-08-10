@@ -13,6 +13,21 @@ function preparationProduct(
   return snapshot[part]?.productName?.trim() || fallback;
 }
 
+function preparationQuantity(
+  snapshot: LotSterilizationSnapshot,
+  part: "mediumPreparation" | "surfacePreparation",
+): string | undefined {
+  const preparation = snapshot[part];
+  const calculated = preparation?.calculatedDose;
+  const actual = preparation?.actualDose;
+  if (!calculated && !actual) return undefined;
+  if (!calculated) return `${actual!.value} ${actual!.unit}`;
+  if (!actual || (actual.value === calculated.value && actual.unit === calculated.unit)) {
+    return `${calculated.value} ${calculated.unit}`;
+  }
+  return `${calculated.value} ${calculated.unit} (ใช้จริง ${actual.value} ${actual.unit})`;
+}
+
 function withMediumMethod(step: ResolvedStep, snapshot: LotSterilizationSnapshot): ResolvedStep {
   const method = snapshot.mediumSterilizationMethod;
   if (!method) return cloneStep(step);
@@ -46,6 +61,7 @@ function withMediumMethod(step: ResolvedStep, snapshot: LotSterilizationSnapshot
 
   if (method === "nadcc-chemical") {
     const product = preparationProduct(snapshot, "mediumPreparation", "NaDCC ตามฉลากที่ล็อกไว้กับรอบ");
+    const quantity = preparationQuantity(snapshot, "mediumPreparation");
     const action = "เติม NaDCC ลงในอาหารตามปริมาณที่คำนวณและยืนยันใน protocol ของรอบนี้ แล้วบันทึกปริมาณที่ใช้จริง";
     return {
       ...base,
@@ -57,6 +73,7 @@ function withMediumMethod(step: ResolvedStep, snapshot: LotSterilizationSnapshot
           label: "ฆ่าเชื้ออาหารด้วย NaDCC",
           action,
           materials: [product, "เครื่องชั่งที่ละเอียดพอกับปริมาณที่คำนวณ"],
+          ...(quantity ? { quantity } : {}),
           completion: "ยืนยัน product/batch ปริมาณคำนวณ และปริมาณที่ใช้จริงไว้กับรอบแล้ว",
           tone: "warning",
         },
@@ -65,6 +82,7 @@ function withMediumMethod(step: ResolvedStep, snapshot: LotSterilizationSnapshot
   }
 
   const product = preparationProduct(snapshot, "mediumPreparation", "Haiter ตามฉลากที่ล็อกไว้กับรอบ");
+  const quantity = preparationQuantity(snapshot, "mediumPreparation");
   const action = "เติม Haiter ลงในอาหารตามปริมาณที่คำนวณและยืนยันใน protocol ของรอบนี้ แล้วบันทึกปริมาณที่ใช้จริง";
   return {
     ...base,
@@ -76,6 +94,7 @@ function withMediumMethod(step: ResolvedStep, snapshot: LotSterilizationSnapshot
         label: "ฆ่าเชื้ออาหารด้วย Haiter",
         action,
         materials: [product, "syringe ที่ละเอียดพอกับปริมาณที่คำนวณ"],
+        ...(quantity ? { quantity } : {}),
         completion: "ยืนยัน product/batch ปริมาณคำนวณ และปริมาณที่ใช้จริงไว้กับรอบแล้ว",
         tone: "warning",
       },

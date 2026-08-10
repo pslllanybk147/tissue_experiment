@@ -1,4 +1,5 @@
 import type { ResolvedStep } from "@/lib/manual/types";
+import type { DoseValue } from "@/lib/domain/models";
 import { RichText } from "@/components/guide/rich-text";
 import { StatusNotice } from "@/components/common/status-notice";
 import { mediumInstructionOverride, type MediumExecutionContext } from "@/lib/rounds/medium-execution";
@@ -11,7 +12,15 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return <section className="cl-protocol-section"><h2>{title}</h2>{children}</section>;
 }
 
-function ExecutionInstructions({ step, mediumContext }: { step: ResolvedStep; mediumContext?: MediumExecutionContext | null }) {
+function ExecutionInstructions({
+  step,
+  mediumContext,
+  chemicalDose,
+}: {
+  step: ResolvedStep;
+  mediumContext?: MediumExecutionContext | null;
+  chemicalDose?: DoseValue;
+}) {
   if (!step.executionInstructions || step.executionInstructions.length === 0) return null;
 
   return (
@@ -26,7 +35,10 @@ function ExecutionInstructions({ step, mediumContext }: { step: ResolvedStep; me
             {(() => {
               const override = mediumContext ? mediumInstructionOverride(instruction.label, mediumContext) : null;
               const action = override?.action || instruction.action;
-              const quantity = override?.quantity || instruction.quantity;
+              const calculatedQuantity = chemicalDose && /ฆ่าเชื้ออาหารด้วย (?:Haiter|NaDCC)/.test(instruction.label)
+                ? `${chemicalDose.value} ${chemicalDose.unit}`
+                : undefined;
+              const quantity = override?.quantity || instruction.quantity || calculatedQuantity;
               const completion = override?.completion || instruction.completion;
               const next = override?.next || instruction.next;
               return <>
@@ -51,7 +63,17 @@ function ExecutionInstructions({ step, mediumContext }: { step: ResolvedStep; me
   );
 }
 
-export function StepSections({ step, actionPrelude, mediumContext }: { step: ResolvedStep; actionPrelude?: React.ReactNode; mediumContext?: MediumExecutionContext | null }) {
+export function StepSections({
+  step,
+  actionPrelude,
+  mediumContext,
+  chemicalDose,
+}: {
+  step: ResolvedStep;
+  actionPrelude?: React.ReactNode;
+  mediumContext?: MediumExecutionContext | null;
+  chemicalDose?: DoseValue;
+}) {
   return (
     <>
       <Section title="ขั้นนี้ต้องได้อะไร">
@@ -70,7 +92,7 @@ export function StepSections({ step, actionPrelude, mediumContext }: { step: Res
 
       {actionPrelude}
 
-      {step.executionInstructions?.length ? <ExecutionInstructions step={step} mediumContext={mediumContext} /> : (
+      {step.executionInstructions?.length ? <ExecutionInstructions step={step} mediumContext={mediumContext} chemicalDose={chemicalDose} /> : (
         <Section title="ทำทีละข้อ">
           <ol style={{ margin: "8px 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "8px" }}>
             {step.actions.map((action) => <li key={action}><RichText source={action} /></li>)}
