@@ -19,5 +19,6 @@ describe("ThemeToggle", () => {
     expect(html).toContain("<button");
     expect(html).toContain('type="button"');
     expect(html).toContain("aria-label");
+    expect(html).toContain("pl-toggle");
   });
 });

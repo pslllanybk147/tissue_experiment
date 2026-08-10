@@ -112,7 +112,7 @@ function Choice({ selected, title, description, tag, onClick, disabled = false }
         {selected ? <span style={{ position: "absolute", inset: "4px", borderRadius: "50%", background: "var(--pl-neon-2)" }} /> : null}
       </span>
       <span><strong>{title}</strong><small style={{ display: "block", marginTop: "4px", color: "var(--pl-ink-2)", lineHeight: 1.5 }}>{description}</small></span>
-      {tag ? <span className="pl-chip">{tag}</span> : <span />}
+      {tag ? <span className="pl-choice-tag">{tag}</span> : <span />}
     </button>
   );
 }

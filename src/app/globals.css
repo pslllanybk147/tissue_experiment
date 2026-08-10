@@ -1138,7 +1138,7 @@ button:disabled { cursor: not-allowed; }
 }
 
 .execution-instructions { display:grid; gap:12px; margin:8px 0 0; padding:0; list-style:none; counter-reset:execution-step; }
-.execution-instruction { counter-increment:execution-step; padding:14px 16px; border:1px solid var(--line); border-left:3px solid var(--blue); background:var(--soft); }
+.execution-instruction { counter-increment:execution-step; padding:14px 16px; border:1px solid var(--pl-step-border); border-left:3px solid var(--blue); background:var(--pl-step-bg); color:var(--ink); }
 .execution-instruction-warning { border-left-color:var(--button-secondary-border); }
 .execution-instruction-stop { border-left-color:var(--danger); background:var(--pl-stop); }
 .execution-instruction-heading { display:flex; align-items:baseline; gap:10px; }

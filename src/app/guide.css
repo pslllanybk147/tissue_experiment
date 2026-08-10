@@ -32,6 +32,12 @@
   --pl-action-success-fg: #042f2e;
   --pl-action-danger-bg: #b91c1c;
   --pl-action-danger-fg: #fff7ed;
+  --pl-media-border: rgba(240, 253, 255, 0.28);
+  --pl-step-bg: #101d33;
+  --pl-step-border: rgba(34, 211, 238, 0.45);
+  --pl-choice-tag-bg: #17445a;
+  --pl-choice-tag-fg: #effcff;
+  --pl-choice-tag-border: #46d4e8;
 }
 
 @media (prefers-color-scheme: light) {
@@ -69,6 +75,12 @@
     --pl-action-success-fg: #f0fdf4;
     --pl-action-danger-bg: #b42318;
     --pl-action-danger-fg: #fff7ed;
+    --pl-media-border: #a7b7c5;
+    --pl-step-bg: #e7eef5;
+    --pl-step-border: #8da3b5;
+    --pl-choice-tag-bg: #e0ebf3;
+    --pl-choice-tag-fg: #17364a;
+    --pl-choice-tag-border: #7691a5;
   }
 }
 
@@ -106,6 +118,12 @@
   --pl-action-success-fg: #042f2e;
   --pl-action-danger-bg: #b91c1c;
   --pl-action-danger-fg: #fff7ed;
+  --pl-media-border: rgba(240, 253, 255, 0.28);
+  --pl-step-bg: #101d33;
+  --pl-step-border: rgba(34, 211, 238, 0.45);
+  --pl-choice-tag-bg: #17445a;
+  --pl-choice-tag-fg: #effcff;
+  --pl-choice-tag-border: #46d4e8;
 }
 
 :root[data-theme="light"] {
@@ -142,6 +160,12 @@
   --pl-action-success-fg: #f0fdf4;
   --pl-action-danger-bg: #b42318;
   --pl-action-danger-fg: #fff7ed;
+  --pl-media-border: #a7b7c5;
+  --pl-step-bg: #e7eef5;
+  --pl-step-border: #8da3b5;
+  --pl-choice-tag-bg: #e0ebf3;
+  --pl-choice-tag-fg: #17364a;
+  --pl-choice-tag-border: #7691a5;
 }
 
 .pl-root {
@@ -275,6 +299,23 @@
   color: var(--pl-ink);
 }
 
+.pl-choice-tag {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  border: 1px solid var(--pl-choice-tag-border);
+  border-radius: 999px;
+  background: var(--pl-choice-tag-bg);
+  color: var(--pl-choice-tag-fg);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  box-shadow: none;
+}
+
 /* หัวข้อใช้ serif เพื่อโทนตำราที่อ่านยาวสบายตา ฟอนต์ serif ต้องการช่องไฟ
    มากกว่า sans จึงเปลี่ยน letter-spacing จากติดลบเป็นบวกเล็กน้อย */
 .pl-h1 {
@@ -336,6 +377,11 @@
   list-style: decimal;
 }
 
+.pl-root ol.execution-instructions {
+  list-style: none;
+  padding-inline-start: 0;
+}
+
 /* ลิงก์ในเนื้อความต้องดูออกว่ากดได้ ก่อนหน้านี้มีแต่สไตล์ตอน focus
    ทำให้ทางออกจากหน้าที่ค้นไม่เจอดูเหมือนข้อความธรรมดา
    การ์ดที่ทั้งใบเป็นลิงก์ทับค่านี้ด้วย inline style ของตัวเองอยู่แล้ว */
@@ -351,6 +397,10 @@
    เพราะป้ายระดับหลักฐานยาวกว่าและควรตัดบรรทัดได้เมื่อจอแคบ */
 .pl-toggle {
   white-space: nowrap;
+  min-height: 48px;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.2;
 }
 
 .pl-toggle:focus-visible {
@@ -422,6 +472,15 @@
   cursor: not-allowed;
   opacity: 0.55;
   box-shadow: none;
+}
+
+/* ต้องอยู่หลัง shorthand `font: inherit` ของ action button ไม่เช่นนั้น
+   shorthand จะรีเซ็ตขนาดตัวอักษรของปุ่มสลับธีมกลับเป็นค่าพื้นฐาน */
+.pl-action-secondary.pl-toggle {
+  min-height: 48px;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.2;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -834,7 +893,7 @@
 .pl-plant-card-image {
   aspect-ratio: 1 / 1;
   border-radius: 14px;
-  border: 1px solid var(--pl-line-soft);
+  border: 1px solid var(--pl-media-border);
   background-color: var(--pl-sunk);
   background-size: cover;
   background-position: center;

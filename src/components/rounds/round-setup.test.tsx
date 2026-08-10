@@ -15,6 +15,7 @@ describe("RoundSetup", () => {
     expect(html).toContain("NaDCC 60%");
     expect(html).toContain("Haiter / NaOCl");
     expect(html).toContain("ยกเลิกการเลือก");
+    expect(html).toContain("pl-choice-tag");
   });
 
   it("ยังไม่ให้ยืนยันจนกว่าจะเลือกครบทุกหมวด", () => {

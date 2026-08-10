@@ -100,6 +100,26 @@ describe("resolveManual", () => {
     expect(instructions.map((item) => item.action).join(" ")).not.toContain("ช่วงของสูตร");
   });
 
+  it("ไม่แสดงคำสั่งเก่าที่ให้เปิดเครื่องคำนวณ NaDCC แยกจาก protocol", () => {
+    const manual = resolveManual(
+      {
+        ...basePack,
+        sequence: ["prep-media"],
+        mediaRecipes: [],
+      },
+      {
+        library: {
+          ...library,
+          "prep-media": { ...step("prep-media", "ทำอาหารและเตรียมของ") },
+        },
+      },
+    );
+
+    const text = manual.steps[0].executionInstructions?.map((item) => `${item.label} ${item.action}`).join(" ") ?? "";
+    expect(text).not.toContain("เปิดเครื่องคำนวณ NaDCC แยกต่างหาก");
+    expect(text).not.toContain("ไม่ใช่ขั้นบังคับของสูตรหลัก");
+  });
+
   it("ถอดขั้นที่ไม่อยู่ใน sequence ออก", () => {
     const manual = resolveManual({ ...basePack, sequence: ["receive", "sterilize"] }, { library });
 
