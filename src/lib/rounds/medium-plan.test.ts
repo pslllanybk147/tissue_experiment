@@ -23,6 +23,7 @@ const tools = {
   bcdLabelRateGPerL: 1.2,
   naaStockMgPerMl: 1,
   baStockMgPerMl: 1,
+  bapStockMgPerMl: 3,
   ibaStockMgPerMl: 1,
 };
 
@@ -77,16 +78,16 @@ describe("planMediumBatch", () => {
     expect((bap as { requiredMg: number }).requiredMg).toBeCloseTo(0.173, 3);
   });
 
-  it("ฮอร์โมนใช้ความเข้มข้น BA stock จากอุปกรณ์จริง ไม่ hard-code 1 mg/mL", () => {
-    const plan = planMediumBatch(recipe, jars, { ...tools, baStockMgPerMl: 2 });
+  it("BAP ใช้ BAP stock เท่านั้น ไม่ยืมค่า BA", () => {
+    const plan = planMediumBatch(recipe, jars, { ...tools, baStockMgPerMl: 2, bapStockMgPerMl: 4 });
     const bap = plan.lines.find((line) => line.name === "BAP") as { plan: { state: string; workingDoseMl?: number } };
 
     expect(bap.plan.state).toBe("working-dilution");
-    expect(bap.plan.workingDoseMl).toBeCloseTo(0.865, 3);
+    expect(bap.plan.workingDoseMl).toBeCloseTo(0.4325, 3);
   });
 
   it("ถ้าไม่มี stock ของฮอร์โมนตรงตัว ต้องบอกว่าคำนวณต่อไม่ได้", () => {
-    const plan = planMediumBatch(recipe, jars, { ...tools, baStockMgPerMl: 0 });
+    const plan = planMediumBatch(recipe, jars, { ...tools, bapStockMgPerMl: 0 });
     const bap = plan.lines.find((line) => line.name === "BAP") as { plan: { state: string } };
 
     expect(bap.plan.state).toBe("blocked");
@@ -120,9 +121,9 @@ describe("planMediumBatch", () => {
     const plan = planMediumBatch(recipe, jars, tools);
     const bap = plan.lines.find((line) => line.name === "BAP") as { stockConcentrationMgPerMl: number; plan: { state: string; workingDoseMl?: number } };
 
-    expect(bap.stockConcentrationMgPerMl).toBe(1);
+    expect(bap.stockConcentrationMgPerMl).toBe(3);
     expect(bap.plan.state).toBe("working-dilution");
-    expect(bap.plan.workingDoseMl).toBeCloseTo(1.73, 3);
+    expect(bap.plan.workingDoseMl).toBeCloseTo(0.577, 3);
   });
 
   it("เตือนเมื่อไม่มีกระปุกเปล่าคุม", () => {

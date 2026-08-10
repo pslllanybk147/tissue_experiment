@@ -61,6 +61,7 @@ export function StepRunner({
     bcdLabelRateGPerL?: number;
     naaStockMgPerMl?: number;
     baStockMgPerMl?: number;
+    bapStockMgPerMl?: number;
     ibaStockMgPerMl?: number;
   };
   remembered?: CalibrationEntry | null;
@@ -178,7 +179,7 @@ export function StepRunner({
             ) : null}
             {MEDIUM_CALCULATOR_STEP_IDS.has(step.id) ? (
               <MediumCalculator
-                key={`${step.id}-${tools?.scaleMinimumMg ?? ""}-${tools?.pipetteMinimumMl ?? ""}-${tools?.msLabelRateGPerL ?? ""}-${tools?.bcdLabelRateGPerL ?? ""}-${tools?.naaStockMgPerMl ?? ""}-${tools?.baStockMgPerMl ?? ""}-${tools?.ibaStockMgPerMl ?? ""}`}
+                key={`${step.id}-${tools?.scaleMinimumMg ?? ""}-${tools?.pipetteMinimumMl ?? ""}-${tools?.msLabelRateGPerL ?? ""}-${tools?.bcdLabelRateGPerL ?? ""}-${tools?.naaStockMgPerMl ?? ""}-${tools?.baStockMgPerMl ?? ""}-${tools?.bapStockMgPerMl ?? ""}-${tools?.ibaStockMgPerMl ?? ""}`}
                 recipes={view.mediaRecipes}
                 initialRecipeId={initialRecipeIdForStep(step.id)}
                 tools={tools}

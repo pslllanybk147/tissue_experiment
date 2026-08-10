@@ -60,4 +60,16 @@ describe("normalizeEquipmentProfile", () => {
       "ph-meter": 1,
     });
   });
+
+  it("ย้ายค่า legacy BA ไป BA เท่านั้นและไม่คัดลอกเป็น BAP", () => {
+    const legacy = structuredClone(USER_REPORTED_PROFILE);
+    delete legacy.medium.bapMgPerMl;
+    delete legacy.bapStockMgPerMl;
+
+    const profile = normalizeEquipmentProfile(legacy);
+
+    expect(profile.baStockMgPerMl).toBe(1);
+    expect(profile.bapStockMgPerMl).toBeUndefined();
+    expect(profile.medium.bapMgPerMl).toBe(0);
+  });
 });

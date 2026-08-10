@@ -271,6 +271,7 @@ export default function RoundStepPage() {
                 bcdLabelRateGPerL: kit.bcdLabelRateGPerL,
                 naaStockMgPerMl: kit.naaStockMgPerMl,
                 baStockMgPerMl: kit.baStockMgPerMl,
+                bapStockMgPerMl: kit.bapStockMgPerMl,
                 ibaStockMgPerMl: kit.ibaStockMgPerMl,
               }}
               remembered={remembered}

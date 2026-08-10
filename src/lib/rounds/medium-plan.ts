@@ -1,5 +1,6 @@
 import { calculateMediumBatchPlan } from "@/lib/domain/medium-batch-calculations";
 import { calculateWorkingStock, type WorkingStockResult } from "@/lib/domain/working-stock-calculator";
+import { stockIdForIngredient } from "@/lib/domain/hormone-stock-mapping";
 import type { MediaIngredient, MediaRecipe } from "@/lib/manual/types";
 
 export type ToolLimits = {
@@ -13,6 +14,7 @@ export type ToolLimits = {
   bcdLabelRateGPerL?: number;
   naaStockMgPerMl?: number;
   baStockMgPerMl?: number;
+  bapStockMgPerMl?: number;
   ibaStockMgPerMl?: number;
 };
 
@@ -56,16 +58,16 @@ function baseLabelRate(ingredient: MediaIngredient, tools: ToolLimits): number {
 }
 
 function hormoneStockConcentration(name: string, tools: ToolLimits): number {
-  const normalized = name.toLowerCase().replace(/[()\s-]/g, "");
-  if (normalized.includes("naa")) return tools.naaStockMgPerMl ?? 0;
-  if (normalized.includes("iba")) return tools.ibaStockMgPerMl ?? 0;
-  if (normalized.includes("ba") || normalized.includes("bap")) return tools.baStockMgPerMl ?? 0;
+  const stockId = stockIdForIngredient(name);
+  if (stockId === "naa") return tools.naaStockMgPerMl ?? 0;
+  if (stockId === "iba") return tools.ibaStockMgPerMl ?? 0;
+  if (stockId === "ba") return tools.baStockMgPerMl ?? 0;
+  if (stockId === "bap") return tools.bapStockMgPerMl ?? 0;
   return 0;
 }
 
 function isHormoneIngredient(name: string): boolean {
-  const normalized = name.toLowerCase().replace(/[()\s-]/g, "");
-  return ["naa", "iba", "ba", "bap", "6ba", "tdz", "kinetin", "kinetin", "iaa"].some((marker) => normalized.includes(marker));
+  return stockIdForIngredient(name) !== null || ["TDZ", "KINETIN", "IAA"].includes(name.trim().toUpperCase());
 }
 
 function blockedStockPlan(name: string): WorkingStockResult {

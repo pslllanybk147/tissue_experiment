@@ -168,8 +168,10 @@ export function ProfileSection({ profile, onChange }: { profile: EquipmentProfil
           <NumberField id="ms-rate" label="MS ตามฉลาก (g/L)" value={profile.medium.msRateGPerL} onValue={(value) => changed({ ...profile, medium: { ...profile.medium, msRateGPerL: value }, msRateGPerL: value, msLabelRateGPerL: value })} />
           <NumberField id="naa-stock" label="NAA stock (mg/mL)" value={profile.medium.naaMgPerMl} onValue={(value) => changed({ ...profile, medium: { ...profile.medium, naaMgPerMl: value }, naaStockMgPerMl: value })} />
           <NumberField id="ba-stock" label="BA stock (mg/mL)" value={profile.medium.baMgPerMl} onValue={(value) => changed({ ...profile, medium: { ...profile.medium, baMgPerMl: value }, baStockMgPerMl: value })} />
+          <NumberField id="bap-stock" label="BAP stock (mg/mL)" value={profile.medium.bapMgPerMl ?? 0} onValue={(value) => changed({ ...profile, medium: { ...profile.medium, bapMgPerMl: value }, bapStockMgPerMl: value })} />
           <NumberField id="iba-stock" label="IBA stock (mg/mL)" value={profile.medium.ibaMgPerMl} onValue={(value) => changed({ ...profile, medium: { ...profile.medium, ibaMgPerMl: value }, ibaStockMgPerMl: value })} />
         </FieldGrid>
+        <p className="pl-meta" style={{ marginTop: "8px" }}>ตรวจชื่อบนฉลากให้ตรงกับชื่อในสูตร ระบบจะไม่ใช้ BA แทน BAP หรือใช้ BAP แทน BA</p>
         <p className="pl-lede" style={{ marginTop: "10px" }}>น้ำตาลทรายขาวเกรดบริโภค · pH up/down · ผงวุ้น{profile.medium.agarBrand}</p>
       </Card>
 

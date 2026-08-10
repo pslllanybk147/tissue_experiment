@@ -30,6 +30,7 @@ export function defaultMediumExecutionContext(
     bcdLabelRateGPerL: tools?.bcdLabelRateGPerL ?? 0,
     naaStockMgPerMl: tools?.naaStockMgPerMl ?? 0,
     baStockMgPerMl: tools?.baStockMgPerMl ?? 0,
+    bapStockMgPerMl: tools?.bapStockMgPerMl ?? 0,
     ibaStockMgPerMl: tools?.ibaStockMgPerMl ?? 0,
   };
   try {

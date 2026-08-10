@@ -116,6 +116,7 @@ export function MediumCalculator({
     bcdLabelRateGPerL?: number;
     naaStockMgPerMl?: number;
     baStockMgPerMl?: number;
+    bapStockMgPerMl?: number;
     ibaStockMgPerMl?: number;
   };
   onPlanChange?: (context: MediumExecutionContext | null) => void;
@@ -135,6 +136,7 @@ export function MediumCalculator({
   const [bcdLabelRateGPerL, setBcdLabelRateGPerL] = useState(tools?.bcdLabelRateGPerL ?? 0);
   const [naaStockMgPerMl, setNaaStockMgPerMl] = useState(tools?.naaStockMgPerMl ?? 0);
   const [baStockMgPerMl, setBaStockMgPerMl] = useState(tools?.baStockMgPerMl ?? 0);
+  const [bapStockMgPerMl, setBapStockMgPerMl] = useState(tools?.bapStockMgPerMl ?? 0);
   const [ibaStockMgPerMl, setIbaStockMgPerMl] = useState(tools?.ibaStockMgPerMl ?? 0);
 
   const recipe = recipeId ? recipes.find((item) => item.id === recipeId) : undefined;
@@ -145,12 +147,12 @@ export function MediumCalculator({
       return planMediumBatch(
         recipe,
         { cultureJars, blankJars, spareJars, mlPerJar, lossPercent },
-        { scaleMinimumMg, pipetteMinimumMl, msLabelRateGPerL, bcdLabelRateGPerL, naaStockMgPerMl, baStockMgPerMl, ibaStockMgPerMl },
+        { scaleMinimumMg, pipetteMinimumMl, msLabelRateGPerL, bcdLabelRateGPerL, naaStockMgPerMl, baStockMgPerMl, bapStockMgPerMl, ibaStockMgPerMl },
       );
     } catch {
       return null;
     }
-  }, [baStockMgPerMl, bcdLabelRateGPerL, blankJars, cultureJars, ibaStockMgPerMl, lossPercent, mlPerJar, msLabelRateGPerL, naaStockMgPerMl, pipetteMinimumMl, recipe, scaleMinimumMg, spareJars]);
+  }, [baStockMgPerMl, bapStockMgPerMl, bcdLabelRateGPerL, blankJars, cultureJars, ibaStockMgPerMl, lossPercent, mlPerJar, msLabelRateGPerL, naaStockMgPerMl, pipetteMinimumMl, recipe, scaleMinimumMg, spareJars]);
 
   useEffect(() => {
     onPlanChange?.(plan && recipe ? { recipe, plan, mlPerJar } : null);
@@ -199,9 +201,11 @@ export function MediumCalculator({
           <Field id="ms-label" label="อัตรา MS บนฉลาก (ก./ล.)" value={msLabelRateGPerL} onChange={setMsLabelRateGPerL} step="any" hint="ดูจากถุงที่คุณซื้อมา" />
           <Field id="bcd-label" label="อัตรา BCD บนฉลาก (ก./ล.)" value={bcdLabelRateGPerL} onChange={setBcdLabelRateGPerL} step="any" hint="ถ้าไม่มี ให้ใช้สูตรที่แจกแจงสาร BCD ทีละตัว" />
           <Field id="naa-stock" label="NAA stock (มก./มล.)" value={naaStockMgPerMl} onChange={setNaaStockMgPerMl} step="any" />
-          <Field id="ba-stock" label="BA/BAP stock (มก./มล.)" value={baStockMgPerMl} onChange={setBaStockMgPerMl} step="any" />
+          <Field id="ba-stock" label="BA stock (มก./มล.)" value={baStockMgPerMl} onChange={setBaStockMgPerMl} step="any" />
+          <Field id="bap-stock" label="BAP stock (มก./มล.)" value={bapStockMgPerMl} onChange={setBapStockMgPerMl} step="any" />
           <Field id="iba-stock" label="IBA stock (มก./มล.)" value={ibaStockMgPerMl} onChange={setIbaStockMgPerMl} step="any" />
         </div>
+        <p className="pl-meta" style={{ margin: 0 }}>ตรวจชื่อบนฉลากให้ตรงกับชื่อในสูตร ระบบจะไม่ใช้ BA และ BAP แทนกันอัตโนมัติ</p>
       </div>
 
       {plan ? (

@@ -45,6 +45,12 @@ describe("ProfileSection", () => {
     expect(html).not.toContain('<option value="nadcc-chemical" selected=""');
   });
 
+  it("แยกช่อง BA stock และ BAP stock ตามชื่อบนฉลาก", () => {
+    expect(html).toContain("BA stock (mg/mL)");
+    expect(html).toContain("BAP stock (mg/mL)");
+    expect(html).toContain("ตรวจชื่อบนฉลากให้ตรงกับชื่อในสูตร");
+  });
+
   it("แสดงฟอร์มยืนยันน้ำ rinse แยกจากน้ำปลอดเชื้อ", () => {
     expect(html).toContain("น้ำ rinse ทดลอง 300 ppm");
     expect(html).toContain("NaClO / Haiter");

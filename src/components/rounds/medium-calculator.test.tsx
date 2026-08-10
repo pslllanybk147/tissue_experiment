@@ -62,4 +62,13 @@ describe("MediumCalculator", () => {
     expect(html).toContain("ยังไม่มีสูตรอาหารของขั้นนี้ในระบบ");
     expect(html).not.toContain("MS basal salts");
   });
+
+  it("แสดง BA และ BAP เป็น stock คนละช่องและเตือนให้ตรวจฉลาก", () => {
+    const html = renderToStaticMarkup(<MediumCalculator recipes={recipes} />);
+
+    expect(html).toContain("BA stock");
+    expect(html).toContain("BAP stock");
+    expect(html).toContain("ตรวจชื่อบนฉลากให้ตรงกับชื่อในสูตร");
+    expect(html).not.toContain("BA/BAP stock");
+  });
 });

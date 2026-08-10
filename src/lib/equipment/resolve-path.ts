@@ -9,6 +9,7 @@ export type EquipmentKit = {
   bcdLabelRateGPerL?: number;
   naaStockMgPerMl?: number;
   baStockMgPerMl?: number;
+  bapStockMgPerMl?: number;
   ibaStockMgPerMl?: number;
   bleachLabelBasis?: "w/v" | "w/w";
   bleachDensityGPerMl?: number;

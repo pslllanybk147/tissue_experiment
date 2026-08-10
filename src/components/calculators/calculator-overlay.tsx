@@ -53,7 +53,7 @@ export function CalculatorOverlay() {
 
   if (!state.isOpen) return null;
 
-  const toolsKey = `${kit.scaleMinimumMg}-${kit.pipetteMinimumMl}-${kit.msLabelRateGPerL}-${kit.bcdLabelRateGPerL ?? 0}-${kit.naaStockMgPerMl ?? 0}-${kit.baStockMgPerMl ?? 0}-${kit.ibaStockMgPerMl ?? 0}-${kit.bleachLabelBasis ?? "w/v"}`;
+  const toolsKey = `${kit.scaleMinimumMg}-${kit.pipetteMinimumMl}-${kit.msLabelRateGPerL}-${kit.bcdLabelRateGPerL ?? 0}-${kit.naaStockMgPerMl ?? 0}-${kit.baStockMgPerMl ?? 0}-${kit.bapStockMgPerMl ?? 0}-${kit.ibaStockMgPerMl ?? 0}-${kit.bleachLabelBasis ?? "w/v"}`;
   const selectedPlant = plantPacks.find((pack) => pack.slug === selectedPlantSlug) ?? plantPacks[0];
 
   return (

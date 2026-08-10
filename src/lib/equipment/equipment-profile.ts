@@ -66,6 +66,7 @@ export type EquipmentProfileV2 = EquipmentKit & {
     phUpDown: boolean;
     naaMgPerMl: number;
     baMgPerMl: number;
+    bapMgPerMl?: number;
     ibaMgPerMl: number;
     agarBrand: string;
     sterilizationMethod: "haiter-chemical" | "nadcc-chemical" | "pressure-sterilization" | null;
@@ -109,6 +110,7 @@ function blankV2(legacy: EquipmentKit): EquipmentProfileV2 {
       phUpDown: false,
       naaMgPerMl: 0,
       baMgPerMl: 0,
+      bapMgPerMl: 0,
       ibaMgPerMl: 0,
       agarBrand: "ยังไม่ได้บันทึก",
       sterilizationMethod: null,
@@ -140,6 +142,7 @@ export function normalizeEquipmentProfile(value: EquipmentKit | EquipmentProfile
       pipetteMinimumMl: value.instruments.syringeResolutionMl,
       naaStockMgPerMl: value.medium.naaMgPerMl,
       baStockMgPerMl: value.medium.baMgPerMl,
+      bapStockMgPerMl: value.medium.bapMgPerMl,
       ibaStockMgPerMl: value.medium.ibaMgPerMl,
       bleachLabelBasis: value.chemicals.bleach.percentWw > 0 ? "w/w" : "w/v",
       bleachDensityGPerMl: 1.08,
@@ -163,6 +166,7 @@ export const USER_REPORTED_PROFILE: EquipmentProfileV2 = {
   msLabelRateGPerL: 4.43,
   naaStockMgPerMl: 1,
   baStockMgPerMl: 1,
+  bapStockMgPerMl: 0,
   ibaStockMgPerMl: 1,
   bleachLabelBasis: "w/w",
   bleachDensityGPerMl: 1.08,
@@ -191,6 +195,7 @@ export const USER_REPORTED_PROFILE: EquipmentProfileV2 = {
     phUpDown: true,
     naaMgPerMl: 1,
     baMgPerMl: 1,
+    bapMgPerMl: 0,
     ibaMgPerMl: 1,
     agarBrand: "ตราโทรศัพท์",
     sterilizationMethod: null,
