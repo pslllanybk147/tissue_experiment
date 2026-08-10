@@ -89,6 +89,9 @@ export function StepRunner({
   const [chemicalDose, setChemicalDose] = useState<DoseValue | undefined>(
     () => view.sterilization?.[preparationKey]?.calculatedDose,
   );
+  const mediumHaiterTargetPpm = step.id === "prep-media" && view.sterilization?.mediumPreparation?.method === "haiter-chemical"
+    ? Math.round((view.sterilization.mediumPreparation.labelConcentration ?? 6) * 20 * 100) / 100
+    : undefined;
   const onMediumPlanChange = useCallback((context: MediumExecutionContext | null) => setMediumContext(context), []);
   const [measurementValues, setMeasurementValues] = useState<StepResponses>(
     () => ({ ...step.state.measurements, ...(step.state.responses ?? {}) }),
@@ -177,6 +180,8 @@ export function StepRunner({
                 sterilization={view.sterilization}
                 onConfirm={onConfirmPreparation}
                 onDoseChange={setChemicalDose}
+                defaultTargetPpm={mediumHaiterTargetPpm}
+                defaultFinalVolumeMl={step.id === "prep-media" ? mediumContext?.plan.totalVolumeMl : undefined}
               />
             ) : null}
             {MEDIUM_CALCULATOR_STEP_IDS.has(step.id) ? (

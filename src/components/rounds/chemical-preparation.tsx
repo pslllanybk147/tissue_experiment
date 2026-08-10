@@ -35,18 +35,22 @@ export function ChemicalPreparation({
   sterilization,
   onConfirm,
   onDoseChange,
+  defaultTargetPpm,
+  defaultFinalVolumeMl,
 }: {
   stepId: EditableStepId;
   sterilization: LotSterilizationSnapshot;
   onConfirm: (snapshot: LotSterilizationSnapshot) => Promise<void>;
   onDoseChange?: (dose: DoseValue | undefined) => void;
+  defaultTargetPpm?: number;
+  defaultFinalVolumeMl?: number;
 }) {
   const key = stepId === "prep-media" ? "mediumPreparation" : "surfacePreparation";
   const preparation = sterilization[key];
   const [productName, setProductName] = useState(preparation?.productName ?? "");
   const [batchOrLot, setBatchOrLot] = useState(preparation?.batchOrLot ?? "");
-  const [targetPpm, setTargetPpm] = useState(preparation?.targetPpm?.toString() ?? "");
-  const [finalVolumeMl, setFinalVolumeMl] = useState(preparation?.finalVolumeMl?.toString() ?? "");
+  const [targetPpm, setTargetPpm] = useState(preparation?.targetPpm?.toString() ?? defaultTargetPpm?.toString() ?? "");
+  const [finalVolumeMl, setFinalVolumeMl] = useState(preparation?.finalVolumeMl?.toString() ?? defaultFinalVolumeMl?.toString() ?? "");
   const [actualDose, setActualDose] = useState(preparation?.actualDose?.value.toString() ?? "");
   const [actualPpm, setActualPpm] = useState(preparation?.actualPpm?.toString() ?? "");
   const [preparedAt, setPreparedAt] = useState(dateTimeValue(preparation?.preparedAt));
@@ -68,6 +72,7 @@ export function ChemicalPreparation({
 
   const lockedPreparation: ChemicalPreparationSnapshot = preparation;
   const isNadcc = lockedPreparation.method === "nadcc-chemical" || lockedPreparation.method === "nadcc-soak";
+  const isMediumHaiter = stepId === "prep-media" && lockedPreparation.method === "haiter-chemical";
   const target = Number(targetPpm);
   const volume = Number(finalVolumeMl);
 
@@ -120,12 +125,17 @@ export function ChemicalPreparation({
       <p className="cl-meta">
         โปรโตคอล {preparation.protocolVersion} · สถานะที่ล็อกไว้ {preparation.status}
       </p>
+      {isMediumHaiter ? (
+        <p className="cl-lede" style={{ marginTop: "8px" }}>
+          ขั้นอาหารใช้ค่าเริ่มต้นตาม protocol: อัตรา Haiter 2 mL/L · ระบบเติมเป้าหมายและปริมาตร batch ให้แล้ว แก้ได้เมื่อมีเหตุผลและควรจดไว้กับรอบ
+        </p>
+      ) : null}
       <form onSubmit={(event) => void submit(event)}>
         <div className="cl-preparation-fields">
           <FieldGroup id="preparation-product" label="ผลิตภัณฑ์"><input id="preparation-product" value={productName} onChange={(event) => setProductName(event.currentTarget.value)} /></FieldGroup>
           <FieldGroup id="preparation-batch" label="Batch / lot"><input id="preparation-batch" value={batchOrLot} onChange={(event) => setBatchOrLot(event.currentTarget.value)} /></FieldGroup>
-          <FieldGroup id="preparation-target" label="เป้าหมาย" unit="ppm"><input id="preparation-target" type="number" step="any" value={targetPpm} onChange={(event) => setTargetPpm(event.currentTarget.value)} /></FieldGroup>
-          <FieldGroup id="preparation-volume" label="ปริมาตรสุดท้าย" unit="mL"><input id="preparation-volume" type="number" step="any" value={finalVolumeMl} onChange={(event) => setFinalVolumeMl(event.currentTarget.value)} /></FieldGroup>
+          <FieldGroup id="preparation-target" label={isMediumHaiter ? "เป้าหมายคลอรีนออกฤทธิ์ (จาก 2 mL/L)" : "เป้าหมาย"} unit="ppm"><input id="preparation-target" type="number" step="any" value={targetPpm} onChange={(event) => setTargetPpm(event.currentTarget.value)} /></FieldGroup>
+          <FieldGroup id="preparation-volume" label={isMediumHaiter ? "ปริมาตรอาหาร batch นี้" : "ปริมาตรสุดท้าย"} unit="mL"><input id="preparation-volume" type="number" step="any" value={finalVolumeMl} onChange={(event) => setFinalVolumeMl(event.currentTarget.value)} /></FieldGroup>
           <FieldGroup id="preparation-time" label="วันเวลาที่เตรียม"><input id="preparation-time" type="datetime-local" value={preparedAt} onChange={(event) => setPreparedAt(event.currentTarget.value)} /></FieldGroup>
           <FieldGroup id="preparation-status" label="สถานะ"><select id="preparation-status" value={status} onChange={(event) => setStatus(event.currentTarget.value as PreparationStatus)}><option value="planned">planned</option><option value="prepared">prepared</option><option value="verified">verified</option></select></FieldGroup>
           <FieldGroup id="preparation-actual-dose" label="ปริมาณที่ใช้จริง" unit={dose?.unit ?? "ตามผลคำนวณ"}><input id="preparation-actual-dose" type="number" step="any" value={actualDose} onChange={(event) => setActualDose(event.currentTarget.value)} /></FieldGroup>

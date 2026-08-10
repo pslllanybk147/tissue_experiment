@@ -97,6 +97,21 @@ describe("StepRunner", () => {
     expect(html).toContain("จะทำอาหารเท่าไหร่");
   });
 
+  it("ขั้นทำอาหารเติมเป้าหมาย Haiter และปริมาตร batch ให้มือใหม่เห็นทันที", () => {
+    const setup = buildRoundSetupInput(
+      { mediumMethod: "haiter-chemical", surfaceMethod: "haiter-chemical", rinseMethod: "commercial-sterile" },
+      USER_REPORTED_PROFILE,
+      "2026-08-10T10:00:00.000Z",
+    );
+    const preparedView = buildRoundView({ ...lot, sterilization: buildRoundSterilizationSnapshot(setup) }, [], manual);
+    const prep = preparedView.steps.find((item) => item.id === "prep-media")!;
+    const html = renderToStaticMarkup(<StepRunner view={preparedView} step={prep} onSave={noop} onConfirmPreparation={noop} />);
+
+    expect(html).toContain('value="120"');
+    expect(html).toContain('value="173"');
+    expect(html).toContain("อัตรา Haiter 2 mL/L");
+  });
+
   it("ขั้นแรกไม่มีปุ่มย้อนกลับ", () => {
     const html = renderToStaticMarkup(<StepRunner view={view} step={receive} onSave={noop} />);
 

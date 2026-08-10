@@ -57,4 +57,33 @@ describe("ChemicalPreparation", () => {
 
     expect(html).toBe("");
   });
+
+  it("prefills protocol target and batch volume when the round supplies beginner defaults", () => {
+    const html = renderToStaticMarkup(
+      <ChemicalPreparation
+        stepId="prep-media"
+        sterilization={{
+          ...base,
+          method: "haiter-chemical",
+          mediumSterilizationMethod: "haiter-chemical",
+          mediumPreparation: {
+            method: "haiter-chemical",
+            protocolVersion: "haiter-medium-v1",
+            status: "planned",
+            productName: "Haiter",
+            labelConcentration: 6,
+            labelBasis: "w/w",
+            lockedAt: "2026-08-10T08:00:00.000Z",
+          },
+        }}
+        defaultTargetPpm={120}
+        defaultFinalVolumeMl={170}
+        onConfirm={async () => {}}
+      />,
+    );
+
+    expect(html).toContain('value="120"');
+    expect(html).toContain('value="170"');
+    expect(html).toContain("อัตรา Haiter 2 mL/L");
+  });
 });
