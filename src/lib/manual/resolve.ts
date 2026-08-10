@@ -22,6 +22,9 @@ function mediaExecutionInstructions(pack: PlantPack) {
     .map((recipe) => `${recipe.title}: pH ${recipe.pH}`)
     .join(" · ");
   const recipeNames = pack.mediaRecipes.map((recipe) => recipe.title).join(" / ");
+  const recipeIngredients = pack.mediaRecipes
+    .map((recipe) => `${recipe.title}: ${recipe.ingredients.filter((ingredient) => ingredient.unit !== "mg/L" && !ingredient.name.toLowerCase().includes("agar")).map((ingredient) => `${ingredient.name} ${ingredient.amountPerLiter} ${ingredient.unit}${ingredient.unit === "×" ? " ตามอัตรา g/L บนฉลาก" : ""}`).join(" · ")}`)
+    .join(" | ");
 
   return [
     {
@@ -46,14 +49,16 @@ function mediaExecutionInstructions(pack: PlantPack) {
     {
       label: "ละลายส่วนผสมหลัก",
       action: "ตวงน้ำตามปริมาตรรวมจากเครื่องคำนวณ ค่อย ๆ ละลาย MS basal salts แล้วน้ำตาลให้ใสก่อนเติมส่วนผสมถัดไป",
-      quantity: "ใช้ปริมาณ MS basal salts และน้ำตาลจากผลคำนวณของสูตรที่เลือก",
+      quantity: recipeIngredients,
       completion: "สารละลายใส ไม่มีผง MS หรือน้ำตาลตกค้างที่ก้นภาชนะ",
     },
     {
       label: "เติมน้ำยาแม่",
       action: "ตวงฮอร์โมนจากน้ำยาแม่ตามผลคำนวณ แล้วเติมลงในสารละลาย ห้ามชั่งผงฮอร์โมนเอง",
       materials: ["น้ำยาแม่ฮอร์โมนที่มีฉลากความเข้มข้น", "syringe หรืออุปกรณ์ตวงที่ละเอียดพอ"],
-      quantity: "ใช้ปริมาตรน้ำยาแม่ที่เครื่องคำนวณแสดงจริงของสูตรที่เลือก",
+      quantity: pack.mediaRecipes
+        .map((recipe) => `${recipe.title}: ${recipe.ingredients.filter((ingredient) => ingredient.unit === "mg/L").map((ingredient) => `${ingredient.name} ${ingredient.amountPerLiter} mg/L ในน้ำยาแม่`).join(" · ") || "ไม่มีฮอร์โมนในสูตรนี้"}`)
+        .join(" | "),
       completion: "เติมน้ำยาแม่ครบตามรายการและจด stock/ปริมาตรที่ใช้จริง",
     },
     {
@@ -67,13 +72,15 @@ function mediaExecutionInstructions(pack: PlantPack) {
     {
       label: "เติมผงวุ้น",
       action: "ชั่งผงวุ้นตามผลคำนวณ เติมหลังปรับ pH แล้วคนให้กระจายตัว",
-      quantity: "ใช้ปริมาณ Agar จากผลคำนวณของสูตรที่เลือก",
+      quantity: pack.mediaRecipes
+        .map((recipe) => `${recipe.title}: ${recipe.ingredients.find((ingredient) => ingredient.name.toLowerCase().includes("agar"))?.name ?? "Agar"} ${recipe.ingredients.find((ingredient) => ingredient.name.toLowerCase().includes("agar"))?.amountPerLiter ?? "ไม่ระบุ"} g/L`)
+        .join(" | "),
       completion: "ผงวุ้นกระจายทั่วสารละลาย ไม่มีผงจับเป็นก้อน",
     },
     {
       label: "แบ่งและติดป้าย",
       action: "แบ่งอาหารลงกระปุกตามปริมาตรต่อกระปุกที่กรอกไว้ แล้วติดป้ายรหัสรอบ/สูตรให้ครบทุกกระปุก",
-      quantity: "ใช้จำนวนกระปุกและ mL ต่อกระปุกตามค่าที่กรอกในเครื่องคำนวณ",
+      quantity: "จำนวนกระปุกและ mL ต่อกระปุกจะเปลี่ยนตาม batch ที่กรอกในเครื่องคำนวณ; เมื่ออยู่ในหน้ารอบเพาะ ระบบจะแสดงตัวเลขจริงของ batch นี้",
       completion: "กระปุกทุกใบมีป้ายอ่านได้และปริมาตรใกล้เคียงกัน",
     },
     {

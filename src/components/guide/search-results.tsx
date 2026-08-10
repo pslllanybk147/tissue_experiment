@@ -27,7 +27,7 @@ export function SearchResults({ query }: { query: string }) {
           placeholder="ชื่อต้น เช่น พิงค์ปริ๊นเซส"
           aria-label="ชื่อต้นที่ต้องการค้นหา"
         />
-        <button className="pl-button" type="submit">ค้นหา</button>
+        <button className="pl-button pl-action-primary" type="submit">ค้นหา</button>
       </form>
 
       {!searched ? (

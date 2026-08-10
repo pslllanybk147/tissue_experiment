@@ -1,5 +1,6 @@
 import type { ResolvedStep } from "@/lib/manual/types";
 import { RichText } from "@/components/guide/rich-text";
+import { mediumInstructionOverride, type MediumExecutionContext } from "@/lib/rounds/medium-execution";
 
 function TextList({ items }: { items: string[] }) {
   return <ul style={{ margin: "8px 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "6px" }}>{items.map((item) => <li key={item}><RichText source={item} /></li>)}</ul>;
@@ -9,7 +10,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return <section style={{ marginTop: "18px" }}><h2 className="pl-h2">{title}</h2>{children}</section>;
 }
 
-function ExecutionInstructions({ step }: { step: ResolvedStep }) {
+function ExecutionInstructions({ step, mediumContext }: { step: ResolvedStep; mediumContext?: MediumExecutionContext | null }) {
   if (!step.executionInstructions || step.executionInstructions.length === 0) return null;
 
   return (
@@ -21,16 +22,23 @@ function ExecutionInstructions({ step }: { step: ResolvedStep }) {
               <span className="execution-instruction-number">{index + 1}</span>
               <h3>{instruction.label}</h3>
             </div>
-            <div className="execution-instruction-action"><RichText source={instruction.action} /></div>
-            {(instruction.materials?.length || instruction.quantity || instruction.container || instruction.durationMinutes != null || instruction.durationLabel) ? (
+            {(() => {
+              const override = mediumContext ? mediumInstructionOverride(instruction.label, mediumContext) : null;
+              const action = override?.action || instruction.action;
+              const quantity = override?.quantity || instruction.quantity;
+              return <>
+                <div className="execution-instruction-action"><RichText source={action} /></div>
+                {(instruction.materials?.length || quantity || instruction.container || instruction.durationMinutes != null || instruction.durationLabel) ? (
               <dl className="execution-instruction-details">
                 {instruction.materials?.length ? <><dt>ใช้</dt><dd><TextList items={instruction.materials} /></dd></> : null}
-                {instruction.quantity ? <><dt>ปริมาณ</dt><dd><RichText source={instruction.quantity} /></dd></> : null}
+                {quantity ? <><dt>ปริมาณ</dt><dd><RichText source={quantity} /></dd></> : null}
                 {instruction.container ? <><dt>ภาชนะ</dt><dd className="execution-instruction-container"><RichText source={instruction.container} /></dd></> : null}
                 {instruction.durationMinutes != null ? <><dt>เวลา</dt><dd>{instruction.durationMinutes} นาที</dd></> : null}
                 {instruction.durationLabel ? <><dt>เวลา</dt><dd><RichText source={instruction.durationLabel} /></dd></> : null}
               </dl>
-            ) : null}
+                ) : null}
+              </>;
+            })()}
             {instruction.completion ? <div className="execution-instruction-completion"><strong>เสร็จเมื่อ:</strong> <RichText source={instruction.completion} /></div> : null}
             {instruction.next ? <div className="execution-instruction-next"><strong>ต่อไป:</strong> <RichText source={instruction.next} /></div> : null}
           </li>
@@ -40,7 +48,7 @@ function ExecutionInstructions({ step }: { step: ResolvedStep }) {
   );
 }
 
-export function StepSections({ step, actionPrelude }: { step: ResolvedStep; actionPrelude?: React.ReactNode }) {
+export function StepSections({ step, actionPrelude, mediumContext }: { step: ResolvedStep; actionPrelude?: React.ReactNode; mediumContext?: MediumExecutionContext | null }) {
   return (
     <>
       <Section title="ขั้นนี้ต้องได้อะไร">
@@ -60,7 +68,7 @@ export function StepSections({ step, actionPrelude }: { step: ResolvedStep; acti
 
       {actionPrelude}
 
-      {step.executionInstructions?.length ? <ExecutionInstructions step={step} /> : (
+      {step.executionInstructions?.length ? <ExecutionInstructions step={step} mediumContext={mediumContext} /> : (
         <Section title="ทำทีละข้อ">
           <ol style={{ margin: "8px 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "8px" }}>
             {step.actions.map((action) => <li key={action}><RichText source={action} /></li>)}

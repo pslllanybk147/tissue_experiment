@@ -67,10 +67,10 @@ export function ReadinessGate({ loading, readiness, starting, confirmed, onConfi
 
       <button
         type="button"
-        className="pl-chip"
+        className="pl-action-primary"
         disabled={!canStart || starting}
         onClick={onStart}
-        style={{ marginTop: "14px", background: "var(--pl-yellow)", cursor: canStart && !starting ? "pointer" : "not-allowed", fontSize: "15px", padding: "10px 18px" }}
+        style={{ marginTop: "14px", cursor: canStart && !starting ? "pointer" : "not-allowed", fontSize: "15px", padding: "10px 18px" }}
       >
         {starting ? "กำลังเปิดห้ารอบ…" : "เริ่มชุดทดลอง"}
       </button>

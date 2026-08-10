@@ -54,9 +54,9 @@ export function StepMap({ manual }: { manual: ResolvedManual }) {
         </p>
         <p style={{ marginTop: "14px" }}>
           <Link
-            className="pl-chip pl-link"
+            className="pl-action-primary pl-link"
             href={`/my/rounds/new?slug=${manual.slug}`}
-            style={{ background: "var(--pl-yellow)", textDecoration: "none", fontSize: "14px", padding: "8px 16px" }}
+            style={{ textDecoration: "none", fontSize: "14px", padding: "8px 16px" }}
           >
             เริ่มรอบเพาะของฉัน
           </Link>

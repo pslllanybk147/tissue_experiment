@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useCallback, useState } from "react";
 import { sourceById } from "@/lib/manual/sources";
 import { RichText } from "./rich-text";
 import { troubleshootingById } from "@/lib/manual/troubleshooting";
@@ -11,6 +14,7 @@ import { EvidenceBadge } from "./evidence-badge";
 import { Illustration, illustrationCredits } from "./illustrations";
 import { StepSections } from "@/components/rounds/step-section";
 import { HaiterCalculator } from "@/components/calculators/haiter-calculator";
+import { defaultMediumExecutionContext, type MediumExecutionContext } from "@/lib/rounds/medium-execution";
 
 function SterilizationCalculator() {
   return (
@@ -58,6 +62,12 @@ export function StepDetail({ manual, step }: { manual: ResolvedManual; step: Res
   const total = manual.steps.length;
   const previous = number > 1 ? number - 1 : null;
   const next = number < total ? number + 1 : null;
+  const [mediumContext, setMediumContext] = useState<MediumExecutionContext | null>(() => (
+    MEDIUM_CALCULATOR_STEP_IDS.has(step.id)
+      ? defaultMediumExecutionContext(manual.mediaRecipes, initialRecipeIdForStep(step.id))
+      : null
+  ));
+  const onMediumPlanChange = useCallback((context: MediumExecutionContext | null) => setMediumContext(context), []);
 
   return (
     <>
@@ -74,12 +84,13 @@ export function StepDetail({ manual, step }: { manual: ResolvedManual; step: Res
       </p>
       <StepSections
         step={step}
+        mediumContext={mediumContext}
         actionPrelude={(
           <>
             {step.id === "sterilize" ? <SterilizationCalculator /> : null}
             <BracketNotice step={step} />
             {MEDIUM_CALCULATOR_STEP_IDS.has(step.id) ? (
-              <MediumCalculator recipes={manual.mediaRecipes} initialRecipeId={initialRecipeIdForStep(step.id)} />
+              <MediumCalculator recipes={manual.mediaRecipes} initialRecipeId={initialRecipeIdForStep(step.id)} onPlanChange={onMediumPlanChange} />
             ) : null}
             {step.illustrationId ? (
               <div className="pl-card" style={{ marginTop: "18px", padding: 0, overflow: "hidden" }}>
@@ -148,9 +159,9 @@ export function StepDetail({ manual, step }: { manual: ResolvedManual; step: Res
         ) : null}
         {next ? (
           <Link
-            className="pl-card pl-link"
+            className="pl-card pl-action-primary pl-link"
             href={`/guide/${manual.slug}/step/${next}`}
-            style={{ flex: 1, textAlign: "center", background: "var(--pl-yellow)", color: "var(--pl-chip-ink)", textDecoration: "none", fontWeight: 700 }}
+            style={{ flex: 1, textAlign: "center", textDecoration: "none", fontWeight: 700 }}
           >
             ขั้นที่ {next} ›
           </Link>

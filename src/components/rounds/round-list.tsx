@@ -63,7 +63,7 @@ export function RoundList({
           เลือกต้นที่อยากทำจากหน้าคู่มือ อ่านให้จบก่อนแล้วค่อยกดเริ่มรอบ ระบบจะจำไว้ให้ว่าทำถึงขั้นไหน
         </p>
         <p style={{ marginTop: "14px" }}>
-          <Link className="pl-chip pl-link" href="/" style={{ background: "var(--pl-yellow)", textDecoration: "none" }}>
+          <Link className="pl-action-primary pl-link" href="/" style={{ textDecoration: "none" }}>
             ไปเลือกต้น
           </Link>
         </p>
@@ -92,7 +92,7 @@ export function RoundList({
             {onDelete ? (
               <button
                 type="button"
-                className="pl-chip pl-chip-neutral"
+                className="pl-action-danger"
                 aria-label={`ลบรอบ ${round.title}`}
                 onClick={() => {
                   if (window.confirm(`ลบรอบ “${round.title}” ออกจากรายการหรือไม่?`)) {
