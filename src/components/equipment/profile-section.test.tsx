@@ -8,6 +8,8 @@ describe("ProfileSection", () => {
   const html = renderToStaticMarkup(<ProfileSection profile={USER_REPORTED_PROFILE} onChange={() => {}} />);
 
   it("แสดงค่าฉลากสารและเครื่องมือวัดตามของจริง", () => {
+    expect(html).toContain("NaDCC 60% (เม็ดฟู่)");
+    expect(html).toContain("Haiter / NaOCl");
     expect(html).toContain("Haiter (% w/w)");
     expect(html).toContain('value="6"');
     expect(html).toContain("แอลกอฮอล์ (%)");

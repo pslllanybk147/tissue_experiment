@@ -76,13 +76,26 @@ export function ProfileSection({ profile, onChange }: { profile: EquipmentProfil
   return (
     <>
       <Card title="ฉลากสารเคมี" note="กรอกตามฉลาก ห้ามเดาจากชื่อสินค้า และระบบจะไม่เปลี่ยน 75% ให้เป็น 70% เอง">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "14px", marginTop: "12px" }}>
+          <section className="pl-card" style={{ margin: 0, background: "var(--pl-card)", borderTop: "4px solid var(--pl-neon)" }}>
+            <h3 className="pl-h2">NaDCC {profile.chemicals.nadcc.availableChlorinePercent}% (เม็ดฟู่)</h3>
+            <FieldGrid>
+              <NumberField id="nadcc-chlorine" label="NaDCC คลอรีนออกฤทธิ์ (%)" value={profile.chemicals.nadcc.availableChlorinePercent} onValue={(value) => changed({ ...profile, chemicals: { ...profile.chemicals, nadcc: { ...profile.chemicals.nadcc, availableChlorinePercent: value } } })} />
+              <NumberField id="nadcc-tablet-mass" label="น้ำหนักต่อเม็ด (g)" value={profile.chemicals.nadcc.tabletMassG} onValue={(value) => changed({ ...profile, chemicals: { ...profile.chemicals, nadcc: { ...profile.chemicals.nadcc, tabletMassG: value } } })} />
+              <NumberField id="nadcc-mass" label="NaDCC ต่อเม็ดตามฉลาก (g)" value={profile.chemicals.nadcc.nadccMassGPerTablet} onValue={(value) => changed({ ...profile, chemicals: { ...profile.chemicals, nadcc: { ...profile.chemicals.nadcc, nadccMassGPerTablet: value } } })} />
+              <NumberField id="nadcc-count" label="จำนวนเม็ดในกระปุก (เม็ด)" value={profile.chemicals.nadcc.tabletCount} onValue={(value) => changed({ ...profile, chemicals: { ...profile.chemicals, nadcc: { ...profile.chemicals.nadcc, tabletCount: value } } })} />
+            </FieldGrid>
+          </section>
+          <section className="pl-card" style={{ margin: 0, background: "var(--pl-card)", borderTop: "4px solid var(--pl-neon-2)" }}>
+            <h3 className="pl-h2">Haiter / NaOCl</h3>
+            <FieldGrid>
+              <NumberField id="bleach-percent" label="Haiter (% w/w)" value={profile.chemicals.bleach.percentWw} onValue={(value) => changed({ ...profile, chemicals: { ...profile.chemicals, bleach: { ...profile.chemicals.bleach, percentWw: value } } })} />
+            </FieldGrid>
+            <p className="pl-meta" style={{ marginTop: "10px" }}>ข้อมูลนี้จะไม่หายเมื่อเลือก NaDCC ในขั้นอื่น</p>
+          </section>
+        </div>
         <FieldGrid>
-          <NumberField id="bleach-percent" label="Haiter (% w/w)" value={profile.chemicals.bleach.percentWw} onValue={(value) => changed({ ...profile, chemicals: { ...profile.chemicals, bleach: { ...profile.chemicals.bleach, percentWw: value } } })} />
           <NumberField id="alcohol-percent" label="แอลกอฮอล์ (%)" value={profile.chemicals.alcohol.percent} onValue={(value) => changed({ ...profile, chemicals: { ...profile.chemicals, alcohol: { percent: value } } })} />
-          <NumberField id="nadcc-chlorine" label="NaDCC คลอรีนออกฤทธิ์ (%)" value={profile.chemicals.nadcc.availableChlorinePercent} onValue={(value) => changed({ ...profile, chemicals: { ...profile.chemicals, nadcc: { ...profile.chemicals.nadcc, availableChlorinePercent: value } } })} />
-          <NumberField id="nadcc-tablet-mass" label="น้ำหนักต่อเม็ด (g)" value={profile.chemicals.nadcc.tabletMassG} onValue={(value) => changed({ ...profile, chemicals: { ...profile.chemicals, nadcc: { ...profile.chemicals.nadcc, tabletMassG: value } } })} />
-          <NumberField id="nadcc-mass" label="NaDCC ต่อเม็ดตามฉลาก (g)" value={profile.chemicals.nadcc.nadccMassGPerTablet} onValue={(value) => changed({ ...profile, chemicals: { ...profile.chemicals, nadcc: { ...profile.chemicals.nadcc, nadccMassGPerTablet: value } } })} />
-          <NumberField id="nadcc-count" label="จำนวนเม็ดในกระปุก (เม็ด)" value={profile.chemicals.nadcc.tabletCount} onValue={(value) => changed({ ...profile, chemicals: { ...profile.chemicals, nadcc: { ...profile.chemicals.nadcc, tabletCount: value } } })} />
         </FieldGrid>
       </Card>
 

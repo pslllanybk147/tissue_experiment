@@ -63,4 +63,24 @@ describe("SterilizationMethodBanner", () => {
 
     expect(html).toBe("");
   });
+
+  it("แสดงวิธีอาหาร สารฟอก และน้ำล้างที่ล็อกไว้กับรอบใหม่", () => {
+    const html = renderToStaticMarkup(
+      <SterilizationMethodBanner
+        sterilization={{
+          profileId: "haiter-chemical-v1",
+          profileVersion: "1.0.0",
+          method: "haiter-chemical",
+          mediumSterilizationMethod: "nadcc-chemical",
+          rinseMethod: "commercial-sterile",
+          chemistry: { bleachPercentWw: 6, nadccAvailableChlorinePercent: 60, nadccTabletMassG: 5.4, nadccMassGPerTablet: 2.97 },
+        }}
+      />,
+    );
+
+    expect(html).toContain("อาหารและกระปุก");
+    expect(html).toContain("NaDCC");
+    expect(html).toContain("Haiter");
+    expect(html).toContain("น้ำปลอดเชื้อธรรมดา");
+  });
 });

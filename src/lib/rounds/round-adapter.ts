@@ -10,6 +10,7 @@ import type { MediaRecipe, ResolvedManual, ResolvedStep } from "@/lib/manual/typ
 import { projectTrialSteps } from "@/lib/trials/project-trial-steps";
 import { evaluateT3Eligibility, type T3Eligibility } from "@/lib/trials/t3-eligibility";
 import { decodeStepValues, type StepResponses } from "./field-values";
+import { buildRoundSterilizationSnapshot, type RoundSetupInput } from "./round-setup";
 
 /** รุ่นของโครงเนื้อหาที่ใช้ตอนบันทึก เก็บไว้เพื่อให้ย้อนดูได้ว่ารอบนั้นเดินตามคู่มือรุ่นไหน */
 export const MANUAL_VERSION_ID = "manual-v1";
@@ -112,7 +113,7 @@ export function buildRoundView(
   };
 }
 
-export function newLotInput(manual: ResolvedManual, startedAt: string): CreateLotInput {
+export function newLotInput(manual: ResolvedManual, startedAt: string, setup?: RoundSetupInput): CreateLotInput {
   return {
     id: `round-${Date.now().toString(36)}`,
     plant: manual.commonName,
@@ -123,5 +124,6 @@ export function newLotInput(manual: ResolvedManual, startedAt: string): CreateLo
     status: "Healthy",
     startedAt,
     workflowVersion: "v2",
+    ...(setup ? { sterilization: buildRoundSterilizationSnapshot(setup, setup.chemistry) } : {}),
   };
 }
