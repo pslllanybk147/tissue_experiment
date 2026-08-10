@@ -58,7 +58,7 @@ export function NadccCalculator({
   }, [onPlanChange, plan]);
 
   return (
-    <section>
+    <section className="cl-calculator cl-nadcc-calculator">
       <h2 className="pl-h2">NaDCC (เม็ดคลอรีน)</h2>
       <p className="pl-lede" style={{ marginTop: "6px" }}>
         ทางเลือกทดลอง ยังไม่มีงานยืนยันเจาะจงพืชส่วนใหญ่ในระบบ ใช้เป็นจุดเริ่มต้นการทดสอบเอง ไม่ใช่สูตรสำเร็จ
@@ -67,7 +67,7 @@ export function NadccCalculator({
         ค่าตั้งต้นจากฉลากที่ผู้ใช้ส่ง: เม็ดทั้งเม็ด 5.4 g มี NaDCC 2.97 g และระบุคลอรีนออกฤทธิ์ 60%
       </p>
 
-      <div className="pl-soft-card" style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "12px" }}>
+      <div className="cl-calculator-body" aria-live="polite">
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "12px" }}>
           <CalculatorField
             id="nd-tablet"
@@ -118,7 +118,7 @@ export function NadccCalculator({
         ) : null}
 
         {plan.ok && plan.result.mode === "direct" ? (
-          <div className="pl-soft-card" style={{ background: "var(--pl-sunk)" }}>
+          <div className="cl-calculator-result">
             <p className="pl-mono">{plan.result.formula}</p>
             <p className="pl-meta" style={{ marginTop: "8px" }}>
               ค่าคำนวณก่อนปัด {plan.result.calculatedVolumeMl} mL
@@ -134,7 +134,7 @@ export function NadccCalculator({
         ) : null}
 
         {plan.ok && plan.result.mode === "working-dilution" ? (
-          <div className="pl-soft-card" style={{ background: "var(--pl-sunk)" }}>
+          <div className="cl-calculator-result">
             <p className="pl-mono">ขั้น 1: เตรียม stock เจือจางก่อน</p>
             <p style={{ margin: "4px 0 0" }}>
               ตวง stock {plan.result.sourceVolumeMl} mL + น้ำ {plan.result.diluentVolumeMl} mL รวมเป็น{" "}
@@ -152,7 +152,7 @@ export function NadccCalculator({
         ) : null}
 
         {!plan.ok ? (
-          <p className="pl-soft-card" role="alert" style={{ background: "var(--pl-stop)" }}>{plan.message}</p>
+          <p className="cl-calculator-error" role="alert">{plan.message}</p>
         ) : null}
       </div>
     </section>

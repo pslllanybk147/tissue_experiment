@@ -13,6 +13,9 @@ describe("StepSections", () => {
     expect(headings).toEqual(["ขั้นนี้ต้องได้อะไร", "เตรียมของ", "ทำตามลำดับ", "ทำไปทำไม", "ผ่านเมื่อ", "หยุดเมื่อ"]);
     expect(html).toContain("<ol");
     expect((html.match(/<li/g) ?? []).length).toBeGreaterThanOrEqual(step.actions.length);
+    expect(html).toContain("cl-protocol-section");
+    expect(html).not.toContain("pl-card");
+    expect(html).not.toContain("pl-soft-card");
   });
 
   it("แสดงความปลอดภัยเป็น alert แต่ไม่สลับลำดับหัวข้อหลัก", () => {

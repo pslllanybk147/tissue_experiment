@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useCallback, useState, type FormEvent } from "react";
+import { ActionBar } from "@/components/common/action-bar";
+import { StatusNotice } from "@/components/common/status-notice";
 import { EvidenceBadge } from "@/components/guide/evidence-badge";
 import { Illustration } from "@/components/guide/illustrations";
 import { RichText } from "@/components/guide/rich-text";
@@ -152,19 +154,13 @@ export function StepRunner({
     .filter((entry) => entry !== null);
 
   return (
-    <div className="pl-do">
+    <article className="cl-protocol">
       <OnlineStatus />
-      <p className="pl-mono">
-        <Link className="pl-link" href={`/my/rounds/${view.lotId}`} style={{ color: "inherit" }}>{view.title}</Link>
-        {" · "}ขั้นที่ {number} จาก {total}
-      </p>
-      <h1 className="pl-h1" style={{ marginTop: "8px" }}>{step.title}</h1>
-      <p style={{ marginTop: "6px" }}>
-        <EvidenceBadge level={step.evidence.level} />
-        {step.durationMinutes != null ? (
-          <>{" "}<span className="pl-mono">ใช้เวลาราว {formatDurationMinutes(step.durationMinutes)}</span></>
-        ) : null}
-      </p>
+      <header className="cl-protocol-header">
+        <p><Link className="pl-link" href={`/my/rounds/${view.lotId}`}>{view.title}</Link>{" · "}ขั้นที่ {number} จาก {total}</p>
+        <h1>{step.title}</h1>
+        <p><EvidenceBadge level={step.evidence.level} />{step.durationMinutes != null ? <>{" "}<span>ใช้เวลาราว {formatDurationMinutes(step.durationMinutes)}</span></> : null}</p>
+      </header>
       <StepSections
         step={step}
         mediumContext={mediumContext}
@@ -187,18 +183,18 @@ export function StepRunner({
               />
             ) : null}
             {step.illustrationId ? (
-              <div className="pl-card" style={{ marginTop: "18px", padding: 0, overflow: "hidden" }}><Illustration id={step.illustrationId} /></div>
+              <div className="cl-protocol-media"><Illustration id={step.illustrationId} /></div>
             ) : null}
           </>
         )}
       />
 
       {troubleshooting.length > 0 ? (
-        <section style={{ marginTop: "24px" }}>
-          <h2 className="pl-h2">ถ้าเจออาการแบบนี้</h2>
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "10px" }}>
+        <section className="cl-protocol-section">
+          <h2>ถ้าเจออาการแบบนี้</h2>
+          <div className="cl-troubleshooting-list">
             {troubleshooting.map((entry) => (
-              <article className="pl-card" key={entry.id} style={{ background: "var(--pl-sunk)" }}>
+              <article className="cl-troubleshooting-item" key={entry.id}>
                 <p style={{ margin: 0, fontWeight: 700 }}>{entry.symptom}</p>
                 {entry.distinguish ? (
                   <p className="pl-lede" style={{ marginTop: "8px" }}>
@@ -215,8 +211,7 @@ export function StepRunner({
       ) : null}
 
       <form
-        className="pl-card"
-        style={{ marginTop: "26px" }}
+        className="cl-protocol-form"
         onSubmit={(event) => void submit(event)}
       >
         <h2 className="pl-h2">บันทึกผล</h2>
@@ -247,7 +242,7 @@ export function StepRunner({
 
           if (kind === "checkbox") {
             return (
-              <label key={measurement.id} htmlFor={measurement.id} className="pl-card" style={{ display: "flex", gap: "10px", alignItems: "flex-start", marginTop: "14px", cursor: "pointer" }}>
+              <label key={measurement.id} htmlFor={measurement.id} className="cl-check-row">
                 <input
                   id={measurement.id}
                   name={measurement.id}
@@ -321,40 +316,21 @@ export function StepRunner({
           />
         </p>
 
-        <div style={{ display: "flex", gap: "10px", marginTop: "16px", flexWrap: "wrap" }}>
-          <button
-            type="submit"
-            disabled={saving || !gate.canPass || locked}
-            className="pl-action-success"
-            style={{ cursor: saving || !gate.canPass || locked ? "not-allowed" : "pointer", fontSize: "15px", padding: "10px 18px" }}
-          >
-            บันทึกว่าผ่าน
-          </button>
-          <button
-            type="submit"
-            name="intent"
-            value="failed"
-            disabled={saving}
-            // ตอนติดปัญหาอาจยังไม่มีค่าให้กรอก จึงต้องข้ามการบังคับกรอกของฟอร์ม
-            formNoValidate
-            className="pl-action-danger"
-            style={{ cursor: "pointer", fontSize: "15px", padding: "10px 18px" }}
-          >
-            ติดปัญหา
-          </button>
-        </div>
+        <ActionBar
+          primary={<button type="submit" disabled={saving || !gate.canPass || locked} className="cl-button-primary">บันทึกว่าผ่าน</button>}
+          secondary={<button type="submit" name="intent" value="failed" disabled={saving} formNoValidate className="cl-button-danger">ติดปัญหา</button>}
+        />
 
         {gateMessages.length > 0 ? (
-          <div className="pl-soft-card" role="alert" style={{ marginTop: "12px", background: "var(--pl-stop)" }}>
-            <p style={{ margin: 0, fontWeight: 700 }}>ยังบันทึกว่าผ่านไม่ได้</p>
+          <StatusNotice tone="blocked" title="ยังบันทึกว่าผ่านไม่ได้">
             <ul style={{ margin: "6px 0 0", paddingLeft: "20px" }}>
               {gateMessages.map((message) => <li key={message}>{message}</li>)}
             </ul>
-          </div>
+          </StatusNotice>
         ) : null}
 
         {demoMode && (!gate.canPass || locked) ? (
-          <div className="pl-soft-card" style={{ marginTop: "12px", background: "var(--pl-sunk)" }}>
+          <div className="cl-demo-skip">
             <Link className="pl-link" href={demoSkipHref} style={{ fontWeight: 800 }}>
               ข้ามเพื่อทดสอบหน้าจอ
             </Link>
@@ -381,10 +357,10 @@ export function StepRunner({
         />
       ) : null}
 
-      <nav style={{ display: "flex", gap: "12px", marginTop: "24px" }}>
+      <nav className="cl-protocol-pagination" aria-label="เปลี่ยนขั้นตอน">
         {previous ? (
           <Link
-            className="pl-card pl-link"
+            className="cl-button-secondary pl-link"
             href={`/my/rounds/${view.lotId}/step/${previous}`}
             style={{ flex: 1, textAlign: "center", color: "inherit", textDecoration: "none", fontWeight: 700 }}
           >
@@ -393,7 +369,7 @@ export function StepRunner({
         ) : null}
         {next ? (
           <Link
-            className="pl-card pl-action-primary pl-link"
+            className="cl-button-primary pl-link"
             href={`/my/rounds/${view.lotId}/step/${next}`}
             style={{ flex: 1, textAlign: "center", textDecoration: "none", fontWeight: 700 }}
           >
@@ -401,6 +377,6 @@ export function StepRunner({
           </Link>
         ) : null}
       </nav>
-    </div>
+    </article>
   );
 }

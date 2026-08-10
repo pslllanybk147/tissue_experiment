@@ -10,6 +10,8 @@ describe("HaiterCalculator", () => {
     expect(html).not.toContain("Working dilution");
     expect(html).not.toContain("เจือจางกี่เท่า");
     expect(html).not.toContain("ปริมาตร working ที่จะเตรียม");
+    expect(html).toContain("cl-field-group");
+    expect(html).toContain("aria-live");
   });
 
   it("ค่าเริ่มต้นตวงตรงได้ แสดงตัวเลข mL เดียวไม่มีขั้นตอนเจือจาง", () => {

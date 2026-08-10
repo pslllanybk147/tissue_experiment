@@ -1,12 +1,4 @@
-export const calculatorInputStyle = {
-  width: "100%",
-  padding: "9px 11px",
-  border: "1.5px solid var(--pl-line-soft)",
-  borderRadius: "12px",
-  background: "var(--pl-card)",
-  color: "var(--pl-ink)",
-  fontSize: "16px",
-} as const;
+import { FieldGroup } from "@/components/common/field-group";
 
 export function CalculatorField({
   id,
@@ -15,6 +7,7 @@ export function CalculatorField({
   onChange,
   hint,
   step = "any",
+  allowZero = false,
 }: {
   id: string;
   label: string;
@@ -22,13 +15,13 @@ export function CalculatorField({
   onChange: (next: number) => void;
   hint?: string;
   step?: string;
+  allowZero?: boolean;
 }) {
+  const invalid = !Number.isFinite(value) || (allowZero ? value < 0 : value <= 0);
   return (
-    <p style={{ margin: 0 }}>
-      <label htmlFor={id} style={{ display: "block", fontWeight: 600, marginBottom: "5px", fontSize: "14px" }}>
-        {label}
-      </label>
+    <FieldGroup id={id} label={label} hint={hint} error={invalid ? "ต้องมากกว่าศูนย์" : undefined}>
       <input
+        aria-invalid={invalid}
         id={id}
         type="number"
         min="0"
@@ -36,9 +29,7 @@ export function CalculatorField({
         inputMode="decimal"
         value={value}
         onChange={(event) => onChange(Number(event.target.value))}
-        style={calculatorInputStyle}
       />
-      {hint ? <span className="pl-meta" style={{ display: "block", marginTop: "4px" }}>{hint}</span> : null}
-    </p>
+    </FieldGroup>
   );
 }

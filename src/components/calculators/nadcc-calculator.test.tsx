@@ -13,5 +13,7 @@ describe("NadccCalculator", () => {
     expect(html).toContain("ตวงจริง 16.8 mL");
     expect(html).toContain("ความละเอียด 0.1 mL");
     expect(html).toContain("ปัดลง");
+    expect(html).toContain("cl-field-group");
+    expect(html).toContain("aria-live");
   });
 });

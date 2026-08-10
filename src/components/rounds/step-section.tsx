@@ -1,5 +1,6 @@
 import type { ResolvedStep } from "@/lib/manual/types";
 import { RichText } from "@/components/guide/rich-text";
+import { StatusNotice } from "@/components/common/status-notice";
 import { mediumInstructionOverride, type MediumExecutionContext } from "@/lib/rounds/medium-execution";
 
 function TextList({ items }: { items: string[] }) {
@@ -7,7 +8,7 @@ function TextList({ items }: { items: string[] }) {
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return <section style={{ marginTop: "18px" }}><h2 className="pl-h2">{title}</h2>{children}</section>;
+  return <section className="cl-protocol-section"><h2>{title}</h2>{children}</section>;
 }
 
 function ExecutionInstructions({ step, mediumContext }: { step: ResolvedStep; mediumContext?: MediumExecutionContext | null }) {
@@ -62,10 +63,9 @@ export function StepSections({ step, actionPrelude, mediumContext }: { step: Res
       </Section>
 
       {step.safetyNotes.length > 0 ? (
-        <div className="pl-card" role="alert" style={{ background: "var(--pl-stop)", marginTop: "18px" }}>
-          <p className="pl-mono" style={{ color: "var(--pl-ink-2)" }}>อ่านก่อนลงมือ: ความปลอดภัย</p>
+        <StatusNotice tone="blocked" title="อ่านก่อนลงมือ: ความปลอดภัย">
           <TextList items={step.safetyNotes} />
-        </div>
+        </StatusNotice>
       ) : null}
 
       {actionPrelude}
@@ -87,9 +87,9 @@ export function StepSections({ step, actionPrelude, mediumContext }: { step: Res
       </Section>
 
       <Section title="หยุดเมื่อ">
-        <div className="pl-soft-card" role="alert" style={{ marginTop: "8px", background: "var(--pl-stop)" }}>
+        <StatusNotice tone="blocked" title="เงื่อนไขให้หยุดทันที">
           <TextList items={step.stopConditions} />
-        </div>
+        </StatusNotice>
       </Section>
 
     </>

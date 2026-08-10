@@ -10,6 +10,8 @@ describe("MediumCalculator", () => {
     const html = renderToStaticMarkup(<MediumCalculator recipes={recipes} />);
 
     expect(html).toContain("จะทำอาหารเท่าไหร่");
+    expect(html).toContain("cl-medium-calculator");
+    expect(html).not.toContain("pl-card");
   });
 
   it("ให้เลือกสูตรได้เมื่อคู่มือมีหลายสูตร", () => {

@@ -44,6 +44,8 @@ describe("StepRunner", () => {
     expect(html).toContain("ทำตามลำดับ");
     expect(html).toContain("ผ่านเมื่อ");
     expect(html).toContain("หยุดเมื่อ");
+    expect(html).toContain("cl-protocol");
+    expect(html).not.toContain("pl-soft-card");
   });
 
   it("แสดงอาการที่อาจเจอ เพื่อให้วินิจฉัยได้ตรงหน้างาน", () => {

@@ -1,6 +1,9 @@
 "use client";
 
 import { useCallback, useState, type FormEvent } from "react";
+import { ActionBar } from "@/components/common/action-bar";
+import { FieldGroup } from "@/components/common/field-group";
+import { StatusNotice } from "@/components/common/status-notice";
 import { HaiterCalculator } from "@/components/calculators/haiter-calculator";
 import { NadccCalculator } from "@/components/calculators/nadcc-calculator";
 import type { HaiterAutoResult } from "@/lib/domain/haiter-calculations";
@@ -103,30 +106,28 @@ export function ChemicalPreparation({
     }
   }
 
-  const inputStyle = { width: "100%", padding: "9px 10px", border: "2px solid var(--pl-line)", borderRadius: "9px", background: "var(--pl-sunk)" } as const;
-
   return (
-    <section className="pl-card" style={{ marginBottom: "18px" }}>
-      <h2 className="pl-h2">ยืนยันการเตรียมสาร</h2>
-      <p className="pl-meta" style={{ marginTop: "6px" }}>
+    <section className="cl-chemical-preparation">
+      <h2>ยืนยันการเตรียมสาร</h2>
+      <p className="cl-meta">
         โปรโตคอล {preparation.protocolVersion} · สถานะที่ล็อกไว้ {preparation.status}
       </p>
       <form onSubmit={(event) => void submit(event)}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "10px", marginTop: "12px" }}>
-          <label>ผลิตภัณฑ์<input style={inputStyle} value={productName} onChange={(event) => setProductName(event.currentTarget.value)} /></label>
-          <label>Batch / lot<input style={inputStyle} value={batchOrLot} onChange={(event) => setBatchOrLot(event.currentTarget.value)} /></label>
-          <label>เป้าหมาย (ppm)<input style={inputStyle} type="number" step="any" value={targetPpm} onChange={(event) => setTargetPpm(event.currentTarget.value)} /></label>
-          <label>ปริมาตรสุดท้าย (mL)<input style={inputStyle} type="number" step="any" value={finalVolumeMl} onChange={(event) => setFinalVolumeMl(event.currentTarget.value)} /></label>
-          <label>วันเวลาที่เตรียม<input style={inputStyle} type="datetime-local" value={preparedAt} onChange={(event) => setPreparedAt(event.currentTarget.value)} /></label>
-          <label>สถานะ<select style={inputStyle} value={status} onChange={(event) => setStatus(event.currentTarget.value as PreparationStatus)}><option value="planned">planned</option><option value="prepared">prepared</option><option value="verified">verified</option></select></label>
-          <label>ปริมาณที่ใช้จริง ({dose?.unit ?? "หน่วยตามผลคำนวณ"})<input style={inputStyle} type="number" step="any" value={actualDose} onChange={(event) => setActualDose(event.currentTarget.value)} /></label>
-          <label>ความเข้มข้นที่ตรวจได้จริง (ppm)<input style={inputStyle} type="number" step="any" value={actualPpm} onChange={(event) => setActualPpm(event.currentTarget.value)} /></label>
+        <div className="cl-preparation-fields">
+          <FieldGroup id="preparation-product" label="ผลิตภัณฑ์"><input id="preparation-product" value={productName} onChange={(event) => setProductName(event.currentTarget.value)} /></FieldGroup>
+          <FieldGroup id="preparation-batch" label="Batch / lot"><input id="preparation-batch" value={batchOrLot} onChange={(event) => setBatchOrLot(event.currentTarget.value)} /></FieldGroup>
+          <FieldGroup id="preparation-target" label="เป้าหมาย" unit="ppm"><input id="preparation-target" type="number" step="any" value={targetPpm} onChange={(event) => setTargetPpm(event.currentTarget.value)} /></FieldGroup>
+          <FieldGroup id="preparation-volume" label="ปริมาตรสุดท้าย" unit="mL"><input id="preparation-volume" type="number" step="any" value={finalVolumeMl} onChange={(event) => setFinalVolumeMl(event.currentTarget.value)} /></FieldGroup>
+          <FieldGroup id="preparation-time" label="วันเวลาที่เตรียม"><input id="preparation-time" type="datetime-local" value={preparedAt} onChange={(event) => setPreparedAt(event.currentTarget.value)} /></FieldGroup>
+          <FieldGroup id="preparation-status" label="สถานะ"><select id="preparation-status" value={status} onChange={(event) => setStatus(event.currentTarget.value as PreparationStatus)}><option value="planned">planned</option><option value="prepared">prepared</option><option value="verified">verified</option></select></FieldGroup>
+          <FieldGroup id="preparation-actual-dose" label="ปริมาณที่ใช้จริง" unit={dose?.unit ?? "ตามผลคำนวณ"}><input id="preparation-actual-dose" type="number" step="any" value={actualDose} onChange={(event) => setActualDose(event.currentTarget.value)} /></FieldGroup>
+          <FieldGroup id="preparation-actual-ppm" label="ความเข้มข้นที่ตรวจได้จริง" unit="ppm"><input id="preparation-actual-ppm" type="number" step="any" value={actualPpm} onChange={(event) => setActualPpm(event.currentTarget.value)} /></FieldGroup>
         </div>
 
         {!(target > 0) || !(volume > 0) ? (
-          <p className="pl-soft-card" role="alert" style={{ marginTop: "12px", background: "var(--pl-stop)" }}>
+          <StatusNotice tone="blocked" title="ยังคำนวณไม่ได้">
             ต้องระบุ target concentration และ final volume จากโปรโตคอลที่ทบทวนแล้วก่อน ระบบจะไม่สร้างค่าทางวิทยาศาสตร์ให้เอง
-          </p>
+          </StatusNotice>
         ) : isNadcc ? (
           <NadccCalculator
             initialInput={{
@@ -156,9 +157,9 @@ export function ChemicalPreparation({
           />
         )}
 
-        {dose ? <p className="pl-mono" style={{ marginTop: "12px" }}>ค่าคำนวณล่าสุด: {dose.value} {dose.unit}</p> : null}
-        <button className="pl-action-primary" type="submit" disabled={saving} style={{ marginTop: "12px" }}>{saving ? "กำลังบันทึก…" : "บันทึก preparation snapshot"}</button>
-        {message ? <p role="status" className="pl-meta" style={{ marginTop: "8px" }}>{message}</p> : null}
+        {dose ? <p className="cl-calculated-dose">ค่าคำนวณล่าสุด: {dose.value} {dose.unit}</p> : null}
+        <ActionBar primary={<button className="cl-button-primary" type="submit" disabled={saving}>{saving ? "กำลังบันทึก…" : "บันทึก preparation snapshot"}</button>} />
+        {message ? <p role="status" className="cl-meta">{message}</p> : null}
       </form>
     </section>
   );

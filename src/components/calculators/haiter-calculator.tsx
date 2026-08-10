@@ -69,10 +69,10 @@ export function HaiterCalculator({
   }, [onPlanChange, plan]);
 
   return (
-    <section>
+    <section className="cl-calculator cl-haiter-calculator">
       <h2 className="pl-h2">ไฮเตอร์ / สารฟอกฆ่าเชื้อ</h2>
 
-      <div className="pl-soft-card" style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "12px" }}>
+      <div className="cl-calculator-body" aria-live="polite">
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "12px" }}>
           <CalculatorField
             id="hd-source"
@@ -123,7 +123,7 @@ export function HaiterCalculator({
         ) : null}
 
         {plan.ok && plan.result.mode === "direct" ? (
-          <div className="pl-soft-card" style={{ background: "var(--pl-sunk)" }}>
+          <div className="cl-calculator-result">
             <p className="pl-mono">{plan.result.formula}</p>
             <p style={{ margin: "4px 0 0", fontSize: "26px", fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>
               {plan.result.sourceVolumeMl} mL
@@ -132,7 +132,7 @@ export function HaiterCalculator({
         ) : null}
 
         {plan.ok && plan.result.mode === "working-dilution" ? (
-          <div className="pl-soft-card" style={{ background: "var(--pl-sunk)" }}>
+          <div className="cl-calculator-result">
             <p className="pl-mono">ขั้น 1: เตรียมน้ำยาเจือจางก่อน</p>
             <p style={{ margin: "4px 0 0" }}>
               ตวงไฮเตอร์ {plan.result.sourceVolumeMl} mL + น้ำ {plan.result.diluentVolumeMl} mL รวมเป็น{" "}
@@ -149,7 +149,7 @@ export function HaiterCalculator({
         ) : null}
 
         {!plan.ok ? (
-          <p className="pl-soft-card" role="alert" style={{ background: "var(--pl-stop)" }}>{plan.message}</p>
+          <p className="cl-calculator-error" role="alert">{plan.message}</p>
         ) : null}
       </div>
     </section>

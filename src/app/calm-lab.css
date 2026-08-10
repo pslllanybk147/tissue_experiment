@@ -139,6 +139,7 @@ body {
 
 .cl-button-primary,
 .cl-button-secondary,
+.cl-button-danger,
 .cl-button-quiet {
   display: inline-flex;
   min-height: var(--cl-control-min);
@@ -154,10 +155,13 @@ body {
 .cl-button-primary:hover { background: var(--cl-action-hover); }
 .cl-button-secondary { border: 1px solid var(--cl-border-strong); background: var(--cl-surface); color: var(--cl-text); }
 .cl-button-secondary:hover { background: var(--cl-surface-hover); }
+.cl-button-danger { border: 1px solid var(--cl-danger); background: var(--cl-danger-subtle); color: var(--cl-danger); }
+.cl-button-danger:hover { background: var(--cl-danger); color: var(--cl-on-danger); }
 .cl-button-quiet { border: 0; background: transparent; color: var(--cl-text-muted); }
 .cl-button-quiet:hover { color: var(--cl-text); text-decoration: underline; }
 .cl-button-primary:disabled,
 .cl-button-secondary:disabled,
+.cl-button-danger:disabled,
 .cl-button-quiet:disabled { border-color: var(--cl-disabled); background: var(--cl-disabled); color: var(--cl-on-disabled); cursor: not-allowed; text-decoration: none; }
 
 .cl-setup-section { display: grid; gap: var(--cl-space-6); }
@@ -183,6 +187,54 @@ body {
 
 @media (max-width: 767px) {
   .cl-chemical-grid { grid-template-columns: 1fr; }
+}
+
+.cl-protocol {
+  width: min(100%, var(--cl-content-reading));
+  margin-inline: auto;
+  color: var(--cl-text);
+}
+.cl-protocol-header { display: grid; gap: var(--cl-space-2); padding-block-end: var(--cl-space-6); border-block-end: 1px solid var(--cl-border); }
+.cl-protocol-header > * { margin: 0; }
+.cl-protocol-header > p { color: var(--cl-text-muted); font-size: var(--cl-text-meta); }
+.cl-protocol-header h1 { font-size: var(--cl-text-display); line-height: 1.15; letter-spacing: -0.025em; }
+.cl-protocol-section { display: grid; gap: var(--cl-space-3); padding-block: var(--cl-space-6); border-block-end: 1px solid var(--cl-border); }
+.cl-protocol-section > h2 { margin: 0; font-size: var(--cl-text-h2); line-height: 1.25; }
+.cl-protocol-media { overflow: hidden; margin-block: var(--cl-space-6); border: 1px solid var(--cl-border); background: var(--cl-surface); }
+.cl-troubleshooting-list { display: grid; }
+.cl-troubleshooting-item { padding-block: var(--cl-space-4); border-block-start: 1px solid var(--cl-border); }
+.cl-protocol-form { display: grid; gap: var(--cl-space-4); margin-block-start: var(--cl-space-8); padding-block: var(--cl-space-6); border-block: 1px solid var(--cl-border); }
+.cl-protocol-form > h2 { margin: 0; font-size: var(--cl-text-h2); }
+.cl-check-row { display: flex; min-height: var(--cl-control-min); align-items: flex-start; gap: var(--cl-space-3); padding: var(--cl-space-3); border: 1px solid var(--cl-border); cursor: pointer; }
+.cl-check-row input { flex: 0 0 auto; width: 22px; min-height: 22px; height: 22px; }
+.cl-demo-skip { padding: var(--cl-space-4); border: 1px solid var(--cl-border); background: var(--cl-surface-subtle); }
+.cl-protocol-pagination { display: flex; gap: var(--cl-space-3); margin-block-start: var(--cl-space-6); }
+.cl-protocol-pagination > * { flex: 1; text-align: center; text-decoration: none; }
+
+.cl-calculator,
+.cl-medium-calculator,
+.cl-chemical-preparation { display: grid; gap: var(--cl-space-4); margin-block: var(--cl-space-6); padding-block: var(--cl-space-6); border-block: 1px solid var(--cl-border); }
+.cl-calculator > :where(h2, p),
+.cl-medium-calculator > :where(h2, p),
+.cl-chemical-preparation > :where(h2, p) { margin-block: 0; }
+.cl-calculator-body,
+.cl-medium-controls { display: grid; gap: var(--cl-space-4); padding: var(--cl-space-4); background: var(--cl-surface-subtle); }
+.cl-calculator-body > div:first-child,
+.cl-medium-controls > div { display: grid !important; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)) !important; gap: var(--cl-space-4) !important; }
+.cl-input { width: 100%; min-height: var(--cl-control-min); border: 1px solid var(--cl-border-strong); border-radius: var(--cl-radius-sm); background: var(--cl-surface); color: var(--cl-text); padding-inline: var(--cl-space-3); font-size: 16px; }
+.cl-calculator-result,
+.cl-medium-total { padding: var(--cl-space-4); border-inline-start: 4px solid var(--cl-action); background: var(--cl-surface); }
+.cl-calculator-error { margin: 0; padding: var(--cl-space-4); border-inline-start: 4px solid var(--cl-danger); background: var(--cl-danger-subtle); color: var(--cl-text); }
+.cl-medium-line { display: flex; align-items: baseline; gap: var(--cl-space-3); padding-block: var(--cl-space-3); border-block-end: 1px solid var(--cl-border); }
+.cl-medium-line[data-state="blocked"] { display: block; padding: var(--cl-space-4); border-inline-start: 4px solid var(--cl-danger); background: var(--cl-danger-subtle); }
+.cl-medium-note { padding-block: var(--cl-space-4); border-block: 1px solid var(--cl-border); }
+.cl-preparation-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--cl-space-4); margin-block: var(--cl-space-4); }
+.cl-calculated-dose,
+.cl-meta { color: var(--cl-text-muted); font-size: var(--cl-text-meta); }
+
+@media (max-width: 767px) {
+  .cl-protocol-pagination,
+  .cl-preparation-fields { grid-template-columns: 1fr; flex-direction: column; }
 }
 
 .cl-app-shell { min-height: 100vh; background: var(--cl-canvas); color: var(--cl-text); }

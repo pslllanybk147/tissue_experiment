@@ -32,6 +32,9 @@ describe("ChemicalPreparation", () => {
     expect(html).toContain("NaDCC (เม็ดคลอรีน)");
     expect(html).not.toContain("ไฮเตอร์ / สารฟอกฆ่าเชื้อ");
     expect(html).toContain("N-42");
+    expect(html).toContain("cl-chemical-preparation");
+    expect(html).not.toContain("pl-card");
+    expect(html).not.toContain("pl-soft-card");
   });
 
   it("renders no preparation editor for pressure sterilization", () => {
