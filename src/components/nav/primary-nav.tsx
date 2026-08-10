@@ -60,7 +60,7 @@ export const linkIcons: Record<string, () => React.JSX.Element> = {
   equipment: EquipmentIcon,
 };
 
-export function PrimaryNav() {
+export function PrimaryNav({ variant = "both" }: { variant?: "desktop" | "mobile" | "both" }) {
   const pathname = usePathname();
   const { state, open } = useCalculatorOverlay();
 
@@ -97,12 +97,8 @@ export function PrimaryNav() {
 
   return (
     <>
-      <nav className="pl-nav-desktop" aria-label="เมนูหลัก">
-        {renderItems()}
-      </nav>
-      <nav className="pl-nav-mobile" aria-label="เมนูหลัก">
-        {renderItems()}
-      </nav>
+      {variant !== "mobile" ? <nav className="pl-nav-desktop" aria-label="เมนูหลัก">{renderItems()}</nav> : null}
+      {variant !== "desktop" ? <nav className="pl-nav-mobile" aria-label="เมนูหลัก">{renderItems()}</nav> : null}
     </>
   );
 }

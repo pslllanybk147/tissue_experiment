@@ -15,6 +15,9 @@ describe("LabShell", () => {
     expect(html).toContain('href="/admin/research"');
     expect(html).toContain('aria-label="Mobile navigation"');
     expect(html).toContain('aria-current="page"');
+    expect(html).toContain("cl-app-shell");
+    expect(html).toContain('href="#main-content"');
+    expect(html).toContain('id="main-content"');
     expect(html).toContain("<main");
     expect(html).toContain("Experiment lots");
     expect(html).toContain("FIREBASE");

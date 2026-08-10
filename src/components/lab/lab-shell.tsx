@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
+import { AppShell } from "@/components/common/app-shell";
 
 type LabShellProps = {
   children: ReactNode;
@@ -21,29 +22,28 @@ const destinations: { label: LabSection; text: string; href: string }[] = [
 ];
 
 export function LabShell({ children, section, sessionLabel, onSignOut }: LabShellProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const closeMenu = () => setMenuOpen(false);
+  const navigation = (
+    <nav aria-label="เมนูหลัก" className="cl-lab-navigation">
+      {destinations.map((item) => <Link aria-current={section === item.label ? "page" : undefined} className={section === item.label ? "active" : ""} href={item.href} key={item.href}>{item.text}</Link>)}
+    </nav>
+  );
+  const mobileNavigation = (
+    <nav aria-label="Mobile navigation" className="cl-lab-mobile-navigation">
+      {destinations.map((item) => <Link aria-current={section === item.label ? "page" : undefined} className={section === item.label ? "active" : ""} href={item.href} key={item.href}>{item.text}</Link>)}
+    </nav>
+  );
   return (
-    <div className={`lab-route-shell${menuOpen ? " menu-open" : ""}`}>
-      <aside className="lab-route-sidebar">
-        <Link className="lab-route-brand" href="/"><span>PL</span><strong>Plantlover Lab</strong></Link>
-        <nav aria-label="เมนูหลัก" className="lab-route-nav">
-          {destinations.map((item) => <Link aria-current={section === item.label ? "page" : undefined} className={section === item.label ? "active" : ""} href={item.href} key={item.href}>{item.text}</Link>)}
-        </nav>
-        <div className="lab-route-session"><span className={`session-chip ${sessionLabel === "DEMO" ? "demo" : "authenticated"}`}>{sessionLabel}</span><button type="button" onClick={onSignOut}>ออก</button></div>
-      </aside>
-      <div className="lab-route-workspace">
-        <header className="lab-route-topbar">
-          <button aria-controls="lab-route-mobile-nav" aria-expanded={menuOpen} aria-label={menuOpen ? "ปิดเมนูหลัก" : "เปิดเมนูหลัก"} className="lab-route-menu-toggle" onClick={() => setMenuOpen((open) => !open)} type="button"><span aria-hidden="true" /><span aria-hidden="true" /><span aria-hidden="true" /></button>
-          <Link className="lab-route-mobile-brand" href="/">PL <span>Plantlover Lab</span></Link>
+    <AppShell
+      navigation={navigation}
+      mobileNavigation={mobileNavigation}
+      utility={(
+        <div className="cl-session-actions">
           <span className={`session-chip ${sessionLabel === "DEMO" ? "demo" : "authenticated"}`}>{sessionLabel}</span>
-          <button className="mobile-sign-out" type="button" onClick={onSignOut}>ออก</button>
-        </header>
-        <nav aria-label="Mobile navigation" className="lab-route-mobile-nav" id="lab-route-mobile-nav">
-          {destinations.map((item) => <Link aria-current={section === item.label ? "page" : undefined} className={section === item.label ? "active" : ""} href={item.href} key={item.href} onClick={closeMenu}>{item.text}</Link>)}
-        </nav>
-        <main className="lab-route-main">{children}</main>
-      </div>
-    </div>
+          <button className="mobile-sign-out" type="button" onClick={onSignOut}>ออกจากระบบ</button>
+        </div>
+      )}
+    >
+      <div className="lab-route-main">{children}</div>
+    </AppShell>
   );
 }

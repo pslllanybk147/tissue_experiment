@@ -27,8 +27,9 @@ describe("GuideShell", () => {
   it("มีลิงก์ข้ามไปเนื้อหาหลักสำหรับคนใช้คีย์บอร์ด", () => {
     const html = renderShell(<p>เนื้อหา</p>);
 
-    expect(html).toContain('href="#pl-main"');
-    expect(html).toContain('id="pl-main"');
+    expect(html).toContain("cl-app-shell");
+    expect(html).toContain('href="#main-content"');
+    expect(html).toContain('id="main-content"');
   });
 
   it("มีเมนูหลักและปุ่มเครื่องคำนวณ", () => {
