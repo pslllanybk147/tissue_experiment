@@ -108,7 +108,7 @@ export function T3LockPanel({
             rows={4}
             value={reason}
             onChange={(event) => setReason(event.currentTarget.value)}
-            style={{ width: "100%", marginTop: "6px", padding: "10px 12px", border: "2.5px solid var(--pl-line)", borderRadius: "10px", background: "var(--pl-sunk)", color: "var(--pl-ink)", font: "inherit" }}
+            style={{ width: "100%", marginTop: "6px", padding: "10px 12px", border: "1px solid var(--cl-border-strong)", borderRadius: "4px", background: "var(--cl-surface)", color: "var(--cl-text)", font: "inherit" }}
           />
           <button
             type="submit"

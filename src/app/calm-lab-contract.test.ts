@@ -3,6 +3,8 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 const calmLabPath = path.join(process.cwd(), "src/app/calm-lab.css");
+const globalsPath = path.join(process.cwd(), "src/app/globals.css");
+const guidePath = path.join(process.cwd(), "src/app/guide.css");
 
 describe("Calm Lab contract", () => {
   it.each([
@@ -29,5 +31,17 @@ describe("Calm Lab contract", () => {
     const css = fs.readFileSync(calmLabPath, "utf8");
     expect(css).toContain("font-family: var(--font-torsilp)");
     expect(css).not.toMatch(/font-(?:geist|plex|thai)/i);
+  });
+
+  it("has no independent legacy theme blocks", () => {
+    expect(fs.readFileSync(globalsPath, "utf8")).not.toMatch(/:root\[data-theme=/);
+    expect(fs.readFileSync(guidePath, "utf8")).not.toMatch(/:root\[data-theme=/);
+  });
+
+  it("provides forced-color boundaries and focus", () => {
+    const css = fs.readFileSync(calmLabPath, "utf8");
+    expect(css).toContain("@media (forced-colors: active)");
+    expect(css).toContain("Highlight");
+    expect(css).toContain("CanvasText");
   });
 });

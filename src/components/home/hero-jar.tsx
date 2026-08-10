@@ -24,10 +24,10 @@ function detectEnv() {
 function readSceneColors() {
   const style = getComputedStyle(document.documentElement);
   return {
-    neon: style.getPropertyValue("--pl-neon").trim() || "#22d3ee",
-    neon2: style.getPropertyValue("--pl-neon-2").trim() || "#a3e635",
-    leaf: style.getPropertyValue("--pl-leaf").trim() || "#4ade80",
-    agar: style.getPropertyValue("--pl-agar").trim() || "#164e63",
+    neon: style.getPropertyValue("--cl-accent").trim() || "#287c86",
+    neon2: style.getPropertyValue("--cl-action").trim() || "#1f6b52",
+    leaf: style.getPropertyValue("--cl-success").trim() || "#236c49",
+    agar: style.getPropertyValue("--cl-accent-subtle").trim() || "#dceff0",
   };
 }
 
@@ -72,20 +72,20 @@ function HeroPoster({ hidden = false }: { hidden?: boolean }) {
     >
       <defs>
         <linearGradient id="pl-jar-glass" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="var(--pl-ink)" stopOpacity="0.14" />
-          <stop offset="0.5" stopColor="var(--pl-ink)" stopOpacity="0.02" />
-          <stop offset="1" stopColor="var(--pl-ink)" stopOpacity="0.2" />
+          <stop offset="0" stopColor="var(--cl-text)" stopOpacity="0.14" />
+          <stop offset="0.5" stopColor="var(--cl-text)" stopOpacity="0.02" />
+          <stop offset="1" stopColor="var(--cl-text)" stopOpacity="0.2" />
         </linearGradient>
       </defs>
-      <ellipse cx="100" cy="150" rx="92" ry="80" fill="var(--pl-glow)" opacity="0.35" />
-      <rect x="58" y="26" width="84" height="18" rx="6" fill="var(--pl-ink-3)" />
-      <path d="M62 44 h76 v150 a38 26 0 0 1 -76 0 Z" fill="url(#pl-jar-glass)" stroke="var(--pl-neon)" strokeOpacity="0.55" strokeWidth="2" />
-      <path d="M66 168 h68 v26 a34 22 0 0 1 -68 0 Z" fill="var(--pl-agar)" />
-      <g stroke="var(--pl-leaf)" fill="none" strokeWidth="3" strokeLinecap="round">
+      <ellipse cx="100" cy="150" rx="92" ry="80" fill="var(--cl-surface-subtle)" opacity="0.65" />
+      <rect x="58" y="26" width="84" height="18" rx="6" fill="var(--cl-text-muted)" />
+      <path d="M62 44 h76 v150 a38 26 0 0 1 -76 0 Z" fill="url(#pl-jar-glass)" stroke="var(--cl-accent)" strokeOpacity="0.55" strokeWidth="2" />
+      <path d="M66 168 h68 v26 a34 22 0 0 1 -68 0 Z" fill="var(--cl-accent-subtle)" />
+      <g stroke="var(--cl-success)" fill="none" strokeWidth="3" strokeLinecap="round">
         <path d="M100 176 V96" />
-        <path d="M100 140 C78 132 68 112 70 92 C90 100 100 118 100 138 Z" fill="var(--pl-leaf)" fillOpacity="0.55" />
-        <path d="M100 124 C122 116 132 96 130 76 C110 84 100 102 100 122 Z" fill="var(--pl-leaf)" fillOpacity="0.4" />
-        <path d="M100 100 C96 82 100 66 112 56 C118 72 112 90 101 99 Z" fill="var(--pl-leaf)" fillOpacity="0.55" />
+        <path d="M100 140 C78 132 68 112 70 92 C90 100 100 118 100 138 Z" fill="var(--cl-success)" fillOpacity="0.55" />
+        <path d="M100 124 C122 116 132 96 130 76 C110 84 100 102 100 122 Z" fill="var(--cl-success)" fillOpacity="0.4" />
+        <path d="M100 100 C96 82 100 66 112 56 C118 72 112 90 101 99 Z" fill="var(--cl-success)" fillOpacity="0.55" />
       </g>
     </svg>
   );

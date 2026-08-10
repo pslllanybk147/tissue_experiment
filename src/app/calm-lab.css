@@ -319,6 +319,12 @@ body {
   :where(button, input, select, textarea, a):focus-visible {
     outline-color: Highlight;
   }
+  .cl-status-notice,
+  .cl-method-option,
+  .cl-data-row,
+  .cl-detail-pane { border-color: CanvasText; }
+  .cl-method-option[data-selected="true"],
+  .cl-master-row[aria-current="true"] { border-color: Highlight; }
 }
 
 @media (prefers-reduced-motion: reduce) {

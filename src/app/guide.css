@@ -108,7 +108,7 @@
 
 .pl-card.pl-link:hover {
   border-color: var(--pl-neon);
-  box-shadow: 0 0 14px var(--pl-glow);
+  box-shadow: none;
 }
 
 /* chip สถานะสไตล์ HUD ใช้โดยหน้าทำงาน (Task 3) */
@@ -632,7 +632,7 @@
 }
 
 .pl-button:hover {
-  box-shadow: 0 0 14px var(--pl-glow);
+  box-shadow: none;
 }
 
 /* โหมดลงมือ ใช้เฉพาะตัวเดินขั้นตอนที่ผู้ใช้อ่านตอนใส่ถุงมือและมือเปื้อน
@@ -764,7 +764,7 @@
 
 .pl-plant-card.pl-link:hover .pl-plant-card-image {
   border-color: var(--pl-neon);
-  box-shadow: 0 0 14px var(--pl-glow);
+  box-shadow: none;
 }
 
 .pl-plant-card-placeholder {

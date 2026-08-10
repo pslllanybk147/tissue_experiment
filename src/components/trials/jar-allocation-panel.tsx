@@ -38,7 +38,7 @@ export function JarAllocationPanel({ total, reserved, allocations, onReserved, o
           <input id="jar-reserved" type="number" min="0" step="1" value={reserved} onChange={(event) => onReserved(Number(event.currentTarget.value))} style={style} />
         </p>
       </div>
-      <p className="pl-mono" role={valid ? undefined : "alert"} style={{ marginTop: "12px", color: valid ? undefined : "var(--pl-red)" }}>
+      <p className="pl-mono" role={valid ? undefined : "alert"} style={{ marginTop: "12px", color: valid ? undefined : "var(--cl-danger)" }}>
         ใช้ {used} จาก {total} ใบ · เหลือ {total - used} ใบ{valid ? "" : " · ทุกแขนต้องมีอย่างน้อย 1 ใบและห้ามใช้เกินของที่มี"}
       </p>
     </section>
