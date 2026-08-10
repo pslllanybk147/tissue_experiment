@@ -23,5 +23,7 @@ describe("ReviewQueue", () => {
     expect(html).toContain("ไปเพิ่มรูปในรอบเพาะ");
     expect(html).toContain('href="/my/rounds"');
     expect(html).toContain("ยังไม่มีรอบ — เลือกต้นที่นี่");
+    expect(html).toContain("cl-empty-state");
+    expect(html).toContain("ยังไม่มีรายการรอตรวจ");
   });
 });

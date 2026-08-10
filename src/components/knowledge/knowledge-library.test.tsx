@@ -11,6 +11,9 @@ describe("KnowledgeLibrary", () => {
 
     expect(html).toContain("ค้น taxonomy");
     expect(html).toContain("Pink Princess");
+    expect(html).toContain("cl-master-detail");
+    expect(html).toContain('aria-current="true"');
+    expect(html).toContain("รายการที่เลือก");
   });
 
   it("ไม่ seed claim มาให้เอง เพราะหลักฐานของคู่มืออยู่ที่ src/lib/manual แหล่งเดียว", () => {
