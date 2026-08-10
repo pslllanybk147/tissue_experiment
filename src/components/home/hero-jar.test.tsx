@@ -10,17 +10,17 @@ describe("hero ขวดเพาะเลี้ยงหน้าแรก", ()
     expect(html).toContain("pl-hero-poster");
   });
 
-  it("มีป้ายสถานะ HUD", () => {
-    expect(html).toContain("pl-hud-chip");
-    expect(html).toContain("READY");
+  it("does not render legacy HUD decoration", () => {
+    expect(html).not.toMatch(/pl-hero-grid|pl-hero-ring|pl-hero-scanline|pl-hud-chip/);
   });
 
   it("ระบุว่าเป็นภาพจำลอง ไม่ใช่ภาพต้นจริง", () => {
     expect(html).toContain("ภาพจำลอง");
   });
 
-  it("องค์ประกอบตกแต่งถูกซ่อนจาก screen reader", () => {
-    expect(html).toContain('aria-hidden="true"');
+  it("gives the authentic illustration an accessible name", () => {
+    expect(html).toContain('role="img"');
+    expect(html).toContain('aria-label="ขวดโหลแก้วมีต้นอ่อนบนวุ้นอาหาร"');
   });
 });
 

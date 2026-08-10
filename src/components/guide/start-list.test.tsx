@@ -8,6 +8,11 @@ import { StartList } from "./start-list";
 const html = renderToStaticMarkup(<StartList />);
 
 describe("หน้าเริ่มต้นสำหรับคนที่ยังไม่มีต้น", () => {
+  it("ใช้โครงรายการพืชแบบ Calm Lab โดยไม่มี HUD รุ่นเดิม", () => {
+    expect(html).toContain("cl-plant-grid");
+    expect(html).toContain("cl-plant-card");
+    expect(html).not.toContain("pl-hero-ring");
+  });
   it("แสดงทุกชนิดพืชที่มีคู่มืออยู่จริงเป็นการ์ด", () => {
     for (const pack of plantPacks) expect(html).toContain(pack.commonName);
   });

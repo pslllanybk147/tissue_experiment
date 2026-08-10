@@ -11,36 +11,38 @@ const difficultyLabel: Record<1 | 2 | 3, string> = {
 
 export function StartList() {
   return (
-    <>
-      <h1 className="pl-h1">เลือกต้นที่จะเพาะ</h1>
-      <p className="pl-lede" style={{ marginBottom: "20px" }}>
+    <section className="cl-public-section">
+      <header className="cl-page-heading">
+      <h1>เลือกต้นที่จะเพาะ</h1>
+      <p>
         แตะการ์ดต้นที่ตรงกับต้นของคุณเพื่อเปิดคู่มือได้เลย
       </p>
+      </header>
 
-      <ul className="pl-plant-grid">
+      <ul className="cl-plant-grid" aria-label="ชนิดพืช">
         {plantPacks.map((pack) => {
           const image = plantImageUrl(pack.slug);
           const form = pack.growthFormId ? formById(pack.growthFormId) : null;
 
           return (
             <li key={pack.slug}>
-              <Link className="pl-plant-card pl-link" href={`/guide/${pack.slug}`}>
+              <Link className="cl-plant-card" href={`/guide/${pack.slug}`}>
                 <div
-                  className="pl-plant-card-image"
+                  className="cl-plant-card-image"
                   style={image ? { backgroundImage: `url(${image})` } : undefined}
                   role="img"
                   aria-label={pack.commonName}
                 >
                   {!image ? (
-                    <span className="pl-plant-card-placeholder" aria-hidden="true">
+                    <span className="cl-plant-card-placeholder" aria-hidden="true">
                       {pack.commonName.charAt(0)}
                     </span>
                   ) : null}
                 </div>
-                <p className="pl-h2" style={{ marginTop: "10px" }}>{pack.commonName}</p>
-                <p className="pl-meta">{pack.scientificName}</p>
+                <strong>{pack.commonName}</strong>
+                <em>{pack.scientificName}</em>
                 {form ? (
-                  <p className="pl-meta" style={{ marginTop: "2px" }}>{difficultyLabel[form.beginnerDifficulty]}</p>
+                  <small>{difficultyLabel[form.beginnerDifficulty]}</small>
                 ) : null}
               </Link>
             </li>
@@ -48,14 +50,16 @@ export function StartList() {
         })}
       </ul>
 
-      <p className="pl-meta" style={{ marginTop: "22px" }}>
+      <footer className="cl-public-links">
+      <p>
         ไม่รู้ว่าต้นของคุณตรงกับชนิดไหนในนี้?{" "}
-        <Link className="pl-link" href="/find">ไล่ดูจากลักษณะต้น</Link>
+        <Link href="/find">ไล่ดูจากลักษณะต้น</Link>
       </p>
-      <p className="pl-meta" style={{ marginTop: "6px" }}>
+      <p>
         รู้ชื่อต้นอยู่แล้ว?{" "}
-        <Link className="pl-link" href="/search">ค้นหาโดยตรง</Link>
+        <Link href="/search">ค้นหาโดยตรง</Link>
       </p>
-    </>
+      </footer>
+    </section>
   );
 }

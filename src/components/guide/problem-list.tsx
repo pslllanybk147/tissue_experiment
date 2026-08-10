@@ -7,70 +7,63 @@ export function ProblemList({ selected }: { selected: string | undefined }) {
 
   if (!entry) {
     return (
-      <>
-        <h1 className="pl-h1">ตอนนี้เห็นอาการอะไร</h1>
-        <p className="pl-lede" style={{ marginBottom: "20px" }}>
+      <section className="cl-public-section">
+        <header className="cl-page-heading"><div><h1>ตอนนี้เห็นอาการอะไร</h1><p>
           เลือกอาการที่ตรงกับที่เห็นในขวดมากที่สุด อาการบางคู่หน้าตาคล้ายกันแต่แก้คนละทาง
           เราจะช่วยแยกให้หลังจากเลือกแล้ว
-        </p>
+        </p></div></header>
         {selected ? (
-          <p className="pl-meta" style={{ marginBottom: "16px" }}>ไม่พบอาการที่เลือกไว้ ลองเลือกใหม่จากรายการนี้</p>
+          <p className="cl-status-notice" data-tone="warning">ไม่พบอาการที่เลือกไว้ ลองเลือกใหม่จากรายการนี้</p>
         ) : null}
-        <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: "14px" }}>
+        <ul className="cl-choice-list">
           {Object.values(troubleshootingEntries).map((item) => (
             <li key={item.id}>
               <Link
-                className="pl-card pl-link"
+                className="cl-choice-row"
                 href={`/problem?symptom=${item.id}`}
-                style={{ display: "block", color: "inherit", textDecoration: "none" }}
               >
-                <p className="pl-lede">{item.symptom}</p>
+                <strong>{item.symptom}</strong>
               </Link>
             </li>
           ))}
         </ul>
-        <p className="pl-meta" style={{ marginTop: "22px" }}>
-          <Link className="pl-link" href="/problem">เริ่มเลือกใหม่</Link> · <Link className="pl-link" href="/">กลับหน้าแรก</Link>
+        <p className="cl-public-links">
+          <Link href="/problem">เริ่มเลือกใหม่</Link> · <Link href="/">กลับหน้าแรก</Link>
         </p>
-      </>
+      </section>
     );
   }
 
   return (
-    <>
-      <h1 className="pl-h1">{entry.symptom}</h1>
+    <article className="cl-guide-article">
+      <header className="cl-page-heading"><h1>{entry.symptom}</h1></header>
 
-      <div className="pl-card" style={{ marginTop: "18px" }}>
-        <p className="pl-h2">น่าจะเกิดจาก</p>
-        <p className="pl-lede" style={{ marginTop: "8px" }}>{entry.likelyCause}</p>
-      </div>
+      <section className="cl-reading-section"><h2>น่าจะเกิดจาก</h2><p>{entry.likelyCause}</p></section>
 
       {entry.distinguish ? (
-        <div className="pl-card" style={{ marginTop: "14px", background: "var(--pl-sunk)" }}>
-          <p className="pl-h2">แยกจากอาการที่คล้ายกันยังไง</p>
-          <p className="pl-lede" style={{ marginTop: "8px" }}>{entry.distinguish}</p>
-        </div>
+        <section className="cl-reading-section"><h2>แยกจากอาการที่คล้ายกันยังไง</h2><p>{entry.distinguish}</p></section>
       ) : null}
 
-      <h2 className="pl-h2" style={{ marginTop: "26px" }}>สิ่งที่ต้องทำ</h2>
-      <ol style={{ margin: "12px 0 0", paddingLeft: "22px", display: "flex", flexDirection: "column", gap: "10px" }}>
+      <section className="cl-reading-section"><h2>สิ่งที่ต้องทำ</h2>
+      <ol className="cl-instruction-list">
         {entry.actions.map((action) => (
-          <li className="pl-lede" key={action}>{action}</li>
+          <li key={action}>{action}</li>
         ))}
       </ol>
+      </section>
 
-      <p style={{ marginTop: "18px" }}>
+      <p>
         <EvidenceBadge level={entry.evidence.level} />
       </p>
-      {entry.evidence.note ? <p className="pl-meta" style={{ marginTop: "8px" }}>{entry.evidence.note}</p> : null}
+      {entry.evidence.note ? <p className="cl-support-copy">{entry.evidence.note}</p> : null}
 
-      <p className="pl-meta" style={{ marginTop: "22px" }}>
-        ไม่รู้จักสารที่เขียนไว้ข้างบน? <Link className="pl-link" href="/substances">ดูว่าคืออะไรและซื้อที่ไหน</Link>
+      <p className="cl-support-copy">
+        ไม่รู้จักสารที่เขียนไว้ข้างบน? <Link href="/substances">ดูว่าคืออะไรและซื้อที่ไหน</Link>
       </p>
 
-      <p className="pl-meta" style={{ marginTop: "8px" }}>
-        ไม่ตรงกับที่เห็น? <Link className="pl-link" href="/problem">เลือกอาการใหม่</Link>
+      <p className="cl-support-copy">
+        ไม่ตรงกับที่เห็น? <Link href="/problem">เลือกอาการใหม่</Link>
       </p>
-    </>
+    </article>
   );
 }

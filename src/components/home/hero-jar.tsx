@@ -47,13 +47,7 @@ export function HeroJar() {
 
   return (
     <section className="pl-hero" aria-label="ขวดเพาะเลี้ยงจำลอง">
-      <div className="pl-hero-grid" aria-hidden="true" />
       <div className="pl-hero-stage">
-        <div className="pl-hero-ring pl-hero-ring-a" aria-hidden="true" />
-        <div className="pl-hero-ring pl-hero-ring-b" aria-hidden="true" />
-        <span className="pl-hud-chip pl-hero-chip-top" aria-hidden="true">LAB:PLANTLOVER</span>
-        <span className="pl-hud-chip pl-pulse pl-hero-chip-bottom" aria-hidden="true">READY ▲</span>
-        <div className="pl-hero-scanline" aria-hidden="true" />
         <HeroPoster hidden={Boolean(scene)} />
         {scene ? (
           <div className="pl-hero-canvas" aria-hidden="true">

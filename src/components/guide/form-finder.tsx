@@ -16,29 +16,27 @@ export function FormFinder({ answers }: { answers: FinderAnswers }) {
 
   if (question) {
     return (
-      <>
-        <h1 className="pl-h1">{question.ask}</h1>
-        <p className="pl-lede" style={{ marginBottom: "20px" }}>
+      <section className="cl-public-section">
+        <header className="cl-page-heading"><div><h1>{question.ask}</h1><p>
           เอาต้นจริงมาวางตรงหน้าแล้วดูไปด้วย จะตอบง่ายกว่านึกเอา
-        </p>
-        <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: "14px" }}>
+        </p></div></header>
+        <ul className="cl-choice-list">
           {question.choices.map((choice) => (
             <li key={choice.value}>
               <Link
-                className="pl-card pl-link"
+                className="cl-choice-row"
                 href={hrefWith(answers, question.key, choice.value)}
-                style={{ display: "block", color: "inherit", textDecoration: "none" }}
               >
-                <p className="pl-h2">{choice.label}</p>
-                <p className="pl-lede" style={{ marginTop: "6px" }}>{choice.hint}</p>
+                <strong>{choice.label}</strong>
+                <span>{choice.hint}</span>
               </Link>
             </li>
           ))}
         </ul>
-        <p className="pl-meta" style={{ marginTop: "22px" }}>
-          <Link className="pl-link" href="/find">เริ่มตอบใหม่</Link>
+        <p className="cl-public-links">
+          <Link href="/find">เริ่มตอบใหม่</Link>
         </p>
-      </>
+      </section>
     );
   }
 
@@ -46,42 +44,39 @@ export function FormFinder({ answers }: { answers: FinderAnswers }) {
 
   if (outcome && form) {
     return (
-      <>
-        <h1 className="pl-h1">ต้นของคุณน่าจะเป็น {form.label}</h1>
-        <p className="pl-lede" style={{ marginTop: "8px" }}>{form.plainDescription}</p>
-        <p style={{ marginTop: "20px" }}>
+      <section className="cl-public-section">
+        <header className="cl-page-heading"><div><h1>ต้นของคุณน่าจะเป็น {form.label}</h1><p>{form.plainDescription}</p></div></header>
+        <div>
           <Link
-            className="pl-card pl-link"
+            className="cl-choice-row"
             href={`/form/${form.id}`}
-            style={{ display: "block", color: "inherit", textDecoration: "none" }}
           >
-            <span className="pl-h2" style={{ display: "block" }}>เปิดคู่มือของทรงนี้</span>
-            <span className="pl-lede" style={{ display: "block", marginTop: "6px" }}>
+            <strong>เปิดคู่มือของทรงนี้</strong>
+            <span>
               ดูจุดสังเกตที่ต้องหา และตำแหน่งที่ต้องตัด
             </span>
           </Link>
+        </div>
+        <p className="cl-public-links">
+          ไม่ตรงกับต้นของคุณ? <Link href="/find">เริ่มตอบใหม่</Link>
         </p>
-        <p className="pl-meta" style={{ marginTop: "22px" }}>
-          ไม่ตรงกับต้นของคุณ? <Link className="pl-link" href="/find">เริ่มตอบใหม่</Link>
-        </p>
-      </>
+      </section>
     );
   }
 
   const uncovered = outcome?.reason === "uncovered";
 
   return (
-    <>
-      <h1 className="pl-h1">{uncovered ? "ต้นแบบนี้ยังไม่อยู่ในระบบ" : "ยังไม่มีคู่มือของทรงนี้"}</h1>
-      <p className="pl-lede" style={{ marginTop: "8px" }}>
+    <section className="cl-public-section">
+      <header className="cl-page-heading"><div><h1>{uncovered ? "ต้นแบบนี้ยังไม่อยู่ในระบบ" : "ยังไม่มีคู่มือของทรงนี้"}</h1><p>
         {uncovered
           ? "ตอนนี้เราครอบคลุมแปดทรงที่พบบ่อยที่สุด ต้นของคุณยังไม่เข้าทรงใดในนั้น เราจึงยังระบุตำแหน่งตัดให้ไม่ได้"
           : "เราระบุได้ว่าต้นของคุณเป็นทรงไหน แต่ยังไม่ได้เขียนคู่มือของทรงนั้น"}
         {" "}เราไม่เอาคู่มือของทรงอื่นมาให้ เพราะตำแหน่งตัดของแต่ละทรงต่างกันจริง ๆ และตัดผิดตำแหน่งต้นจะไม่ขึ้น
+      </p></div></header>
+      <p className="cl-public-links">
+        <Link href="/find">เริ่มตอบใหม่</Link> · <Link href="/">กลับหน้าแรก</Link>
       </p>
-      <p className="pl-meta" style={{ marginTop: "22px" }}>
-        <Link className="pl-link" href="/find">เริ่มตอบใหม่</Link> · <Link className="pl-link" href="/">กลับหน้าแรก</Link>
-      </p>
-    </>
+    </section>
   );
 }

@@ -13,9 +13,8 @@ export function FormDetail({ form, plants }: { form: GrowthForm; plants: FormPla
   const anchor = form.landmarks.find((landmark) => landmark.id === explant.landmarkId);
 
   return (
-    <>
-      <h1 className="pl-h1">{form.label}</h1>
-      <p className="pl-lede" style={{ marginTop: "8px" }}>{form.plainDescription}</p>
+    <article className="cl-guide-article">
+      <header className="cl-page-heading"><div><h1>{form.label}</h1><p>{form.plainDescription}</p></div></header>
 
       {form.referenceImage ? (
         <figure className="pl-figure">
@@ -50,7 +49,7 @@ export function FormDetail({ form, plants }: { form: GrowthForm; plants: FormPla
           </figcaption>
         </figure>
       ) : (
-        <div className="pl-card" style={{ marginTop: "18px", background: "var(--pl-sunk)" }}>
+        <div className="cl-empty-state">
           <p style={{ margin: 0, fontWeight: 700 }}>ทรงนี้ยังไม่มีภาพอ้างอิง</p>
           <p className="pl-lede" style={{ marginTop: "6px" }}>
             ให้ใช้คำอธิบายวิธีหาข้างล่างเทียบกับต้นจริงที่อยู่ตรงหน้าคุณ
@@ -59,14 +58,14 @@ export function FormDetail({ form, plants }: { form: GrowthForm; plants: FormPla
         </div>
       )}
 
-      <h2 className="pl-h2" style={{ marginTop: "26px" }}>จุดสังเกตที่ต้องหาให้เจอ</h2>
-      <ul style={{ listStyle: "none", margin: "12px 0 0", padding: 0, display: "flex", flexDirection: "column", gap: "12px" }}>
+      <section className="cl-reading-section"><h2>จุดสังเกตที่ต้องหาให้เจอ</h2>
+      <ul className="cl-reference-list">
         {form.landmarks.map((landmark, index) => {
           const image = form.referenceImage;
           const swatch = image && landmark.point ? cropStyle(landmark.point, image) : null;
 
           return (
-            <li className="pl-card pl-landmark" key={landmark.id}>
+            <li className="pl-landmark" key={landmark.id}>
               {swatch && image ? (
                 <span
                   className="pl-swatch"
@@ -96,9 +95,10 @@ export function FormDetail({ form, plants }: { form: GrowthForm; plants: FormPla
           );
         })}
       </ul>
+      </section>
 
-      <h2 className="pl-h2" style={{ marginTop: "26px" }}>ต้นทรงนี้ตัดตรงไหน</h2>
-      <div className="pl-card" style={{ marginTop: "12px" }}>
+      <section className="cl-reading-section"><h2>ต้นทรงนี้ตัดตรงไหน</h2>
+      <div>
         <p className="pl-lede">
           ตัด{directionLabel[explant.direction]}
           <RichText source={`[[${explant.landmarkId}|${anchor?.term ?? explant.landmarkId}]]`} />
@@ -111,6 +111,7 @@ export function FormDetail({ form, plants }: { form: GrowthForm; plants: FormPla
           <p className="pl-meta" style={{ marginTop: "8px" }}>{explant.evidence.note}</p>
         ) : null}
       </div>
+      </section>
 
       {plants.length > 0 ? (
         <>
@@ -138,6 +139,6 @@ export function FormDetail({ form, plants }: { form: GrowthForm; plants: FormPla
       <p className="pl-meta" style={{ marginTop: "26px" }}>
         ต้นของคุณไม่เหมือนที่อธิบายไว้ข้างบน? <Link className="pl-link" href="/find">กลับไปเลือกทรงใหม่</Link>
       </p>
-    </>
+    </article>
   );
 }
