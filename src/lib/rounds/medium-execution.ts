@@ -11,6 +11,8 @@ export type MediumExecutionContext = {
 export type MediumInstructionOverride = {
   action: string;
   quantity: string;
+  completion?: string;
+  next?: string;
 };
 
 /** สร้าง snapshot เดียวกับค่าตั้งต้นของเครื่องคำนวณ เพื่อให้การ์ดขั้นตอนมีตัวเลขตั้งแต่ render แรก */
@@ -73,6 +75,7 @@ export function mediumInstructionOverride(label: string, context: MediumExecutio
     return {
       action: `เลือกสูตร ${recipe.title} แล้วทำอาหารทั้งหมด ${plan.totalVolumeMl} mL ตามค่าด้านล่าง`,
       quantity: `${recipe.title} · ${plan.totalVolumeMl} mL · ${plan.totalJars} กระปุก × ${context.mlPerJar} mL + เผื่อสูญเสีย`,
+      completion: `เครื่องคำนวณแสดง ${plan.totalVolumeMl} mL และปริมาณส่วนผสมของสูตร ${recipe.title} แล้ว`,
     };
   }
   if (label === "ละลายส่วนผสมหลัก") {
@@ -93,6 +96,8 @@ export function mediumInstructionOverride(label: string, context: MediumExecutio
     return {
       action: `วัด pH ของสารละลาย แล้วใช้ pH up/down ทีละน้อยจนได้ pH ${recipe.pH}`,
       quantity: `${recipe.title}: pH ${recipe.pH}`,
+      completion: `ค่า pH อยู่ที่ ${recipe.pH} ก่อนใส่วุ้น`,
+      next: "เมื่อ pH ถึงเป้าหมายแล้วจึงใส่ผงวุ้น",
     };
   }
   if (label === "เติมผงวุ้น") {
@@ -105,6 +110,7 @@ export function mediumInstructionOverride(label: string, context: MediumExecutio
     return {
       action: `แบ่งอาหารทั้งหมด ${plan.totalVolumeMl} mL ลง ${plan.totalJars} กระปุก กระปุกละ ${context.mlPerJar} mL แล้วติดป้ายทุกใบ`,
       quantity: `${plan.totalJars} กระปุก · ${context.mlPerJar} mL ต่อกระปุก · รวม ${plan.totalVolumeMl} mL`,
+      completion: `${plan.totalJars} กระปุกมีอาหารกระปุกละ ${context.mlPerJar} mL และติดป้ายครบ`,
     };
   }
   return { action: "", quantity: "" };

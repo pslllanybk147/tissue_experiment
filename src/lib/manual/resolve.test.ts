@@ -50,8 +50,13 @@ describe("resolveManual", () => {
     const manual = resolveManual(basePack, { library });
     const receive = manual.steps.find((item) => item.id === "receive")!;
 
-    expect(receive.executionInstructions).toEqual([
-      { label: "ข้อ 1", action: "ลงมือทำตามตัวอย่าง" },
+    expect(receive.executionInstructions).toMatchObject([
+      {
+        label: "ติดรหัสต้น",
+        action: "ลงมือทำตามตัวอย่าง",
+        materials: ["อุปกรณ์ตัวอย่าง"],
+        completion: "ผ่านตามตัวอย่าง",
+      },
     ]);
   });
 
@@ -134,14 +139,14 @@ describe("resolveManual", () => {
       { library },
     );
 
-    expect(manual.steps.find((item) => item.id === "sterilize")?.executionInstructions).toEqual([
-      {
-        label: "เตรียมภาชนะ S",
-        action: "วางกระปุก S ไว้ด้านซ้ายของพื้นที่ทำงาน",
-        container: "S",
-        completion: "กระปุก S มีป้ายตรงกับ protocol",
-      },
-    ]);
+    const instructions = manual.steps.find((item) => item.id === "sterilize")?.executionInstructions ?? [];
+    expect(instructions[0]).toEqual({
+      label: "เตรียมภาชนะ S",
+      action: "วางกระปุก S ไว้ด้านซ้ายของพื้นที่ทำงาน",
+      container: "S",
+      completion: "กระปุก S มีป้ายตรงกับ protocol",
+    });
+    expect(instructions.some((item) => item.quantity?.includes("300 ppm"))).toBe(true);
   });
 
   it("ใช้ขั้นที่แผ่นเสริมเขียนเองได้ และทำเครื่องหมายว่ามาจาก pack", () => {

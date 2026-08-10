@@ -1,6 +1,7 @@
 import type { GrowthForm } from "./forms/types";
 import type { GenusPack } from "./genera/types";
 import type { ManualStepDef, PlantPack, ResolvedManual, ResolvedStep, StepOrigin } from "./types";
+import { ensureSterilizeOption, materializeExecutionInstructions } from "./execution-instructions";
 
 export type ResolveContext = {
   library: Record<string, ManualStepDef>;
@@ -160,13 +161,12 @@ export function resolveManual(pack: PlantPack, context: ResolveContext): Resolve
       origin,
     };
     const actions = beginnerActionLines(resolved.actions);
-    const executionInstructions = resolved.executionInstructions
-      ?? (stepId === "prep-media" && pack.mediaRecipes.length > 0
+    const resolvedStep = { ...resolved, actions };
+    const baseInstructions = resolved.executionInstructions
+      ?? (stepId === "prep-media" || stepId === "multiply" || stepId === "root"
         ? mediaExecutionInstructions(pack)
-        : actions.map((action, actionIndex) => ({
-          label: `ข้อ ${actionIndex + 1}`,
-          action,
-        })));
+        : materializeExecutionInstructions(resolvedStep));
+    const executionInstructions = ensureSterilizeOption(baseInstructions, resolvedStep);
     return {
       ...resolved,
       actions,

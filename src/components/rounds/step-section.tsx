@@ -26,6 +26,8 @@ function ExecutionInstructions({ step, mediumContext }: { step: ResolvedStep; me
               const override = mediumContext ? mediumInstructionOverride(instruction.label, mediumContext) : null;
               const action = override?.action || instruction.action;
               const quantity = override?.quantity || instruction.quantity;
+              const completion = override?.completion || instruction.completion;
+              const next = override?.next || instruction.next;
               return <>
                 <div className="execution-instruction-action"><RichText source={action} /></div>
                 {(instruction.materials?.length || quantity || instruction.container || instruction.durationMinutes != null || instruction.durationLabel) ? (
@@ -37,10 +39,10 @@ function ExecutionInstructions({ step, mediumContext }: { step: ResolvedStep; me
                 {instruction.durationLabel ? <><dt>เวลา</dt><dd><RichText source={instruction.durationLabel} /></dd></> : null}
               </dl>
                 ) : null}
+                {completion ? <div className="execution-instruction-completion"><strong>เสร็จเมื่อ:</strong> <RichText source={completion} /></div> : null}
+                {next ? <div className="execution-instruction-next"><strong>ต่อไป:</strong> <RichText source={next} /></div> : null}
               </>;
             })()}
-            {instruction.completion ? <div className="execution-instruction-completion"><strong>เสร็จเมื่อ:</strong> <RichText source={instruction.completion} /></div> : null}
-            {instruction.next ? <div className="execution-instruction-next"><strong>ต่อไป:</strong> <RichText source={instruction.next} /></div> : null}
           </li>
         ))}
       </ol>
