@@ -6,9 +6,12 @@ import "./calm-lab.css";
 import "./globals.css";
 import "./guide.css";
 
-const torsilp = localFont({
-  src: "../../public/fonts/torsilp/TorsilpThamnganMangThoe.ttf",
-  variable: "--font-torsilp",
+const chaeoHon = localFont({
+  src: [
+    { path: "../../public/fonts/chaeo-hon/MNChaeoHon-Regular.ttf", weight: "400", style: "normal" },
+    { path: "../../public/fonts/chaeo-hon/MNChaeoHon-Italic.ttf", weight: "400", style: "italic" },
+  ],
+  variable: "--font-chaeo-hon",
   display: "swap",
 });
 
@@ -19,7 +22,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="th" className={torsilp.variable} suppressHydrationWarning>
+    <html lang="th" className={chaeoHon.variable} suppressHydrationWarning>
       <body>
         <ThemeScript />
         <AuthProvider>{children}</AuthProvider>

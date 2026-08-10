@@ -27,10 +27,10 @@ describe("Calm Lab contract", () => {
     expect(css).toContain("--cl-control-min: 44px");
   });
 
-  it("keeps visible UI on the single Torsilp family", () => {
+  it("keeps visible UI on the single แจ่วฮ้อน family", () => {
     const css = fs.readFileSync(calmLabPath, "utf8");
-    expect(css).toContain("font-family: var(--font-torsilp)");
-    expect(css).not.toMatch(/font-(?:geist|plex|thai)/i);
+    expect(css).toContain("font-family: var(--font-chaeo-hon)");
+    expect(css).not.toMatch(/font-(?:geist|plex|thai|torsilp)/i);
   });
 
   it("has no independent legacy theme blocks", () => {

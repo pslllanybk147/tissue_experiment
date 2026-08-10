@@ -122,7 +122,7 @@ async function inspectPage(page, viewportName, route) {
   assert(result.bodyText > 0, `${prefix}: หน้าเว็บว่าง`);
   assert(!result.hasOverlay, `${prefix}: พบ framework error overlay`);
   assert(result.bodyFont >= 17, `${prefix}: body font ${result.bodyFont}px ต่ำกว่า 17px`);
-  assert(/torsilp/i.test(result.bodyFamily), `${prefix}: body ไม่ได้ใช้ Torsilp (${result.bodyFamily})`);
+  assert(/chaeohon/i.test(result.bodyFamily.replace(/[-_\s]/g, "")), `${prefix}: body ไม่ได้ใช้ แจ่วฮ้อน (${result.bodyFamily})`);
   assert(result.mainCount === 1, `${prefix}: expected one main landmark, got ${result.mainCount}`);
   assert(result.legacyHudCount === 0, `${prefix}: legacy HUD decoration remains`);
   assert(result.horizontalOverflow <= 1, `${prefix}: horizontal overflow ${result.horizontalOverflow}px`);

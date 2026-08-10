@@ -101,12 +101,12 @@ textarea,
 code,
 kbd,
 pre {
-  font-family: var(--font-torsilp), Tahoma, sans-serif;
+  font-family: var(--font-chaeo-hon), Tahoma, sans-serif;
 }
 
 /* Legacy feature CSS still declares former font roles during migration. */
 body * {
-  font-family: var(--font-torsilp), Tahoma, sans-serif !important;
+  font-family: var(--font-chaeo-hon), Tahoma, sans-serif !important;
 }
 
 body {

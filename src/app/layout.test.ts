@@ -9,8 +9,8 @@ describe("root layout", () => {
     expect(source).not.toContain("Philodendron Lab");
   });
 
-  it("loads only the local Torsilp UI font and imports Calm Lab first", () => {
-    expect(source).toContain('variable: "--font-torsilp"');
+  it("loads only the local แจ่วฮ้อน UI font and imports Calm Lab first", () => {
+    expect(source).toContain('variable: "--font-chaeo-hon"');
     expect(source).not.toContain("next/font/google");
     expect(source.indexOf('import "./calm-lab.css"')).toBeLessThan(source.indexOf('import "./globals.css"'));
   });

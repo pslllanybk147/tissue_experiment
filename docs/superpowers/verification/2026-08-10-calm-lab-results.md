@@ -16,7 +16,7 @@
 - Public discovery, finder, search, troubleshooting, substances, guide overview, and guide step reading.
 - Demo entry, round setup, pressure/Haiter/NaDCC selection, review, round creation, preparation save, and reload persistence.
 - Workspace round, equipment, admin knowledge, research, and dataset routes included in the responsive UI matrix.
-- Light/dark themes, Torsilp computed font, main landmark, horizontal overflow, control size, navigation visibility, mobile bottom navigation, and removal of legacy HUD selectors.
+- Light/dark themes, แจ่วฮ้อน computed font, main landmark, horizontal overflow, control size, navigation visibility, mobile bottom navigation, and removal of legacy HUD selectors.
 
 ## Corrected during verification
 
