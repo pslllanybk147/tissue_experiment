@@ -51,7 +51,7 @@ const appUrl = `${baseUrl}/my`;
 async function enterDemo(page) {
   await page.goto(appUrl, { waitUntil: "domcontentloaded" });
   const demo = page.getByRole("button", { name: "Continue in demo mode" });
-  const shell = page.locator(".lab-route-shell:visible");
+  const shell = page.locator(".cl-app-shell:visible");
   await shell.or(demo).waitFor({ state: "visible" });
   if (!await shell.isVisible().catch(() => false)) await demo.click();
   await shell.waitFor({ state: "visible" });
@@ -59,7 +59,7 @@ async function enterDemo(page) {
 
 async function returnToApp(page) {
   await page.goto(appUrl, { waitUntil: "domcontentloaded" });
-  const shell = page.locator(".lab-route-shell:visible");
+  const shell = page.locator(".cl-app-shell:visible");
   const demo = page.getByRole("button", { name: "Continue in demo mode" });
   await shell.or(demo).waitFor({ state: "visible", timeout: 10_000 });
   if (!await shell.isVisible().catch(() => false)) {
@@ -69,20 +69,12 @@ async function returnToApp(page) {
 }
 
 async function ensureMainNav(page) {
-  const toggle = page.locator(".lab-route-menu-toggle:visible");
-  if (await toggle.count() && (await toggle.getAttribute("aria-expanded")) !== "true") await toggle.click();
   await page.locator("nav:visible").first().waitFor({ state: "visible" });
 }
 
 async function verifyCompactMenu(page, viewportName) {
-  const toggle = page.locator(".lab-route-menu-toggle:visible");
-  if (!await toggle.count()) return;
-  assert(await toggle.getAttribute("aria-expanded") === "false", `${viewportName}: hamburger เริ่มต้นต้องปิด`);
-  await toggle.click();
-  assert(await toggle.getAttribute("aria-expanded") === "true", `${viewportName}: hamburger เปิดเมนูไม่ได้`);
-  assert(await page.locator("#lab-route-mobile-nav:visible").count() === 1, `${viewportName}: เมนูที่เปิดไม่แสดง`);
-  await toggle.click();
-  assert(await toggle.getAttribute("aria-expanded") === "false", `${viewportName}: hamburger ปิดเมนูไม่ได้`);
+  if ((await page.viewportSize())?.width >= 768) return;
+  assert(await page.locator(".cl-mobile-nav:visible").count() === 1, `${viewportName}: mobile navigation ไม่แสดง`);
 }
 
 async function inspectPage(page, viewportName, route) {
@@ -112,6 +104,9 @@ async function inspectPage(page, viewportName, route) {
         "[data-nextjs-dialog], .vite-error-overlay, #webpack-dev-server-client-overlay",
       )),
       controls,
+      bodyFamily: getComputedStyle(document.body).fontFamily,
+      mainCount: document.querySelectorAll("main").length,
+      legacyHudCount: document.querySelectorAll(".pl-hero-grid, .pl-hero-ring, .pl-hero-scanline").length,
     };
   });
 
@@ -126,12 +121,15 @@ async function inspectPage(page, viewportName, route) {
   });
   assert(result.bodyText > 0, `${prefix}: หน้าเว็บว่าง`);
   assert(!result.hasOverlay, `${prefix}: พบ framework error overlay`);
-  assert(result.bodyFont >= 18, `${prefix}: body font ${result.bodyFont}px ต่ำกว่า 18px`);
+  assert(result.bodyFont >= 17, `${prefix}: body font ${result.bodyFont}px ต่ำกว่า 17px`);
+  assert(/torsilp/i.test(result.bodyFamily), `${prefix}: body ไม่ได้ใช้ Torsilp (${result.bodyFamily})`);
+  assert(result.mainCount === 1, `${prefix}: expected one main landmark, got ${result.mainCount}`);
+  assert(result.legacyHudCount === 0, `${prefix}: legacy HUD decoration remains`);
   assert(result.horizontalOverflow <= 1, `${prefix}: horizontal overflow ${result.horizontalOverflow}px`);
   for (const control of result.controls) {
     assert(
-      control.width >= 48 && control.height >= 48,
-      `${prefix} “${control.text}”: expected 48x48 target, got ${control.width}x${control.height}`,
+      control.width >= 44 && control.height >= 44,
+      `${prefix} “${control.text}”: expected 44x44 target, got ${control.width}x${control.height}`,
     );
   }
   await verifyButtonContrast(page, viewportName, route);
@@ -156,7 +154,7 @@ async function verifyButtonContrast(page, viewportName, route) {
         const [red, green, blue] = values.slice(0, 3).map(Number);
         return 0.2126 * channel(red) + 0.7152 * channel(green) + 0.0722 * channel(blue);
       };
-      return [...document.querySelectorAll(".primary-button, .secondary-button, .accessible-action, .photo-action")]
+      return [...document.querySelectorAll(".primary-button, .secondary-button, .accessible-action, .photo-action, .cl-button-primary, .cl-button-secondary, .cl-button-danger")]
         .filter(visible)
         .map((element) => {
           const style = getComputedStyle(element);

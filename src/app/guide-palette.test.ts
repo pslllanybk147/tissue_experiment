@@ -5,7 +5,7 @@ const css = readFileSync(new URL("./guide.css", import.meta.url), "utf8");
 const globalCss = readFileSync(new URL("./globals.css", import.meta.url), "utf8");
 
 describe("guide action palette", () => {
-  it("มี semantic action tokens ครบสำหรับทั้งธีมมืดและธีมสว่าง", () => {
+  it("maps legacy action names to the shared Calm Lab semantic palette", () => {
     for (const token of [
       "--pl-action-primary-bg",
       "--pl-action-primary-fg",
@@ -16,10 +16,10 @@ describe("guide action palette", () => {
       "--pl-action-danger-bg",
       "--pl-action-danger-fg",
     ]) {
-      expect(css).toContain(token);
+      expect(css).toMatch(new RegExp(`${token}: var\\(--cl-`));
     }
-    expect(css).toContain(':root[data-theme="light"]');
-    expect(css).toContain(':root[data-theme="dark"]');
+    expect(css).not.toContain(':root[data-theme="light"]');
+    expect(css).not.toContain(':root[data-theme="dark"]');
   });
 
   it("ปุ่มหลักไม่ใช้สี inline ที่แยกออกจาก palette กลาง", () => {

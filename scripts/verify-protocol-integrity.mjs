@@ -80,7 +80,7 @@ async function navigate(page, route, action) {
 async function enterDemo(page) {
   await navigate(page, "/my", "open demo gate");
   const demo = page.getByRole("button", { name: "Continue in demo mode" });
-  const shell = page.locator(".lab-route-shell");
+  const shell = page.locator(".cl-app-shell");
   await shell.or(demo).waitFor({ state: "visible", timeout: 15_000 });
   if (!await shell.isVisible().catch(() => false)) await demo.click();
   await shell.waitFor({ state: "visible", timeout: 15_000 });
@@ -134,6 +134,9 @@ async function createRound(page, item) {
   await page.waitForURL("**/my/rounds/new?slug=pink-princess", { timeout: 15_000 });
   active.route = new URL(page.url()).pathname;
   await page.getByText("ตั้งค่ารอบก่อนเริ่ม").waitFor({ state: "visible" });
+  active.lastAction = "continue to method selection";
+  await page.getByRole("button", { name: "ต่อไป: เลือกวิธี" }).evaluate((element) => element.click());
+  await page.getByRole("heading", { name: "เลือกวิธีที่จะใช้จริง" }).waitFor({ state: "visible" });
 
   const selections = [
     ["อาหารและกระปุก", item.medium],
@@ -142,12 +145,15 @@ async function createRound(page, item) {
   ];
   for (const [group, method] of selections) {
     active.lastAction = `select ${method}`;
-    const choice = page.getByRole("group", { name: group }).locator(`button[data-method='${method}']:not([disabled])`);
+    const choice = page.getByRole("group", { name: group }).locator(`input[data-method='${method}']:not([disabled])`);
     if (!await choice.count()) fail(`method choice ${method} is unavailable`);
     await choice.evaluate((element) => element.click());
     await choice.waitFor({ state: "visible" });
-    if (await choice.getAttribute("aria-pressed") !== "true") fail(`${method} did not become selected`);
+    if (!await choice.isChecked()) fail(`${method} did not become selected`);
   }
+  active.lastAction = "continue to setup review";
+  await page.getByRole("button", { name: "ต่อไป: ตรวจทาน" }).evaluate((element) => element.click());
+  await page.getByRole("heading", { name: "ตรวจทานก่อนล็อกค่ากับรอบ" }).waitFor({ state: "visible" });
   active.lastAction = "confirm round setup";
   await page.getByRole("button", { name: "ยืนยันและเข้า protocol" }).evaluate((element) => element.click());
   await page.waitForURL((url) => /^\/my\/rounds\/(?!new$)[^/]+$/.test(url.pathname), { timeout: 15_000 });
@@ -211,13 +217,13 @@ async function confirmAndReloadPreparation(page, item, marker) {
   };
   await page.getByLabel("ผลิตภัณฑ์", { exact: true }).fill(values.product);
   await page.getByLabel("Batch / lot", { exact: true }).fill(values.batch);
-  await page.getByLabel("เป้าหมาย (ppm)", { exact: true }).fill(target);
-  await page.getByLabel("ปริมาตรสุดท้าย (mL)", { exact: true }).fill(values.volume);
+  await page.getByLabel("เป้าหมาย", { exact: true }).fill(target);
+  await page.getByLabel("ปริมาตรสุดท้าย", { exact: true }).fill(values.volume);
   await page.getByLabel("วันเวลาที่เตรียม", { exact: true }).fill(values.prepared);
   await editorSection.locator("select").first().selectOption("verified");
   await editorSection.getByText(/ค่าคำนวณล่าสุด:/).waitFor({ state: "visible", timeout: 15_000 });
   await page.getByLabel(/ปริมาณที่ใช้จริง/).fill(values.dose);
-  await page.getByLabel("ความเข้มข้นที่ตรวจได้จริง (ppm)", { exact: true }).fill(values.ppm);
+  await page.getByLabel("ความเข้มข้นที่ตรวจได้จริง", { exact: true }).fill(values.ppm);
   active.lastAction = "confirm preparation values";
   await page.getByRole("button", { name: "บันทึก preparation snapshot" }).click();
   const feedback = editorSection.locator("[role='status']");
@@ -228,8 +234,8 @@ async function confirmAndReloadPreparation(page, item, marker) {
   await page.reload({ waitUntil: "domcontentloaded" });
   await page.getByRole("heading", { name: "ยืนยันการเตรียมสาร" }).waitFor({ state: "visible" });
   const checks = [
-    ["ผลิตภัณฑ์", values.product], ["Batch / lot", values.batch], ["ปริมาตรสุดท้าย (mL)", values.volume],
-    ["ปริมาณที่ใช้จริง", values.dose], ["ความเข้มข้นที่ตรวจได้จริง (ppm)", values.ppm], ["วันเวลาที่เตรียม", values.prepared],
+    ["ผลิตภัณฑ์", values.product], ["Batch / lot", values.batch], ["ปริมาตรสุดท้าย", values.volume],
+    ["ปริมาณที่ใช้จริง", values.dose], ["ความเข้มข้นที่ตรวจได้จริง", values.ppm], ["วันเวลาที่เตรียม", values.prepared],
   ];
   for (const [label, expected] of checks) {
     const field = page.getByLabel(label === "ปริมาณที่ใช้จริง" ? /ปริมาณที่ใช้จริง/ : label, { exact: label !== "ปริมาณที่ใช้จริง" });

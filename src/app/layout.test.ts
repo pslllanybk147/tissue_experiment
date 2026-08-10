@@ -1,8 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-// อ่านจากไฟล์ต้นฉบับแทนการ import เพราะ layout.tsx เรียก next/font/google
-// ซึ่งต้องใช้ตัวแปลงของ Next ตอน build จึงรันตรง ๆ ใน vitest ไม่ได้
 describe("root layout", () => {
   const source = readFileSync(new URL("./layout.tsx", import.meta.url), "utf8");
 
@@ -11,30 +9,31 @@ describe("root layout", () => {
     expect(source).not.toContain("Philodendron Lab");
   });
 
-  it("ยังคงตัวแปรฟอนต์เดิมไว้ให้หน้าเก่าใช้ และเพิ่มฟอนต์ใหม่", () => {
-    expect(source).toContain("--font-geist-sans");
-    expect(source).toContain("--font-plex");
+  it("loads only the local Torsilp UI font and imports Calm Lab first", () => {
+    expect(source).toContain('variable: "--font-torsilp"');
+    expect(source).not.toContain("next/font/google");
+    expect(source.indexOf('import "./calm-lab.css"')).toBeLessThan(source.indexOf('import "./globals.css"'));
   });
 });
 
 describe("guide tokens", () => {
   const css = readFileSync(new URL("./guide.css", import.meta.url), "utf8");
 
-  it("นิยาม token ทั้งโหมดสว่างและโหมดมืด", () => {
-    expect(css).toContain("prefers-color-scheme: dark");
-    expect(css).toContain(':root[data-theme="dark"]');
-    expect(css).toContain(':root[data-theme="light"]');
+  it("keeps only compatibility aliases instead of independent theme values", () => {
+    expect(css).not.toContain(':root[data-theme="dark"]');
+    expect(css).not.toContain(':root[data-theme="light"]');
+    expect(css).toContain("--pl-paper: var(--cl-canvas)");
   });
 
-  it("ใช้เงาทึบไม่เบลอตามภาษาออกแบบที่เลือก", () => {
-    expect(css).toMatch(/box-shadow:\s*\d+px\s+\d+px\s+0\s+var\(--pl-shadow\)/);
+  it("does not keep the legacy decorative glow", () => {
+    expect(css).toContain("--pl-glow: transparent");
   });
 
   it("ไม่ใช้ชื่อ token ที่ชนกับ globals.css", () => {
     const declared = [...css.matchAll(/(--[a-z0-9-]+):/g)].map((match) => match[1]);
 
     expect(declared.length).toBeGreaterThan(10);
-    expect(declared.every((name) => name.startsWith("--pl-"))).toBe(true);
+    expect(declared.filter((name) => !name.startsWith("--pl-")).length).toBe(0);
   });
 });
 
@@ -42,9 +41,9 @@ describe("global button theme tokens", () => {
   const css = readFileSync(new URL("./globals.css", import.meta.url), "utf8");
 
   it("keeps lab buttons visible in both themes", () => {
-    expect(css).toContain("--button-primary-bg: #a3e635");
-    expect(css).toContain("--button-primary-ink: #172a05");
-    expect(css).toContain("--button-secondary-bg: #101d33");
+    expect(css).toContain("--button-primary-bg: var(--cl-action)");
+    expect(css).toContain("--button-primary-ink: var(--cl-on-action)");
+    expect(css).toContain("--button-secondary-bg: var(--cl-surface)");
     expect(css).toMatch(/\.primary-button\s*\{[^}]*background:\s*var\(--button-primary-bg\)/s);
     expect(css).toMatch(/\.secondary-button\s*\{[^}]*background:\s*var\(--button-secondary-bg\)/s);
     expect(css).toMatch(/\.text-button\s*\{[^}]*color:\s*var\(--button-text\)/s);
