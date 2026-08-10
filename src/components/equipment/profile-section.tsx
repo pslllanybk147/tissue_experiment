@@ -1,6 +1,7 @@
 "use client";
 
 import type { EquipmentItemId, EquipmentProfileV2 } from "@/lib/equipment/equipment-profile";
+import { NumericInput } from "@/components/common/numeric-input";
 import { RinsePreparationCard } from "./rinse-preparation-card";
 
 const inputStyle = {
@@ -52,7 +53,7 @@ function NumberField({ id, label, value, onValue, min = 0, step = "any" }: {
   return (
     <p className="cl-field-group">
       <label htmlFor={id}>{label}</label>
-      <input id={id} type="number" min={min} step={step} value={value} onChange={(event) => onValue(Number(event.currentTarget.value))} style={inputStyle} />
+      <NumericInput id={id} min={min} step={step} value={value} onChange={onValue} style={inputStyle} />
     </p>
   );
 }

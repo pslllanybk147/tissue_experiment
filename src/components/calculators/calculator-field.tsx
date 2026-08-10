@@ -1,4 +1,5 @@
 import { FieldGroup } from "@/components/common/field-group";
+import { NumericInput } from "@/components/common/numeric-input";
 
 export function CalculatorField({
   id,
@@ -20,15 +21,14 @@ export function CalculatorField({
   const invalid = !Number.isFinite(value) || (allowZero ? value < 0 : value <= 0);
   return (
     <FieldGroup id={id} label={label} hint={hint} error={invalid ? "ต้องมากกว่าศูนย์" : undefined}>
-      <input
+      <NumericInput
         aria-invalid={invalid}
         id={id}
-        type="number"
         min="0"
         step={step}
         inputMode="decimal"
         value={value}
-        onChange={(event) => onChange(Number(event.target.value))}
+        onChange={onChange}
       />
     </FieldGroup>
   );

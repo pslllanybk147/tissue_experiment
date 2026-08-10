@@ -1,6 +1,7 @@
 "use client";
 
 import type { TrialArmRole } from "@/lib/domain/models";
+import { NumericInput } from "@/components/common/numeric-input";
 
 const labels: Record<TrialArmRole, string> = {
   "control-a": "Control-A (ใบ)",
@@ -30,12 +31,12 @@ export function JarAllocationPanel({ total, reserved, allocations, onReserved, o
         {roles.map((role) => (
           <p key={role} style={{ margin: 0 }}>
             <label htmlFor={`jar-${role}`} style={{ display: "block", fontWeight: 700, marginBottom: "5px" }}>{labels[role]}</label>
-            <input id={`jar-${role}`} type="number" min="1" step="1" value={allocations[role]} onChange={(event) => onAllocation(role, Number(event.currentTarget.value))} style={style} />
+            <NumericInput id={`jar-${role}`} min="1" step="1" value={allocations[role]} onChange={(value) => onAllocation(role, value)} style={style} />
           </p>
         ))}
         <p style={{ margin: 0 }}>
           <label htmlFor="jar-reserved" style={{ display: "block", fontWeight: 700, marginBottom: "5px" }}>สำรอง (ใบ)</label>
-          <input id="jar-reserved" type="number" min="0" step="1" value={reserved} onChange={(event) => onReserved(Number(event.currentTarget.value))} style={style} />
+          <NumericInput id="jar-reserved" min="0" step="1" value={reserved} onChange={onReserved} style={style} />
         </p>
       </div>
       <p className="pl-mono" role={valid ? undefined : "alert"} style={{ marginTop: "12px", color: valid ? undefined : "var(--cl-danger)" }}>

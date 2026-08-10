@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ActionBar } from "@/components/common/action-bar";
 import { FieldGroup } from "@/components/common/field-group";
 import { MethodSelector, type MethodOption } from "@/components/common/method-selector";
+import { NumericInput } from "@/components/common/numeric-input";
 import { StatusNotice } from "@/components/common/status-notice";
 import { WorkflowShell } from "@/components/common/workflow-shell";
 import type { RoundSetupChemistry } from "@/lib/domain/models";
@@ -27,7 +28,7 @@ function ChemicalField({ id, label, value, onChange, unit }: { id: string; label
   const invalid = !Number.isFinite(value) || value <= 0;
   return (
     <FieldGroup id={id} label={label} unit={unit} error={invalid ? "ต้องมากกว่าศูนย์" : undefined}>
-      <input id={id} type="number" min={0} step="any" value={value} aria-invalid={invalid} onChange={(event) => onChange(Number(event.currentTarget.value))} />
+      <NumericInput id={id} min={0} step="any" value={value} aria-invalid={invalid} onChange={onChange} />
     </FieldGroup>
   );
 }

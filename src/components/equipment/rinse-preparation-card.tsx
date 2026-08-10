@@ -1,4 +1,5 @@
 import type { RinseWaterMethod, RinseWaterSnapshot } from "@/lib/domain/models";
+import { NumericInput } from "@/components/common/numeric-input";
 import { buildLowDoseRinseWaterSnapshot, buildNaDccRinseWaterSnapshot } from "@/lib/domain/rinse-water-planning";
 
 type ChlorinatedRinseMethod = Extract<RinseWaterMethod, "low-dose-hypochlorite" | "nadcc">;
@@ -37,10 +38,6 @@ function initialSnapshot(method: ChlorinatedRinseMethod): RinseWaterSnapshot {
   return method === "nadcc" ? buildNaDccRinseWaterSnapshot(50) : buildLowDoseRinseWaterSnapshot(50);
 }
 
-function numberValue(value: number | undefined): string {
-  return typeof value === "number" ? String(value) : "";
-}
-
 export function RinsePreparationCard({
   method,
   value,
@@ -64,9 +61,9 @@ export function RinsePreparationCard({
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "10px", marginTop: "12px" }}>
         <label>ผลิตภัณฑ์<input style={fieldStyle} value={snapshot.productName ?? ""} onChange={(event) => update({ productName: event.currentTarget.value })} /></label>
         <label>Batch/Lot<input style={fieldStyle} value={snapshot.batchOrLot ?? ""} onChange={(event) => update({ batchOrLot: event.currentTarget.value })} /></label>
-        <label>ppm ที่ได้จริง<input style={fieldStyle} type="number" min="1" value={numberValue(snapshot.actualChlorinePpm)} onChange={(event) => update({ actualChlorinePpm: Number(event.currentTarget.value) })} /></label>
-        <label>stock ที่ใช้ (mL)<input style={fieldStyle} type="number" min="0" step="0.1" value={numberValue(snapshot.stockVolumeMl)} onChange={(event) => update({ stockVolumeMl: Number(event.currentTarget.value) })} /></label>
-        <label>ปริมาตรรวม (mL)<input style={fieldStyle} type="number" min="1" value={numberValue(snapshot.finalVolumeMl ?? snapshot.preparationVolumeMl)} onChange={(event) => update({ finalVolumeMl: Number(event.currentTarget.value) })} /></label>
+        <label>ppm ที่ได้จริง<NumericInput style={fieldStyle} min="1" value={snapshot.actualChlorinePpm ?? Number.NaN} onChange={(next) => update({ actualChlorinePpm: Number.isFinite(next) ? next : undefined })} /></label>
+        <label>stock ที่ใช้ (mL)<NumericInput style={fieldStyle} min="0" step="0.1" value={snapshot.stockVolumeMl ?? Number.NaN} onChange={(next) => update({ stockVolumeMl: Number.isFinite(next) ? next : undefined })} /></label>
+        <label>ปริมาตรรวม (mL)<NumericInput style={fieldStyle} min="1" value={snapshot.finalVolumeMl ?? snapshot.preparationVolumeMl ?? Number.NaN} onChange={(next) => update({ finalVolumeMl: Number.isFinite(next) ? next : undefined })} /></label>
         <label>วันที่เตรียม<input style={fieldStyle} type="date" value={snapshot.preparedAt?.slice(0, 10) ?? ""} onChange={(event) => update({ preparedAt: event.currentTarget.value })} /></label>
       </div>
       <label style={{ display: "flex", gap: "8px", alignItems: "flex-start", marginTop: "12px" }}>
