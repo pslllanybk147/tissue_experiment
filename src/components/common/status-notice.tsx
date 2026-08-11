@@ -7,6 +7,7 @@ export type StatusNoticeProps = {
   title: ReactNode;
   children?: ReactNode;
   action?: ReactNode;
+  live?: boolean;
 };
 
 const symbolByTone: Record<NoticeTone, string> = {
@@ -17,10 +18,10 @@ const symbolByTone: Record<NoticeTone, string> = {
   blocked: "×",
 };
 
-export function StatusNotice({ tone = "info", title, children, action }: StatusNoticeProps) {
+export function StatusNotice({ tone = "info", title, children, action, live = true }: StatusNoticeProps) {
   const urgent = tone === "error" || tone === "blocked";
   return (
-    <section className="cl-status-notice" data-tone={tone} role={urgent ? "alert" : "status"}>
+    <section className="cl-status-notice" data-tone={tone} role={live ? (urgent ? "alert" : "status") : "note"}>
       <span className="cl-status-symbol" aria-hidden="true">{symbolByTone[tone]}</span>
       <div className="cl-status-content">
         <strong className="cl-status-title">{title}</strong>

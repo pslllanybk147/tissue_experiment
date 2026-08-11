@@ -67,4 +67,15 @@ describe("StepPhotos", () => {
 
     expect(html).toContain("หลักฐานภาพของขั้นนี้");
   });
+
+  it("แยกคำอธิบายวัตถุประสงค์ออกจากพื้นที่เลือกภาพและเรียงสำหรับมือถือได้", () => {
+    const html = renderToStaticMarkup(
+      <StepPhotos lotId="round-1" observationId="obs-1" media={[]} canAttach reason="" onUploaded={noop} />,
+    );
+
+    expect(html).toContain('class="cl-photo-evidence"');
+    expect(html).toContain('class="media-purpose"');
+    expect(html).toContain('class="photo-action"');
+    expect(html.indexOf('class="media-purpose"')).toBeLessThan(html.indexOf('class="photo-action"'));
+  });
 });

@@ -368,12 +368,11 @@ export function StepRunner({
         />
       ) : null}
 
-      <nav className="cl-protocol-pagination" aria-label="เปลี่ยนขั้นตอน">
+      <nav className="cl-step-pagination" aria-label="เปลี่ยนขั้นตอน">
         {previous ? (
           <Link
             className="cl-button-secondary pl-link"
             href={`/my/rounds/${view.lotId}/step/${previous}`}
-            style={{ flex: 1, textAlign: "center", color: "inherit", textDecoration: "none", fontWeight: 700 }}
           >
             ‹ ขั้นที่ {previous}
           </Link>
@@ -382,7 +381,6 @@ export function StepRunner({
           <Link
             className="cl-button-primary pl-link"
             href={`/my/rounds/${view.lotId}/step/${next}`}
-            style={{ flex: 1, textAlign: "center", textDecoration: "none", fontWeight: 700 }}
           >
             ขั้นที่ {next} ›
           </Link>

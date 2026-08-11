@@ -50,6 +50,71 @@ describe("StepSections", () => {
     expect(html).toContain("ครบ 1 นาทีแล้วเทน้ำทิ้ง");
   });
 
+  it("เรียง anatomy ของการ์ดปฏิบัติจากเลข หัวข้อ การกระทำ รายละเอียด ผลสำเร็จ และขั้นถัดไป", () => {
+    const step = {
+      ...resolveBySlug("violin-variegated")!.steps.find((item) => item.id === "sterilize")!,
+      executionInstructions: [{
+        label: "ล้างภาชนะที่มีชื่อยาวเพื่อทดสอบการตัดบรรทัดภาษาไทยโดยไม่ซ้อนกัน",
+        action: "ย้ายชิ้นพืชลงในภาชนะแล้วเขย่าเบา ๆ",
+        quantity: "ภาชนะละ 50 mL",
+        completion: "ครบเวลาและน้ำล้างใส",
+        next: "ย้ายไปล้างรอบถัดไป",
+      }],
+    } satisfies ResolvedStep;
+    const html = renderToStaticMarkup(<StepSections step={step} />);
+    const cardStart = html.indexOf("cl-atlas-step-card");
+    const numberAt = html.indexOf("execution-instruction-number", cardStart);
+    const headingAt = html.indexOf("execution-instruction-title", cardStart);
+    const actionAt = html.indexOf("execution-instruction-action", cardStart);
+    const detailsAt = html.indexOf("execution-instruction-details", cardStart);
+    const completionAt = html.indexOf("execution-instruction-completion", cardStart);
+    const nextAt = html.indexOf("execution-instruction-next", cardStart);
+
+    expect(cardStart).toBeGreaterThan(-1);
+    expect(numberAt).toBeLessThan(headingAt);
+    expect(headingAt).toBeLessThan(actionAt);
+    expect(actionAt).toBeLessThan(detailsAt);
+    expect(detailsAt).toBeLessThan(completionAt);
+    expect(completionAt).toBeLessThan(nextAt);
+  });
+
+  it("แยกคำเตือนให้หยุดออกจากการ์ดขั้นตอนเป็น semantic notice", () => {
+    const step = resolveBySlug("violin-variegated")!.steps.find((item) => item.id === "sterilize")!;
+    const html = renderToStaticMarkup(<StepSections step={step} />);
+    const cardsEnd = html.indexOf("ทำไปทำไม");
+    const stopNotice = html.indexOf("เงื่อนไขให้หยุดทันที");
+
+    expect(cardsEnd).toBeGreaterThan(-1);
+    expect(stopNotice).toBeGreaterThan(cardsEnd);
+    expect(html).toContain('role="alert"');
+  });
+
+  it("คำสั่ง tone stop แบบ static แสดง note ที่มีสัญลักษณ์และข้อความโดยไม่ประกาศ alert ตอนโหลดหน้า", () => {
+    const base = resolveBySlug("violin-variegated")!.steps.find((item) => item.id === "sterilize")!;
+    const step = {
+      ...base,
+      executionInstructions: [{
+        label: "หยุดตรวจชิ้นพืช",
+        action: "หยุดทันทีเมื่อชิ้นพืชซีดขาว",
+        tone: "stop" as const,
+        quantity: "หนึ่งชิ้นต่อครั้ง",
+        completion: "แยกชิ้นที่ผิดปกติออกแล้ว",
+      }],
+    } satisfies ResolvedStep;
+    const html = renderToStaticMarkup(<StepSections step={step} />);
+    const actionStart = html.indexOf('class="execution-instruction-action"');
+    const actionEnd = html.indexOf('class="execution-instruction-details"', actionStart);
+    const action = html.slice(actionStart, actionEnd);
+
+    expect(action).toContain('role="note"');
+    expect(action).not.toContain('role="alert"');
+    expect(action).not.toContain("aria-live");
+    expect(action).toContain('data-tone="blocked"');
+    expect(action).toContain('aria-hidden="true"');
+    expect(action).toContain("หยุดก่อน");
+    expect(action).toContain("หยุดทันทีเมื่อชิ้นพืชซีดขาว");
+  });
+
   it("แสดงปริมาณสารฆ่าเชื้อที่เครื่องคำนวณเพิ่งคำนวณได้ใน instruction", () => {
     const base = resolveBySlug("pink-princess")!.steps.find((item) => item.id === "prep-media")!;
     const html = renderToStaticMarkup(

@@ -118,6 +118,14 @@ describe("StepRunner", () => {
     expect(html).not.toContain("/step/0");
   });
 
+  it("ใช้ navigation anatomy เดียวกันโดยคง URL ก่อนหน้าและถัดไป", () => {
+    const html = renderToStaticMarkup(<StepRunner view={view} step={sterilize} onSave={noop} />);
+
+    expect(html).toContain('class="cl-step-pagination"');
+    expect(html).toContain(`/my/rounds/${view.lotId}/step/${sterilize.displayNumber - 1}`);
+    expect(html).toContain(`/my/rounds/${view.lotId}/step/${sterilize.displayNumber + 1}`);
+  });
+
   it("บอกว่ากำลังทำขั้นที่เท่าไรจากทั้งหมดกี่ขั้น", () => {
     const html = renderToStaticMarkup(<StepRunner view={view} step={sterilize} onSave={noop} />);
 

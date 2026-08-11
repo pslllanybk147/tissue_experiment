@@ -1,22 +1,17 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
-
+import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import type { ObservationMedia } from "../../lib/domain/models";
 import { getFirebaseServices } from "../../lib/firebase/client";
+import {
+  acceptedMediaTypes,
+  createPreviewLifecycle,
+  resetFileInput,
+  uploadObservationMedia,
+} from "./media-upload-logic";
+import { MediaUploaderView } from "./media-uploader-view";
 
-const accepted = "image/jpeg,image/png,image/webp";
-
-export async function readApiError(response: Response, fallback: string): Promise<string> {
-  try {
-    const body = await response.json() as { error?: string | { message?: string } };
-    if (typeof body.error === "string") return body.error;
-    if (body.error?.message) return body.error.message;
-    return `${fallback} (HTTP ${response.status})`;
-  } catch {
-    return `${fallback} (HTTP ${response.status})`;
-  }
-}
+export { readApiError } from "./media-upload-logic";
 
 type MediaUploaderProps = {
   lotId: string;
@@ -39,34 +34,44 @@ export function MediaUploader({
   const [caption, setCaption] = useState("");
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
+  const [previewUrl, setPreviewUrl] = useState("");
+  const reasonId = `${useId()}-media-upload-reason`;
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const previewLifecycle = useRef<ReturnType<typeof createPreviewLifecycle> | null>(null);
+  if (previewLifecycle.current == null) previewLifecycle.current = createPreviewLifecycle(URL);
+
+  useEffect(() => {
+    const lifecycle = previewLifecycle.current;
+    return () => lifecycle?.dispose();
+  }, []);
+
+  function selectFile(nextFile: File | null) {
+    setFile(nextFile);
+    setPreviewUrl(previewLifecycle.current?.replace(nextFile) ?? "");
+    setError("");
+  }
 
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (!file) return setError("กรุณาเลือกภาพ");
-    if (!accepted.includes(file.type) || file.size > 10_000_000) return setError("รองรับ JPEG, PNG, WebP ไม่เกิน 10 MB");
+    if (!acceptedMediaTypes.includes(file.type) || file.size > 10_000_000) return setError("รองรับ JPEG, PNG, WebP ไม่เกิน 10 MB");
     const user = getFirebaseServices()?.auth.currentUser;
     if (!user) return setError("กรุณาเข้าสู่ระบบ");
     setError("");
-    setStatus("กำลังขอลายเซ็น…");
     try {
-      const token = await user.getIdToken(true);
-      const signedResponse = await fetch("/api/media/sign", { method: "POST", headers: { authorization: `Bearer ${token}`, "content-type": "application/json" }, body: JSON.stringify({ lotId, observationId, mimeType: file.type, bytes: file.size }) });
-      if (!signedResponse.ok) throw new Error(await readApiError(signedResponse, "ขอลายเซ็นอัปโหลดไม่สำเร็จ"));
-      const signed = await signedResponse.json();
-      setStatus("กำลังอัปโหลด…");
-      const form = new FormData();
-      form.set("file", file);
-      form.set("api_key", signed.apiKey);
-      form.set("timestamp", String(signed.timestamp));
-      form.set("signature", signed.signature);
-      form.set("folder", signed.folder);
-      form.set("public_id", signed.publicId);
-      const upload = await fetch(`https://api.cloudinary.com/v1_1/${signed.cloudName}/image/upload`, { method: "POST", body: form });
-      if (!upload.ok) throw new Error(await readApiError(upload, "อัปโหลดภาพไม่สำเร็จ"));
-      const result = await upload.json();
-      const now = new Date().toISOString();
-      await onUploaded({ id: signed.publicId, ownerId: user.uid, lotId, observationId, cloudinaryPublicId: result.public_id, secureUrl: result.secure_url, width: result.width, height: result.height, format: result.format, bytes: result.bytes, caption, capturedAt: null, createdBy: user.uid, createdAt: now, updatedAt: now, deletedAt: null });
-      setFile(null);
+      await uploadObservationMedia({
+        file,
+        lotId,
+        observationId,
+        caption,
+        user,
+        fetcher: fetch,
+        now: () => new Date().toISOString(),
+        onUploaded,
+        onStatus: setStatus,
+      });
+      resetFileInput(fileInputRef.current);
+      selectFile(null);
       setCaption("");
       setStatus("อัปโหลดสำเร็จ");
     } catch (cause) {
@@ -75,24 +80,21 @@ export function MediaUploader({
     }
   }
 
-  return <form className="media-uploader" onSubmit={submit}>
-    <div className="media-purpose">
-      <strong>{actionLabel}</strong>
-      <p>{purpose}</p>
-      {requiredFrame.length > 0 && (
-        <>
-          <span>ในรูปต้องเห็น:</span>
-          <ul>{requiredFrame.map((item) => <li key={item}>{item}</li>)}</ul>
-        </>
-      )}
-    </div>
-    <label className="photo-action">
-      <span>{file ? `เลือกแล้ว: ${file.name}` : actionLabel}</span>
-      <input accept={accepted} onChange={(event) => setFile(event.target.files?.[0] ?? null)} type="file" />
-    </label>
-    <label>คำอธิบายภาพ<input value={caption} onChange={(event) => setCaption(event.target.value)} placeholder="เช่น ฉลากด้านหลัง เห็นตัวเลข 6%" /></label>
-    <button className="primary-button media-submit" disabled={!file} type="submit">อัปโหลดรูปที่เลือก</button>
-    {status && <small role="status">{status}</small>}
-    {error && <small className="field-error" role="alert">{error}</small>}
-  </form>;
+  return <MediaUploaderView
+    actionLabel={actionLabel}
+    purpose={purpose}
+    requiredFrame={requiredFrame}
+    fileName={file?.name ?? null}
+    previewUrl={previewUrl}
+    caption={caption}
+    uploadDisabled={!file}
+    uploadReason={!file ? "เลือกภาพก่อน จึงจะอัปโหลดได้" : ""}
+    reasonId={reasonId}
+    status={status}
+    error={error}
+    fileInputRef={fileInputRef}
+    onFileSelected={selectFile}
+    onCaptionChanged={setCaption}
+    onSubmit={(event) => void submit(event)}
+  />;
 }

@@ -27,10 +27,10 @@ function ExecutionInstructions({
     <Section title="ทำตามลำดับ">
       <ol className="execution-instructions">
         {step.executionInstructions.map((instruction, index) => (
-          <li className={`execution-instruction execution-instruction-${instruction.tone ?? "normal"}`} key={`${instruction.label}-${index}`}>
+          <li className={`cl-atlas-step-card execution-instruction execution-instruction-${instruction.tone ?? "normal"}`} key={`${instruction.label}-${index}`}>
             <div className="execution-instruction-heading">
               <span className="execution-instruction-number">{index + 1}</span>
-              <h3>{instruction.label}</h3>
+              <h3 className="execution-instruction-title">{instruction.label}</h3>
             </div>
             {(() => {
               const override = mediumContext ? mediumInstructionOverride(instruction.label, mediumContext) : null;
@@ -42,7 +42,13 @@ function ExecutionInstructions({
               const completion = override?.completion || instruction.completion;
               const next = override?.next || instruction.next;
               return <>
-                <div className="execution-instruction-action"><RichText source={action} /></div>
+                <div className="execution-instruction-action">
+                  {instruction.tone === "stop" ? (
+                    <StatusNotice tone="blocked" title="หยุดก่อน" live={false}>
+                      <RichText source={action} />
+                    </StatusNotice>
+                  ) : <RichText source={action} />}
+                </div>
                 {(instruction.materials?.length || quantity || instruction.container || instruction.durationMinutes != null || instruction.durationLabel) ? (
               <dl className="execution-instruction-details">
                 {instruction.materials?.length ? <><dt>ใช้</dt><dd><TextList items={instruction.materials} /></dd></> : null}
@@ -52,8 +58,8 @@ function ExecutionInstructions({
                 {instruction.durationLabel ? <><dt>เวลา</dt><dd><RichText source={instruction.durationLabel} /></dd></> : null}
               </dl>
                 ) : null}
-                {completion ? <div className="execution-instruction-completion"><strong>เสร็จเมื่อ:</strong> <RichText source={completion} /></div> : null}
-                {next ? <div className="execution-instruction-next"><strong>ต่อไป:</strong> <RichText source={next} /></div> : null}
+                {completion ? <div className="execution-instruction-completion"><strong>เสร็จเมื่อ</strong><div><RichText source={completion} /></div></div> : null}
+                {next ? <aside className="execution-instruction-next" aria-label="ขั้นตอนถัดไป"><strong>ต่อไป</strong><div><RichText source={next} /></div></aside> : null}
               </>;
             })()}
           </li>

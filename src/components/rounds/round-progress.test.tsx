@@ -59,6 +59,16 @@ describe("RoundProgress", () => {
     expect(html).toContain("ทำต่อตรงนี้");
   });
 
+  it("ใช้รายการ progress ที่รองรับสถานะด้วยข้อความและไม่พึ่งสีอย่างเดียว", () => {
+    const html = renderToStaticMarkup(<RoundProgress view={view} />);
+
+    expect(html).toContain('class="cl-round-progress"');
+    expect(html).toContain('data-state="passed"');
+    expect(html).toContain('aria-current="step"');
+    expect(html).toContain("ผ่านแล้ว");
+    expect(html).toContain("ทำต่อตรงนี้");
+  });
+
   it("แสดงบันทึกที่จดไว้ของขั้นที่ผ่านแล้ว", () => {
     const html = renderToStaticMarkup(<RoundProgress view={view} />);
 

@@ -21,13 +21,13 @@ export function StepPhotos({
   const visible = media.filter((item) => !item.deletedAt);
 
   return (
-    <section style={{ marginTop: "26px" }}>
-      <h2 className="pl-h2">หลักฐานภาพของขั้นนี้</h2>
+    <section className="cl-photo-evidence">
+      <h2>หลักฐานภาพของขั้นนี้</h2>
 
       {visible.length === 0 ? (
-        <p className="pl-lede" style={{ marginTop: "8px" }}>ยังไม่มีรูปของขั้นนี้</p>
+        <p className="cl-photo-empty">ยังไม่มีรูปของขั้นนี้</p>
       ) : (
-        <ul style={{ listStyle: "none", margin: "12px 0 0", padding: 0, display: "flex", flexWrap: "wrap", gap: "12px" }}>
+        <ul className="cl-photo-list">
           {visible.map((item) => (
             <li key={item.id}>
               <a className="pl-link" href={item.secureUrl} rel="noreferrer" target="_blank">
@@ -38,19 +38,11 @@ export function StepPhotos({
                   src={item.secureUrl}
                   width={160}
                   height={120}
-                  style={{
-                    display: "block",
-                    width: "160px",
-                    height: "120px",
-                    objectFit: "cover",
-                    border: "2.5px solid var(--pl-line)",
-                    borderRadius: "12px",
-                    boxShadow: "4px 4px 0 var(--pl-shadow)",
-                  }}
+                  className="cl-photo-thumbnail"
                 />
               </a>
               {item.caption ? (
-                <p className="pl-meta" style={{ marginTop: "6px", maxWidth: "160px" }}>{item.caption}</p>
+                <p className="cl-photo-caption">{item.caption}</p>
               ) : null}
             </li>
           ))}
@@ -58,7 +50,7 @@ export function StepPhotos({
       )}
 
       {canAttach && observationId ? (
-        <div className="pl-card" style={{ marginTop: "14px", background: "var(--pl-sunk)" }}>
+        <div className="cl-photo-uploader">
           <MediaUploader
             actionLabel="เลือกหรือถ่ายรูปของขั้นนี้"
             lotId={lotId}
@@ -68,7 +60,7 @@ export function StepPhotos({
           />
         </div>
       ) : (
-        <p className="pl-card" style={{ marginTop: "14px", background: "var(--pl-sunk)" }}>{reason}</p>
+        <p className="cl-photo-unavailable">{reason}</p>
       )}
     </section>
   );

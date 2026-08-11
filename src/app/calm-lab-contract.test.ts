@@ -106,7 +106,10 @@ describe("Calm Lab contract", () => {
 
       expect(declarations.length, `${role} role must be used`).toBeGreaterThan(0);
       for (const declaration of declarations) {
-        const expectedWeight = role === "label" && declaration.selector.includes(".cl-button-primary") ? "700" : weight;
+        const expectedWeight = role === "label"
+          && [".cl-button-primary", ".media-submit"].some((selector) => declaration.selector.includes(selector))
+          ? "700"
+          : weight;
         const isNavigationLabel = role === "label"
           && navigationLabelSelectors.some((selector) => declaration.selector.includes(selector));
         const expectedLineHeight = isNavigationLabel ? "1.5" : lineHeight;
@@ -223,5 +226,23 @@ describe("Calm Lab contract", () => {
     expect(calmLabCss).toContain(":where(.cl-protocol, .cl-guide-article) .execution-instruction-details");
     expect(calmLabCss).toContain(":where(.cl-protocol, .cl-guide-article) .execution-instruction-completion");
     expect(guideCss).not.toContain(".cl-protocol .execution-instruction-heading h3");
+  });
+
+  it("keeps uploader picker, caption, input and submit on approved readable typography", () => {
+    const picker = declarationBlock(calmLabCss, ".photo-action");
+    const caption = declarationBlock(calmLabCss, ".media-caption");
+    const captionInput = declarationBlock(calmLabCss, ".media-caption input");
+    const submit = declarationBlock(calmLabCss, ".media-submit");
+
+    expect(picker).toContain("font-size: var(--cl-text-label)");
+    expect(picker).toContain("font-weight: 600");
+    expect(picker).toContain("line-height: 1.45");
+    expect(caption).toContain("font-size: var(--cl-text-label)");
+    expect(caption).toContain("font-weight: 600");
+    expect(caption).toContain("line-height: 1.45");
+    expect(captionInput).toContain("font-size: max(16px, 1em)");
+    expect(submit).toContain("font-size: var(--cl-text-label)");
+    expect(submit).toContain("font-weight: 700");
+    expect(submit).toContain("line-height: 1.45");
   });
 });
