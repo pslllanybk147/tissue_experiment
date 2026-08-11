@@ -215,15 +215,15 @@ async function confirmAndReloadPreparation(page, item, marker) {
     ppm: "299",
     prepared: "2026-08-10T09:30",
   };
-  await page.getByLabel("ผลิตภัณฑ์", { exact: true }).fill(values.product);
-  await page.getByLabel("Batch / lot", { exact: true }).fill(values.batch);
-  await page.getByLabel("เป้าหมาย", { exact: true }).fill(target);
-  await page.getByLabel("ปริมาตรสุดท้าย", { exact: true }).fill(values.volume);
-  await page.getByLabel("วันเวลาที่เตรียม", { exact: true }).fill(values.prepared);
+  await editorSection.getByLabel("ผลิตภัณฑ์", { exact: true }).fill(values.product);
+  await editorSection.getByLabel("Batch / lot", { exact: true }).fill(values.batch);
+  await editorSection.getByLabel(/^เป้าหมาย/).fill(target);
+  await editorSection.getByLabel(/^ปริมาตร/).fill(values.volume);
+  await editorSection.getByLabel("วันเวลาที่เตรียม", { exact: true }).fill(values.prepared);
   await editorSection.locator("select").first().selectOption("verified");
   await editorSection.getByText(/ค่าคำนวณล่าสุด:/).waitFor({ state: "visible", timeout: 15_000 });
-  await page.getByLabel(/ปริมาณที่ใช้จริง/).fill(values.dose);
-  await page.getByLabel("ความเข้มข้นที่ตรวจได้จริง", { exact: true }).fill(values.ppm);
+  await editorSection.getByLabel(/ปริมาณที่ใช้จริง/).fill(values.dose);
+  await editorSection.getByLabel("ความเข้มข้นที่ตรวจได้จริง", { exact: true }).fill(values.ppm);
   active.lastAction = "confirm preparation values";
   await page.getByRole("button", { name: "บันทึก preparation snapshot" }).click();
   const feedback = editorSection.locator("[role='status']");
@@ -234,12 +234,12 @@ async function confirmAndReloadPreparation(page, item, marker) {
   await page.reload({ waitUntil: "domcontentloaded" });
   await page.getByRole("heading", { name: "ยืนยันการเตรียมสาร" }).waitFor({ state: "visible" });
   const checks = [
-    ["ผลิตภัณฑ์", values.product], ["Batch / lot", values.batch], ["ปริมาตรสุดท้าย", values.volume],
-    ["ปริมาณที่ใช้จริง", values.dose], ["ความเข้มข้นที่ตรวจได้จริง", values.ppm], ["วันเวลาที่เตรียม", values.prepared],
+    ["ผลิตภัณฑ์", values.product], ["Batch / lot", values.batch], [/^ปริมาตร/, values.volume],
+    [/ปริมาณที่ใช้จริง/, values.dose], ["ความเข้มข้นที่ตรวจได้จริง", values.ppm], ["วันเวลาที่เตรียม", values.prepared],
   ];
   for (const [label, expected] of checks) {
-    const field = page.getByLabel(label === "ปริมาณที่ใช้จริง" ? /ปริมาณที่ใช้จริง/ : label, { exact: label !== "ปริมาณที่ใช้จริง" });
-    if (await field.inputValue() !== expected) fail(`${label} did not persist after reload`);
+    const field = editorSection.getByLabel(label, { exact: typeof label === "string" });
+    if (await field.inputValue() !== expected) fail(`${String(label)} did not persist after reload`);
   }
 }
 

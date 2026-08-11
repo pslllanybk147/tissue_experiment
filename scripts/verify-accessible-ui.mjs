@@ -1,35 +1,14 @@
 import { chromium } from "playwright";
 import fs from "node:fs";
 import path from "node:path";
+import { selectViewports } from "./lib/ui-verification-helpers.mjs";
 
 const baseUrl = process.env.UI_BASE_URL ?? "http://localhost:3100";
 const executablePath = process.env.CHROME_PATH
   ?? (process.platform === "win32"
     ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
     : undefined);
-const allViewports = [
-  { name: "minimum-mobile", width: 320, height: 800 },
-  { name: "android-360", width: 360, height: 800 },
-  { name: "iphone-se", width: 375, height: 667 },
-  { name: "iphone-12", width: 390, height: 844 },
-  { name: "android-412", width: 412, height: 915 },
-  { name: "iphone-14-plus", width: 428, height: 926 },
-  { name: "android-tablet", width: 600, height: 960 },
-  { name: "ipad-mini", width: 744, height: 1133 },
-  { name: "ipad-9", width: 768, height: 1024 },
-  { name: "ipad-air", width: 820, height: 1180 },
-  { name: "ipad-pro-11", width: 834, height: 1194 },
-  { name: "ipad-pro-12", width: 1024, height: 1366 },
-  { name: "tablet-landscape", width: 1280, height: 800 },
-  { name: "desktop", width: 1440, height: 1000 },
-  { name: "wide-desktop", width: 1920, height: 1080 },
-];
-const viewports = process.env.UI_VIEWPORT
-  ? allViewports.filter((viewport) => viewport.name === process.env.UI_VIEWPORT)
-  : allViewports;
-if (viewports.length === 0) {
-  throw new Error(`Unknown UI_VIEWPORT: ${process.env.UI_VIEWPORT}`);
-}
+const viewports = selectViewports(process.env.UI_VIEWPORT);
 // เดิม routes นี้ชี้ /plants /experiments /protocols /knowledge /research /dataset-review
 // ซึ่งเป็นโครงแอปรุ่นก่อนหน้า (wizard สร้าง Lot + Protocol editor) ที่ถูกแทนที่ไปหมดแล้ว
 // ปัจจุบัน LabShell (src/components/lab/lab-shell.tsx) มีเมนู 5 ปลายทาง แต่ "ตรวจคู่มือ" (/admin/manual)
@@ -82,73 +61,16 @@ async function verifyCompactMenu(page, viewportName) {
 }
 
 async function inspectPage(page, viewportName, route) {
-  const result = await page.evaluate(() => {
-    const visible = (element) => {
-      const rect = element.getBoundingClientRect();
-      const style = getComputedStyle(element);
-      return rect.width > 0 && rect.height > 0
-        && style.visibility !== "hidden" && style.display !== "none";
-    };
-    const controls = [...document.querySelectorAll(
-      "button, [role='button'], nav a, .primary-button, .quiet-button, .secondary-button, .text-button, summary",
-    )].filter(visible).map((element) => {
-      const rect = element.getBoundingClientRect();
-      return {
-        text: (element.textContent ?? element.getAttribute("aria-label") ?? "").trim().slice(0, 60),
-        width: Math.round(rect.width),
-        height: Math.round(rect.height),
-      };
-    });
-    return {
-      bodyFont: Number.parseFloat(getComputedStyle(document.body).fontSize),
-      bodyText: document.body.innerText.trim().length,
-      horizontalOverflow: document.documentElement.scrollWidth
-        - document.documentElement.clientWidth,
-      hasOverlay: Boolean(document.querySelector(
-        "[data-nextjs-dialog], .vite-error-overlay, #webpack-dev-server-client-overlay",
-      )),
-      controls,
-      bodyFamily: getComputedStyle(document.body).fontFamily,
-      mainCount: document.querySelectorAll("main").length,
-      legacyHudCount: document.querySelectorAll(".pl-hero-grid, .pl-hero-ring, .pl-hero-scanline").length,
-    };
-  });
-
-  const prefix = `${viewportName} ${route}`;
-  // เดิม route label เช่น "public:/find" ยังมี ":" ค้างอยู่ ทำให้ path บน Windows/NTFS
-  // ตีความเป็น alternate data stream (file.png:foo) แล้วเขียนไม่ลง — ภาพเงียบ ๆ หายไปโดยไม่ error
-  // ลบอักขระที่ห้ามใช้ในชื่อไฟล์ Windows ทั้งหมด (< > : " | ? *) ไม่ใช่แค่ ":"
+  // Route labels include characters that Windows reserves in filenames.
   const safeRoute = route.replaceAll("/", "_").replaceAll(/[<>:"|?*]/g, "");
-  await page.screenshot({
-    path: path.join(screenshotRoot, `${viewportName}-${safeRoute || "home"}.png`),
-    fullPage: true,
-  });
-  assert(result.bodyText > 0, `${prefix}: หน้าเว็บว่าง`);
-  assert(!result.hasOverlay, `${prefix}: พบ framework error overlay`);
-  assert(result.bodyFont === 18, `${prefix}: body font ต้องเป็น 18px แต่ได้ ${result.bodyFont}px`);
-  // Performance follow-up: next/font still preloads all four static Sarabun weights.
-  // Keep that behavior until route-level font transfer and weight usage are measured after the redesign.
-  assert(/sarabun/i.test(result.bodyFamily), `${prefix}: body ไม่ได้ใช้ Sarabun (${result.bodyFamily})`);
-  assert(result.mainCount === 1, `${prefix}: expected one main landmark, got ${result.mainCount}`);
-  assert(result.legacyHudCount === 0, `${prefix}: legacy HUD decoration remains`);
-  assert(result.horizontalOverflow <= 1, `${prefix}: horizontal overflow ${result.horizontalOverflow}px`);
-  for (const control of result.controls) {
-    assert(
-      control.width >= 48 && control.height >= 48,
-      `${prefix} “${control.text}”: expected 48x48 target, got ${control.width}x${control.height}`,
-    );
-  }
-  await verifyButtonContrast(page, viewportName, route);
-}
-
-async function verifyButtonContrast(page, viewportName, route) {
   for (const theme of ["light", "dark"]) {
     await page.evaluate((value) => document.documentElement.setAttribute("data-theme", value), theme);
-    const controls = await page.evaluate(() => {
+    const result = await page.evaluate(() => {
       const visible = (element) => {
         const rect = element.getBoundingClientRect();
         const style = getComputedStyle(element);
-        return rect.width > 0 && rect.height > 0 && style.visibility !== "hidden" && style.display !== "none";
+        return rect.width > 0 && rect.height > 0
+          && style.visibility !== "hidden" && style.display !== "none";
       };
       const channel = (value) => {
         const normalized = value / 255;
@@ -160,23 +82,84 @@ async function verifyButtonContrast(page, viewportName, route) {
         const [red, green, blue] = values.slice(0, 3).map(Number);
         return 0.2126 * channel(red) + 0.7152 * channel(green) + 0.0722 * channel(blue);
       };
-      return [...document.querySelectorAll(".primary-button, .secondary-button, .accessible-action, .photo-action, .cl-button-primary, .cl-button-secondary, .cl-button-danger")]
+      const contrastSelector = ".primary-button, .secondary-button, .accessible-action, .photo-action, .cl-button-primary, .cl-button-secondary, .cl-button-danger";
+      const controls = [...document.querySelectorAll(
+        "button, [role='button'], nav a, .primary-button, .quiet-button, .secondary-button, .text-button, summary",
+      )].filter(visible).map((element) => {
+        const rect = element.getBoundingClientRect();
+        return {
+          text: (element.textContent ?? element.getAttribute("aria-label") ?? "").trim().slice(0, 60),
+          width: Math.round(rect.width),
+          height: Math.round(rect.height),
+        };
+      });
+      const contrastControls = [...document.querySelectorAll(contrastSelector)]
         .filter(visible)
         .map((element) => {
           const style = getComputedStyle(element);
-          const foreground = luminance(style.color);
-          const background = luminance(style.backgroundColor);
-          return { text: (element.textContent ?? "").trim().slice(0, 60), foreground, background };
+          return {
+            text: (element.textContent ?? element.getAttribute("aria-label") ?? "").trim().slice(0, 60),
+            foreground: luminance(style.color),
+            background: luminance(style.backgroundColor),
+          };
         });
+      const textElements = [...document.querySelectorAll("h1,h2,h3,h4,p,li,label,button,a,dt,dd")]
+        .filter(visible);
+      const horizontalTextOverflow = textElements
+        .filter((element) => element.scrollWidth > element.clientWidth + 1
+          && getComputedStyle(element).overflowX !== "auto")
+        .map((element) => (element.textContent ?? "").trim().slice(0, 80));
+      const verticalClipping = textElements
+        .filter((element) => {
+          const style = getComputedStyle(element);
+          const overflowY = style.overflowY;
+          return element.scrollHeight > element.clientHeight + 1
+            && ["hidden", "clip"].includes(overflowY);
+        })
+        .map((element) => (element.textContent ?? "").trim().slice(0, 80));
+      return {
+        bodyFont: Number.parseFloat(getComputedStyle(document.body).fontSize),
+        bodyText: document.body.innerText.trim().length,
+        horizontalOverflow: document.documentElement.scrollWidth
+          - document.documentElement.clientWidth,
+        hasOverlay: Boolean(document.querySelector(
+          "[data-nextjs-dialog], .vite-error-overlay, #webpack-dev-server-client-overlay",
+        )),
+        controls,
+        contrastControls,
+        horizontalTextOverflow,
+        verticalClipping,
+        bodyFamily: getComputedStyle(document.body).fontFamily,
+        mainCount: document.querySelectorAll("main").length,
+        legacyHudCount: document.querySelectorAll(".pl-hero-grid, .pl-hero-ring, .pl-hero-scanline").length,
+      };
     });
-    for (const control of controls) {
+
+    const prefix = `${viewportName} ${route} ${theme}`;
+    await page.screenshot({
+      path: path.join(screenshotRoot, `${viewportName}-${safeRoute || "home"}-${theme}.png`),
+      fullPage: true,
+    });
+    assert(result.bodyText > 0, `${prefix}: หน้าเว็บว่าง`);
+    assert(!result.hasOverlay, `${prefix}: พบ framework error overlay`);
+    assert(result.bodyFont === 18, `${prefix}: body font ต้องเป็น 18px แต่ได้ ${result.bodyFont}px`);
+    assert(/sarabun/i.test(result.bodyFamily), `${prefix}: body ไม่ได้ใช้ Sarabun (${result.bodyFamily})`);
+    assert(result.mainCount === 1, `${prefix}: expected one main landmark, got ${result.mainCount}`);
+    assert(result.legacyHudCount === 0, `${prefix}: legacy HUD decoration remains`);
+    assert(result.horizontalOverflow <= 1, `${prefix}: horizontal overflow ${result.horizontalOverflow}px`);
+    assert(result.horizontalTextOverflow.length === 0, `${prefix}: horizontal text overflow ${result.horizontalTextOverflow.join(" | ")}`);
+    assert(result.verticalClipping.length === 0, `${prefix}: vertically clipped text ${result.verticalClipping.join(" | ")}`);
+    for (const control of result.controls) {
+      assert(
+        control.width >= 48 && control.height >= 48,
+        `${prefix} “${control.text}”: expected 48x48 target, got ${control.width}x${control.height}`,
+      );
+    }
+    for (const control of result.contrastControls) {
       if (control.foreground === null || control.background === null) continue;
       const contrast = (Math.max(control.foreground, control.background) + 0.05)
         / (Math.min(control.foreground, control.background) + 0.05);
-      assert(
-        contrast >= 4.5,
-        `${viewportName} ${route} ${theme} “${control.text}”: contrast ${contrast.toFixed(2)} ต่ำกว่า 4.5:1`,
-      );
+      assert(contrast >= 4.5, `${prefix} “${control.text}”: contrast ${contrast.toFixed(2)} ต่ำกว่า 4.5:1`);
     }
   }
 }

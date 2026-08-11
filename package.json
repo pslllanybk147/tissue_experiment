@@ -11,6 +11,7 @@
     "ui:verify": "node scripts/verify-accessible-ui.mjs",
     "protocol:verify": "node scripts/verify-protocol-integrity.mjs",
     "calm-lab:verify": "node scripts/verify-calm-lab.mjs",
+    "atlas:verify": "node scripts/verify-botanical-atlas.mjs",
     "terms:report": "node scripts/report-unwrapped-terms.mjs",
     "manuals:verify": "vitest run src/lib/manual/all-manuals-human.test.ts",
     "firebase:emulators": "firebase emulators:start --only auth,firestore --project demo-philodendron-lab",
