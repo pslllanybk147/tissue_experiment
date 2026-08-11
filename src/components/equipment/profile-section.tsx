@@ -59,12 +59,12 @@ function NumberField({ id, label, value, onValue, min = 0, step = "any" }: {
 }
 
 function FieldGrid({ children }: { children: React.ReactNode }) {
-  return <div className="cl-field-grid">{children}</div>;
+  return <div className="cl-field-grid cl-atlas-field-grid">{children}</div>;
 }
 
 function Card({ title, note, children }: { title: string; note?: string; children: React.ReactNode }) {
   return (
-    <section className="cl-equipment-section">
+    <section className="cl-equipment-section cl-atlas-form-section">
       <header className="cl-section-heading"><h2>{title}</h2>{note ? <p>{note}</p> : null}</header>
       {children}
     </section>

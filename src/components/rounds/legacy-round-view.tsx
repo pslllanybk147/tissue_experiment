@@ -44,9 +44,9 @@ export function LegacyRoundView({
       {visibleObservations.length > 0 ? (
         <section style={{ marginTop: "24px" }}>
           <h2 className="pl-h2">บันทึกการสังเกต</h2>
-          <ul style={{ listStyle: "none", margin: "12px 0 0", padding: 0, display: "flex", flexDirection: "column", gap: "10px" }}>
+          <ul className="cl-atlas-data-list" style={{ listStyle: "none", margin: "12px 0 0", padding: 0 }}>
             {visibleObservations.map((observation) => (
-              <li className="pl-card" key={observation.id}>
+              <li key={observation.id}>
                 <p className="pl-mono">{observation.observedAt} · {observation.stage}</p>
                 {observation.note ? <p style={{ margin: "6px 0 0" }}>{observation.note}</p> : null}
                 <Counts observation={observation} />
@@ -59,9 +59,9 @@ export function LegacyRoundView({
       {runs.length > 0 ? (
         <section style={{ marginTop: "24px" }}>
           <h2 className="pl-h2">บันทึกรายขั้น</h2>
-          <ul style={{ listStyle: "none", margin: "12px 0 0", padding: 0, display: "flex", flexDirection: "column", gap: "10px" }}>
+          <ul className="cl-atlas-data-list" style={{ listStyle: "none", margin: "12px 0 0", padding: 0 }}>
             {runs.map((run) => (
-              <li className="pl-card" key={run.id}>
+              <li key={run.id}>
                 <p className="pl-mono">{run.stepId} · {statusLabel[run.status] ?? run.status}</p>
                 {run.note ? <p style={{ margin: "6px 0 0" }}>{run.note}</p> : null}
                 {Object.entries(run.measurements).filter(([, value]) => value != null).length > 0 ? (

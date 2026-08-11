@@ -63,4 +63,12 @@ describe("PathSummary", () => {
     expect(html).toContain("T3");
     expect(html).toContain("chlorinated rinse");
   });
+
+  it("แสดงรายการความพร้อมด้วยแถวที่ตัดบรรทัดได้และ notice กลาง", () => {
+    const html = renderToStaticMarkup(<PathSummary readiness={resolveTrialReadiness(USER_REPORTED_PROFILE)} />);
+
+    expect(html).toContain("cl-atlas-data-list");
+    expect(html).toContain("cl-status-notice");
+    expect(html).not.toMatch(/white-space:\s*nowrap/);
+  });
 });

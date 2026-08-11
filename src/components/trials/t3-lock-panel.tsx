@@ -73,19 +73,22 @@ export function T3LockPanel({
 
   return (
     <section className="cl-readiness-gate" data-status="blocked">
-      <h2 className="pl-h2">T3 ยังถูกล็อก</h2>
-      <p className="pl-lede" style={{ marginTop: "8px" }}>
-        อ่าน protocol ได้ แต่ยังเริ่มจับเวลาหรือบันทึกว่าผ่านไม่ได้ จนกว่า T1 และ T2 จะมีผลครบ
-      </p>
-      <ul style={{ margin: "10px 0 0", paddingLeft: "20px" }}>
-        {eligibility.missing.map((item) => <li key={item}>{explainMissing(item)}</li>)}
-      </ul>
-
-      {demoMode ? (
-        <p className="pl-mono" style={{ marginTop: "12px" }}>
-          demo-only · ทดสอบหน้าจอได้ แต่ไม่ถูกนับเป็นผลทดลองจริง
-        </p>
-      ) : null}
+      <div className="cl-status-notice" data-tone="blocked">
+        <div>
+          <h2 className="pl-h2">T3 ยังถูกล็อก</h2>
+          <p className="pl-lede" style={{ marginTop: "8px" }}>
+            อ่าน protocol ได้ แต่ยังเริ่มจับเวลาหรือบันทึกว่าผ่านไม่ได้ จนกว่า T1 และ T2 จะมีผลครบ
+          </p>
+          <ul className="cl-atlas-data-list" style={{ margin: "10px 0 0", paddingLeft: "20px" }}>
+            {eligibility.missing.map((item) => <li key={item}>{explainMissing(item)}</li>)}
+          </ul>
+          {demoMode ? (
+            <p className="pl-mono" style={{ marginTop: "12px" }}>
+              demo-only · ทดสอบหน้าจอได้ แต่ไม่ถูกนับเป็นผลทดลองจริง
+            </p>
+          ) : null}
+        </div>
+      </div>
 
       <form onSubmit={(event) => void submit(event)} style={{ marginTop: "16px" }}>
         <fieldset disabled={saving} style={{ border: 0, padding: 0, margin: 0 }}>
@@ -112,7 +115,7 @@ export function T3LockPanel({
           />
           <button
             type="submit"
-            className="pl-action-danger"
+            className="cl-button-danger"
             disabled={!valid || saving}
             style={{ marginTop: "12px", cursor: valid && !saving ? "pointer" : "not-allowed" }}
           >

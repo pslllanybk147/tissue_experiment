@@ -52,13 +52,13 @@ export function RinsePreparationCard({
   const confirmed = snapshot.status === "prepared" && canConfirmRinsePreparation(snapshot);
 
   return (
-    <article className="pl-card" style={{ marginTop: "12px", background: "var(--pl-card)" }}>
+    <article className="pl-card cl-atlas-form-section" style={{ marginTop: "12px", background: "var(--pl-card)" }}>
       <p className="pl-mono">น้ำ rinse ทดลอง 300 ppm · {methodLabels[method]}</p>
       <p className="pl-lede" style={{ marginTop: "6px" }}>
         เป้าหมายคลอรีนออกฤทธิ์ 300 ppm (0.03%) · เตรียม 3 ภาชนะ ภาชนะละ {snapshot.volumePerContainerMl} mL · พักอย่างน้อย {snapshot.minimumWaitMinutes ?? 60} นาที
       </p>
       <p className="pl-meta" style={{ marginTop: "6px" }}>น้ำ rinse ไม่ใช่น้ำปลอดเชื้อ และใช้เฉพาะ T1/T2 ตาม protocol ทดลอง</p>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "10px", marginTop: "12px" }}>
+      <div className="cl-atlas-field-grid" style={{ marginTop: "12px" }}>
         <label>ผลิตภัณฑ์<input style={fieldStyle} value={snapshot.productName ?? ""} onChange={(event) => update({ productName: event.currentTarget.value })} /></label>
         <label>Batch/Lot<input style={fieldStyle} value={snapshot.batchOrLot ?? ""} onChange={(event) => update({ batchOrLot: event.currentTarget.value })} /></label>
         <label>ppm ที่ได้จริง<NumericInput style={fieldStyle} min="1" value={snapshot.actualChlorinePpm ?? Number.NaN} onChange={(next) => update({ actualChlorinePpm: Number.isFinite(next) ? next : undefined })} /></label>

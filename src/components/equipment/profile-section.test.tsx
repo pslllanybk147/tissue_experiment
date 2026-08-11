@@ -38,6 +38,12 @@ describe("ProfileSection", () => {
     expect(html).toContain('value="3"');
   });
 
+  it("จัดกลุ่มแบบฟอร์มอุปกรณ์ด้วยโครงสร้าง Botanical Atlas ที่ยืดตามข้อความยาว", () => {
+    expect(html).toContain("cl-atlas-form-section");
+    expect(html).toContain("cl-atlas-field-grid");
+    expect(html).not.toMatch(/Primary|Keyboard focus|Destructive|Disabled/);
+  });
+
   it("บังคับให้ผู้ใช้เลือกวิธีฆ่าเชื้ออาหารเองและไม่เลือกแทนล่วงหน้า", () => {
     expect(html).toContain("วิธีฆ่าเชื้ออาหารที่จะใช้");
     expect(html).toContain("ยังไม่ได้เลือก");
@@ -72,5 +78,12 @@ describe("ProfileSection", () => {
 
     expect(rinseHtml).toContain("background:var(--pl-card)");
     expect(rinseHtml).toContain("border:2.5px solid var(--pl-line)");
+  });
+
+  it("จัดฟอร์มยืนยัน rinse เป็นหน่วยงานที่อ่านต่อเนื่องบนจอแคบ", () => {
+    const rinseHtml = renderToStaticMarkup(<RinsePreparationCard method="nadcc" value={null} onChange={() => {}} />);
+
+    expect(rinseHtml).toContain("cl-atlas-form-section");
+    expect(rinseHtml).toContain("cl-atlas-field-grid");
   });
 });

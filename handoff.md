@@ -2,6 +2,26 @@
 
 # Philodendron Lab — Handoff
 
+## 2026-08-11 — Botanical Atlas Plan 3 Task 1: equipment, trial readiness, and round lists
+
+- ต่อจากคอมมิต `9a816e9` โดยย้ายหน้าอุปกรณ์, การเตรียมน้ำ rinse, readiness gate, การแบ่งกระปุก,
+  T3 lock, รายการรอบ และหน้ารอบ legacy มาใช้โครงสร้างร่วม `cl-atlas-form-section`,
+  `cl-atlas-field-grid`, `cl-atlas-data-list`, `cl-status-notice` และ action classes โดยคง handler,
+  calculation, gate logic, URL และข้อความวิทยาศาสตร์เดิมไว้
+- เพิ่มกฎรายการแบบ divider-led ที่ยอมให้ชื่ออุปกรณ์/แขนทดลอง/บันทึกยาวตัดบรรทัด และเปลี่ยนหน้ารอบ legacy
+  จากการ์ดซ้อนเป็นรายการต่อเนื่อง
+- `atlas:verify` รอบแรกเผย regression จริงที่ 320px: knowledge row ถูก evidence badge ดันจนล้น,
+  ปุ่ม filter `All` เหลือกว้าง 35–37px เพราะ mobile reset ลด `min-width` เป็น 0 และ notice หน้าอุปกรณ์
+  วางหัวเรื่องกับรายการคำเตือนคนละ grid column แก้ที่ flex boundary, filter-tab contract และ notice content wrapper
+  แล้วตรวจซ้ำจนผ่านทั้ง Light/Dark
+- Verification รอบนี้:
+  - focused component tests: 17 files / 110 tests ผ่าน
+  - `npm test`: 162 files / 874 tests ผ่าน, skip 10 tests
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน 216 static pages
+  - `$env:UI_VIEWPORT='minimum-mobile'; npm run atlas:verify`: ผ่านที่ 320px ทั้ง Light/Dark
+  - `git diff --check`: ผ่าน (มีเพียงคำเตือน LF/CRLF ของ Git บน Windows)
+
 ## 2026-08-09 — แก้ "แช่นาน 1 ถึง 1 นาที" ใน BracketNotice
 
 - ผู้ใช้ชี้ข้อความในกล่องทดสอบช่วง NaDCC rinse ของ violin-variegated: "แช่นาน 1 ถึง 1 นาที" อ่านเหมือนพิมพ์ผิด

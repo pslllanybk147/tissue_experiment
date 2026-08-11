@@ -51,4 +51,12 @@ describe("ReadinessGate", () => {
     expect(unchecked).toContain("T2");
     expect(unchecked).toContain("T3");
   });
+
+  it("ใช้ notice และรายการแขนร่วมของ Botanical Atlas", () => {
+    const html = renderToStaticMarkup(<ReadinessGate loading={false} readiness={resolveTrialReadiness(USER_REPORTED_PROFILE)} starting={false} confirmed={false} onConfirmed={noop} onStart={noop} />);
+
+    expect(html).toContain("cl-status-notice");
+    expect(html).toContain("cl-atlas-data-list");
+    expect(html).toContain("cl-button-primary");
+  });
 });

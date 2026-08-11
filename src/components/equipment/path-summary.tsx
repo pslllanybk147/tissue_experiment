@@ -14,10 +14,12 @@ function ReadinessSummary({ readiness }: { readiness: TrialReadiness }) {
   return (
     <section className="cl-workspace-section">
       <div className="cl-status-notice" data-tone={readiness.overall === "blocked" ? "blocked" : "success"}>
-        <h2 className="pl-h2">{readiness.overall === "blocked" ? "ยังเริ่มชุดทดลองจริงไม่ได้" : "สถานะความพร้อมของชุดทดลอง"}</h2>
-        <p className="pl-lede" style={{ marginTop: "6px" }}>สถานะรวม: {readinessLabel[readiness.overall]} · ดูเหตุผลแยกทีละหัวข้อด้านล่าง</p>
+        <div>
+          <h2 className="pl-h2">{readiness.overall === "blocked" ? "ยังเริ่มชุดทดลองจริงไม่ได้" : "สถานะความพร้อมของชุดทดลอง"}</h2>
+          <p className="pl-lede" style={{ marginTop: "6px" }}>สถานะรวม: {readinessLabel[readiness.overall]} · ดูเหตุผลแยกทีละหัวข้อด้านล่าง</p>
+        </div>
       </div>
-      <div className="cl-readiness-list">
+      <div className="cl-readiness-list cl-atlas-data-list">
         {readiness.capabilities.map((item) => (
           <article className="cl-readiness-item" data-status={item.status} key={item.id}>
             <p className="pl-mono">{readinessLabel[item.status]}</p>
@@ -31,7 +33,7 @@ function ReadinessSummary({ readiness }: { readiness: TrialReadiness }) {
       <section className="cl-equipment-section">
         <h3 className="pl-h2">ความพร้อมแยกตามแขนทดลอง</h3>
         <p className="pl-meta" style={{ marginTop: "6px" }}>chlorinated rinse เป็นน้ำ rinse ทดลอง ไม่ใช่น้ำปลอดเชื้อ และไม่ปลดล็อกแขนที่ต้องใช้น้ำปลอดเชื้อ</p>
-        <div className="cl-readiness-list">
+        <div className="cl-readiness-list cl-atlas-data-list">
           {readiness.arms.map((arm) => (
             <article key={arm.armRole} className="cl-readiness-item" data-status={arm.status}>
               <p className="pl-mono">{readinessLabel[arm.status]}</p>
@@ -44,10 +46,12 @@ function ReadinessSummary({ readiness }: { readiness: TrialReadiness }) {
         </div>
       </section>
       <div className="cl-status-notice" data-tone="warning">
-        <h3 className="pl-h2">ข้อควรระวังที่ห้ามข้าม</h3>
-        <ul style={{ margin: "8px 0 0", paddingLeft: "20px" }}>
-          {readiness.cautions.map((item) => <li key={item}>{item}</li>)}
-        </ul>
+        <div>
+          <h3 className="pl-h2">ข้อควรระวังที่ห้ามข้าม</h3>
+          <ul style={{ margin: "8px 0 0", paddingLeft: "20px" }}>
+            {readiness.cautions.map((item) => <li key={item}>{item}</li>)}
+          </ul>
+        </div>
       </div>
     </section>
   );
@@ -60,7 +64,7 @@ export function PathSummary({ path, readiness }: { path?: ResolvedPath; readines
     <section className="cl-workspace-section">
       <h2 className="pl-h2">เส้นทางที่ระบบจัดให้</h2>
 
-      <div className="cl-readiness-list">
+      <div className="cl-readiness-list cl-atlas-data-list">
         {path.capabilities.map((item) => (
           <article
             className="cl-readiness-item"

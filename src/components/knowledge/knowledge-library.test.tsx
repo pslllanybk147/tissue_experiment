@@ -14,6 +14,7 @@ describe("KnowledgeLibrary", () => {
     expect(html).toContain("cl-master-detail");
     expect(html).toContain('aria-current="true"');
     expect(html).toContain("รายการที่เลือก");
+    expect(html).toContain("cl-master-copy");
   });
 
   it("ไม่ seed claim มาให้เอง เพราะหลักฐานของคู่มืออยู่ที่ src/lib/manual แหล่งเดียว", () => {

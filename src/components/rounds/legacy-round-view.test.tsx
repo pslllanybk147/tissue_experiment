@@ -70,12 +70,14 @@ describe("LegacyRoundView", () => {
 
     expect(html).toContain("ตายังเขียวดี");
     expect(html).toContain("2");
+    expect(html).toContain("cl-atlas-data-list");
   });
 
   it("แสดงบันทึกรายขั้นที่เคยทำ", () => {
     const html = renderToStaticMarkup(<LegacyRoundView lot={lot} observations={observations} runs={runs} />);
 
     expect(html).toContain("ฟอก 12 นาที");
+    expect(html).toContain("cl-atlas-data-list");
   });
 
   it("ไม่มีอะไรบันทึกไว้เลยก็ยังบอกได้ ไม่ใช่หน้าว่าง", () => {

@@ -16,6 +16,7 @@ describe("ReviewQueue", () => {
     expect(html).toContain("Pending review");
     expect(html).toContain("ต้อง Approve provenance ก่อน");
     expect(html).toContain("disabled");
+    expect(html).toContain("cl-filter-tab");
   });
 
   it("shows a beginner route to add the first image when the queue is empty", () => {

@@ -12,7 +12,7 @@ function LegacyRounds({ legacy }: { legacy: LegacyRoundSummary[] }) {
   return (
     <section className="cl-workspace-section">
       <header className="cl-section-heading"><h2>รอบที่เริ่มไว้ก่อนระบบคู่มือใหม่</h2><p>เปิดอ่านได้ ข้อมูลเดิมยังอยู่ครบ แต่ไม่มีค่าที่ล็อกด้วย workflow ใหม่</p></header>
-      <ul className="cl-row-list">
+      <ul className="cl-row-list cl-atlas-data-list">
         {legacy.map((item) => <li className="cl-data-row" key={item.lotId}><div><strong>{item.title}</strong><small>เริ่ม {item.startedAt} · ข้อมูล legacy</small></div><Link className="cl-button-secondary" href={`/my/rounds/legacy/${item.lotId}`}>เปิดอ่าน</Link></li>)}
       </ul>
     </section>
@@ -30,7 +30,7 @@ export function RoundList({ rounds, legacy = [], onDelete }: { rounds: RoundSumm
 
   return (
     <div className="cl-workspace-stack">
-      <ul className="cl-row-list">
+      <ul className="cl-row-list cl-atlas-data-list">
         {rounds.map((round) => (
           <li className="cl-data-row" key={round.lotId}>
             <div className="cl-row-copy"><strong>{round.title}</strong><small>เริ่ม {round.startedAt}</small><span>ผ่านแล้ว {round.passedCount} จาก {round.stepCount} ขั้น</span></div>

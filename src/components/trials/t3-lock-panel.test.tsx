@@ -18,6 +18,14 @@ describe("canSubmitT3Override", () => {
 });
 
 describe("T3LockPanel", () => {
+  it("ใช้ notice และ action ของ Botanical Atlas โดยไม่แสดงคำกำกับแบบ mockup", () => {
+    const html = renderToStaticMarkup(<T3LockPanel eligibility={locked} demoMode={false} onOverride={async () => {}} />);
+
+    expect(html).toContain("cl-status-notice");
+    expect(html).toContain("cl-button-danger");
+    expect(html).not.toMatch(/Primary|Keyboard focus|Destructive|Disabled/);
+  });
+
   it("อธิบายผลที่ยังขาดและปิดปุ่ม override ในค่าเริ่มต้น", () => {
     const html = renderToStaticMarkup(<T3LockPanel eligibility={locked} demoMode={false} onOverride={async () => {}} />);
 

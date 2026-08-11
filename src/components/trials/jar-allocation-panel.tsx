@@ -24,10 +24,10 @@ export function JarAllocationPanel({ total, reserved, allocations, onReserved, o
   const used = Object.values(allocations).reduce((sum, value) => sum + value, 0) + reserved;
   const valid = used <= total && reserved >= 0 && Object.values(allocations).every((value) => Number.isInteger(value) && value > 0);
   return (
-    <section className="cl-equipment-section">
+    <section className="cl-equipment-section cl-atlas-form-section">
       <h2 className="pl-h2">แบ่งกระปุกก่อนสร้างรอบ</h2>
       <p className="pl-lede" style={{ marginTop: "6px" }}>มีทั้งหมด {total} ใบ จำนวนนี้มาจากหน้าอุปกรณ์</p>
-      <div className="cl-field-grid">
+      <div className="cl-field-grid cl-atlas-field-grid">
         {roles.map((role) => (
           <p key={role} style={{ margin: 0 }}>
             <label htmlFor={`jar-${role}`} style={{ display: "block", fontWeight: 700, marginBottom: "5px" }}>{labels[role]}</label>

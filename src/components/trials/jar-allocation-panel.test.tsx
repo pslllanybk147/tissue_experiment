@@ -19,5 +19,7 @@ describe("JarAllocationPanel", () => {
     expect(html).toContain("Control-B กระปุกเปล่า (ใบ)");
     expect(html).toContain("สำรอง (ใบ)");
     expect(html).toContain("ใช้ 46 จาก 46 ใบ");
+    expect(html).toContain("cl-atlas-form-section");
+    expect(html).toContain("cl-atlas-field-grid");
   });
 });

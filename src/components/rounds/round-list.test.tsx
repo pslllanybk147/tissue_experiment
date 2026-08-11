@@ -29,6 +29,7 @@ describe("RoundList", () => {
     expect(html).toContain("cl-data-row");
     expect(html).toContain("เปิดรอบ");
     expect(html).toContain("cl-button-danger");
+    expect(html).toContain("cl-atlas-data-list");
   });
 
   it("รอบเก่าที่คู่มือใหม่ไม่รู้จัก ต้องยังเห็นได้ ไม่ใช่หายไปเฉย ๆ", () => {
@@ -39,6 +40,7 @@ describe("RoundList", () => {
     expect(html).toContain("รอบที่เริ่มไว้ก่อนระบบคู่มือใหม่");
     expect(html).toContain("ล็อตเดิม");
     expect(html).toContain('href="/my/rounds/legacy/old-1"');
+    expect(html).toContain("cl-atlas-data-list");
   });
 
   it("เมื่อยังไม่มีรอบ ชวนให้ไปเลือกต้นจากหน้าคู่มือ", () => {
