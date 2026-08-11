@@ -8,6 +8,20 @@ describe("ข้อความที่มีคำศัพท์แตะด�
     expect(renderToStaticMarkup(<RichText source="ตัดให้ชิดโคน" />)).toContain("ตัดให้ชิดโคน");
   });
 
+  it("ไม่ทำหมายเหตุอัตโนมัติให้คำทั่วไปในประโยค", () => {
+    const html = renderToStaticMarkup(<RichText source="ข้อถัดไปให้วัดน้ำ 300 ppm" />);
+
+    expect(html).not.toContain("<details");
+    expect(html).toContain("ข้อถัดไปให้วัดน้ำ 300 ppm");
+  });
+
+  it("ยังทำหมายเหตุเมื่อผู้เขียนห่อคำศัพท์โดยตั้งใจ", () => {
+    const html = renderToStaticMarkup(<RichText source="[[ppm|ppm]]" />);
+
+    expect(html).toContain("<details");
+    expect(html).toContain("หน่วยส่วนในล้านส่วน");
+  });
+
   it("คำที่ห่อไว้กลายเป็น details ที่กางดูความหมายได้", () => {
     const html = renderToStaticMarkup(<RichText source="หา[[node|ข้อ]]ที่สมบูรณ์" />);
     expect(html).toContain("<details");

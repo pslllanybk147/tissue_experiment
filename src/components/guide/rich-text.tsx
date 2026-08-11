@@ -1,15 +1,7 @@
-import { parseContextualTerms, parseTerms } from "@/lib/manual/terms";
+import { parseTerms } from "@/lib/manual/terms";
 import { TermHelp } from "./term-help";
 
 export { landmarkByTermId } from "./term-help";
-
-/** ค้นคำศัพท์ข้ามทุกทรง เพราะคำเดียวกันอาจถูกนิยามไว้ในทรงที่ต่างจากที่ผู้ใช้กำลังอ่าน
- *  ทรงแรกที่นิยามคำนั้นชนะ ซึ่งพอสำหรับตอนนี้เพราะคำที่ซ้ำกันข้ามทรงมีความหมายเดียวกัน */
-function ContextualText({ source }: { source: string }) {
-  return <>{parseContextualTerms(source).map((span, index) => span.kind === "text"
-    ? <span key={index}>{span.text}</span>
-    : <TermHelp key={index} termId={span.termId}>{span.text}</TermHelp>)}</>;
-}
 
 /** ใช้ <details> แทน overlay ที่ต้องใช้ JavaScript เพราะเข้าถึงได้ในตัว ทำงานโดยไม่มี JS
  *  และเทสต์ด้วย renderToStaticMarkup ได้ตามข้อจำกัดของโปรเจกต์นี้
@@ -23,7 +15,7 @@ export function RichText({ source }: { source: string }) {
   return (
     <>
       {parseTerms(source).map((span, index) => {
-        if (span.kind === "text") return <ContextualText key={index} source={span.text} />;
+        if (span.kind === "text") return <span key={index}>{span.text}</span>;
         return <TermHelp key={index} termId={span.termId}>{span.text}</TermHelp>;
       })}
     </>
