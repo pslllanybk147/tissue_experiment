@@ -8,6 +8,7 @@ const executablePath = process.env.CHROME_PATH
     ? "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe"
     : undefined);
 const allViewports = [
+  { name: "minimum-mobile", width: 320, height: 800 },
   { name: "android-360", width: 360, height: 800 },
   { name: "iphone-se", width: 375, height: 667 },
   { name: "iphone-12", width: 390, height: 844 },
@@ -26,6 +27,9 @@ const allViewports = [
 const viewports = process.env.UI_VIEWPORT
   ? allViewports.filter((viewport) => viewport.name === process.env.UI_VIEWPORT)
   : allViewports;
+if (viewports.length === 0) {
+  throw new Error(`Unknown UI_VIEWPORT: ${process.env.UI_VIEWPORT}`);
+}
 // เดิม routes นี้ชี้ /plants /experiments /protocols /knowledge /research /dataset-review
 // ซึ่งเป็นโครงแอปรุ่นก่อนหน้า (wizard สร้าง Lot + Protocol editor) ที่ถูกแทนที่ไปหมดแล้ว
 // ปัจจุบัน LabShell (src/components/lab/lab-shell.tsx) มีเมนู 5 ปลายทาง แต่ "ตรวจคู่มือ" (/admin/manual)
@@ -195,6 +199,9 @@ async function verifyPublicGuide(page, viewportName) {
     await inspectPage(page, viewportName, `public:${route}`);
     if (route === "/guide/violin-variegated/step/8") {
       await verifyExecutionCardFoundation(page, viewportName, route);
+      if (viewportName === "minimum-mobile") {
+        await verifyCommonPrimitiveStress(page, viewportName, route);
+      }
     }
   }
 }
@@ -242,6 +249,86 @@ async function verifyExecutionCardFoundation(page, viewportName, route) {
     assert(computed.text === expected.text, `${viewportName} ${route} ${theme}: text ${computed.text} ไม่ใช่ ${expected.text}`);
     assert(computed.action === expected.action, `${viewportName} ${route} ${theme}: action ${computed.action} ไม่ใช่ ${expected.action}`);
   }
+}
+
+async function verifyCommonPrimitiveStress(page, viewportName, route) {
+  const result = await page.evaluate(() => {
+    document.querySelector("[data-ui-stress-fixture]")?.remove();
+    const fixture = document.createElement("section");
+    fixture.dataset.uiStressFixture = "true";
+    fixture.innerHTML = `
+      <header class="cl-page-heading">
+        <div>
+          <h1>หัวข้อขั้นตอนที่ต้องตรวจสอบอย่างละเอียดก่อนยืนยันหัวข้อขั้นตอนที่ต้องตรวจสอบอย่างละเอียดก่อนยืนยัน</h1>
+          <p>คำอธิบายสำหรับผู้เริ่มต้นที่ยาวเป็นสองเท่าเพื่อยืนยันว่าข้อความภาษาไทยตัดบรรทัดได้โดยไม่ซ้อนทับคำอธิบายสำหรับผู้เริ่มต้นที่ยาวเป็นสองเท่า</p>
+        </div>
+        <div class="cl-page-heading-action"><button class="cl-button-secondary">เปิดรายละเอียดการตรวจสอบทั้งหมดก่อนดำเนินการต่อ</button></div>
+      </header>
+      <div class="cl-field-group">
+        <label class="cl-field-label" for="ui-stress-dose">ปริมาณที่ตวงจริงจากอุปกรณ์ซึ่งตรวจสอบความละเอียดแล้ว</label>
+        <p class="cl-field-hint">กรอกค่าที่อ่านได้จริงและตรวจทานหน่วยก่อนบันทึก</p>
+        <div class="cl-field-control">
+          <input id="ui-stress-dose" value="1234567890.1234567890" />
+          <span class="cl-field-unit">หน่วยความเข้มข้นโดยประมาณจากการคำนวณตามปริมาตรทั้งหมด หน่วยความเข้มข้นโดยประมาณจากการคำนวณตามปริมาตรทั้งหมด</span>
+        </div>
+      </div>
+      <div class="cl-action-bar">
+        <div class="cl-action-secondary"><button class="cl-button-danger">ลบบันทึกที่เลือกออกจากรอบการทดลองนี้</button></div>
+        <div class="cl-action-primary">
+          <button class="cl-button-secondary" disabled>ยังไปขั้นถัดไปไม่ได้จนกว่าจะกรอกข้อมูลครบ</button>
+          <button class="cl-button-primary" aria-busy="true">กำลังบันทึกข้อมูลและตรวจสอบความถูกต้อง</button>
+        </div>
+      </div>`;
+    document.querySelector("main")?.append(fixture);
+
+    const rectanglesOverlap = (first, second) => first.left < second.right - 1
+      && first.right > second.left + 1
+      && first.top < second.bottom - 1
+      && first.bottom > second.top + 1;
+    const fieldControl = fixture.querySelector(".cl-field-control");
+    const fieldInput = fixture.querySelector("input");
+    const fieldUnit = fixture.querySelector(".cl-field-unit");
+    const headingCopy = fixture.querySelector(".cl-page-heading > div:first-child");
+    const headingAction = fixture.querySelector(".cl-page-heading-action");
+    const actionSecondary = fixture.querySelector(".cl-action-secondary");
+    const actionPrimary = fixture.querySelector(".cl-action-primary");
+    const danger = fixture.querySelector(".cl-button-danger");
+    const disabled = fixture.querySelector("button:disabled");
+    const busy = fixture.querySelector('[aria-busy="true"]');
+    const clippedText = [...fixture.querySelectorAll("h1,p,label,button,span")]
+      .filter((element) => element.scrollWidth > element.clientWidth + 1)
+      .map((element) => element.textContent?.trim().slice(0, 80));
+
+    return {
+      documentOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      fieldOverflow: fieldControl.scrollWidth - fieldControl.clientWidth,
+      unitOverflow: fieldUnit.scrollWidth - fieldUnit.clientWidth,
+      inputUnitOverlap: rectanglesOverlap(fieldInput.getBoundingClientRect(), fieldUnit.getBoundingClientRect()),
+      headingOverlap: rectanglesOverlap(headingCopy.getBoundingClientRect(), headingAction.getBoundingClientRect()),
+      actionOverlap: rectanglesOverlap(actionSecondary.getBoundingClientRect(), actionPrimary.getBoundingClientRect()),
+      clippedText,
+      primaryHeight: Math.round(busy.getBoundingClientRect().height),
+      dangerBorder: getComputedStyle(danger).borderColor,
+      disabledCursor: getComputedStyle(disabled).cursor,
+      cursor: getComputedStyle(busy).cursor,
+      hasDesignCaptions: /Primary|Keyboard focus|Destructive|Disabled/.test(fixture.textContent ?? ""),
+    };
+  });
+
+  const prefix = `${viewportName} ${route} primitive stress`;
+  assert(result.documentOverflow <= 1, `${prefix}: document overflow ${result.documentOverflow}px`);
+  assert(result.fieldOverflow <= 1, `${prefix}: field control overflow ${result.fieldOverflow}px`);
+  assert(result.unitOverflow <= 1, `${prefix}: field unit overflow ${result.unitOverflow}px`);
+  assert(!result.inputUnitOverlap, `${prefix}: unit overlaps the input`);
+  assert(!result.headingOverlap, `${prefix}: heading copy overlaps its action`);
+  assert(!result.actionOverlap, `${prefix}: secondary and primary action groups overlap`);
+  assert(result.clippedText.length === 0, `${prefix}: clipped text ${result.clippedText.join(" | ")}`);
+  assert(result.primaryHeight >= 52, `${prefix}: important action height ${result.primaryHeight}px is below 52px`);
+  assert(result.dangerBorder !== "rgba(0, 0, 0, 0)", `${prefix}: danger state has no visible boundary`);
+  assert(result.disabledCursor === "not-allowed", `${prefix}: disabled cursor is ${result.disabledCursor}`);
+  assert(result.cursor === "progress", `${prefix}: loading cursor is ${result.cursor}`);
+  assert(!result.hasDesignCaptions, `${prefix}: exposed English design captions`);
+  await page.screenshot({ path: path.join(screenshotRoot, `${viewportName}-primitive-stress.png`), fullPage: true });
 }
 
 // เดิมชี้ /plants/new /experiments/new /protocols/new /knowledge/taxa/... ซึ่งเป็นเส้นทาง

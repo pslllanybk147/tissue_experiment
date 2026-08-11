@@ -7,6 +7,13 @@ type AccessibleActionProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   intent?: "primary" | "secondary" | "danger" | "photo";
 };
 
+const classByIntent = {
+  primary: "cl-button-primary",
+  secondary: "cl-button-secondary",
+  danger: "cl-button-danger",
+  photo: "cl-button-secondary",
+} as const;
+
 export function AccessibleAction({
   children,
   className = "",
@@ -16,7 +23,7 @@ export function AccessibleAction({
 }: AccessibleActionProps) {
   return (
     <button
-      className={`accessible-action accessible-action-${intent} ${className}`.trim()}
+      className={`${classByIntent[intent]} ${className}`.trim()}
       data-intent={intent}
       type={type}
       {...buttonProps}

@@ -101,7 +101,8 @@ describe("Calm Lab contract", () => {
 
       expect(declarations.length, `${role} role must be used`).toBeGreaterThan(0);
       for (const declaration of declarations) {
-        expect(declaration.body, `${declaration.selector} must use ${role} weight`).toContain(`font-weight: ${weight}`);
+        const expectedWeight = role === "label" && declaration.selector.includes(".cl-button-primary") ? "700" : weight;
+        expect(declaration.body, `${declaration.selector} must use ${role} weight`).toContain(`font-weight: ${expectedWeight}`);
         expect(declaration.body, `${declaration.selector} must use ${role} line height`).toContain(`line-height: ${lineHeight}`);
       }
     }
@@ -114,6 +115,7 @@ describe("Calm Lab contract", () => {
     const mobileImportantActions = `@media (max-width: 767px) {
   :root { --cl-gutter: 16px; }
   .cl-button-primary,
+  .cl-button-secondary[data-intent="photo"],
   .cl-action-primary > :where(button, a) {
     min-height: var(--cl-control-important);
   }
@@ -166,6 +168,34 @@ describe("Calm Lab contract", () => {
     expect(css).toContain("@media (forced-colors: active)");
     expect(css).toContain("Highlight");
     expect(css).toContain("CanvasText");
+  });
+
+  it("lets long field units wrap without shrinking or covering the input", () => {
+    const sharedWrapBlock = declarationBlock(calmLabCss, ":where(h1, h2, h3, p, li, label, button, a, dd, dt, span)");
+    const fieldControl = declarationBlock(calmLabCss, ".cl-field-control");
+    const fieldUnit = declarationBlock(calmLabCss, ".cl-field-unit");
+
+    expect(sharedWrapBlock).toContain("overflow-wrap: break-word");
+    expect(sharedWrapBlock).toContain("word-break: normal");
+    expect(fieldControl).toContain("grid-template-columns: minmax(0, 1fr) minmax(0, auto)");
+    expect(fieldUnit).toContain("min-width: 0");
+    expect(fieldUnit).toContain("max-width: min(40vw, 12rem)");
+    expect(fieldUnit).toContain("overflow-wrap: break-word");
+    expect(fieldUnit).toContain("word-break: normal");
+  });
+
+  it("keeps one shared field spacing rule and shrink-safe primitive wrappers", () => {
+    expect(calmLabCss.match(/\.cl-field-group\s*\{/g)).toHaveLength(1);
+    expect(declarationBlock(calmLabCss, ".cl-field-group")).toContain("gap: var(--cl-space-2)");
+
+    for (const selector of [
+      ".cl-page-heading > div",
+      ".cl-page-heading-action",
+      ".cl-action-secondary",
+      ".cl-action-primary",
+    ]) {
+      expect(declarationBlock(calmLabCss, selector), `${selector} must shrink inside its flex/grid parent`).toContain("min-width: 0");
+    }
   });
 
   it("keeps execution-card roles in the unlayered foundation", () => {

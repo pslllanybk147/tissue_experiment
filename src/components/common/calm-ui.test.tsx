@@ -19,6 +19,9 @@ describe("Calm Lab workflow primitives", () => {
     expect(html).toContain('aria-describedby="ppm-hint ppm-error"');
     expect(html).toContain('role="alert"');
     expect(html).toContain('for="ppm"');
+    expect(html.indexOf("cl-field-label")).toBeLessThan(html.indexOf("cl-field-hint"));
+    expect(html.indexOf("cl-field-hint")).toBeLessThan(html.indexOf("cl-field-control"));
+    expect(html.indexOf("cl-field-control")).toBeLessThan(html.indexOf("cl-field-error"));
   });
 
   it("keeps disabled method reasons and native grouping visible", () => {
@@ -60,22 +63,34 @@ describe("Calm Lab workflow primitives", () => {
     expect(html).toContain("checked");
   });
 
-  it("uses semantic notice and data markup", () => {
-    const notice = renderToStaticMarkup(<StatusNotice tone="error" title="บันทึกไม่สำเร็จ">ลองอีกครั้ง</StatusNotice>);
+  it("renders semantic notice anatomy without exposing design annotations", () => {
+    const notice = renderToStaticMarkup(
+      <StatusNotice tone="warning" title="ตรวจค่าก่อนบันทึก" action={<button>แก้ไขค่า</button>}>
+        ค่านี้เป็นค่าประมาณจากสูตร
+      </StatusNotice>,
+    );
     const data = renderToStaticMarkup(<DataList items={[{ term: "สถานะ", detail: "เตรียมแล้ว" }]} />);
 
-    expect(notice).toContain('role="alert"');
-    expect(notice).toContain('data-tone="error"');
+    expect(notice).toContain('role="status"');
+    expect(notice).toContain('data-tone="warning"');
+    expect(notice).toContain('class="cl-status-symbol"');
+    expect(notice).toContain('aria-hidden="true"');
+    expect(notice.indexOf("cl-status-symbol")).toBeLessThan(notice.indexOf("cl-status-title"));
+    expect(notice.indexOf("cl-status-title")).toBeLessThan(notice.indexOf("cl-status-copy"));
+    expect(notice.indexOf("cl-status-copy")).toBeLessThan(notice.indexOf("cl-status-action"));
+    expect(notice).not.toMatch(/Primary|Keyboard focus|Destructive|Disabled/);
     expect(data).toContain("<dl");
     expect(data).toContain("<dt");
     expect(data).toContain("<dd");
   });
 
-  it("keeps one primary action and one page heading", () => {
+  it("keeps the secondary action before the primary action without variant captions", () => {
     const actions = renderToStaticMarkup(<ActionBar primary={<button>ยืนยัน</button>} secondary={<button>ย้อนกลับ</button>} />);
     const heading = renderToStaticMarkup(<PageHeading title="ตั้งค่ารอบ" description="ตรวจทานก่อนเริ่ม" />);
 
     expect((actions.match(/cl-action-primary/g) ?? [])).toHaveLength(1);
+    expect(actions.indexOf("cl-action-secondary")).toBeLessThan(actions.indexOf("cl-action-primary"));
+    expect(actions).not.toMatch(/Primary|Keyboard focus|Destructive|Disabled/);
     expect(heading).toContain("<h1");
   });
 
