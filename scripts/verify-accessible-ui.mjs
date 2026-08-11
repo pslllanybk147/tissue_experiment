@@ -121,15 +121,17 @@ async function inspectPage(page, viewportName, route) {
   });
   assert(result.bodyText > 0, `${prefix}: หน้าเว็บว่าง`);
   assert(!result.hasOverlay, `${prefix}: พบ framework error overlay`);
-  assert(result.bodyFont >= 17, `${prefix}: body font ${result.bodyFont}px ต่ำกว่า 17px`);
-  assert(/chaeohon/i.test(result.bodyFamily.replace(/[-_\s]/g, "")), `${prefix}: body ไม่ได้ใช้ แจ่วฮ้อน (${result.bodyFamily})`);
+  assert(result.bodyFont === 18, `${prefix}: body font ต้องเป็น 18px แต่ได้ ${result.bodyFont}px`);
+  // Performance follow-up: next/font still preloads all four static Sarabun weights.
+  // Keep that behavior until route-level font transfer and weight usage are measured after the redesign.
+  assert(/sarabun/i.test(result.bodyFamily), `${prefix}: body ไม่ได้ใช้ Sarabun (${result.bodyFamily})`);
   assert(result.mainCount === 1, `${prefix}: expected one main landmark, got ${result.mainCount}`);
   assert(result.legacyHudCount === 0, `${prefix}: legacy HUD decoration remains`);
   assert(result.horizontalOverflow <= 1, `${prefix}: horizontal overflow ${result.horizontalOverflow}px`);
   for (const control of result.controls) {
     assert(
-      control.width >= 44 && control.height >= 44,
-      `${prefix} “${control.text}”: expected 44x44 target, got ${control.width}x${control.height}`,
+      control.width >= 48 && control.height >= 48,
+      `${prefix} “${control.text}”: expected 48x48 target, got ${control.width}x${control.height}`,
     );
   }
   await verifyButtonContrast(page, viewportName, route);
@@ -180,7 +182,7 @@ async function verifyPublicGuide(page, viewportName) {
   const routes = [
     "/",
     "/guide/pink-princess",
-    "/guide/pink-princess/step/7",
+    "/guide/violin-variegated/step/8",
     "/find",
     "/start",
     "/substances",
@@ -191,6 +193,54 @@ async function verifyPublicGuide(page, viewportName) {
     await page.goto(`${baseUrl}${route}`, { waitUntil: "domcontentloaded" });
     await page.locator("main").first().waitFor({ state: "visible" });
     await inspectPage(page, viewportName, `public:${route}`);
+    if (route === "/guide/violin-variegated/step/8") {
+      await verifyExecutionCardFoundation(page, viewportName, route);
+    }
+  }
+}
+
+async function verifyExecutionCardFoundation(page, viewportName, route) {
+  const heading = page.locator(".execution-instruction-heading h3").first();
+  await heading.waitFor({ state: "visible" });
+  const headingStyle = await heading.evaluate((element) => {
+    const style = getComputedStyle(element);
+    return {
+      fontSize: style.fontSize,
+      fontWeight: style.fontWeight,
+      lineHeight: style.lineHeight,
+    };
+  });
+  assert(headingStyle.fontSize === "28px", `${viewportName} ${route}: execution h3 fontSize ${headingStyle.fontSize} ไม่ใช่ 28px`);
+  assert(headingStyle.fontWeight === "600", `${viewportName} ${route}: execution h3 fontWeight ${headingStyle.fontWeight} ไม่ใช่ 600`);
+  assert(headingStyle.lineHeight === "37.8px", `${viewportName} ${route}: execution h3 lineHeight ${headingStyle.lineHeight} ไม่ใช่ 37.8px`);
+
+  const expectedThemes = {
+    light: {
+      canvas: "rgb(247, 243, 234)",
+      text: "rgb(41, 45, 41)",
+      action: "rgb(41, 62, 99)",
+    },
+    dark: {
+      canvas: "rgb(28, 29, 26)",
+      text: "rgb(247, 244, 237)",
+      action: "rgb(155, 176, 217)",
+    },
+  };
+
+  for (const [theme, expected] of Object.entries(expectedThemes)) {
+    await page.evaluate((value) => document.documentElement.setAttribute("data-theme", value), theme);
+    const computed = await page.evaluate(() => {
+      const body = getComputedStyle(document.body);
+      const action = getComputedStyle(document.querySelector(".cl-button-primary"));
+      return {
+        canvas: body.backgroundColor,
+        text: body.color,
+        action: action.backgroundColor,
+      };
+    });
+    assert(computed.canvas === expected.canvas, `${viewportName} ${route} ${theme}: canvas ${computed.canvas} ไม่ใช่ ${expected.canvas}`);
+    assert(computed.text === expected.text, `${viewportName} ${route} ${theme}: text ${computed.text} ไม่ใช่ ${expected.text}`);
+    assert(computed.action === expected.action, `${viewportName} ${route} ${theme}: action ${computed.action} ไม่ใช่ ${expected.action}`);
   }
 }
 

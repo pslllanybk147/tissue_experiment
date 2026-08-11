@@ -6,12 +6,14 @@ import "./calm-lab.css";
 import "./globals.css";
 import "./guide.css";
 
-const chaeoHon = localFont({
+const sarabun = localFont({
   src: [
-    { path: "../../public/fonts/chaeo-hon/MNChaeoHon-Regular.ttf", weight: "400", style: "normal" },
-    { path: "../../public/fonts/chaeo-hon/MNChaeoHon-Italic.ttf", weight: "400", style: "italic" },
+    { path: "../../public/fonts/sarabun/Sarabun-Regular.woff2", weight: "400", style: "normal" },
+    { path: "../../public/fonts/sarabun/Sarabun-Medium.woff2", weight: "500", style: "normal" },
+    { path: "../../public/fonts/sarabun/Sarabun-SemiBold.woff2", weight: "600", style: "normal" },
+    { path: "../../public/fonts/sarabun/Sarabun-Bold.woff2", weight: "700", style: "normal" },
   ],
-  variable: "--font-chaeo-hon",
+  variable: "--font-sarabun",
   display: "swap",
 });
 
@@ -22,7 +24,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="th" className={chaeoHon.variable} suppressHydrationWarning>
+    <html lang="th" className={sarabun.variable} suppressHydrationWarning>
       <body>
         <ThemeScript />
         <AuthProvider>{children}</AuthProvider>

@@ -9,9 +9,17 @@ describe("root layout", () => {
     expect(source).not.toContain("Philodendron Lab");
   });
 
-  it("loads only the local แจ่วฮ้อน UI font and imports Calm Lab first", () => {
-    expect(source).toContain('variable: "--font-chaeo-hon"');
+  it("loads only the local Sarabun UI font", () => {
+    expect(source).toContain('variable: "--font-sarabun"');
+    expect(source).toContain("Sarabun-Regular.woff2");
+    expect(source).toContain("Sarabun-Medium.woff2");
+    expect(source).toContain("Sarabun-SemiBold.woff2");
+    expect(source).toContain("Sarabun-Bold.woff2");
+    expect(source).not.toMatch(/chae[o]?[-_ ]?hon|torsilp/i);
     expect(source).not.toContain("next/font/google");
+  });
+
+  it("imports the shared foundation before feature styles", () => {
     expect(source.indexOf('import "./calm-lab.css"')).toBeLessThan(source.indexOf('import "./globals.css"'));
   });
 });

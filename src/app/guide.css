@@ -1,3 +1,4 @@
+@layer legacy {
 :root {
   --pl-paper: var(--cl-canvas);
   --pl-card: var(--cl-surface);
@@ -44,7 +45,7 @@
   min-height: 100vh;
   background: var(--pl-paper);
   color: var(--pl-ink);
-  font-family: var(--font-chaeo-hon), Tahoma, sans-serif;
+  font-family: var(--font-sarabun), Tahoma, sans-serif;
   line-height: 1.6;
 }
 
@@ -82,7 +83,7 @@
 .pl-brand {
   font-weight: 700;
   font-size: 17px;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   color: var(--pl-ink);
   text-decoration: none;
   /* ชื่อแบรนด์และปุ่มสลับธีมห้ามตัดกลางคำ เพราะ "Plantlover Lab" ที่แตกเป็น
@@ -114,7 +115,7 @@
 /* chip สถานะสไตล์ HUD ใช้โดยหน้าทำงาน (Task 3) */
 .pl-hud-chip {
   display: inline-block;
-  font-family: var(--font-chaeo-hon), monospace;
+  font-family: var(--font-sarabun), monospace;
   font-size: 12px;
   letter-spacing: 0.5px;
   padding: 2px 10px;
@@ -656,7 +657,7 @@
   font-size: 30px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
   line-height: 1.15;
 }
 
@@ -768,7 +769,7 @@
 }
 
 .pl-plant-card-placeholder {
-  font-family: var(--font-chaeo-hon), Tahoma, sans-serif;
+  font-family: var(--font-sarabun), Tahoma, sans-serif;
   font-size: 40px;
   font-weight: 700;
   color: var(--pl-ink-3);
@@ -783,40 +784,4 @@
 @keyframes pl-fade-in { to { opacity: 1; } }
 .pl-hero-note { margin-top: 10px; font-size: 13px; color: var(--pl-ink-3); text-align: center; }
 
-/* Calm Lab execution-card reading scale. Keep card labels as prominent as
-   the surrounding section headings, with supporting details still readable. */
-.cl-protocol .execution-instruction-heading h3 {
-  margin: 0;
-  font-size: var(--cl-text-h2);
-  line-height: 1.25;
-}
-
-.cl-protocol .execution-instruction-number {
-  font-size: var(--cl-text-label);
-  line-height: 1.3;
-}
-
-.cl-protocol .execution-instruction-action {
-  margin-block-start: var(--cl-space-3);
-  font-size: var(--cl-text-body);
-  line-height: 1.65;
-}
-
-.cl-protocol .execution-instruction-details {
-  margin-block-start: var(--cl-space-4);
-  font-size: var(--cl-text-compact);
-  line-height: 1.55;
-}
-
-.cl-protocol .execution-instruction-container {
-  font-family: var(--font-chaeo-hon), Tahoma, sans-serif;
-  font-size: var(--cl-text-compact);
-  line-height: 1.55;
-}
-
-.cl-protocol .execution-instruction-completion,
-.cl-protocol .execution-instruction-next {
-  margin-block-start: var(--cl-space-4);
-  font-size: var(--cl-text-compact);
-  line-height: 1.6;
 }
