@@ -6,7 +6,7 @@ import { FieldGroup } from "@/components/common/field-group";
 import { StatusNotice } from "@/components/common/status-notice";
 import { HaiterCalculator } from "@/components/calculators/haiter-calculator";
 import { NadccCalculator } from "@/components/calculators/nadcc-calculator";
-import type { HaiterAutoResult } from "@/lib/domain/haiter-calculations";
+import { toWeightPerVolumePercent, type HaiterAutoResult } from "@/lib/domain/haiter-calculations";
 import type { NadccAutoResult } from "@/lib/domain/nadcc-calculations";
 import type {
   ChemicalPreparationSnapshot,
@@ -21,6 +21,38 @@ function calculatedDose(plan: HaiterAutoResult | NadccAutoResult | null): DoseVa
   if (!plan) return undefined;
   if ("actionableVolumeMl" in plan) return { value: plan.actionableVolumeMl, unit: "mL" };
   return { value: plan.mode === "direct" ? plan.sourceVolumeMl : plan.workingDoseMl, unit: "mL" };
+}
+
+function roundPpm(value: number): number {
+  return Number(value.toFixed(3));
+}
+
+export function estimatePpmFromDose(
+  plan: HaiterAutoResult | NadccAutoResult,
+  preparation: { labelConcentration?: number; labelBasis?: string },
+  doseMl: number,
+  finalVolumeMl: number,
+): number | undefined {
+  if (!Number.isFinite(doseMl) || doseMl <= 0 || !Number.isFinite(finalVolumeMl) || finalVolumeMl <= 0) {
+    return undefined;
+  }
+
+  if ("stockPpm" in plan) {
+    const stockPpm = plan.mode === "working-dilution" ? plan.workingPpm : plan.stockPpm;
+    return roundPpm((stockPpm * doseMl) / finalVolumeMl);
+  }
+
+  if (!Number.isFinite(preparation.labelConcentration) || !preparation.labelConcentration || preparation.labelBasis === undefined) {
+    return undefined;
+  }
+  const sourcePercent = preparation.labelBasis === "w/w"
+    ? toWeightPerVolumePercent(preparation.labelConcentration, "w/w")
+    : preparation.labelBasis === "w/v"
+      ? toWeightPerVolumePercent(preparation.labelConcentration, "w/v")
+      : undefined;
+  if (sourcePercent === undefined) return undefined;
+  const concentrationPercent = plan.mode === "working-dilution" ? plan.workingPercent : sourcePercent;
+  return roundPpm((concentrationPercent * doseMl * 10_000) / finalVolumeMl);
 }
 
 function dateTimeValue(value?: string) {
@@ -75,10 +107,21 @@ export function ChemicalPreparation({
   const isMediumHaiter = stepId === "prep-media" && lockedPreparation.method === "haiter-chemical";
   const target = Number(targetPpm);
   const volume = Number(finalVolumeMl);
+  const enteredDose = Number(actualDose);
+  const doseForEstimate = enteredDose > 0 ? enteredDose : dose?.value;
+  const estimatedPpm = plan && doseForEstimate !== undefined
+    ? estimatePpmFromDose(plan, lockedPreparation, doseForEstimate, volume)
+    : undefined;
   const actualDoseHint = dose
     ? `ผลคำนวณ ${dose.value} ${dose.unit} เป็นค่าทางสูตร ไม่ใช่ค่าที่ต้องเดา · ตวงด้วย syringe หรือเครื่องชั่ง แล้วกรอกค่าที่ตวงจริงตามที่อ่านได้ (ถ้าขีดละเอียด 0.1 mL ให้ปัดตามขีด เช่น 1.281481 mL อ่านเป็นประมาณ 1.3 mL)`
     : "ผลคำนวณด้านล่างเป็นค่าทางสูตร ไม่ใช่ค่าที่ต้องเดา · ตวงด้วย syringe หรือเครื่องชั่ง แล้วกรอกค่าที่ตวงจริงตามที่อ่านได้ (ถ้าขีดละเอียด 0.1 mL ให้ปัดตามขีด)";
-  const actualPpmHint = "หลังผสมให้เข้ากัน เก็บตัวอย่างแล้ววัดด้วยชุดทดสอบคลอรีน free chlorine (เช่น DPD) หรือเครื่องวัด free chlorine/ppm ตามคู่มือ · กรอกค่าที่อ่านได้จากเครื่อง ไม่ใช่ค่าเป้าหมายหรือค่าคำนวณ · ถ้าไม่มีชุดตรวจ ให้ยังไม่เลือก verified";
+  const actualPpmHint = [
+    estimatedPpm !== undefined
+      ? `จากปริมาตร ${doseForEstimate} mL ระบบคำนวณได้ประมาณ ${estimatedPpm} ppm (ค่าจากสูตร ยังไม่ใช่ค่าตรวจ)`
+      : null,
+    "ถ้าจะบันทึกค่าตรวจจริง ให้เก็บตัวอย่างหลังผสมแล้ววัดด้วยชุดทดสอบคลอรีนอิสระ (free chlorine เช่น DPD) หรือเครื่องที่ระบุว่าวัด free chlorine โดยตรง",
+    "กรอกค่าที่อ่านได้จากเครื่องเท่านั้น · เครื่องวัด ppm ในน้ำทั่วไปมักวัด TDS/EC ไม่ใช่คลอรีน ห้ามกรอกแทนค่าคลอรีน · ถ้าไม่มีชุดตรวจ ให้ยังไม่เลือก verified",
+  ].filter(Boolean).join(" · ");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

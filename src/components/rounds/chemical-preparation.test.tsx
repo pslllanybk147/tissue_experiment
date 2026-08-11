@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { LotSterilizationSnapshot } from "@/lib/domain/models";
-import { ChemicalPreparation } from "./chemical-preparation";
+import { ChemicalPreparation, estimatePpmFromDose } from "./chemical-preparation";
 
 const base: LotSterilizationSnapshot = {
   profileId: "locked-v1",
@@ -24,6 +24,25 @@ const base: LotSterilizationSnapshot = {
 };
 
 describe("ChemicalPreparation", () => {
+  it("คำนวณ ppm โดยประมาณจากปริมาตรที่ตวงจริงโดยไม่เรียกว่าเป็นค่าตรวจ", () => {
+    const estimated = estimatePpmFromDose(
+      {
+        mode: "working-dilution",
+        dilutionFactor: 4,
+        workingPercent: 1.62,
+        workingVolumeMl: 20,
+        sourceVolumeMl: 5,
+        diluentVolumeMl: 15,
+        workingDoseMl: 1.259259,
+      },
+      { labelConcentration: 6, labelBasis: "w/w" },
+      1.3,
+      170,
+    );
+
+    expect(estimated).toBe(123.882);
+  });
+
   it("shows only the calculator required by the locked medium method", () => {
     const html = renderToStaticMarkup(
       <ChemicalPreparation stepId="prep-media" sterilization={base} onConfirm={async () => {}} />,
@@ -143,6 +162,8 @@ describe("ChemicalPreparation", () => {
     expect(html).toContain("ขีดละเอียด 0.1 mL");
     expect(html).toContain("ชุดทดสอบคลอรีน");
     expect(html).toContain("ค่าที่อ่านได้จากเครื่อง");
+    expect(html).toContain("TDS/EC");
+    expect(html).toContain("ห้ามกรอกแทนค่าคลอรีน");
     expect(html).toContain("ยังไม่เลือก verified");
   });
 });
