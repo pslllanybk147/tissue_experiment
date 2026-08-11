@@ -89,6 +89,37 @@ describe("shared browser verification runner", () => {
     expect(server.ownsServer()).toBe(false);
   });
 
+  it("can run the built production server for a stable full viewport matrix", async () => {
+    expect(runnerModule).not.toBeNull();
+    if (!runnerModule) return;
+    const child = Object.assign(new EventEmitter(), {
+      pid: 4321,
+      exitCode: null,
+      signalCode: null,
+      stdout: new EventEmitter(),
+      stderr: new EventEmitter(),
+    });
+    let fetchCount = 0;
+    const spawnImpl = vi.fn(() => child);
+    const server = runnerModule.createServerLifecycle({
+      baseUrl: "http://localhost:3100",
+      serverMode: "production",
+      fetchImpl: async () => ({
+        ok: ++fetchCount > 1,
+        text: async () => '<html lang="th">Plantlover Lab</html>',
+      }),
+      spawnImpl,
+      processRef: { platform: "win32", cwd: () => process.cwd() },
+    });
+
+    await server.ensureServer();
+    expect(spawnImpl).toHaveBeenCalledWith(
+      "npm run start -- --port 3100",
+      [],
+      expect.objectContaining({ shell: true }),
+    );
+  });
+
   it("rejects an unavailable explicit external target without spawning", async () => {
     expect(runnerModule).not.toBeNull();
     if (!runnerModule) return;

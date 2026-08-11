@@ -19,6 +19,7 @@ async function waitForExit(child, timeoutMs) {
 export function createServerLifecycle({
   baseUrl,
   externalTarget = false,
+  serverMode = "development",
   fetchImpl = fetch,
   spawnImpl = spawn,
   spawnSyncImpl = spawnSync,
@@ -44,10 +45,11 @@ export function createServerLifecycle({
     if (await ready()) return;
     if (externalTarget) throw new Error(`External UI target unavailable: ${baseUrl}`);
     const windows = processRef.platform === "win32";
+    const npmScript = serverMode === "production" ? "start" : "dev";
     serverDetached = !windows;
     server = spawnImpl(
-      windows ? "npm run dev -- --port 3100" : "npm",
-      windows ? [] : ["run", "dev", "--", "--port", "3100"],
+      windows ? `npm run ${npmScript} -- --port 3100` : "npm",
+      windows ? [] : ["run", npmScript, "--", "--port", "3100"],
       {
         cwd: processRef.cwd(),
         stdio: ["ignore", "pipe", "pipe"],
@@ -138,7 +140,8 @@ export async function runBrowserVerification({
   label = "Browser",
   baseUrl = "http://localhost:3100",
   externalTarget = false,
-  lifecycle = createServerLifecycle({ baseUrl, externalTarget }),
+  serverMode = "development",
+  lifecycle = createServerLifecycle({ baseUrl, externalTarget, serverMode }),
   childRunner = runChildScript,
   installHandlers = installProcessCleanupHandlers,
 }) {

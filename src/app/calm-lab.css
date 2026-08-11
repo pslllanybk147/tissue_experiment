@@ -592,7 +592,7 @@ h3 {
 .cl-atlas-summary-list a:hover { background: var(--cl-surface-hover); }
 .cl-atlas-summary-list span { color: var(--cl-text-muted); }
 
-@media (max-width: 767px) {
+@media (max-width: 899px) {
   :root { --cl-mobile-nav-height: 88px; }
   .cl-topbar {
     grid-template-columns: minmax(0, 1fr) auto;

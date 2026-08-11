@@ -157,6 +157,14 @@ describe("Calm Lab contract", () => {
     );
   });
 
+  it("uses the bottom navigation through narrow tablet widths", () => {
+    const responsiveNavigation = calmLabCss.slice(calmLabCss.indexOf(".cl-app-shell"));
+    expect(responsiveNavigation).toContain("@media (max-width: 899px)");
+    expect(responsiveNavigation).toContain(".cl-topbar-navigation { display: none; }");
+    expect(responsiveNavigation).toContain(".cl-mobile-nav {");
+    expect(responsiveNavigation).toContain(".cl-primary-nav-mobile {");
+  });
+
   it("keeps visible UI on the local Sarabun family", () => {
     expect(calmLabCss).toContain("font-family: var(--font-sarabun), Tahoma, sans-serif");
     expect(calmLabCss).not.toMatch(/font-chaeo-hon|torsilp/i);

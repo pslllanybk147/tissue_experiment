@@ -2,6 +2,20 @@
 
 # Philodendron Lab — Handoff
 
+## 2026-08-11 — Botanical Atlas Plan 3 Task 4: full viewport gate hardening
+
+- full dev-server matrix พบ compile/screenshot timeout แบบลูกโซ่ จึงเพิ่ม `UI_SERVER_MODE=production`
+  ให้ shared browser runner พร้อม lifecycle test เพื่อรัน acceptance matrix บน build จริงอย่างเสถียร
+- production matrix พบ nav label ไทยล้นจริงที่ 768–834px; ขยาย shell bottom-navigation breakpoint ถึง 899px,
+  เพิ่ม CSS contract test และยืนยันเฉพาะ 768/820/834px ก่อนรัน matrix เต็มซ้ำ
+- ผลสุดท้าย: unit tests 881 ผ่าน (skip 10), ESLint ผ่าน, production build 216 หน้า,
+  protocol integrity ผ่าน 3 tuples × 2 viewports × 2 themes และ Botanical Atlas browser matrix ผ่าน
+  17 viewport profiles (320–1920px) ทั้ง Light/Dark
+- ตรวจภาพตัวแทน desktop, tablet Light/Dark และ 320px form แล้วไม่พบ clipping/overlap; `terms:report`
+  ทำงานและรายงาน 199 จุดสำหรับ human review ตามหน้าที่ของ report
+- `firebase:verify` ยังรันไม่ได้เพราะเครื่องมี Java 8 (`1.8.0_501`) แต่ firebase-tools ต้อง Java 21+;
+  emulator ปิดตัวก่อนเริ่ม test จึงเป็น environment blocker ไม่ใช่ application test failure
+
 ## 2026-08-11 — Botanical Atlas Plan 3 Task 3: route contract and legacy cleanup
 
 - รวม public/direct route inventory ไว้ใน helper ที่มี contract test และเพิ่ม browser coverage ให้

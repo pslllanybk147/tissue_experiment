@@ -5,5 +5,6 @@ const exitCode = await runBrowserVerification({
   label: "Botanical Atlas",
   baseUrl: process.env.UI_BASE_URL ?? "http://localhost:3100",
   externalTarget: Boolean(process.env.UI_BASE_URL),
+  serverMode: process.env.UI_SERVER_MODE === "production" ? "production" : "development",
 });
 process.exitCode = exitCode;
