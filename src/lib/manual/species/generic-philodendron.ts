@@ -77,6 +77,39 @@ export const genericPhilodendronPack: PlantPack = {
       ],
       evidence: { level: "unsupported", sourceIds: [], searchedAt: "2026-08-02", searchQueries: ["Philodendron micropropagation nodal explant surface sterilization", "Araceae explant sterilization sodium hypochlorite concentration", "การเพาะเลี้ยงเนื้อเยื่อ ฟิโลเดนดรอน ฟอกฆ่าเชื้อ"], note: "อาหารพื้นฐานที่ยังไม่ใส่ฮอร์โมน" },
     },
+    {
+      id: "establishment-ba",
+      title: "ระยะตั้งต้น · MS + BA (ชุดทดลอง)",
+      pH: "5.7 ถึง 5.8",
+      ingredients: [
+        { name: "MS basal salts", amountPerLiter: 1, unit: "×" },
+        { name: "Sucrose", amountPerLiter: 30, unit: "g/L" },
+        { name: "Agar", amountPerLiter: 7.5, unit: "g/L" },
+        { name: "BA", amountPerLiter: 0.5, unit: "mg/L", note: "ใช้น้ำยาแม่; ค่าตั้งต้นสำหรับคัดกรอง ไม่ใช่หลักฐานตรงระยะตั้งต้น" },
+      ],
+      evidence: {
+        level: "adapted",
+        sourceIds: ["source-selfheading-philodendron-2012"],
+        note: "ค่าความเข้มข้นยืมจากงาน Philodendron กลุ่มใกล้เคียงที่รายงานการเพิ่มยอด ไม่ใช่หลักฐานตรงระยะตั้งต้น; ใช้เป็นจุดเริ่มคัดกรองเท่านั้น",
+      },
+    },
+    {
+      id: "establishment-bap-iba",
+      title: "ระยะตั้งต้น · MS + 6-BA (BAP) + IBA (ชุดทดลอง)",
+      pH: "5.7 ถึง 5.8",
+      ingredients: [
+        { name: "MS basal salts", amountPerLiter: 1, unit: "×" },
+        { name: "Sucrose", amountPerLiter: 30, unit: "g/L" },
+        { name: "Agar", amountPerLiter: 7.5, unit: "g/L" },
+        { name: "6-BA (BAP)", amountPerLiter: 1, unit: "mg/L", note: "ใช้น้ำยาแม่; ค่าตั้งต้นสำหรับคัดกรอง ไม่ใช่หลักฐานตรงระยะตั้งต้น" },
+        { name: "IBA", amountPerLiter: 0.5, unit: "mg/L", note: "ใช้น้ำยาแม่; ค่าตั้งต้นสำหรับคัดกรอง ไม่ใช่หลักฐานตรงระยะตั้งต้น" },
+      ],
+      evidence: {
+        level: "adapted",
+        sourceIds: ["source-selfheading-philodendron-2012"],
+        note: "ค่าความเข้มข้นยืมจากงาน Philodendron กลุ่มใกล้เคียงที่รายงานการเพิ่มยอด ไม่ใช่หลักฐานตรงระยะตั้งต้น; ใช้เป็นจุดเริ่มคัดกรองเท่านั้น",
+      },
+    },
   ],
-  sourceIds: ["source-kew-philodendron", "source-kew-wcvp-v15", "source-nadcc-explant-sterilisation"],
+  sourceIds: ["source-kew-philodendron", "source-kew-wcvp-v15", "source-nadcc-explant-sterilisation", "source-selfheading-philodendron-2012"],
 };

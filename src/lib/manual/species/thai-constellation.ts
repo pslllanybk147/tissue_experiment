@@ -142,6 +142,39 @@ export const thaiConstellationPack: PlantPack = {
       },
     },
     {
+      id: "establishment-ba",
+      title: "ระยะตั้งต้น · MS + BA (ชุดทดลอง)",
+      pH: "5.7 ถึง 5.8",
+      ingredients: [
+        { name: "MS basal salts", amountPerLiter: 1, unit: "×" },
+        { name: "Sucrose", amountPerLiter: 30, unit: "g/L" },
+        { name: "Agar", amountPerLiter: 7.5, unit: "g/L" },
+        { name: "BA", amountPerLiter: 0.5, unit: "mg/L", note: "ใช้น้ำยาแม่; ค่าตั้งต้นสำหรับคัดกรอง ไม่ใช่หลักฐานตรงระยะตั้งต้น" },
+      ],
+      evidence: {
+        level: "adapted",
+        sourceIds: ["source-monstera-thai-constellation-2023"],
+        note: "ค่าความเข้มข้นยืมจากงาน Thai Constellation ที่รายงานระยะเพิ่มจำนวน ไม่ใช่หลักฐานตรงระยะตั้งต้น; ใช้เป็นจุดเริ่มคัดกรองเท่านั้น",
+      },
+    },
+    {
+      id: "establishment-bap-iba",
+      title: "ระยะตั้งต้น · MS + 6-BA (BAP) + IBA (ชุดทดลอง)",
+      pH: "5.7 ถึง 5.8",
+      ingredients: [
+        { name: "MS basal salts", amountPerLiter: 1, unit: "×" },
+        { name: "Sucrose", amountPerLiter: 30, unit: "g/L" },
+        { name: "Agar", amountPerLiter: 7.5, unit: "g/L" },
+        { name: "6-BA (BAP)", amountPerLiter: 1, unit: "mg/L", note: "ใช้น้ำยาแม่; ค่าตั้งต้นสำหรับคัดกรอง ไม่ใช่หลักฐานตรงระยะตั้งต้น" },
+        { name: "IBA", amountPerLiter: 0.5, unit: "mg/L", note: "ใช้น้ำยาแม่; ค่าตั้งต้นสำหรับคัดกรอง ไม่ใช่หลักฐานตรงระยะตั้งต้น" },
+      ],
+      evidence: {
+        level: "adapted",
+        sourceIds: ["source-monstera-thai-constellation-2023"],
+        note: "ค่าความเข้มข้นยืมจากงาน Thai Constellation ที่รายงานระยะเพิ่มจำนวน ไม่ใช่หลักฐานตรงระยะตั้งต้น; ใช้เป็นจุดเริ่มคัดกรองเท่านั้น",
+      },
+    },
+    {
       id: "multiplication",
       title: "ระยะเพิ่มจำนวน",
       pH: "5.7 ถึง 5.8",

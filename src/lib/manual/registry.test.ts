@@ -86,6 +86,29 @@ describe("manual registry", () => {
     expect(manual.steps.every((item) => item.evidence.level !== "species-direct")).toBe(true);
   });
 
+  it.each([
+    "pink-princess",
+    "violin-variegated",
+    "thai-constellation",
+    "scindapsus-exotica",
+    "rhaphidophora-tetrasperma-variegata",
+    "generic-philodendron",
+  ])("%s มีชุดสูตรตั้งต้นสามชุดสำหรับคัดกรอง", (slug) => {
+    const recipes = resolveBySlug(slug)!.mediaRecipes;
+    const control = recipes.find((recipe) => recipe.id === "establishment");
+    const ba = recipes.find((recipe) => recipe.id === "establishment-ba");
+    const bapIba = recipes.find((recipe) => recipe.id === "establishment-bap-iba");
+
+    expect(control?.ingredients.some((ingredient) => ["BA", "BAP", "6-BA (BAP)", "IBA"].includes(ingredient.name))).toBe(false);
+    expect(ba?.ingredients.find((ingredient) => ingredient.name === "BA")?.amountPerLiter).toBe(0.5);
+    expect(bapIba?.ingredients.find((ingredient) => ingredient.name === "6-BA (BAP)")?.amountPerLiter).toBe(1);
+    expect(bapIba?.ingredients.find((ingredient) => ingredient.name === "IBA")?.amountPerLiter).toBe(0.5);
+    expect(ba?.evidence.level).toBe("adapted");
+    expect(bapIba?.evidence.level).toBe("adapted");
+    expect(ba?.evidence.note).toContain("ไม่ใช่หลักฐานตรงระยะตั้งต้น");
+    expect(bapIba?.evidence.note).toContain("ไม่ใช่หลักฐานตรงระยะตั้งต้น");
+  });
+
   it("ทุกขั้นที่อ้างว่ามีหลักฐานต้องระบุแหล่งอ้างอิง", () => {
     for (const slug of allSlugs()) {
       for (const step of resolveBySlug(slug)!.steps) {
