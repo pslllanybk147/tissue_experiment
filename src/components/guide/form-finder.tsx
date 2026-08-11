@@ -34,7 +34,7 @@ export function FormFinder({ answers }: { answers: FinderAnswers }) {
           ))}
         </ul>
         <p className="cl-public-links">
-          <Link href="/find">เริ่มตอบใหม่</Link>
+          <Link className="cl-inline-link" href="/find">เริ่มตอบใหม่</Link>
         </p>
       </section>
     );
@@ -58,7 +58,7 @@ export function FormFinder({ answers }: { answers: FinderAnswers }) {
           </Link>
         </div>
         <p className="cl-public-links">
-          ไม่ตรงกับต้นของคุณ? <Link href="/find">เริ่มตอบใหม่</Link>
+          ไม่ตรงกับต้นของคุณ? <Link className="cl-inline-link" href="/find">เริ่มตอบใหม่</Link>
         </p>
       </section>
     );
@@ -75,7 +75,7 @@ export function FormFinder({ answers }: { answers: FinderAnswers }) {
         {" "}เราไม่เอาคู่มือของทรงอื่นมาให้ เพราะตำแหน่งตัดของแต่ละทรงต่างกันจริง ๆ และตัดผิดตำแหน่งต้นจะไม่ขึ้น
       </p></div></header>
       <p className="cl-public-links">
-        <Link href="/find">เริ่มตอบใหม่</Link> · <Link href="/">กลับหน้าแรก</Link>
+        <Link className="cl-inline-link" href="/find">เริ่มตอบใหม่</Link> · <Link className="cl-inline-link" href="/">กลับหน้าแรก</Link>
       </p>
     </section>
   );

@@ -39,4 +39,11 @@ describe("GuideShell", () => {
     expect(html).toContain("pl-nav-mobile");
     expect(html).toContain("เครื่องคำนวณ");
   });
+
+  it("ให้คู่มือมีเจ้าของ navigation บนมือถือเพียงชุดเดียวและคอลัมน์อ่านไม่ซ้อน shell", () => {
+    const html = renderShell(<article>เนื้อหาคู่มือ</article>);
+
+    expect(html.match(/class="cl-mobile-nav"/g)).toHaveLength(1);
+    expect(html).toContain('class="pl-wrap cl-atlas-reading"');
+  });
 });

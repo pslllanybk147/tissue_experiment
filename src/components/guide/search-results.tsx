@@ -16,8 +16,8 @@ export function SearchResults({ query }: { query: string }) {
   const searched = query.trim().length > 0;
 
   return (
-    <section className="cl-public-section">
-      <header className="cl-page-heading"><h1>ค้นหาคู่มือ</h1></header>
+    <section className="cl-public-section cl-atlas-reading">
+      <header className="cl-page-heading"><div><p className="cl-chapter-kicker">ค้นในคู่มือ</p><h1>ค้นหาคู่มือ</h1></div></header>
       <form className="cl-search-form" method="get" action="/search">
         <input
           type="search"
@@ -32,7 +32,7 @@ export function SearchResults({ query }: { query: string }) {
       {!searched ? (
         <p className="cl-support-copy">
           ลองพิมพ์ชื่อที่คุณเรียกต้นนั้น จะเป็นชื่อไทยหรือชื่อวิทยาศาสตร์ก็ได้
-          ถ้าไม่รู้ชื่อ ใช้ <Link href="/find">การไล่ดูจากลักษณะต้น</Link> แทนได้
+          ถ้าไม่รู้ชื่อ ใช้ <Link className="cl-inline-link" href="/find">การไล่ดูจากลักษณะต้น</Link> แทนได้
         </p>
       ) : hits.length > 0 ? (
         <ul className="cl-choice-list">
@@ -57,7 +57,7 @@ export function SearchResults({ query }: { query: string }) {
             แต่ถ้าคุณบอกลักษณะต้นได้ เราหาทรงให้ได้
           </p>
           <p>
-            <Link href="/find">ไล่ดูจากลักษณะต้นแทน</Link>
+            <Link className="cl-inline-link" href="/find">ไล่ดูจากลักษณะต้นแทน</Link>
           </p>
         </div>
       )}

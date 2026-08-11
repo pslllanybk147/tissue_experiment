@@ -1,24 +1,25 @@
 import Link from "next/link";
 import { plainText } from "@/lib/manual/terms";
 import type { ResolvedManual } from "@/lib/manual/types";
+import { StatusNotice } from "@/components/common/status-notice";
 import { EvidenceBadge, evidenceLabel } from "./evidence-badge";
 
 export function StepMap({ manual }: { manual: ResolvedManual }) {
   const unsupported = manual.steps.filter((step) => step.evidence.level === "unsupported");
 
   return (
-    <article className="cl-guide-article">
+    <article className="cl-guide-article cl-atlas-reading">
       <header className="cl-guide-header">
-        <p className="cl-guide-scientific">{manual.scientificName}</p>
+        <p className="cl-chapter-kicker cl-guide-scientific">คู่มือชนิดพืช · {manual.scientificName}</p>
         <h1>{manual.commonName}</h1>
         <p>{manual.summary}</p>
         <small>{manual.steps.length} ขั้น · {manual.durationLabel}</small>
       </header>
 
       {unsupported.length > 0 ? (
-        <aside className="cl-status-notice" data-tone="warning">
-          <div><strong>มี {unsupported.length} ขั้นที่ยังไม่มีงานรองรับ</strong><p className="cl-status-copy">ขั้นเหล่านี้ยังไม่มีงานวิจัยที่ทำกับพันธุ์นี้โดยตรง ให้ทำกระปุกเปล่าคุมทุกรอบและบันทึกผลจริงไว้เสมอ</p></div>
-        </aside>
+        <StatusNotice tone="warning" title={`มี ${unsupported.length} ขั้นที่ยังไม่มีงานรองรับ`}>
+          <p>ขั้นเหล่านี้ยังไม่มีงานวิจัยที่ทำกับพันธุ์นี้โดยตรง ให้ทำกระปุกเปล่าคุมทุกรอบและบันทึกผลจริงไว้เสมอ</p>
+        </StatusNotice>
       ) : null}
 
       <ol className="cl-step-map">

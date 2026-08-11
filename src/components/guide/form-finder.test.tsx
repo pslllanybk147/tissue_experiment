@@ -14,6 +14,9 @@ describe("จอไล่หาทรง", () => {
   it("ตัวเลือกเป็นลิงก์ที่สะสมคำตอบไว้ใน URL", () => {
     const html = renderToStaticMarkup(<FormFinder answers={{}} />);
     expect(html).toContain('href="/find?stem=vine"');
+    expect(html).toContain('class="cl-choice-row" href="/find?stem=vine"');
+    expect(html).not.toContain('class="cl-choice-row cl-inline-link"');
+    expect(html).toContain('class="cl-inline-link" href="/find"');
   });
 
   it("ตอบข้อแรกแล้ว ลิงก์ข้อถัดไปเก็บคำตอบเดิมไว้ด้วย", () => {
@@ -24,12 +27,17 @@ describe("จอไล่หาทรง", () => {
   it("จบที่ทรงที่มีอยู่จริง พาไปหน้าทรง", () => {
     const html = renderToStaticMarkup(<FormFinder answers={{ stem: "vine", texture: "soft" }} />);
     expect(html).toContain('href="/form/climbing-vine-visible-node"');
+    expect(html).toContain('class="cl-choice-row" href="/form/climbing-vine-visible-node"');
+    expect(html).not.toContain('class="cl-choice-row cl-inline-link"');
+    expect(html).toContain('class="cl-inline-link" href="/find"');
   });
 
   it("ต้นที่ยังไม่ครอบคลุม บอกตรง ๆ และไม่ทิ้งให้ตัน", () => {
     const html = renderToStaticMarkup(<FormFinder answers={{ stem: "none" }} />);
     expect(html).toContain("ต้นแบบนี้ยังไม่อยู่ในระบบ");
     expect(html).toContain('href="/find"');
+    expect(html).toContain('class="cl-inline-link" href="/find"');
+    expect(html).toContain('class="cl-inline-link" href="/"');
   });
 
   it("กรณีไม่ตรงสักทรง ห้ามบอกว่าระบุทรงได้แล้ว เพราะผู้ใช้เพิ่งบอกว่าไม่ตรง", () => {

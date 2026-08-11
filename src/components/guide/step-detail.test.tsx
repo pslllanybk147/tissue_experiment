@@ -21,17 +21,44 @@ function renderStep(step: ResolvedStep, forManual: ResolvedManual = manual) {
 }
 
 describe("StepDetail", () => {
-  it("ใช้คอลัมน์อ่าน Calm Lab และ navigation ที่มีป้ายชัดเจน", () => {
-    const html = renderStep(sterilize);
-    expect(html).toContain("cl-guide-article");
-    expect(html).toContain("cl-step-navigation");
-  });
-  it("แสดงหมายเลขขั้นแบบเริ่มจาก 1 พร้อมชื่อและเหตุผล", () => {
+  it("จัดบทนำแบบบทความโดยวางข้อมูลบทก่อนหัวเรื่อง", () => {
     const html = renderStep(sterilize);
 
-    expect(html).toContain("ขั้นที่ 8 จาก 15");
+    expect(html).toContain("cl-atlas-reading");
+    expect(html).toContain("cl-chapter-kicker");
+    expect(html.indexOf("บทที่ 8 จาก 15")).toBeLessThan(html.indexOf("<h1"));
+    expect(html).not.toContain("ขั้นที่ 8 จาก 15");
+  });
+
+  it("คงลำดับการอ่านจากผลลัพธ์ไปยังวิธีทำและหลักฐานประกอบ", () => {
+    const html = renderStep(sterilize);
+
+    expect(html).toContain("cl-guide-chapter");
+    expect(html).not.toContain("cl-atlas-chapters cl-atlas-chapter");
+    expect(html.indexOf("ขั้นนี้ต้องได้อะไร")).toBeLessThan(html.indexOf("ทำตามลำดับ"));
+    expect(html.indexOf("ทำตามลำดับ")).toBeLessThan(html.indexOf("ที่มาของคำแนะนำนี้"));
+    expect(html).toContain("cl-guide-evidence-aside");
+  });
+
+  it("วางทางย้อนกลับก่อนทางไปบทถัดไป", () => {
+    const middle = manual.steps[1];
+    const html = renderStep(middle);
+
+    expect(html).toContain("cl-step-navigation");
+    expect(html.indexOf("‹ ขั้นที่ 1")).toBeLessThan(html.indexOf("ขั้นที่ 3 ›"));
+  });
+  it("แสดงหมายเลขบทแบบเริ่มจาก 1 พร้อมชื่อและเหตุผล", () => {
+    const html = renderStep(sterilize);
+
+    expect(html).toContain("บทที่ 8 จาก 15");
     expect(html).toContain("ฟอกฆ่าเชื้อ");
     expect(html).toContain("ฟอกอ่อนไปจะมีเชื้อขึ้น");
+  });
+
+  it("ทำให้ลิงก์หลักฐานและแหล่งอ้างอิงแยกจากข้อความธรรมดาอย่างชัดเจน", () => {
+    const html = renderStep(sterilize);
+
+    expect(html).toMatch(/class="cl-inline-link" href="https:\/\/doi\.org\//);
   });
 
   it("แสดงสิ่งที่ต้องลงมือ เกณฑ์ผ่าน และจุดที่ต้องหยุด", () => {

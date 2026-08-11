@@ -38,6 +38,7 @@ describe("หน้าทรง", () => {
 
   it("มีทางออกเมื่อผู้ใช้มาผิดทรง", () => {
     expect(html).toContain('href="/find"');
+    expect(html).toContain('class="cl-inline-link" href="/find"');
   });
 
   it("ทรงที่ไม่มีพืชที่มีคู่มือเฉพาะ บอกตรง ๆ ไม่เงียบ", () => {

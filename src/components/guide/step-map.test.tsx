@@ -16,6 +16,13 @@ describe("StepMap", () => {
     expect(html).not.toContain("pl-card");
   });
 
+  it("วางชื่อวิทยาศาสตร์เป็นข้อมูลบทก่อนชื่อคู่มือ", () => {
+    const html = renderToStaticMarkup(<StepMap manual={manual} />);
+
+    expect(html).toContain("cl-chapter-kicker");
+    expect(html.indexOf(manual.scientificName.replace(/'/g, "&#x27;"))).toBeLessThan(html.indexOf("<h1"));
+  });
+
   it("ลิงก์ทุกขั้นด้วยหมายเลขที่เริ่มจาก 1", () => {
     const html = renderToStaticMarkup(<StepMap manual={manual} />);
 

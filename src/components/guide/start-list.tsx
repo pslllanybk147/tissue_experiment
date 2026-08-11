@@ -11,12 +11,13 @@ const difficultyLabel: Record<1 | 2 | 3, string> = {
 
 export function StartList() {
   return (
-    <section className="cl-public-section">
+    <section className="cl-public-section cl-atlas-reading">
       <header className="cl-page-heading">
-      <h1>เลือกต้นที่จะเพาะ</h1>
-      <p>
-        แตะการ์ดต้นที่ตรงกับต้นของคุณเพื่อเปิดคู่มือได้เลย
-      </p>
+        <div>
+          <p className="cl-chapter-kicker">เริ่มต้นคู่มือ</p>
+          <h1>เลือกต้นที่จะเพาะ</h1>
+          <p>แตะการ์ดต้นที่ตรงกับต้นของคุณเพื่อเปิดคู่มือได้เลย</p>
+        </div>
       </header>
 
       <ul className="cl-plant-grid" aria-label="ชนิดพืช">
@@ -53,11 +54,11 @@ export function StartList() {
       <footer className="cl-public-links">
       <p>
         ไม่รู้ว่าต้นของคุณตรงกับชนิดไหนในนี้?{" "}
-        <Link href="/find">ไล่ดูจากลักษณะต้น</Link>
+        <Link className="cl-inline-link" href="/find">ไล่ดูจากลักษณะต้น</Link>
       </p>
       <p>
         รู้ชื่อต้นอยู่แล้ว?{" "}
-        <Link href="/search">ค้นหาโดยตรง</Link>
+        <Link className="cl-inline-link" href="/search">ค้นหาโดยตรง</Link>
       </p>
       </footer>
     </section>

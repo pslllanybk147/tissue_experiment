@@ -1,4 +1,5 @@
 import { substances } from "@/lib/manual/substances";
+import { StatusNotice } from "@/components/common/status-notice";
 
 /** หน้ารวมสารที่ระบบเอ่ยชื่อ ตอบสามคำถามที่ผู้ใช้ต้องออกไปค้นเองทุกครั้ง
  *  คือมันคืออะไร ซื้อที่ไหน และถ้าไม่มีจะใช้อะไรแทน
@@ -6,8 +7,8 @@ import { substances } from "@/lib/manual/substances";
  *  เป็น Server Component ล้วนเหมือนหน้าสาธารณะอื่น ไม่มี state ไม่ต้องใช้ JavaScript */
 export function SubstanceList() {
   return (
-    <section className="cl-public-section">
-      <header className="cl-page-heading"><div><h1>สารที่ต้องใช้ และของที่ใช้แทนได้</h1><p>
+    <section className="cl-public-section cl-atlas-reading">
+      <header className="cl-page-heading"><div><p className="cl-chapter-kicker">ภาคผนวกคู่มือ</p><h1>สารที่ต้องใช้ และของที่ใช้แทนได้</h1><p>
         ทุกตัวที่คู่มือเอ่ยชื่อ อยู่ที่นี่หมด พร้อมบอกว่าซื้อที่ไหนและถ้าไม่มีจะทำยังไงต่อ
         ถ้าตัวไหนไม่มีของแทนที่ยอมรับได้ หน้านี้จะบอกตรง ๆ แทนที่จะเสนอของที่ยังไม่มีใครทดสอบ
       </p></div></header>
@@ -38,9 +39,7 @@ export function SubstanceList() {
             </p>
 
             {item.caution ? (
-              <p className="cl-status-notice" data-tone="warning" role="note">
-                <strong>ต้องระวัง</strong> {item.caution}
-              </p>
+              <StatusNotice tone="warning" title="ต้องระวัง">{item.caution}</StatusNotice>
             ) : null}
           </li>
         ))}

@@ -1,5 +1,11 @@
 @layer legacy {
 :root {
+  --pl-bg: var(--cl-canvas);
+  --pl-surface: var(--cl-surface);
+  --pl-text: var(--cl-text);
+  --pl-muted: var(--cl-text-muted);
+  --pl-border: var(--cl-border);
+  --pl-primary: var(--cl-action);
   --pl-paper: var(--cl-canvas);
   --pl-card: var(--cl-surface);
   --pl-sunk: var(--cl-surface-subtle);
@@ -185,14 +191,14 @@
   font-size: 12px;
   font-weight: 700;
   line-height: 1.2;
-  white-space: nowrap;
+  white-space: normal;
   box-shadow: none;
 }
 
 /* หัวข้อใช้ serif เพื่อโทนตำราที่อ่านยาวสบายตา ฟอนต์ serif ต้องการช่องไฟ
    มากกว่า sans จึงเปลี่ยน letter-spacing จากติดลบเป็นบวกเล็กน้อย */
 .pl-h1 {
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-sarabun), Tahoma, sans-serif;
   font-size: clamp(26px, 5vw, 38px);
   font-weight: 600;
   letter-spacing: 0.01em;
@@ -202,7 +208,7 @@
 }
 
 .pl-h2 {
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-sarabun), Tahoma, sans-serif;
   font-size: 20px;
   font-weight: 600;
   letter-spacing: 0.01em;
@@ -237,6 +243,248 @@
   list-style: decimal;
 }
 
+}
+
+/* Botanical Atlas editorial reading layer.
+   This stays unlayered because calm-lab.css owns the shared defaults and guide.css
+   is imported last as the route-specific composition stylesheet. */
+.cl-atlas-reading {
+  width: min(100%, var(--cl-content-reading));
+  min-width: 0;
+  margin-inline: auto;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+.pl-wrap.cl-atlas-reading {
+  max-width: var(--cl-content-reading);
+  padding: 0;
+}
+
+.cl-inline-link {
+  color: var(--cl-action);
+  text-decoration-line: underline;
+  text-decoration-thickness: 0.1em;
+  text-underline-offset: 0.18em;
+}
+
+.cl-inline-link:hover {
+  color: var(--cl-action-hover);
+  text-decoration-thickness: 0.14em;
+}
+
+.cl-inline-link:focus-visible {
+  border-radius: var(--cl-radius-sm);
+  outline: 3px solid var(--cl-focus);
+  outline-offset: 3px;
+}
+
+.cl-chapter-kicker {
+  margin: 0 0 var(--cl-space-2);
+  color: var(--cl-accent);
+  font-size: var(--cl-text-meta);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.cl-page-heading .cl-chapter-kicker,
+.cl-guide-header .cl-chapter-kicker {
+  color: var(--cl-accent);
+}
+
+.cl-guide-header {
+  gap: var(--cl-space-2);
+  padding-block-end: var(--cl-space-8);
+}
+
+.cl-guide-header h1,
+.cl-page-heading h1 {
+  text-wrap: pretty;
+}
+
+.cl-guide-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cl-space-2) var(--cl-space-3);
+}
+
+.cl-guide-article,
+.cl-public-section {
+  min-width: 0;
+}
+
+.cl-guide-article :where(p, li, dd, figcaption, a, strong, em, span),
+.cl-public-section :where(p, li, a, strong, em, span) {
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+.cl-guide-article .cl-guide-chapters {
+  display: grid;
+  gap: 0;
+}
+
+.cl-guide-article .cl-guide-chapters > .cl-protocol-section,
+.cl-guide-article .cl-guide-chapter {
+  margin: 0;
+  padding-block: var(--cl-space-8);
+  border-block-start: 1px solid var(--cl-border);
+}
+
+.cl-guide-article .cl-guide-chapters > .cl-protocol-section:first-child {
+  border-block-start: 0;
+  padding-block-start: 0;
+}
+
+.cl-guide-article .cl-guide-chapters > .cl-protocol-section > h2,
+.cl-guide-article .cl-guide-chapter > h2 {
+  margin: 0 0 var(--cl-space-4);
+  font-size: var(--cl-text-h2);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.cl-guide-evidence-aside {
+  display: grid;
+  gap: var(--cl-space-3);
+  padding: var(--cl-space-6);
+  border: 1px solid var(--cl-border);
+  border-inline-start: 5px solid var(--cl-accent);
+  background: var(--cl-surface-subtle);
+}
+
+.cl-guide-evidence-aside h2,
+.cl-guide-evidence-aside p,
+.cl-guide-evidence-aside ul {
+  margin: 0;
+}
+
+.cl-guide-evidence-aside h2 {
+  font-size: var(--cl-text-h3);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.cl-guide-evidence-aside ul,
+.cl-guide-source-list,
+.cl-guide-related-list {
+  display: grid;
+  gap: var(--cl-space-2);
+  margin: 0;
+  padding-inline-start: var(--cl-space-6);
+}
+
+.cl-guide-related-list {
+  padding: 0;
+  list-style: none;
+}
+
+.cl-guide-subheading {
+  margin: 0;
+  padding-block-start: var(--cl-space-4);
+  border-block-start: 1px solid var(--cl-border);
+  font-size: var(--cl-text-h2);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.cl-guide-problem-list {
+  display: grid;
+  gap: var(--cl-space-4);
+}
+
+.cl-guide-problem {
+  display: grid;
+  gap: var(--cl-space-3);
+  padding: var(--cl-space-4);
+  border-inline-start: 5px solid var(--cl-warning);
+  background: var(--cl-warning-subtle);
+}
+
+.cl-guide-problem :where(h3, h4, p, ol) {
+  margin: 0;
+}
+
+.cl-guide-problem h3 {
+  font-size: var(--cl-text-h3);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.cl-guide-problem h4 {
+  font-size: var(--cl-text-compact);
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.cl-guide-illustration {
+  margin: var(--cl-space-6) 0 0;
+  overflow: hidden;
+  border: 1px solid var(--cl-border);
+  background: var(--cl-surface);
+}
+
+.cl-guide-illustration figcaption,
+.cl-guide-caption {
+  margin: var(--cl-space-2) 0 0;
+  color: var(--cl-text-muted);
+  font-size: var(--cl-text-meta);
+  line-height: 1.5;
+}
+
+.cl-guide-illustration figcaption {
+  padding: 0 var(--cl-space-4) var(--cl-space-4);
+}
+
+.cl-reference-list h3 {
+  margin: 0;
+  font-size: var(--cl-text-h3);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.cl-plant-card {
+  height: auto;
+}
+
+@media (max-width: 640px) {
+  .cl-guide-article,
+  .cl-public-section {
+    gap: var(--cl-space-4);
+  }
+
+  .cl-guide-article .cl-guide-chapters > .cl-protocol-section,
+  .cl-guide-article .cl-guide-chapter {
+    padding-block: var(--cl-space-6);
+  }
+
+  .cl-step-navigation,
+  .cl-search-form {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .cl-step-navigation a,
+  .cl-search-form button {
+    width: 100%;
+    min-height: var(--cl-control-important);
+  }
+
+  .cl-guide-article .cl-evidence-badge {
+    max-width: 100%;
+    white-space: normal;
+  }
+
+  .pl-landmark {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+}
+
+@layer legacy {
+
 .pl-root ol.execution-instructions {
   list-style: none;
   padding-inline-start: 0;
@@ -253,14 +501,12 @@
 
 .pl-link:focus-visible,
 .pl-skip:focus-visible,
-/* ปุ่มสลับธีมห้ามตัดกลางคำเช่นกัน แต่ไม่ใส่กฎนี้ที่ .pl-chip ทั้งหมด
-   เพราะป้ายระดับหลักฐานยาวกว่าและควรตัดบรรทัดได้เมื่อจอแคบ */
+/* ปุ่มสลับธีมใช้ขนาด label ของระบบและยอมตัดบรรทัดเมื่อพื้นที่แคบ */
 .pl-toggle {
-  white-space: nowrap;
   min-height: 48px;
   padding: 8px 12px;
-  font-size: 13px;
-  line-height: 1.2;
+  font-size: var(--cl-text-label);
+  line-height: 1.45;
 }
 
 .pl-toggle:focus-visible {
@@ -339,8 +585,8 @@
 .pl-action-secondary.pl-toggle {
   min-height: 48px;
   padding: 8px 12px;
-  font-size: 13px;
-  line-height: 1.2;
+  font-size: var(--cl-text-label);
+  line-height: 1.45;
 }
 
 @media (prefers-reduced-motion: reduce) {

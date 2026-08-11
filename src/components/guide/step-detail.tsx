@@ -33,23 +33,23 @@ function Troubleshooting({ ids }: { ids: string[] }) {
   if (entries.length === 0) return null;
 
   return (
-    <section style={{ marginTop: "26px" }}>
-      <h2 className="pl-h2">ถ้าเจออาการแบบนี้</h2>
-      <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "10px" }}>
+    <section className="cl-reading-section cl-guide-chapter">
+      <h2>ถ้าเจออาการแบบนี้</h2>
+      <div className="cl-guide-problem-list">
         {entries.map((entry) => (
-          <article className="pl-card" key={entry.id} style={{ background: "var(--pl-sunk)" }}>
-            <p style={{ margin: 0, fontWeight: 700 }}>{entry.symptom}</p>
-            <p className="pl-lede" style={{ marginTop: "8px" }}>{entry.likelyCause}</p>
+          <article className="cl-guide-problem" key={entry.id}>
+            <h3>{entry.symptom}</h3>
+            <p>{entry.likelyCause}</p>
             {entry.distinguish ? (
-              <p className="pl-lede" style={{ marginTop: "8px" }}>
+              <p>
                 <strong>วิธีแยกจากอาการที่คล้ายกัน</strong> {entry.distinguish}
               </p>
             ) : null}
-            <h3 className="pl-mono" style={{ marginTop: "12px" }}>ทำอะไรต่อ</h3>
-            <ol style={{ margin: "6px 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "6px" }}>
+            <h4>ทำอะไรต่อ</h4>
+            <ol className="cl-instruction-list">
               {entry.actions.map((action) => <li key={action}><RichText source={action} /></li>)}
             </ol>
-            <p style={{ marginTop: "12px" }}><EvidenceBadge level={entry.evidence.level} /></p>
+            <p><EvidenceBadge level={entry.evidence.level} /></p>
           </article>
         ))}
       </div>
@@ -70,79 +70,78 @@ export function StepDetail({ manual, step }: { manual: ResolvedManual; step: Res
   const onMediumPlanChange = useCallback((context: MediumExecutionContext | null) => setMediumContext(context), []);
 
   return (
-    <article className="cl-guide-article">
+    <article className="cl-guide-article cl-atlas-reading">
       <header className="cl-guide-header">
-      <p>
-        <Link href={`/guide/${manual.slug}`}>{manual.commonName}</Link>
-        {" · "}ขั้นที่ {number} จาก {total}
-      </p>
-      <h1>{step.title}</h1>
-      <p>
-        <EvidenceBadge level={step.evidence.level} />
-        {step.durationMinutes != null ? (
-          <>{" "}<span>ใช้เวลาราว {formatDurationMinutes(step.durationMinutes)}</span></>
-        ) : null}
-      </p>
+        <p className="cl-chapter-kicker">
+          <Link className="cl-inline-link" href={`/guide/${manual.slug}`}>{manual.commonName}</Link>
+          {" · "}บทที่ {number} จาก {total}
+        </p>
+        <h1>{step.title}</h1>
+        <p className="cl-guide-meta-row">
+          <EvidenceBadge level={step.evidence.level} />
+          {step.durationMinutes != null ? (
+            <span>ใช้เวลาราว {formatDurationMinutes(step.durationMinutes)}</span>
+          ) : null}
+        </p>
       </header>
-      <StepSections
-        step={step}
-        mediumContext={mediumContext}
-        actionPrelude={(
-          <>
-            {step.id === "sterilize" ? <SterilizationCalculator /> : null}
-            <BracketNotice step={step} />
-            {MEDIUM_CALCULATOR_STEP_IDS.has(step.id) ? (
-              <MediumCalculator recipes={manual.mediaRecipes} initialRecipeId={initialRecipeIdForStep(step.id)} onPlanChange={onMediumPlanChange} />
-            ) : null}
-            {step.illustrationId ? (
-              <div className="pl-card" style={{ marginTop: "18px", padding: 0, overflow: "hidden" }}>
-                <Illustration id={step.illustrationId} />
-              </div>
-            ) : null}
-            {step.illustrationId && illustrationCredits[step.illustrationId] ? (
-              <p className="pl-lede" style={{ marginTop: "6px", fontSize: "13px" }}>
-                {illustrationCredits[step.illustrationId]}
-              </p>
-            ) : null}
-          </>
-        )}
-      />
+      <div className="cl-guide-chapters">
+        <StepSections
+          step={step}
+          mediumContext={mediumContext}
+          actionPrelude={(
+            <>
+              {step.id === "sterilize" ? <SterilizationCalculator /> : null}
+              <BracketNotice step={step} />
+              {MEDIUM_CALCULATOR_STEP_IDS.has(step.id) ? (
+                <MediumCalculator recipes={manual.mediaRecipes} initialRecipeId={initialRecipeIdForStep(step.id)} onPlanChange={onMediumPlanChange} />
+              ) : null}
+              {step.illustrationId ? (
+                <figure className="cl-guide-illustration">
+                  <Illustration id={step.illustrationId} />
+                  {illustrationCredits[step.illustrationId] ? (
+                    <figcaption>{illustrationCredits[step.illustrationId]}</figcaption>
+                  ) : null}
+                </figure>
+              ) : null}
+            </>
+          )}
+        />
+      </div>
 
       <Troubleshooting ids={step.troubleshootingIds ?? []} />
 
-      {step.evidence.note ? (
-        <section style={{ marginTop: "18px" }}>
-          <h2 className="pl-h2">ที่มาของคำแนะนำนี้</h2>
-          <p className="pl-lede" style={{ marginTop: "6px" }}>{step.evidence.note}</p>
-        </section>
-      ) : null}
-
-      {step.evidence.sourceIds.length > 0 ? (
-        <ul style={{ margin: "10px 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "6px" }}>
-          {step.evidence.sourceIds.map((id) => {
-            const source = sourceById(id);
-            const page = step.evidence.sourcePages?.[id];
-            return (
-              <li key={id}>
-                {source ? <a className="pl-link" href={source.url}>{source.title}</a> : id}
-                {page ? ` — ${page}` : null}
-              </li>
-            );
-          })}
-        </ul>
+      {step.evidence.note || step.evidence.sourceIds.length > 0 ? (
+        <aside className="cl-guide-evidence-aside" aria-labelledby="step-evidence-heading">
+          <h2 id="step-evidence-heading">ที่มาของคำแนะนำนี้</h2>
+          {step.evidence.note ? <p>{step.evidence.note}</p> : null}
+          {step.evidence.sourceIds.length > 0 ? (
+            <ul>
+              {step.evidence.sourceIds.map((id) => {
+                const source = sourceById(id);
+                const page = step.evidence.sourcePages?.[id];
+                return (
+                  <li key={id}>
+                    {source ? <a className="cl-inline-link" href={source.url}>{source.title}</a> : id}
+                    {page ? ` — ${page}` : null}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : null}
+        </aside>
       ) : null}
 
       {step.referenceImages && step.referenceImages.length > 0 ? (
-        <section style={{ marginTop: "18px" }}>
-          <h2 className="pl-h2">ภาพอ้างอิงภายนอก (ดูลักษณะเท่านั้น)</h2>
-          <p className="pl-lede" style={{ marginTop: "6px" }}>
+        <section className="cl-reading-section cl-guide-chapter">
+          <h2>ภาพอ้างอิงภายนอก (ดูลักษณะเท่านั้น)</h2>
+          <p>
             ลิงก์ไปหน้าเว็บภายนอกเพื่อดูลักษณะเท่านั้น ไม่ใช่คำแนะนำตำแหน่งตัดหรือหลักฐานของขั้นนี้
           </p>
-          <ul style={{ margin: "10px 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "8px" }}>
+          <ul className="cl-guide-source-list">
             {step.referenceImages.map((image) => (
               <li key={image.url}>
-                <a className="pl-link" href={image.url}>{image.label}</a>
-                <p className="pl-lede" style={{ marginTop: "2px" }}>{image.note}</p>
+                <a className="cl-inline-link" href={image.url}>{image.label}</a>
+                <p>{image.note}</p>
               </li>
             ))}
           </ul>

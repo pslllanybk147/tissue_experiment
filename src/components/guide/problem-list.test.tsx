@@ -32,5 +32,16 @@ describe("การเข้าจากอาการ", () => {
   it("อาการที่ไม่มีอยู่ ไม่พัง และพากลับไปเลือกใหม่", () => {
     const html = renderToStaticMarkup(<ProblemList selected="ไม่มีอาการนี้" />);
     expect(html).toContain('href="/problem"');
+    expect(html).toContain('class="cl-inline-link" href="/problem"');
+  });
+
+  it("ทำให้ทางช่วยเหลือในเนื้อหาเห็นเป็นลิงก์ แต่ไม่เปลี่ยนรายการอาการเป็น inline link", () => {
+    const selectedHtml = renderToStaticMarkup(<ProblemList selected="browning-phenolic" />);
+    const listHtml = renderToStaticMarkup(<ProblemList selected={undefined} />);
+
+    expect(selectedHtml).toContain('class="cl-inline-link" href="/substances"');
+    expect(selectedHtml).toContain('class="cl-inline-link" href="/problem"');
+    expect(listHtml).toContain('class="cl-choice-row" href="/problem?symptom=');
+    expect(listHtml).not.toContain('class="cl-choice-row cl-inline-link"');
   });
 });

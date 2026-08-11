@@ -21,7 +21,7 @@ export function GuideShell({ children, action }: { children: ReactNode; action?:
             </>
           )}
         >
-          <div className="pl-wrap">{children}</div>
+          <div className="pl-wrap cl-atlas-reading">{children}</div>
         </AppShell>
         <CalculatorOverlay />
       </div>
