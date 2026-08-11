@@ -350,59 +350,17 @@
   }
 }
 
-/* ระบบนำทางหลัก: bottom tab bar บนมือถือ, แถบบนเดสก์ท็อป */
+/* แถบนำทางเดสก์ท็อปรุ่นเดิมยังใช้เป็น compatibility hook;
+   mobile layout ย้ายไปให้ Botanical Atlas shell เป็นเจ้าของทั้งหมด */
 .pl-nav-desktop {
   display: none;
   align-items: center;
   gap: 4px;
 }
 
-.pl-nav-mobile {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 20;
-  display: flex;
-  justify-content: space-around;
-  background: var(--pl-card);
-  border-top: 1.5px solid var(--pl-line-soft);
-  padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
-}
-
-.pl-nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--pl-ink-3);
-  text-decoration: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px 10px;
-  border-radius: 12px;
-}
-
-.pl-nav-item[aria-current="page"] {
-  color: var(--pl-leaf);
-}
-
 @media (min-width: 768px) {
   .pl-nav-desktop {
     display: flex;
-  }
-
-  .pl-nav-mobile {
-    display: none;
-  }
-}
-
-@media (max-width: 767px) {
-  .pl-wrap {
-    padding-bottom: 96px;
   }
 }
 
@@ -533,7 +491,6 @@
   border-color: var(--pl-leaf);
 }
 
-.pl-nav-item:focus-visible,
 .pl-overlay-close:focus-visible,
 .pl-overlay-back:focus-visible,
 .pl-overlay-handle:focus-visible,

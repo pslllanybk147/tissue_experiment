@@ -36,14 +36,28 @@ describe("PrimaryNav", () => {
     expect(html).toContain('aria-current="page"');
   });
 
-  it("มีทั้งเมนูเดสก์ท็อปและมือถือใน markup เดียวกัน (สลับด้วย CSS)", () => {
+  it("แยกเมนูเดสก์ท็อปและมือถือโดยยังคงรายการและปลายทางเดิม", () => {
     const html = renderToStaticMarkup(
       <CalculatorOverlayProvider>
         <PrimaryNav />
       </CalculatorOverlayProvider>,
     );
 
-    expect(html).toContain("pl-nav-desktop");
-    expect(html).toContain("pl-nav-mobile");
+    expect(html).toContain("cl-primary-nav-desktop");
+    expect(html).toContain("cl-primary-nav-mobile");
+    expect((html.match(/href="\/"/g) ?? [])).toHaveLength(2);
+  });
+
+  it("ให้แต่ละรายการมือถือมีโครงสร้าง target เต็มพื้นที่และชื่อเมนูภาษาไทย", () => {
+    const html = renderToStaticMarkup(
+      <CalculatorOverlayProvider>
+        <PrimaryNav variant="mobile" />
+      </CalculatorOverlayProvider>,
+    );
+
+    expect(html).toContain('aria-label="เมนูหลักสำหรับมือถือ"');
+    expect(html).toContain("cl-primary-nav-item");
+    expect(html).toContain("หน้าแรก");
+    expect(html).not.toMatch(/Primary|Keyboard focus|Destructive|Disabled/);
   });
 });

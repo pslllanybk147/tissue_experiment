@@ -28,7 +28,7 @@ export function LabShell({ children, section, sessionLabel, onSignOut }: LabShel
     </nav>
   );
   const mobileNavigation = (
-    <nav aria-label="Mobile navigation" className="cl-lab-mobile-navigation">
+    <nav aria-label="เมนูหลักสำหรับมือถือ" className="cl-lab-mobile-navigation">
       {destinations.map((item) => <Link aria-current={section === item.label ? "page" : undefined} className={section === item.label ? "active" : ""} href={item.href} key={item.href}>{item.text}</Link>)}
     </nav>
   );
@@ -43,7 +43,7 @@ export function LabShell({ children, section, sessionLabel, onSignOut }: LabShel
         </div>
       )}
     >
-      <div className="lab-route-main">{children}</div>
+      <div className="lab-route-main cl-atlas-content cl-atlas-chapter">{children}</div>
     </AppShell>
   );
 }

@@ -93,6 +93,11 @@ describe("Calm Lab contract", () => {
       ["numeric", "600", "1.35"],
     ] as const;
     const rules = [...calmLabCss.matchAll(/([^{}]+)\{([^{}]*)\}/g)];
+    const navigationLabelSelectors = [
+      ".cl-primary-nav-item",
+      ".cl-lab-navigation a",
+      ".cl-lab-mobile-navigation a",
+    ];
 
     for (const [role, weight, lineHeight] of roles) {
       const declarations = rules
@@ -102,8 +107,11 @@ describe("Calm Lab contract", () => {
       expect(declarations.length, `${role} role must be used`).toBeGreaterThan(0);
       for (const declaration of declarations) {
         const expectedWeight = role === "label" && declaration.selector.includes(".cl-button-primary") ? "700" : weight;
+        const isNavigationLabel = role === "label"
+          && navigationLabelSelectors.some((selector) => declaration.selector.includes(selector));
+        const expectedLineHeight = isNavigationLabel ? "1.5" : lineHeight;
         expect(declaration.body, `${declaration.selector} must use ${role} weight`).toContain(`font-weight: ${expectedWeight}`);
-        expect(declaration.body, `${declaration.selector} must use ${role} line height`).toContain(`line-height: ${lineHeight}`);
+        expect(declaration.body, `${declaration.selector} must use ${role} line height`).toContain(`line-height: ${expectedLineHeight}`);
       }
     }
 
@@ -146,6 +154,7 @@ describe("Calm Lab contract", () => {
     expect(globalsCss.trimEnd()).toMatch(/\}\s*$/);
     expect(guideCss.trimStart()).toMatch(/^@layer legacy \{/);
     expect(guideCss.trimEnd()).toMatch(/\}\s*$/);
+    expect(guideCss).not.toContain(".pl-nav-mobile");
   });
 
   it("has no obsolete UI font or negative Thai tracking in imported runtime styles", () => {

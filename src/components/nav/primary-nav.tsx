@@ -74,7 +74,7 @@ export function PrimaryNav({ variant = "both" }: { variant?: "desktop" | "mobile
             <Link
               key={item.key}
               href={item.href}
-              className="pl-nav-item"
+              className="cl-primary-nav-item pl-nav-item"
               aria-current={active ? "page" : undefined}
             >
               <Icon />
@@ -84,7 +84,7 @@ export function PrimaryNav({ variant = "both" }: { variant?: "desktop" | "mobile
         })}
         <button
           type="button"
-          className="pl-nav-item"
+          className="cl-primary-nav-item pl-nav-item"
           aria-current={state.isOpen ? "page" : undefined}
           onClick={open}
         >
@@ -97,8 +97,8 @@ export function PrimaryNav({ variant = "both" }: { variant?: "desktop" | "mobile
 
   return (
     <>
-      {variant !== "mobile" ? <nav className="pl-nav-desktop" aria-label="เมนูหลัก">{renderItems()}</nav> : null}
-      {variant !== "desktop" ? <nav className="pl-nav-mobile" aria-label="เมนูหลัก">{renderItems()}</nav> : null}
+      {variant !== "mobile" ? <nav className="cl-primary-nav-desktop pl-nav-desktop" aria-label="เมนูหลัก">{renderItems()}</nav> : null}
+      {variant !== "desktop" ? <nav className="cl-primary-nav-mobile pl-nav-mobile" aria-label="เมนูหลักสำหรับมือถือ">{renderItems()}</nav> : null}
     </>
   );
 }

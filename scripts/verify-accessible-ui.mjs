@@ -60,6 +60,88 @@ async function verifyCompactMenu(page, viewportName) {
   assert(await page.locator(".cl-mobile-nav:visible").count() === 1, `${viewportName}: mobile navigation ไม่แสดง`);
 }
 
+async function verifyNavTypography(page, viewportName, selector, label) {
+  const items = page.locator(selector);
+  assert(await items.count() === 5, `${viewportName} ${label} nav: expected 5 visible items`);
+  const styles = await items.evaluateAll((elements) => elements.map((element) => {
+    const style = getComputedStyle(element);
+    return {
+      text: element.textContent?.trim() ?? "",
+      fontSize: Number.parseFloat(style.fontSize),
+      fontWeight: Number.parseInt(style.fontWeight, 10),
+      lineHeight: Number.parseFloat(style.lineHeight),
+      width: element.getBoundingClientRect().width,
+      scrollWidth: element.scrollWidth,
+    };
+  }));
+
+  for (const style of styles) {
+    const ratio = style.lineHeight / style.fontSize;
+    assert(style.fontSize >= 15, `${viewportName} ${label} nav “${style.text}”: font size ${style.fontSize}px ต่ำกว่า 15px`);
+    assert(style.fontWeight >= 600, `${viewportName} ${label} nav “${style.text}”: font weight ${style.fontWeight} ต่ำกว่า 600`);
+    assert(ratio >= 1.5, `${viewportName} ${label} nav “${style.text}”: line-height ratio ${ratio.toFixed(2)} ต่ำกว่า 1.5`);
+    assert(style.scrollWidth <= style.width + 1, `${viewportName} ${label} nav “${style.text}”: horizontal overflow ${style.scrollWidth - style.width}px`);
+  }
+}
+
+async function verifyMobileNavLayout(page, viewportName, containerSelector, label) {
+  if ((await page.viewportSize())?.width >= 768) return;
+  const result = await page.evaluate(({ selector }) => {
+    const outer = document.querySelector(".cl-mobile-nav");
+    const container = document.querySelector(selector);
+    const items = container ? [...container.querySelectorAll(":scope > a, :scope > button")] : [];
+    if (!(outer instanceof HTMLElement) || !(container instanceof HTMLElement)) return null;
+
+    const marker = document.createElement("button");
+    marker.type = "button";
+    marker.textContent = "จุดสิ้นสุดเนื้อหาหลัก";
+    marker.dataset.navClearanceMarker = "true";
+    document.querySelector("main")?.append(marker);
+    marker.focus({ preventScroll: true });
+    window.scrollTo(0, document.documentElement.scrollHeight);
+
+    const outerRect = outer.getBoundingClientRect();
+    const markerRect = marker.getBoundingClientRect();
+    const widths = items.map((item) => item.getBoundingClientRect().width);
+    const outerStyle = getComputedStyle(outer);
+    const containerStyle = getComputedStyle(container);
+    const reservedHeight = Number.parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue("--cl-mobile-nav-height"),
+    );
+    const safeArea = Number.parseFloat(outerStyle.paddingBottom) || 0;
+    const result = {
+      containerDisplay: containerStyle.display,
+      containerPosition: containerStyle.position,
+      columnCount: containerStyle.gridTemplateColumns.split(" ").filter(Boolean).length,
+      itemCount: items.length,
+      widthSpread: widths.length ? Math.max(...widths) - Math.min(...widths) : Infinity,
+      containerOverflow: container.scrollWidth - container.clientWidth,
+      documentOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      outerPosition: outerStyle.position,
+      fixedInnerCount: [container, ...items].filter((element) => getComputedStyle(element).position === "fixed").length,
+      markerClearance: outerRect.top - markerRect.bottom,
+      renderedHeight: outerRect.height,
+      reservedHeight: reservedHeight + safeArea,
+    };
+    marker.remove();
+    return result;
+  }, { selector: containerSelector });
+
+  assert(result, `${viewportName} ${label} nav: mobile container missing`);
+  if (!result) return;
+  assert(result.containerDisplay === "grid", `${viewportName} ${label} nav: display is ${result.containerDisplay}, expected grid`);
+  assert(result.containerPosition === "static", `${viewportName} ${label} nav: position is ${result.containerPosition}, expected static`);
+  assert(result.columnCount === 5, `${viewportName} ${label} nav: expected 5 equal columns, got ${result.columnCount}`);
+  assert(result.itemCount === 5, `${viewportName} ${label} nav: expected 5 items, got ${result.itemCount}`);
+  assert(result.widthSpread <= 1, `${viewportName} ${label} nav: item width spread ${result.widthSpread.toFixed(1)}px`);
+  assert(result.containerOverflow <= 1, `${viewportName} ${label} nav: container overflow ${result.containerOverflow}px`);
+  assert(result.documentOverflow <= 1, `${viewportName} ${label} nav: document overflow ${result.documentOverflow}px`);
+  assert(result.outerPosition === "fixed", `${viewportName} ${label} nav: outer position is ${result.outerPosition}`);
+  assert(result.fixedInnerCount === 0, `${viewportName} ${label} nav: ${result.fixedInnerCount} inner fixed owners`);
+  assert(result.markerClearance >= -1, `${viewportName} ${label} nav: final content obscured by ${Math.abs(result.markerClearance).toFixed(1)}px`);
+  assert(result.renderedHeight <= result.reservedHeight + 1, `${viewportName} ${label} nav: rendered ${result.renderedHeight}px exceeds reserved ${result.reservedHeight}px`);
+}
+
 async function inspectPage(page, viewportName, route) {
   // Route labels include characters that Windows reserves in filenames.
   const safeRoute = route.replaceAll("/", "_").replaceAll(/[<>:"|?*]/g, "");
@@ -180,6 +262,10 @@ async function verifyPublicGuide(page, viewportName) {
     await page.goto(`${baseUrl}${route}`, { waitUntil: "domcontentloaded" });
     await page.locator("main").first().waitFor({ state: "visible" });
     await inspectPage(page, viewportName, `public:${route}`);
+    if (route === "/") {
+      await verifyNavTypography(page, viewportName, ".cl-primary-nav-item:visible", "public");
+      await verifyMobileNavLayout(page, viewportName, ".cl-primary-nav-mobile", "public");
+    }
     if (route === "/guide/violin-variegated/step/8") {
       await verifyExecutionCardFoundation(page, viewportName, route);
       if (viewportName === "minimum-mobile") {
@@ -430,6 +516,14 @@ try {
       lastCompletedAction = "entered demo mode";
       await inspectPage(page, viewport.name, "/my");
       lastCompletedAction = "inspected /my";
+      await verifyNavTypography(
+        page,
+        viewport.name,
+        ".cl-lab-navigation:visible a, .cl-lab-mobile-navigation:visible a",
+        "lab",
+      );
+      await verifyMobileNavLayout(page, viewport.name, ".cl-lab-mobile-navigation", "lab");
+      lastCompletedAction = "verified lab navigation typography";
       await verifyCompactMenu(page, viewport.name);
       await page.keyboard.press("Tab");
       const focusTag = await page.evaluate(() => document.activeElement?.tagName ?? "BODY");
