@@ -76,8 +76,9 @@ export function ChemicalPreparation({
   const target = Number(targetPpm);
   const volume = Number(finalVolumeMl);
   const actualDoseHint = dose
-    ? `ผลคำนวณ: ${dose.value} ${dose.unit} · ใช้เป็นค่าตั้งต้น แล้วกรอกค่าที่ตวงจริงจาก syringe หรือเครื่องชั่ง`
-    : "ดูผลคำนวณด้านล่างก่อน แล้วกรอกค่าที่ตวงจริงจาก syringe หรือเครื่องชั่ง";
+    ? `ผลคำนวณ ${dose.value} ${dose.unit} เป็นค่าทางสูตร ไม่ใช่ค่าที่ต้องเดา · ตวงด้วย syringe หรือเครื่องชั่ง แล้วกรอกค่าที่ตวงจริงตามที่อ่านได้ (ถ้าขีดละเอียด 0.1 mL ให้ปัดตามขีด เช่น 1.281481 mL อ่านเป็นประมาณ 1.3 mL)`
+    : "ผลคำนวณด้านล่างเป็นค่าทางสูตร ไม่ใช่ค่าที่ต้องเดา · ตวงด้วย syringe หรือเครื่องชั่ง แล้วกรอกค่าที่ตวงจริงตามที่อ่านได้ (ถ้าขีดละเอียด 0.1 mL ให้ปัดตามขีด)";
+  const actualPpmHint = "หลังผสมให้เข้ากัน เก็บตัวอย่างแล้ววัดด้วยชุดทดสอบคลอรีน free chlorine (เช่น DPD) หรือเครื่องวัด free chlorine/ppm ตามคู่มือ · กรอกค่าที่อ่านได้จากเครื่อง ไม่ใช่ค่าเป้าหมายหรือค่าคำนวณ · ถ้าไม่มีชุดตรวจ ให้ยังไม่เลือก verified";
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -142,7 +143,7 @@ export function ChemicalPreparation({
           <FieldGroup id="preparation-time" label="วันเวลาที่เตรียม"><input id="preparation-time" type="datetime-local" value={preparedAt} onChange={(event) => setPreparedAt(event.currentTarget.value)} /></FieldGroup>
           <FieldGroup id="preparation-status" label="สถานะ"><select id="preparation-status" value={status} onChange={(event) => setStatus(event.currentTarget.value as PreparationStatus)}><option value="planned">planned</option><option value="prepared">prepared</option><option value="verified">verified</option></select></FieldGroup>
           <FieldGroup id="preparation-actual-dose" label="ปริมาณที่ใช้จริง" hint={actualDoseHint} unit={dose?.unit ?? "mL"}><input id="preparation-actual-dose" type="number" step="any" value={actualDose} onChange={(event) => setActualDose(event.currentTarget.value)} /></FieldGroup>
-          <FieldGroup id="preparation-actual-ppm" label="ความเข้มข้นที่ตรวจได้จริง" unit="ppm"><input id="preparation-actual-ppm" type="number" step="any" value={actualPpm} onChange={(event) => setActualPpm(event.currentTarget.value)} /></FieldGroup>
+          <FieldGroup id="preparation-actual-ppm" label="ความเข้มข้นที่ตรวจได้จริง" hint={actualPpmHint} unit="ppm"><input id="preparation-actual-ppm" type="number" step="any" value={actualPpm} onChange={(event) => setActualPpm(event.currentTarget.value)} /></FieldGroup>
         </div>
 
         {!(target > 0) || !(volume > 0) ? (

@@ -114,4 +114,35 @@ describe("ChemicalPreparation", () => {
     expect(html).toContain("ผลคำนวณ");
     expect(html).toContain("กรอกค่าที่ตวงจริง");
   });
+
+  it("แปลผลคำนวณเป็นวิธีอ่านขีดเครื่องมือสำหรับมือใหม่", () => {
+    const html = renderToStaticMarkup(
+      <ChemicalPreparation
+        stepId="prep-media"
+        sterilization={{
+          ...base,
+          method: "haiter-chemical",
+          mediumSterilizationMethod: "haiter-chemical",
+          mediumPreparation: {
+            method: "haiter-chemical",
+            protocolVersion: "haiter-medium-v1",
+            status: "planned",
+            productName: "Haiter",
+            labelConcentration: 6,
+            labelBasis: "w/w",
+            lockedAt: "2026-08-10T08:00:00.000Z",
+          },
+        }}
+        defaultTargetPpm={120}
+        defaultFinalVolumeMl={170}
+        onConfirm={async () => {}}
+      />,
+    );
+
+    expect(html).toContain("ค่าทางสูตร");
+    expect(html).toContain("ขีดละเอียด 0.1 mL");
+    expect(html).toContain("ชุดทดสอบคลอรีน");
+    expect(html).toContain("ค่าที่อ่านได้จากเครื่อง");
+    expect(html).toContain("ยังไม่เลือก verified");
+  });
 });
