@@ -41,6 +41,11 @@ describe("หน้าทรง", () => {
     expect(html).toContain('class="cl-inline-link" href="/find"');
   });
 
+  it("ไม่ครอบคำศัพท์แบบ details ด้วย paragraph ที่ทำให้ hydration ผิด", () => {
+    expect(html).toContain('<div class="cl-support-copy">ตัดใต้');
+    expect(html).not.toContain("<p>ตัดใต้");
+  });
+
   it("ทรงที่ไม่มีพืชที่มีคู่มือเฉพาะ บอกตรง ๆ ไม่เงียบ", () => {
     const empty = renderToStaticMarkup(<FormDetail form={climbingVineVisibleNode} plants={[]} />);
     expect(empty).toContain("ยังไม่มีพืชชนิดใดในทรงนี้ที่มีคู่มือเฉพาะ");

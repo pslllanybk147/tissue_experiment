@@ -2,6 +2,16 @@
 
 # Philodendron Lab — Handoff
 
+## 2026-08-11 — Botanical Atlas Plan 3 Task 3: route contract and legacy cleanup
+
+- รวม public/direct route inventory ไว้ใน helper ที่มี contract test และเพิ่ม browser coverage ให้
+  `/my/rounds/new`, `/my/trials/new` และ `/form/climbing-vine-visible-node` โดยคง representative dynamic routes เดิม
+- browser gate ที่ 320px พบและแก้ regression จริง 3 จุด: disabled controls ทั้งสองธีมมี contrast ต่ำ,
+  หน้า admin manual ยังใช้ inline `system-ui`/สี legacy และหน้า form ซ้อน `<details>` ใน `<p>` จนเกิด hydration error
+- ยืนยันว่า runtime source ไม่มี `font-chaeo-hon`, `MNChaeoHon`, `torsilp` หรือ global `body *` override เหลืออยู่
+- Verification: route/layout/CSS regression tests ผ่าน, ESLint ผ่าน, `git diff --check` ผ่าน และ
+  `atlas:verify` ที่ 320px ผ่านทั้ง Light/Dark พร้อมทุกเส้นทางใหม่
+
 ## 2026-08-11 — Botanical Atlas Plan 3 Task 2: admin/data surfaces
 
 - ย้าย filter rows, source/audit/research lists, dataset review list, training readiness table และ Pin Picker

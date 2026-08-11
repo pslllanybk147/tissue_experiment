@@ -19,6 +19,36 @@ export const uiViewportInventory = [
   { name: "wide-desktop", width: 1920, height: 1080 },
 ];
 
+export const publicUiRoutes = [
+  "/",
+  "/guide/pink-princess",
+  "/guide/violin-variegated/step/8",
+  "/find",
+  "/start",
+  "/substances",
+  "/problem",
+  "/search",
+  "/form/climbing-vine-visible-node",
+];
+
+export const authenticatedDirectUiRoutes = [
+  "/my/equipment",
+  "/my/rounds",
+  "/my/rounds/new",
+  "/my/trials/new",
+  "/admin/pin",
+  "/admin/manual/pink-princess",
+];
+
+export const requiredUiRoutes = [
+  "/my",
+  "/admin/knowledge",
+  "/admin/research",
+  "/admin/dataset-review",
+  ...publicUiRoutes,
+  ...authenticatedDirectUiRoutes,
+];
+
 export function selectViewports(selector) {
   if (selector) {
     const selected = uiViewportInventory.filter((viewport) => viewport.name === selector);

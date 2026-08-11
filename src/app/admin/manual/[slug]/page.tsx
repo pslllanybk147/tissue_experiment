@@ -24,7 +24,7 @@ export default async function AdminManualDetailPage({ params }: { params: Promis
   const summary = manualSummary(slug)!;
 
   return (
-    <main style={{ padding: "32px", fontFamily: "system-ui, sans-serif", maxWidth: "820px" }}>
+    <main className="cl-atlas-reading cl-atlas-form-section cl-admin-manual-detail">
       <h1>{manual.scientificName}</h1>
       <p>{manual.summary}</p>
       <p>
@@ -33,7 +33,7 @@ export default async function AdminManualDetailPage({ params }: { params: Promis
 
       <h2>สูตรอาหาร</h2>
       {manual.mediaRecipes.map((recipe) => (
-        <section key={recipe.id}>
+        <section className="cl-reading-section" key={recipe.id}>
           <h3>{recipe.title} · {evidenceLabel[recipe.evidence.level]}</h3>
           <p>pH {recipe.pH}</p>
           <ul>
@@ -47,7 +47,7 @@ export default async function AdminManualDetailPage({ params }: { params: Promis
 
       <h2>ขั้นตอน</h2>
       {manual.steps.map((step) => (
-        <article key={step.id} style={{ borderTop: "1px solid #ccc", paddingTop: "16px", marginTop: "16px" }}>
+        <article className="cl-reading-section" key={step.id}>
           <h3>{step.order + 1}. {step.title}</h3>
           <p>{originLabel[step.origin]} · {evidenceLabel[step.evidence.level]}</p>
           <p>{step.summary}</p>

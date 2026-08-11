@@ -28,7 +28,7 @@
   --cl-danger-subtle: #f8e7e4;
   --cl-on-danger: #ffffff;
   --cl-disabled: #dedcd3;
-  --cl-on-disabled: #77786f;
+  --cl-on-disabled: #565a52;
   --cl-overlay: rgb(28 29 26 / 48%);
   --cl-shadow-raised: 0 12px 32px rgb(41 45 41 / 12%);
 
@@ -88,7 +88,7 @@
   --cl-danger-subtle: #482926;
   --cl-on-danger: #18223a;
   --cl-disabled: #3f413b;
-  --cl-on-disabled: #999b92;
+  --cl-on-disabled: #c2beb1;
   --cl-overlay: rgb(3 9 7 / 72%);
   --cl-shadow-raised: 0 12px 32px rgb(0 0 0 / 30%);
 }
@@ -485,6 +485,8 @@ h3 {
 .cl-atlas-shell { min-height: 100vh; background: var(--cl-canvas); color: var(--cl-text); }
 .cl-atlas-wide { width: min(calc(100% - (2 * var(--cl-gutter))), var(--cl-content-wide)); margin-inline: auto; }
 .cl-atlas-reading { width: min(100%, var(--cl-content-reading)); }
+.cl-admin-manual-detail { margin-inline: auto; padding: var(--cl-space-8) var(--cl-gutter) var(--cl-space-16); }
+.cl-admin-manual-detail > :where(h2, section, article) { margin-block-start: var(--cl-space-8); }
 .cl-atlas-chapter { min-width: 0; }
 .lab-route-main.cl-atlas-content { width: 100%; margin: 0; padding: 0; }
 .cl-skip-link {

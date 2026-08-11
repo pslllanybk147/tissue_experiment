@@ -99,11 +99,11 @@ export function FormDetail({ form, plants }: { form: GrowthForm; plants: FormPla
 
       <section className="cl-reading-section cl-guide-chapter"><h2>ต้นทรงนี้ตัดตรงไหน</h2>
       <div>
-        <p>
+        <div className="cl-support-copy">
           ตัด{directionLabel[explant.direction]}
           <RichText source={`[[${explant.landmarkId}|${anchor?.term ?? explant.landmarkId}]]`} />
           {" "}{explant.offsetMm} มม. ให้ได้ชิ้นยาว {explant.sizeMm[0]} ถึง {explant.sizeMm[1]} มม.
-        </p>
+        </div>
         <p>
           <EvidenceBadge level={explant.evidence.level} />
         </p>

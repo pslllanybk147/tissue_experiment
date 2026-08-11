@@ -23,6 +23,18 @@ function declarationBlock(source: string, selector: string) {
   throw new Error(`Unclosed selector: ${selector}`);
 }
 
+function contrastRatio(foreground: string, background: string) {
+  const luminance = (hex: string) => {
+    const channels = hex.match(/[0-9a-f]{2}/gi)!.map((channel) => Number.parseInt(channel, 16) / 255);
+    const [red, green, blue] = channels.map((channel) => channel <= 0.04045
+      ? channel / 12.92
+      : ((channel + 0.055) / 1.055) ** 2.4);
+    return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+  };
+  const values = [luminance(foreground), luminance(background)];
+  return (Math.max(...values) + 0.05) / (Math.min(...values) + 0.05);
+}
+
 describe("Calm Lab contract", () => {
   it.each([
     "--cl-canvas",
@@ -58,7 +70,7 @@ describe("Calm Lab contract", () => {
       ["--cl-danger", "#963d34", "#f09286"],
       ["--cl-danger-subtle", "#f8e7e4", "#482926"],
       ["--cl-disabled", "#dedcd3", "#3f413b"],
-      ["--cl-on-disabled", "#77786f", "#999b92"],
+      ["--cl-on-disabled", "#565a52", "#c2beb1"],
     ] as const;
 
     const lightTheme = declarationBlock(calmLabCss, ':root[data-theme="light"]');
@@ -72,6 +84,11 @@ describe("Calm Lab contract", () => {
         expect(darkTheme, `${token} must not use its light value in dark mode`).not.toContain(`${token}: ${light}`);
       }
     }
+  });
+
+  it("keeps disabled control text readable in both themes", () => {
+    expect(contrastRatio("#565a52", "#dedcd3")).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio("#c2beb1", "#3f413b")).toBeGreaterThanOrEqual(4.5);
   });
 
   it("uses the approved spacing and readable type floors", () => {

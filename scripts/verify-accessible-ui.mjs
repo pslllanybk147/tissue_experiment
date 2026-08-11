@@ -1,7 +1,11 @@
 import { chromium } from "playwright";
 import fs from "node:fs";
 import path from "node:path";
-import { selectViewports } from "./lib/ui-verification-helpers.mjs";
+import {
+  authenticatedDirectUiRoutes,
+  publicUiRoutes,
+  selectViewports,
+} from "./lib/ui-verification-helpers.mjs";
 
 const baseUrl = process.env.UI_BASE_URL ?? "http://localhost:3100";
 const executablePath = process.env.CHROME_PATH
@@ -248,17 +252,7 @@ async function inspectPage(page, viewportName, route) {
 
 async function verifyPublicGuide(page, viewportName) {
   // หน้าคู่มือสาธารณะอ่านได้โดยไม่ล็อกอิน จึงตรวจแยกจากเส้นทางที่ผ่าน enterDemo
-  const routes = [
-    "/",
-    "/guide/pink-princess",
-    "/guide/violin-variegated/step/8",
-    "/find",
-    "/start",
-    "/substances",
-    "/problem",
-    "/search",
-  ];
-  for (const route of routes) {
+  for (const route of publicUiRoutes) {
     await page.goto(`${baseUrl}${route}`, { waitUntil: "domcontentloaded" });
     await page.locator("main").first().waitFor({ state: "visible" });
     await inspectPage(page, viewportName, `public:${route}`);
@@ -404,13 +398,7 @@ async function verifyCommonPrimitiveStress(page, viewportName, route) {
 // ของ wizard สร้าง Lot รุ่นก่อนหน้าที่ถูกลบออกจากแอปไปแล้ว (ดู src/app ปัจจุบัน: ไม่มีเส้นทางเหล่านี้เหลืออยู่)
 // แทนที่ด้วยเส้นทางตรงจริงของแอปปัจจุบันที่เข้าถึงได้หลัง enterDemo แล้ว
 async function verifyDirectRoutes(page, viewportName) {
-  const routes = [
-    "/my/equipment",
-    "/my/rounds",
-    "/admin/pin",
-    "/admin/manual/pink-princess",
-  ];
-  for (const route of routes) {
+  for (const route of authenticatedDirectUiRoutes) {
     await page.goto(`${baseUrl}${route}`, { waitUntil: "domcontentloaded" });
     await page.locator("main").first().waitFor({ state: "visible" });
     await inspectPage(page, viewportName, route);

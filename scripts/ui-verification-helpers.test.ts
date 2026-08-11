@@ -36,3 +36,17 @@ describe("UI verification viewport selection", () => {
     expect(() => helpers.selectViewports("not-a-viewport")).toThrow("Unknown UI_VIEWPORT: not-a-viewport");
   });
 });
+
+describe("UI verification route inventory", () => {
+  it("keeps every required creation and representative dynamic route in the browser gate", () => {
+    expect(helpers).not.toBeNull();
+    if (!helpers) return;
+    expect(helpers.requiredUiRoutes).toEqual(expect.arrayContaining([
+      "/my/rounds/new",
+      "/my/trials/new",
+      "/form/climbing-vine-visible-node",
+      "/guide/violin-variegated/step/8",
+      "/admin/manual/pink-princess",
+    ]));
+  });
+});
