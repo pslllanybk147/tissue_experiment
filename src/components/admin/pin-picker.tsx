@@ -37,7 +37,7 @@ export function PinPicker({ forms }: { forms: PinPickerForm[] }) {
   const snippet = pinSnippet(picked);
 
   return (
-    <main style={{ padding: "32px", fontFamily: "system-ui, sans-serif", maxWidth: "900px" }}>
+    <main className="cl-atlas-form-section cl-atlas-wide" style={{ maxWidth: "900px" }}>
       <h1>ปักหมุดจุดสังเกตบนภาพของทรง</h1>
 
       <p>
@@ -55,7 +55,7 @@ export function PinPicker({ forms }: { forms: PinPickerForm[] }) {
             ))}
           </select>
         </label>{" "}
-        <button type="button" onClick={() => setPicked([])}>เริ่มปักใหม่</button>
+        <button className="cl-button-secondary" type="button" onClick={() => setPicked([])}>เริ่มปักใหม่</button>
       </p>
 
       {!form ? null : !form.file ? (

@@ -40,5 +40,7 @@ describe("TrainingReadinessPanel", () => {
     expect(html).toContain("Pink Princess");
     expect(html).toContain("ต้องมีอย่างน้อย 2 คลาส");
     expect(html).toContain("<td>3</td><td>0</td><td>0</td><td>1</td>");
+    expect(html).toContain("cl-atlas-table-wrap");
+    expect(html.match(/<th scope="col"/g)).toHaveLength(5);
   });
 });

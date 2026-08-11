@@ -2,6 +2,14 @@
 
 # Philodendron Lab — Handoff
 
+## 2026-08-11 — Botanical Atlas Plan 3 Task 2: admin/data surfaces
+
+- ย้าย filter rows, source/audit/research lists, dataset review list, training readiness table และ Pin Picker
+  ไปใช้ Botanical Atlas shared anatomy; เพิ่ม search accessible name และ `scope="col"` ครบทุกหัวตาราง readiness
+- แก้ Pin Picker จาก inline `system-ui` เป็น Sarabun/semantic layout โดยคง `<main>` ไว้ เพราะ route นี้ render
+  component โดยตรงและ component เป็น main landmark เพียงจุดเดียว (browser gate จับ regression เมื่อทดลองเอาออก)
+- Verification: admin/data tests 8 files / 16 tests ผ่าน, ESLint ผ่าน และ `atlas:verify` ที่ 320px Light/Dark ผ่าน
+
 ## 2026-08-11 — Botanical Atlas Plan 3 Task 1: equipment, trial readiness, and round lists
 
 - ต่อจากคอมมิต `9a816e9` โดยย้ายหน้าอุปกรณ์, การเตรียมน้ำ rinse, readiness gate, การแบ่งกระปุก,

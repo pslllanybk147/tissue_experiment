@@ -25,9 +25,9 @@ export function TrainingReadinessPanel({
           <ul>{report.blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul>
         </div>
       )}
-      <div className="table-scroll" tabIndex={0} aria-label="จำนวนภาพแยกตามคลาส">
+      <div className="table-scroll cl-atlas-table-wrap" tabIndex={0} aria-label="จำนวนภาพแยกตามคลาส">
         <table className="training-class-table">
-          <thead><tr><th>ชนิด/สายพันธุ์</th><th>Train</th><th>Validation</th><th>Test</th><th>Lot</th></tr></thead>
+          <thead><tr><th scope="col">ชนิด/สายพันธุ์</th><th scope="col">Train</th><th scope="col">Validation</th><th scope="col">Test</th><th scope="col">Lot</th></tr></thead>
           <tbody>{Object.entries(report.classSplitCounts).map(([name, counts]) => (
             <tr key={name}><th scope="row">{name}</th><td>{counts.train}</td><td>{counts.validation}</td><td>{counts.test}</td><td>{counts.distinctLots}</td></tr>
           ))}</tbody>

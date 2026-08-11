@@ -15,5 +15,6 @@ describe("ResearchRegister", () => {
     expect(html).toContain("Direct evidence");
     expect(html).toContain("เปิดแหล่งอ้างอิง");
     expect(html).toContain('href="https://doi.org/10.3390/example"');
+    expect(html).toContain("cl-atlas-data-list");
   });
 });

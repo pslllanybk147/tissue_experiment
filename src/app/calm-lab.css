@@ -877,6 +877,20 @@ h3 {
   overflow-wrap: break-word;
   word-break: normal;
 }
+.cl-atlas-filter-row {
+  display: flex;
+  min-width: 0;
+  gap: var(--cl-space-3);
+  align-items: end;
+}
+.cl-atlas-filter-row > * { min-width: 0; }
+.cl-atlas-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+.cl-atlas-table-wrap table { width: 100%; border-collapse: collapse; }
+.cl-atlas-table-wrap thead th { position: sticky; inset-block-start: 0; background: var(--cl-surface); }
+.cl-atlas-table-wrap :is(th, td) { min-width: 0; overflow-wrap: break-word; word-break: normal; }
 .cl-data-row {
   display: grid;
   grid-template-columns: minmax(8rem, 0.8fr) minmax(0, 1.4fr);
@@ -917,6 +931,7 @@ h3 {
     grid-template-columns: 1fr;
     gap: var(--cl-space-1);
   }
+  .cl-atlas-filter-row { align-items: stretch; flex-direction: column; }
 }
 
 /* Public discovery */

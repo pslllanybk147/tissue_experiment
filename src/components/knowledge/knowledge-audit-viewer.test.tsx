@@ -8,5 +8,7 @@ describe("KnowledgeAuditViewer", () => {
     expect(html).toContain("กรอง audit");
     expect(html).toContain("แก้ไข metadata");
     expect(html).toContain("ดู before / after");
+    expect(html).toContain("cl-atlas-filter-row");
+    expect(html).toContain("cl-atlas-data-list");
   });
 });
