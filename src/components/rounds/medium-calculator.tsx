@@ -132,6 +132,7 @@ export function MediumCalculator({
         บอกจำนวนกระปุกที่อยากได้ ระบบคิดปริมาตรและปริมาณสารให้ พร้อมบอกตรง ๆ เมื่อสารบางตัวน้อยจนชั่งไม่ได้
       </p>
       <p style={{ marginTop: "10px" }}><EvidenceBadge level={recipe.evidence.level} /></p>
+      {recipe.evidence.note ? <p className="pl-meta" style={{ marginTop: "6px" }}>{recipe.evidence.note}</p> : null}
 
       <div className="cl-medium-controls">
         <div className="cl-field-group">

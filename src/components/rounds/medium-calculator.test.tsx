@@ -58,6 +58,12 @@ describe("MediumCalculator", () => {
     expect(html).toContain("กรดซิตริก");
   });
 
+  it("แสดงข้อจำกัดของหลักฐานของสูตรที่เลือก", () => {
+    const html = renderToStaticMarkup(<MediumCalculator recipes={recipes} initialRecipeId="establishment-ba" />);
+
+    expect(html).toContain("ไม่ใช่หลักฐานตรงระยะตั้งต้น");
+  });
+
   it("ไม่แอบใช้สูตรแรกแทนสูตรออกรากเมื่อคู่มือยังไม่มีสูตรราก", () => {
     const html = renderToStaticMarkup(<MediumCalculator recipes={recipes} initialRecipeId="rooting-missing" />);
 
