@@ -43,11 +43,24 @@ export type IngredientLine =
 export type MediumPlan = {
   totalJars: number;
   totalVolumeMl: number;
+  /** ปริมาตรสุดท้ายหลังเติมน้ำครบและรวมส่วนผสมทุกตัวแล้ว */
+  finalVolumeMl: number;
+  /** ปริมาตรน้ำตั้งต้นที่ควรตวงก่อนเติมผง/น้ำยา เพื่อไม่ให้ปริมาตรเกิน */
+  initialWaterMl: number;
+  initialWaterPercent: number;
   baseVolumeMl: number;
   lossAllowanceMl: number;
   warnings: string[];
   lines: IngredientLine[];
 };
+
+/** เว้นที่ให้ผง น้ำยาแม่ และน้ำยาปรับ pH ก่อนเติมน้ำถึงขีดสุดท้าย */
+export const INITIAL_WATER_PERCENT = 80;
+
+function initialWaterVolume(finalVolumeMl: number): number {
+  // ปัดลงหนึ่งตำแหน่งเพื่อไม่ให้เริ่มต้นเกินปริมาตรสุดท้ายแม้แต่ 0.1 mL
+  return Math.floor(finalVolumeMl * INITIAL_WATER_PERCENT / 100 * 10) / 10;
+}
 
 /** ปริมาตร working stock ที่ใช้เมื่อ stock เดิมตวงตรงไม่ได้ */
 const WORKING_SOLUTION_VOLUME_ML = 50;
@@ -157,6 +170,9 @@ export function planMediumBatch(recipe: MediaRecipe, jars: JarPlanInput, tools: 
   return {
     totalJars: batch.totalJarCount,
     totalVolumeMl: batch.totalVolumeMl,
+    finalVolumeMl: batch.totalVolumeMl,
+    initialWaterMl: initialWaterVolume(batch.totalVolumeMl),
+    initialWaterPercent: INITIAL_WATER_PERCENT,
     baseVolumeMl: batch.baseVolumeMl,
     lossAllowanceMl: batch.lossAllowanceMl,
     warnings: batch.warnings,

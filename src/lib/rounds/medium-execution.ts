@@ -81,7 +81,7 @@ export function mediumInstructionOverride(label: string, context: MediumExecutio
   }
   if (label === "ละลายส่วนผสมหลัก") {
     return {
-      action: `ตวงน้ำสำหรับ batch ${plan.totalVolumeMl} mL แล้วละลาย ${mainText} ให้ใสก่อนเติมส่วนผสมถัดไป`,
+      action: `ตวงน้ำตั้งต้น ${plan.initialWaterMl} mL (ประมาณ ${plan.initialWaterPercent}% ของปริมาตรสุดท้าย ${plan.finalVolumeMl} mL) แล้วค่อย ๆ ละลาย ${mainText} ให้ใสก่อนเติมส่วนผสมถัดไป`,
       quantity: mainText,
     };
   }
@@ -103,8 +103,25 @@ export function mediumInstructionOverride(label: string, context: MediumExecutio
   }
   if (label === "เติมผงวุ้น") {
     return {
-      action: `หลัง pH ถึงเป้าหมายแล้ว ชั่ง ${agarText} เติมลงในสารละลาย แล้วคนให้กระจายตัว`,
+      action: `หลัง pH ถึงเป้าหมายแล้ว ชั่ง ${agarText} เติมลงในสารละลาย แล้วคนให้ผงวุ้นเปียกทั่วก่อนให้ความร้อน`,
       quantity: agarText,
+      completion: "ผงวุ้นเปียกทั่วสารละลายและไม่ลอยจับเป็นก้อน ก่อนเข้าสู่ขั้นให้ความร้อน",
+    };
+  }
+  if (label === "ให้ความร้อนจนวุ้นละลาย") {
+    return {
+      action: "ให้ความร้อนและคนเป็นระยะจนวุ้นละลายหมด สารละลายไม่เห็นเม็ดวุ้นหรือก้อนวุ้น แล้วปิดความร้อน",
+      quantity: agarText,
+      completion: "วุ้นละลายหมด ไม่มีเม็ดหรือก้อนวุ้นให้เห็น และสารละลายพร้อมเติมน้ำให้ครบปริมาตร",
+      next: "เติมน้ำให้ครบปริมาตรสุดท้ายก่อนแบ่งลงกระปุก",
+    };
+  }
+  if (label === "เติมน้ำให้ครบปริมาตรสุดท้าย") {
+    return {
+      action: `เติมน้ำทีละน้อยจนได้ปริมาตรสุดท้าย ${plan.finalVolumeMl} mL หลังรวมส่วนผสมทุกตัวแล้ว ห้ามเติมน้ำเต็ม ${plan.finalVolumeMl} mL ตั้งแต่ต้น`,
+      quantity: `ปริมาตรสุดท้าย ${plan.finalVolumeMl} mL · น้ำตั้งต้น ${plan.initialWaterMl} mL`,
+      completion: `สารละลายมีปริมาตรรวม ${plan.finalVolumeMl} mL และพร้อมแบ่งลงกระปุก`,
+      next: "แบ่งอาหารลงกระปุกตามปริมาตรต่อกระปุก",
     };
   }
   if (label === "แบ่งและติดป้าย") {

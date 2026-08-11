@@ -35,6 +35,11 @@ export const pinkPrincessPack: PlantPack = {
   genusId: "philodendron",
   traitIds: ["variegated"],
   sequence: fullSequence,
+  mediaRecipeIdsByStep: {
+    "prep-media": ["establishment", "establishment-ba", "establishment-bap-iba"],
+    multiply: ["multiplication"],
+    root: ["rooting", "rooting-naa"],
+  },
   overrides: {
     sterilize: {
       actions: [

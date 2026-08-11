@@ -11,6 +11,11 @@ export const genericPhilodendronPack: PlantPack = {
   growthFormId: "climbing-vine-visible-node",
   genusId: "philodendron",
   sequence: [...standardSequence],
+  mediaRecipeIdsByStep: {
+    "prep-media": ["establishment", "establishment-ba", "establishment-bap-iba"],
+    multiply: [],
+    root: [],
+  },
   overrides: {
     identify: {
       summary: "ยืนยันเท่าที่ยืนยันได้ แล้วบันทึกว่ายังไม่ทราบชนิด",

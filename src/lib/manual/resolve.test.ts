@@ -96,7 +96,7 @@ describe("resolveManual", () => {
     const phInstruction = instructions.find((item) => item.label === "ปรับ pH");
     expect(phInstruction?.action).toContain("ปรับ pH ให้ตรงกับค่าเป้าหมายของสูตรที่เลือก");
     expect(phInstruction?.quantity).toContain("ระยะตั้งต้น: pH 5.7 ถึง 5.8");
-    expect(phInstruction?.quantity).toContain("ระยะออกราก: pH 6.5");
+    expect(phInstruction?.quantity).not.toContain("ระยะออกราก: pH 6.5");
     expect(instructions.map((item) => item.action).join(" ")).not.toContain("ช่วงของสูตร");
   });
 

@@ -5,6 +5,10 @@ function cloneStep(step: ResolvedStep): ResolvedStep {
   return structuredClone(step);
 }
 
+function uniqueStrings(values: string[]): string[] {
+  return [...new Set(values)];
+}
+
 function preparationProduct(
   snapshot: LotSterilizationSnapshot,
   part: "mediumPreparation" | "surfacePreparation",
@@ -38,11 +42,23 @@ function withMediumMethod(step: ResolvedStep, snapshot: LotSterilizationSnapshot
     !/ฆ่าเชื้ออาหาร|เลือกวิธีฆ่าเชื้อ/.test(`${instruction.label} ${instruction.action}`),
   );
 
+  function insertActionBeforeFinalTopUp(items: string[], action: string): string[] {
+    const index = items.findIndex((current) => /เติมน้ำหลังรวมส่วนผสม/.test(current));
+    if (index < 0) return [...items, action];
+    return [...items.slice(0, index), action, ...items.slice(index)];
+  }
+
+  function insertInstructionBeforeFinalTopUp(items: ExecutionInstruction[], instruction: ExecutionInstruction): ExecutionInstruction[] {
+    const index = items.findIndex((current) => /เติมน้ำให้ครบปริมาตรสุดท้าย|เติมน้ำหลังรวมส่วนผสม/.test(`${current.label} ${current.action}`));
+    if (index < 0) return [...items, instruction];
+    return [...items.slice(0, index), instruction, ...items.slice(index)];
+  }
+
   if (method === "pressure-sterilization") {
     const action = "นึ่งกระปุกอาหารที่ 121°C ความดัน 15 psi นาน 15 ถึง 20 นาที โดยเริ่มจับเวลาเมื่อถึงอุณหภูมิและความดันเป้าหมาย";
     return {
       ...base,
-      materials: [...base.materials, "หม้อนึ่งแรงดันหรือหม้ออัดแรงดันที่ยืนยันว่าได้ 15 psi"],
+      materials: uniqueStrings([...base.materials, "หม้อนึ่งแรงดันหรือหม้ออัดแรงดันที่ยืนยันว่าได้ 15 psi"]),
       actions: [...neutralActions, action],
       executionInstructions: [
         ...neutralInstructions,
@@ -65,19 +81,16 @@ function withMediumMethod(step: ResolvedStep, snapshot: LotSterilizationSnapshot
     const action = "เติม NaDCC ลงในอาหารตามปริมาณที่คำนวณและยืนยันใน protocol ของรอบนี้ แล้วบันทึกปริมาณที่ใช้จริง";
     return {
       ...base,
-      materials: [...base.materials, product],
-      actions: [...neutralActions, action],
-      executionInstructions: [
-        ...neutralInstructions,
-        {
-          label: "ฆ่าเชื้ออาหารด้วย NaDCC",
-          action,
-          materials: [product, "เครื่องชั่งที่ละเอียดพอกับปริมาณที่คำนวณ"],
-          ...(quantity ? { quantity } : {}),
-          completion: "ยืนยัน product/batch ปริมาณคำนวณ และปริมาณที่ใช้จริงไว้กับรอบแล้ว",
-          tone: "warning",
-        },
-      ],
+      materials: uniqueStrings([...base.materials, product]),
+      actions: insertActionBeforeFinalTopUp(neutralActions, action),
+      executionInstructions: insertInstructionBeforeFinalTopUp(neutralInstructions, {
+        label: "ฆ่าเชื้ออาหารด้วย NaDCC",
+        action,
+        materials: [product, "เครื่องชั่งที่ละเอียดพอกับปริมาณที่คำนวณ"],
+        ...(quantity ? { quantity } : {}),
+        completion: "ยืนยัน product/batch ปริมาณคำนวณ และปริมาณที่ใช้จริงไว้กับรอบแล้ว ก่อนเติมน้ำให้ครบปริมาตรสุดท้าย",
+        tone: "warning",
+      }),
     };
   }
 
@@ -86,19 +99,16 @@ function withMediumMethod(step: ResolvedStep, snapshot: LotSterilizationSnapshot
   const action = "เติม Haiter ลงในอาหารตามปริมาณที่คำนวณและยืนยันใน protocol ของรอบนี้ แล้วบันทึกปริมาณที่ใช้จริง";
   return {
     ...base,
-    materials: [...base.materials, product],
-    actions: [...neutralActions, action],
-    executionInstructions: [
-      ...neutralInstructions,
-      {
-        label: "ฆ่าเชื้ออาหารด้วย Haiter",
-        action,
-        materials: [product, "syringe ที่ละเอียดพอกับปริมาณที่คำนวณ"],
-        ...(quantity ? { quantity } : {}),
-        completion: "ยืนยัน product/batch ปริมาณคำนวณ และปริมาณที่ใช้จริงไว้กับรอบแล้ว",
-        tone: "warning",
-      },
-    ],
+    materials: uniqueStrings([...base.materials, product]),
+    actions: insertActionBeforeFinalTopUp(neutralActions, action),
+    executionInstructions: insertInstructionBeforeFinalTopUp(neutralInstructions, {
+      label: "ฆ่าเชื้ออาหารด้วย Haiter",
+      action,
+      materials: [product, "syringe ที่ละเอียดพอกับปริมาณที่คำนวณ"],
+      ...(quantity ? { quantity } : {}),
+      completion: "ยืนยัน product/batch ปริมาณคำนวณ และปริมาณที่ใช้จริงไว้กับรอบแล้ว ก่อนเติมน้ำให้ครบปริมาตรสุดท้าย",
+      tone: "warning",
+    }),
   };
 }
 
@@ -166,7 +176,11 @@ function nadccSoakStep(step: ResolvedStep, snapshot: LotSterilizationSnapshot): 
 }
 
 function isRinseContent(value: string): boolean {
-  return /ล้างรอบ|ล้าง R\d|R1|R2|R3|R4|final rinse|300\s*ppm|ทางเลือกทดลอง/.test(value);
+  return /ล้างรอบ|ล้าง R\d|R1|R2|R3|R4|final rinse|300\s*ppm|ทางเลือกทดลอง|ล้าง[^.]{0,80}(?:น้ำปลอดเชื้อ|น้ำ rinse|น้ำ NaDCC|น้ำ NaOCl)[^.]{0,80}(?:3\s*รอบ|รอบที่|R\d)/.test(value);
+}
+
+function isStaleRinseReference(value: string): boolean {
+  return !/น้ำไหล/.test(value) && /NaDCC|NaOCl|น้ำปลอดเชื้อ|น้ำ rinse|คลอรีนต่ำ|ทางเลือกทดลอง/.test(value);
 }
 
 function withHaiterAndRinse(step: ResolvedStep, snapshot: LotSterilizationSnapshot): ResolvedStep {
@@ -176,10 +190,18 @@ function withHaiterAndRinse(step: ResolvedStep, snapshot: LotSterilizationSnapsh
   const base = cloneStep(step);
   const product = preparationProduct(snapshot, "surfacePreparation", "Haiter ตามฉลากที่ล็อกไว้กับรอบ");
   const surfaceActions = base.actions.filter((action) =>
-    !isRinseContent(action) && !/NaDCC|น้ำปลอดเชื้อ|น้ำ rinse|ล้าง/.test(action),
+    !isRinseContent(action) && !isStaleRinseReference(action),
   );
   const surfaceInstructions = (base.executionInstructions ?? [])
-    .filter((instruction) => !isRinseContent(`${instruction.label} ${instruction.action} ${instruction.quantity ?? ""}`))
+    .filter((instruction) => {
+      const text = `${instruction.label} ${instruction.action} ${instruction.quantity ?? ""}`;
+      if (isRinseContent(text)) return false;
+      // Once a rinse branch is selected, remove stale references to the other
+      // branch. Keep a genuine running-water pre-wash, which is not a rinse
+      // branch and must remain in species-specific protocols.
+      if (isStaleRinseReference(text)) return false;
+      return true;
+    })
     .map((instruction) => ({
       ...instruction,
       ...(instruction.materials
@@ -189,6 +211,9 @@ function withHaiterAndRinse(step: ResolvedStep, snapshot: LotSterilizationSnapsh
   const volumeMl = snapshot.rinseWater?.volumePerContainerMl ?? 50;
   const selectedRinseInstructions = rinseInstructions(rinseMethod, volumeMl);
   const selectedRinseName = rinseName(rinseMethod);
+  const preservedMaterials = base.materials.filter((material) =>
+    !/น้ำปลอดเชื้อ|NaDCC|NaOCl|น้ำ rinse|rinse/i.test(material),
+  );
   const measurements: Measurement[] = base.measurements.filter((measurement) =>
     !/rinse|nadcc/i.test(`${measurement.id} ${measurement.label}`),
   );
@@ -198,7 +223,7 @@ function withHaiterAndRinse(step: ResolvedStep, snapshot: LotSterilizationSnapsh
 
   return {
     ...base,
-    materials: [product, "ภาชนะแช่ S", "ตัวจับเวลา", selectedRinseName, "ภาชนะล้าง R1–R3"],
+    materials: uniqueStrings([...preservedMaterials, product, "ภาชนะแช่ S", "ตัวจับเวลา", selectedRinseName, "ภาชนะล้าง R1–R3"]),
     actions: [...surfaceActions, `ครบเวลาฟอกแล้วล้างด้วย${selectedRinseName} 3 รอบ รอบละประมาณ 1 นาที`],
     executionInstructions: [...surfaceInstructions, ...selectedRinseInstructions],
     measurements,

@@ -33,6 +33,9 @@ describe("planMediumBatch", () => {
 
     expect(plan.totalJars).toBe(6);
     expect(plan.totalVolumeMl).toBe(173);
+    expect(plan.finalVolumeMl).toBe(173);
+    expect(plan.initialWaterPercent).toBe(80);
+    expect(plan.initialWaterMl).toBe(138.4);
   });
 
   it("สารที่ชั่งได้จะบอกเป็นกรัม", () => {

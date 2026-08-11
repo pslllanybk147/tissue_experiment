@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { allSlugs, resolveBySlug } from "./registry";
+import { recipeIdsForStep } from "@/lib/rounds/medium-steps";
 
 const vaguePlaceholders = /ตามสูตรที่เลือก|ตามค่าเริ่มต้น|ช่วงของสูตร|เลือกวิธีใดวิธีหนึ่ง/;
 
@@ -35,6 +36,11 @@ describe("every plant has a runnable beginner protocol", () => {
     const mediumSteps = manual.steps.filter((step) => ["prep-media", "multiply", "root"].includes(step.id));
     for (const step of mediumSteps) {
       const text = (step.executionInstructions ?? []).map((item) => `${item.action} ${item.quantity ?? ""}`).join(" ");
+      const recipeIds = recipeIdsForStep(manual.mediaRecipes, step.id, manual.mediaRecipeIdsByStep);
+      if (recipeIds.length === 0) {
+        expect(step.executionInstructions?.some((item) => item.tone === "stop"), `${slug}/${step.id} must stop when no recipe exists`).toBe(true);
+        continue;
+      }
       expect(text, `${slug}/${step.id} must expose a concrete pH target`).toMatch(/pH/);
       expect(text, `${slug}/${step.id} must expose calculator-backed batch quantities`).toMatch(/mL|g/);
       expect(text, `${slug}/${step.id} must name the selected medium`).not.toMatch(/ตามค่าที่แสดงในขั้นนี้/);

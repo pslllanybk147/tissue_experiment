@@ -17,6 +17,11 @@ export const hemianthusCallitrichoidesCubaPack: PlantPack = {
   growthFormId: "climbing-vine-visible-node",
   genusId: "hemianthus",
   sequence: [...standardSequence],
+  mediaRecipeIdsByStep: {
+    "prep-media": ["multiplication"],
+    multiply: ["multiplication"],
+    root: ["rooting"],
+  },
   overrides: {
     "select-explant": {
       title: "เลือกช่อยอดเล็กจากกอที่สมบูรณ์",

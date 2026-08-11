@@ -79,7 +79,7 @@ function optionalRinseInstructions(): ExecutionInstruction[] {
   return [
     {
       label: "ทางเลือกทดลอง: เตรียมน้ำ rinse คลอรีนต่ำ",
-      action: "ถ้าจะทดสอบน้ำ rinse คลอรีนต่ำ ให้เตรียมน้ำแยกจากสารฟอกหลักที่มีคลอรีนออกฤทธิ์ประมาณ 300 ppm",
+      action: "ถ้าจะทดสอบน้ำ rinse คลอรีนต่ำ ให้เตรียมน้ำแยกจากสารฟอกหลักที่มีคลอรีนออกฤทธิ์ประมาณ 300 ppm แทนการล้าง R1–R3 มาตรฐาน และห้ามทำสองทางซ้ำกัน",
       materials: ["NaDCC หรือ NaOCl ที่อ่านค่าคลอรีนออกฤทธิ์ได้", "น้ำสำหรับ rinse", "ภาชนะ R1–R4"],
       quantity: "คลอรีนออกฤทธิ์ประมาณ 300 ppm · เป็นชุดทดลองที่ยังไม่ยืนยันกับพันธุ์นี้",
       container: "ภาชนะสำหรับเตรียมน้ำ rinse",
@@ -111,17 +111,17 @@ function optionalRinseInstructions(): ExecutionInstruction[] {
 function sterilizeInstructions(step: ManualStepDef): ExecutionInstruction[] {
   const instructions: ExecutionInstruction[] = [];
   let hasKnownTreatmentTime = false;
-  let hasOptionalRinse = false;
+  let optionalRinse: ExecutionInstruction[] | null = null;
 
   for (const [index, rawAction] of step.actions.entries()) {
     const action = cleanAction(rawAction);
     if (/ทางเลือกทดลอง|300\s*ppm|น้ำ rinse/.test(action)) {
-      if (hasOptionalRinse) continue;
-      hasOptionalRinse = true;
-      instructions.push(...optionalRinseInstructions());
+      if (!optionalRinse) optionalRinse = optionalRinseInstructions();
       continue;
     }
     if (/ถ้าไม่มั่นใจให้ใช้|^แนวคิดคือ/.test(action)) continue;
+    // ข้อความที่บอกว่า rinse ทางเลือกใช้แทนรอบมาตรฐาน ไม่ใช่รอบล้างเพิ่ม
+    if (/ถ้าเลือกทางเลือกทดลอง|หรืออีกหนึ่งรอบสุดท้าย/.test(action) && /ล้าง/.test(action)) continue;
     if (/ล้าง.*3\s*รอบ|3\s*รอบ.*ล้าง/.test(action)) {
       instructions.push(...rinseInstructions(action));
       continue;
@@ -150,7 +150,7 @@ function sterilizeInstructions(step: ManualStepDef): ExecutionInstruction[] {
       tone: "stop",
     });
   }
-  return instructions;
+  return optionalRinse ? [...instructions, ...optionalRinse] : instructions;
 }
 
 /** Materialize a complete beginner-facing protocol only when the pack has not supplied one. */

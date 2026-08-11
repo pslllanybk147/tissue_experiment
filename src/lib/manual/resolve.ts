@@ -2,6 +2,7 @@ import type { GrowthForm } from "./forms/types";
 import type { GenusPack } from "./genera/types";
 import type { ManualStepDef, PlantPack, ResolvedManual, ResolvedStep, StepOrigin } from "./types";
 import { ensureSterilizeOption, materializeExecutionInstructions } from "./execution-instructions";
+import { mediaRecipeIdsForStep } from "./media-recipe-selection";
 
 export type ResolveContext = {
   library: Record<string, ManualStepDef>;
@@ -18,12 +19,25 @@ function beginnerActionLines(actions: string[]): string[] {
     .filter(Boolean));
 }
 
-function mediaExecutionInstructions(pack: PlantPack) {
-  const recipeReference = pack.mediaRecipes
+function mediaExecutionInstructions(pack: PlantPack, stepId: string) {
+  const isMediumStep = stepId === "prep-media" || stepId === "multiply" || stepId === "root";
+  const recipeIds = isMediumStep
+    ? mediaRecipeIdsForStep(pack.mediaRecipes, stepId as "prep-media" | "multiply" | "root", pack.mediaRecipeIdsByStep)
+    : [];
+  if (isMediumStep && recipeIds.length === 0) {
+    return [{
+      label: "สูตรอาหารของขั้นนี้",
+      action: "ขั้นนี้ยังไม่มีสูตรอาหารแยกที่มีข้อมูลพอให้ทำตามในระบบ หยุดไว้ก่อนและห้ามเลือกสูตรของขั้นอื่นมาแทน",
+      tone: "stop" as const,
+      completion: "บันทึกว่าขั้นนี้ยังไม่มีสูตรที่ยืนยันได้ และยังไม่เริ่มย้ายหรือเตรียมอาหารใหม่",
+      }];
+  }
+  const stageRecipes = pack.mediaRecipes.filter((recipe) => recipeIds.includes(recipe.id));
+  const recipeReference = stageRecipes
     .map((recipe) => `${recipe.title}: pH ${recipe.pH}`)
     .join(" · ");
-  const recipeNames = pack.mediaRecipes.map((recipe) => recipe.title).join(" / ");
-  const recipeIngredients = pack.mediaRecipes
+  const recipeNames = stageRecipes.map((recipe) => recipe.title).join(" / ");
+  const recipeIngredients = stageRecipes
     .map((recipe) => `${recipe.title}: ${recipe.ingredients.filter((ingredient) => ingredient.unit !== "mg/L" && !ingredient.name.toLowerCase().includes("agar")).map((ingredient) => `${ingredient.name} ${ingredient.amountPerLiter} ${ingredient.unit}${ingredient.unit === "×" ? " ตามอัตรา g/L บนฉลาก" : ""}`).join(" · ")}`)
     .join(" | ");
 
@@ -49,7 +63,7 @@ function mediaExecutionInstructions(pack: PlantPack) {
     },
     {
       label: "ละลายส่วนผสมหลัก",
-      action: "ตวงน้ำตามปริมาตรรวมจากเครื่องคำนวณ ค่อย ๆ ละลาย MS basal salts แล้วน้ำตาลให้ใสก่อนเติมส่วนผสมถัดไป",
+      action: "ตวงน้ำตั้งต้นตามค่าที่เครื่องคำนวณแสดง (ยังไม่ใช่ปริมาตรสุดท้าย) ค่อย ๆ ละลาย MS basal salts แล้วน้ำตาลให้ใสก่อนเติมส่วนผสมถัดไป",
       quantity: recipeIngredients,
       completion: "สารละลายใส ไม่มีผง MS หรือน้ำตาลตกค้างที่ก้นภาชนะ",
     },
@@ -57,7 +71,7 @@ function mediaExecutionInstructions(pack: PlantPack) {
       label: "เติมน้ำยาแม่",
       action: "ตวงฮอร์โมนจากน้ำยาแม่ตามผลคำนวณ แล้วเติมลงในสารละลาย ห้ามชั่งผงฮอร์โมนเอง",
       materials: ["น้ำยาแม่ฮอร์โมนที่มีฉลากความเข้มข้น", "syringe หรืออุปกรณ์ตวงที่ละเอียดพอ"],
-      quantity: pack.mediaRecipes
+      quantity: stageRecipes
         .map((recipe) => `${recipe.title}: ${recipe.ingredients.filter((ingredient) => ingredient.unit === "mg/L").map((ingredient) => `${ingredient.name} ${ingredient.amountPerLiter} mg/L ในน้ำยาแม่`).join(" · ") || "ไม่มีฮอร์โมนในสูตรนี้"}`)
         .join(" | "),
       completion: "เติมน้ำยาแม่ครบตามรายการและจด stock/ปริมาตรที่ใช้จริง",
@@ -72,11 +86,26 @@ function mediaExecutionInstructions(pack: PlantPack) {
     },
     {
       label: "เติมผงวุ้น",
-      action: "ชั่งผงวุ้นตามผลคำนวณ เติมหลังปรับ pH แล้วคนให้กระจายตัว",
-      quantity: pack.mediaRecipes
+      action: "ชั่งผงวุ้นตามผลคำนวณ เติมหลังปรับ pH แล้วคนให้ผงวุ้นเปียกทั่วก่อนให้ความร้อน",
+      quantity: stageRecipes
         .map((recipe) => `${recipe.title}: ${recipe.ingredients.find((ingredient) => ingredient.name.toLowerCase().includes("agar"))?.name ?? "Agar"} ${recipe.ingredients.find((ingredient) => ingredient.name.toLowerCase().includes("agar"))?.amountPerLiter ?? "ไม่ระบุ"} g/L`)
         .join(" | "),
-      completion: "ผงวุ้นกระจายทั่วสารละลาย ไม่มีผงจับเป็นก้อน",
+      completion: "ผงวุ้นเปียกทั่วสารละลายและไม่ลอยจับเป็นก้อน ก่อนเข้าสู่ขั้นให้ความร้อน",
+      next: "ให้ความร้อนจนวุ้นละลายหมด",
+    },
+    {
+      label: "ให้ความร้อนจนวุ้นละลาย",
+      action: "ให้ความร้อนและคนเป็นระยะจนวุ้นละลายหมด ไม่เห็นเม็ดหรือก้อนวุ้น แล้วปิดความร้อน",
+      materials: ["แหล่งให้ความร้อน", "ถุงมือกันความร้อน"],
+      completion: "วุ้นละลายหมด ไม่มีเม็ดหรือก้อนวุ้นให้เห็น และสารละลายพร้อมเติมน้ำให้ครบปริมาตร",
+      next: "เติมน้ำให้ครบปริมาตรสุดท้ายก่อนแบ่ง",
+    },
+    {
+      label: "เติมน้ำให้ครบปริมาตรสุดท้าย",
+      action: "เติมน้ำทีละน้อยหลังรวมส่วนผสมทุกตัวและให้ความร้อนแล้ว จนถึงปริมาตรสุดท้ายที่เครื่องคำนวณแสดง ห้ามตวงน้ำเต็มปริมาตรสุดท้ายตั้งแต่ต้น",
+      quantity: "ใช้ตัวเลขปริมาตรสุดท้ายจากเครื่องคำนวณของสูตรที่เลือก",
+      completion: "ปริมาตรรวมตรงกับค่าปริมาตรสุดท้ายของ batch และพร้อมแบ่งลงกระปุก",
+      next: "แบ่งอาหารลงกระปุกตามปริมาตรต่อกระปุก",
     },
     {
       label: "แบ่งและติดป้าย",
@@ -85,19 +114,19 @@ function mediaExecutionInstructions(pack: PlantPack) {
       completion: "กระปุกทุกใบมีป้ายอ่านได้และปริมาตรใกล้เคียงกัน",
     },
     {
+      label: "เลือกวิธีฆ่าเชื้ออาหาร",
+      action: "ก่อนฆ่าเชื้ออาหารและกระปุก ให้เลือกวิธีที่คุณจะทำจริงในหน้าตั้งค่ารอบ ระบบจะใช้วิธีเดียวกับที่ล็อกไว้ในรอบนี้ และแสดงเครื่องคำนวณพร้อมช่องบันทึกค่าจริงในขั้นที่ต้องใช้",
+      materials: ["หน้าตั้งค่ารอบก่อนเริ่ม", "วิธีฆ่าเชื้อที่เลือกไว้กับรอบ"],
+      tone: "warning" as const,
+      completion: "มีวิธีฆ่าเชื้อที่ล็อกไว้กับรอบ และพร้อมทำตามปริมาณ/เวลาที่ระบบแสดงในขั้นนี้",
+    },
+    {
       label: "ฆ่าเชื้ออาหารด้วยวิธีมาตรฐาน",
       action: "นึ่งกระปุกอาหารด้วยหม้อนึ่งที่ 121°C ความดัน 15 psi แล้วเริ่มจับเวลาเมื่อถึงอุณหภูมิ/ความดันเป้าหมาย",
       container: "หม้อนึ่ง",
       durationLabel: "15–20 นาที",
       completion: "ครบเวลาแล้ว ปล่อยความดันลงตามคู่มือหม้อนึ่งก่อนเปิด",
       next: "ปล่อยให้อาหารเย็นและเซ็ตตัวก่อนนำไปใช้",
-    },
-    {
-      label: "เลือกวิธีฆ่าเชื้ออาหาร",
-      action: "ก่อนฆ่าเชื้ออาหารและกระปุก ให้เลือกวิธีที่คุณจะทำจริงในหน้าตั้งค่ารอบ ระบบจะใช้วิธีเดียวกับที่ล็อกไว้ในรอบนี้ และแสดงเครื่องคำนวณพร้อมช่องบันทึกค่าจริงในขั้นที่ต้องใช้",
-      materials: ["หน้าตั้งค่ารอบก่อนเริ่ม", "วิธีฆ่าเชื้อที่เลือกไว้กับรอบ"],
-      tone: "warning" as const,
-      completion: "มีวิธีฆ่าเชื้อที่ล็อกไว้กับรอบ และพร้อมทำตามปริมาณ/เวลาที่ระบบแสดงในขั้นนี้",
     },
   ];
 }
@@ -165,7 +194,7 @@ export function resolveManual(pack: PlantPack, context: ResolveContext): Resolve
     const resolvedStep = { ...resolved, actions };
     const baseInstructions = resolved.executionInstructions
       ?? (stepId === "prep-media" || stepId === "multiply" || stepId === "root"
-        ? mediaExecutionInstructions(pack)
+        ? mediaExecutionInstructions(pack, stepId)
         : materializeExecutionInstructions(resolvedStep));
     const executionInstructions = ensureSterilizeOption(baseInstructions, resolvedStep);
     return {
@@ -184,6 +213,7 @@ export function resolveManual(pack: PlantPack, context: ResolveContext): Resolve
     durationLabel: pack.durationLabel,
     steps,
     mediaRecipes: structuredClone(pack.mediaRecipes),
+    ...(pack.mediaRecipeIdsByStep ? { mediaRecipeIdsByStep: structuredClone(pack.mediaRecipeIdsByStep) } : {}),
     sourceIds: [...pack.sourceIds],
   };
 }

@@ -26,7 +26,7 @@ function Line({ line }: { line: IngredientLine }) {
   if (line.kind === "weigh" || line.kind === "measure") {
     return (
       <div className="cl-medium-line">
-        <span style={{ fontWeight: 700 }}>{line.name}</span>
+        <span style={{ fontWeight: 700 }}>{line.name}{line.note ? <small style={{ display: "block", fontWeight: 400, marginTop: "4px" }}>{line.note}</small> : null}</span>
         <span style={{ marginLeft: "auto", fontWeight: 800, fontSize: "18px", fontVariantNumeric: "tabular-nums" }}>
           {round(line.amount, line.unit === "g" ? 3 : 2)} {line.unit}
         </span>
@@ -58,11 +58,14 @@ function Line({ line }: { line: IngredientLine }) {
 
 export function MediumCalculator({
   recipes,
+  availableRecipeIds,
   initialRecipeId,
   tools,
   onPlanChange,
 }: {
   recipes: MediaRecipe[];
+  /** สูตรที่ประกาศว่าใช้ในขั้นนี้จริง; ถ้าเป็น [] ให้หยุดแทนการหยิบสูตรแรกมาเดา */
+  availableRecipeIds?: string[];
   initialRecipeId?: string;
   /** ค่าจากชุดอุปกรณ์ที่ผู้ใช้บันทึกไว้ ถ้าไม่ส่งมาจะใช้ค่ากลางแล้วให้แก้เอง */
   tools?: {
@@ -77,9 +80,12 @@ export function MediumCalculator({
   };
   onPlanChange?: (context: MediumExecutionContext | null) => void;
 }) {
+  const visibleRecipes = availableRecipeIds
+    ? recipes.filter((item) => availableRecipeIds.includes(item.id))
+    : recipes;
   const initialRecipe = initialRecipeId
-    ? recipes.find((item) => item.id === initialRecipeId)
-    : recipes[0];
+    ? visibleRecipes.find((item) => item.id === initialRecipeId)
+    : visibleRecipes[0];
   const [recipeId, setRecipeId] = useState(initialRecipe?.id ?? "");
   const [cultureJars, setCultureJars] = useState(4);
   const [blankJars, setBlankJars] = useState(1);
@@ -95,7 +101,10 @@ export function MediumCalculator({
   const [bapStockMgPerMl, setBapStockMgPerMl] = useState(tools?.bapStockMgPerMl ?? 0);
   const [ibaStockMgPerMl, setIbaStockMgPerMl] = useState(tools?.ibaStockMgPerMl ?? 0);
 
-  const recipe = recipeId ? recipes.find((item) => item.id === recipeId) : undefined;
+  const effectiveRecipeId = recipeId && visibleRecipes.some((item) => item.id === recipeId)
+    ? recipeId
+    : initialRecipe?.id ?? "";
+  const recipe = effectiveRecipeId ? visibleRecipes.find((item) => item.id === effectiveRecipeId) : undefined;
 
   const plan = useMemo(() => {
     if (!recipe) return null;
@@ -140,7 +149,7 @@ export function MediumCalculator({
             สูตรที่จะทำ
           </label>
           <select className="cl-input" id="recipe" value={recipe.id} onChange={(event) => setRecipeId(event.target.value)}>
-            {recipes.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
+            {visibleRecipes.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
           </select>
         </div>
 
@@ -163,6 +172,7 @@ export function MediumCalculator({
           <CalculatorField id="iba-stock" label="IBA stock" unit="มก./มล." value={ibaStockMgPerMl} onChange={setIbaStockMgPerMl} allowZero />
         </div>
         <p className="pl-meta" style={{ margin: 0 }}>ตรวจชื่อบนฉลากให้ตรงกับชื่อในสูตร ระบบจะไม่ใช้ BA และ BAP แทนกันอัตโนมัติ</p>
+        {visibleRecipes.length > 1 ? <p className="pl-meta" style={{ margin: 0 }}>ขั้นนี้มีมากกว่าหนึ่งสูตรย่อย ให้เลือกและทำทีละสูตรตามช่วงที่ระบุในคู่มือ</p> : null}
       </div>
 
       {plan ? (
@@ -175,6 +185,9 @@ export function MediumCalculator({
             </p>
             <p style={{ margin: "6px 0 0", fontSize: "14px" }}>
               {plan.totalJars} กระปุก × {mlPerJar} มล. = {plan.baseVolumeMl} แล้วเผื่อสูญเสีย {lossPercent}%
+            </p>
+            <p style={{ margin: "6px 0 0", fontSize: "14px" }}>
+              น้ำตั้งต้น {plan.initialWaterMl} มล. ({plan.initialWaterPercent}%) แล้วเติมน้ำให้ครบ {plan.finalVolumeMl} มล. หลังรวมส่วนผสม
             </p>
           </div>
 

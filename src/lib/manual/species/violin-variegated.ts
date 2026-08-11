@@ -37,6 +37,11 @@ export const violinVariegatedPack: PlantPack = {
   genusId: "philodendron",
   traitIds: ["variegated"],
   sequence: [...standardSequence],
+  mediaRecipeIdsByStep: {
+    "prep-media": ["establishment", "establishment-ba", "establishment-bap-iba"],
+    multiply: ["multiplication"],
+    root: ["rooting", "rooting-naa"],
+  },
   overrides: {
     cut: {
       illustrationId: "cut-explant-violin-bipennifolium",
@@ -113,7 +118,7 @@ export const violinVariegatedPack: PlantPack = {
           label: "เขย่าเบา ๆ ระหว่างฟอก",
           action: "เขย่าหรือหมุน S เบา ๆ เป็นระยะ เพื่อให้สารละลายสัมผัสผิวชิ้นพืชทั่วถึง",
           container: "S",
-          durationMinutes: 12,
+          durationLabel: "ทำเป็นระยะตลอดช่วงฟอก 12 นาที ไม่ใช่แช่เพิ่มอีก 12 นาที",
           completion: "ทำต่อเนื่องจนหมดเวลาฟอก โดยไม่เขย่าแรง",
         },
         ...[1, 2, 3].map((round) => ({

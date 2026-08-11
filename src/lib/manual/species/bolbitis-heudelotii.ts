@@ -16,6 +16,11 @@ export const bolbitisHeudelotiiPack: PlantPack = {
   growthFormId: "fern-frond-or-spore",
   genusId: "bolbitis",
   sequence: [...standardSequence],
+  mediaRecipeIdsByStep: {
+    "prep-media": ["spore-germination"],
+    multiply: ["gametophyte-growth", "sporophyte-development"],
+    root: ["sporophyte-development"],
+  },
   overrides: {
     "select-explant": {
       title: "เก็บกลุ่มอับสปอร์จากใบแก่",

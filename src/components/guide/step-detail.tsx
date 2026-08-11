@@ -8,7 +8,7 @@ import { troubleshootingById } from "@/lib/manual/troubleshooting";
 import type { ResolvedManual, ResolvedStep } from "@/lib/manual/types";
 import { MediumCalculator } from "@/components/rounds/medium-calculator";
 import { formatDurationMinutes } from "@/lib/manual/duration";
-import { MEDIUM_CALCULATOR_STEP_IDS, initialRecipeIdForStep } from "@/lib/rounds/medium-steps";
+import { MEDIUM_CALCULATOR_STEP_IDS, initialRecipeIdForStep, recipeIdsForStep } from "@/lib/rounds/medium-steps";
 import { BracketNotice } from "./bracket-notice";
 import { EvidenceBadge } from "./evidence-badge";
 import { Illustration, illustrationCredits } from "./illustrations";
@@ -63,8 +63,8 @@ export function StepDetail({ manual, step }: { manual: ResolvedManual; step: Res
   const previous = number > 1 ? number - 1 : null;
   const next = number < total ? number + 1 : null;
   const [mediumContext, setMediumContext] = useState<MediumExecutionContext | null>(() => (
-    MEDIUM_CALCULATOR_STEP_IDS.has(step.id)
-      ? defaultMediumExecutionContext(manual.mediaRecipes, initialRecipeIdForStep(step.id))
+    MEDIUM_CALCULATOR_STEP_IDS.has(step.id) && recipeIdsForStep(manual.mediaRecipes, step.id, manual.mediaRecipeIdsByStep).length > 0
+      ? defaultMediumExecutionContext(manual.mediaRecipes, initialRecipeIdForStep(step.id, manual.mediaRecipes, manual.mediaRecipeIdsByStep))
       : null
   ));
   const onMediumPlanChange = useCallback((context: MediumExecutionContext | null) => setMediumContext(context), []);
@@ -93,7 +93,7 @@ export function StepDetail({ manual, step }: { manual: ResolvedManual; step: Res
               {step.id === "sterilize" ? <SterilizationCalculator /> : null}
               <BracketNotice step={step} />
               {MEDIUM_CALCULATOR_STEP_IDS.has(step.id) ? (
-                <MediumCalculator recipes={manual.mediaRecipes} initialRecipeId={initialRecipeIdForStep(step.id)} onPlanChange={onMediumPlanChange} />
+                <MediumCalculator recipes={manual.mediaRecipes} availableRecipeIds={recipeIdsForStep(manual.mediaRecipes, step.id, manual.mediaRecipeIdsByStep)} initialRecipeId={initialRecipeIdForStep(step.id, manual.mediaRecipes, manual.mediaRecipeIdsByStep)} onPlanChange={onMediumPlanChange} />
               ) : null}
               {step.illustrationId ? (
                 <figure className="cl-guide-illustration">

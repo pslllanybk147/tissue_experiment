@@ -21,6 +21,11 @@ export const javaFernPack: PlantPack = {
   growthFormId: "fern-frond-or-spore",
   genusId: "microsorum",
   sequence: [...standardSequence],
+  mediaRecipeIdsByStep: {
+    "prep-media": ["ggb-induction"],
+    multiply: ["ggb-induction", "sporophyte-regeneration"],
+    root: ["sporophyte-regeneration"],
+  },
   overrides: {
     "select-explant": {
       title: "เลือกใบอ่อนสำหรับตัดเป็นชิ้น GGB",
@@ -63,6 +68,7 @@ export const javaFernPack: PlantPack = {
       actions: [
         "ล้างชิ้นใบใต้น้ำไหล 10 ถึง 15 นาที",
         "แช่แอลกอฮอล์ 70% นาน 30 วินาที",
+        "ล้างแอลกอฮอล์ออกด้วยน้ำปลอดเชื้ออย่างน้อยหนึ่งครั้ง แล้วเทน้ำทิ้งก่อนย้ายลงสารฟอก ห้ามเทสารฟอกทับแอลกอฮอล์ที่ยังค้าง",
         "แช่สารฟอกโซเดียมไฮโปคลอไรต์ความเข้มข้นคลอรีนออกฤทธิ์ 1% นาน 20 นาที เขย่าเบา ๆ ตลอดเวลา",
         "ทางเลือกทดลอง (ยังไม่เคยทดสอบกับพันธุ์นี้มาก่อน): แทนที่จะล้างด้วยน้ำปลอดเชื้อเฉย ๆ 3 รอบตามค่าเริ่มต้น " +
           "จะเตรียมน้ำ rinse ที่มีคลอรีนออกฤทธิ์ต่ำ ๆ ประมาณ 300 ppm แยกต่างหาก (เจือจาก[[nadcc|NaDCC]]หรือ NaOCl เจือจางมาก ๆ ก็ได้) " +

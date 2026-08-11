@@ -6,7 +6,7 @@ import type {
   ProtocolStepRun,
   TrialArmRole,
 } from "@/lib/domain/models";
-import type { MediaRecipe, ResolvedManual, ResolvedStep } from "@/lib/manual/types";
+import type { MediaRecipe, MediaRecipeIdsByStep, ResolvedManual, ResolvedStep } from "@/lib/manual/types";
 import { projectTrialSteps } from "@/lib/trials/project-trial-steps";
 import { evaluateT3Eligibility, type T3Eligibility } from "@/lib/trials/t3-eligibility";
 import { decodeStepValues, type StepResponses } from "./field-values";
@@ -38,6 +38,7 @@ export type RoundView = {
   startedAt: string;
   steps: RoundStep[];
   mediaRecipes: MediaRecipe[];
+  mediaRecipeIdsByStep?: MediaRecipeIdsByStep;
   currentStepNumber: number;
   passedCount: number;
   /** มีค่าเมื่อรอบนี้เป็นแขนงหนึ่งของชุดทดลองเปรียบเทียบ (ดู src/lib/trials) ใช้แสดงแบนเนอร์
@@ -110,6 +111,7 @@ export function buildRoundView(
     startedAt: lot.startedAt,
     steps,
     mediaRecipes: manual.mediaRecipes,
+    ...(manual.mediaRecipeIdsByStep ? { mediaRecipeIdsByStep: manual.mediaRecipeIdsByStep } : {}),
     currentStepNumber,
     passedCount,
     ...(lot.armRole ? { trialArmRole: lot.armRole } : {}),

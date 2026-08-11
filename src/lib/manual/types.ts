@@ -73,6 +73,9 @@ export type MediaRecipe = {
   evidence: EvidenceRef;
 };
 
+export type MediumStepId = "prep-media" | "multiply" | "root";
+export type MediaRecipeIdsByStep = Partial<Record<MediumStepId, string[]>>;
+
 /** อาการที่ผู้ใช้อาจเจอในขั้นหนึ่ง พร้อมวิธีแยกสาเหตุและสิ่งที่ต้องทำต่อ
  *  เก็บในคลังกลางเพราะอาการส่วนใหญ่ไม่ผูกกับชนิดพืช */
 export type TroubleshootingEntry = {
@@ -137,6 +140,8 @@ export type PlantPack = {
   overrides?: Record<string, StepOverride>;
   steps?: Record<string, ManualStepDef>;
   mediaRecipes: MediaRecipe[];
+  /** สูตรที่ใช้จริงในแต่ละขั้นอาหาร; [] แปลว่าไม่มีสูตรแยกและห้ามเดาสูตรอื่นแทน */
+  mediaRecipeIdsByStep?: MediaRecipeIdsByStep;
   sourceIds: string[];
 };
 
@@ -153,5 +158,6 @@ export type ResolvedManual = {
   durationLabel: string;
   steps: ResolvedStep[];
   mediaRecipes: MediaRecipe[];
+  mediaRecipeIdsByStep?: MediaRecipeIdsByStep;
   sourceIds: string[];
 };

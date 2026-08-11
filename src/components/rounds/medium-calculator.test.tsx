@@ -23,6 +23,16 @@ describe("MediumCalculator", () => {
     }
   });
 
+  it("แสดงเฉพาะสูตรที่ประกาศไว้สำหรับระยะนั้น ไม่ดึงสูตรของระยะอื่นมาแทน", () => {
+    const html = renderToStaticMarkup(
+      <MediumCalculator recipes={recipes} availableRecipeIds={["multiplication"]} initialRecipeId="multiplication" />,
+    );
+
+    expect(html).toContain("ระยะเพิ่มจำนวน");
+    expect(html).not.toContain("ระยะตั้งต้น");
+    expect(html).not.toContain("ระยะออกราก");
+  });
+
   it("ช่องกรอกทุกช่องมีป้ายผูกกับช่องจริง", () => {
     const html = renderToStaticMarkup(<MediumCalculator recipes={recipes} />);
     const inputIds = [...html.matchAll(/<input[^>]*id="([^"]+)"/g)].map((match) => match[1]);
@@ -39,6 +49,8 @@ describe("MediumCalculator", () => {
     expect(html).toContain("รวมต้องทำอาหาร");
     expect(html).toContain("มิลลิลิตร");
     expect(html).toContain("กระปุก");
+    expect(html).toContain("น้ำตั้งต้น");
+    expect(html).toContain("เติมน้ำให้ครบ");
   });
 
   it("สารที่ชั่งไม่ได้ต้องขึ้นว่าชั่งไม่ได้ ไม่ใช่ปัดเศษให้ดูสวย", () => {

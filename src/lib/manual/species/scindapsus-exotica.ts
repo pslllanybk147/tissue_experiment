@@ -19,6 +19,11 @@ export const scindapsusExoticaPack: PlantPack = {
   growthFormId: "climbing-vine-visible-node",
   genusId: "scindapsus",
   sequence: [...standardSequence],
+  mediaRecipeIdsByStep: {
+    "prep-media": ["establishment", "establishment-ba", "establishment-bap-iba"],
+    multiply: ["multiplication"],
+    root: [],
+  },
   overrides: {
     sterilize: {
       actions: [

@@ -15,6 +15,11 @@ export const thaiConstellationPack: PlantPack = {
   genusId: "monstera",
   traitIds: ["variegated"],
   sequence: [...standardSequence],
+  mediaRecipeIdsByStep: {
+    "prep-media": ["establishment", "establishment-ba", "establishment-bap-iba"],
+    multiply: ["multiplication"],
+    root: ["rooting"],
+  },
   overrides: {
     sterilize: {
       actions: [

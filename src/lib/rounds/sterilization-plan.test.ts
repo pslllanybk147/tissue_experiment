@@ -64,6 +64,33 @@ describe("resolveSterilizationStep", () => {
   });
 
   it.each([
+    ["haiter-chemical", "ฆ่าเชื้ออาหารด้วย Haiter"],
+    ["nadcc-chemical", "ฆ่าเชื้ออาหารด้วย NaDCC"],
+  ] as const)("adds %s before final volume is topped up", (method, label) => {
+    const resolved = resolveSterilizationStep(
+      prepMedia,
+      snapshot({ mediumSterilizationMethod: method }),
+    );
+    const labels = (resolved.executionInstructions ?? []).map((item) => item.label);
+    const sterilant = labels.indexOf(label);
+    const topUp = labels.indexOf("เติมน้ำให้ครบปริมาตรสุดท้าย");
+    const divide = labels.indexOf("แบ่งและติดป้าย");
+
+    expect(sterilant).toBeGreaterThanOrEqual(0);
+    expect(sterilant).toBeLessThan(topUp);
+    expect(topUp).toBeLessThan(divide);
+  });
+
+  it("keeps pressure sterilization after aliquoting", () => {
+    const resolved = resolveSterilizationStep(
+      prepMedia,
+      snapshot({ mediumSterilizationMethod: "pressure-sterilization" }),
+    );
+    const labels = (resolved.executionInstructions ?? []).map((item) => item.label);
+    expect(labels.indexOf("นึ่งฆ่าเชื้ออาหาร")).toBeGreaterThan(labels.indexOf("แบ่งและติดป้าย"));
+  });
+
+  it.each([
     ["nadcc", "น้ำ NaDCC 300 ppm", /NaOCl|น้ำปลอดเชื้อธรรมดา/],
     ["low-dose-hypochlorite", "น้ำ NaOCl 300 ppm", /NaDCC|น้ำปลอดเชื้อธรรมดา/],
   ] as const)("%s rinse has only the selected water in R1-R3 and no R4", (method, included, excluded) => {

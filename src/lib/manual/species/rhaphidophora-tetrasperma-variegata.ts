@@ -25,6 +25,11 @@ export const rhaphidophoraTetraspermaVariegataPack: PlantPack = {
   genusId: "rhaphidophora",
   traitIds: ["variegated"],
   sequence: [...standardSequence],
+  mediaRecipeIdsByStep: {
+    "prep-media": ["establishment", "establishment-ba", "establishment-bap-iba"],
+    multiply: ["multiplication"],
+    root: [],
+  },
   overrides: {
     sterilize: {
       actions: [

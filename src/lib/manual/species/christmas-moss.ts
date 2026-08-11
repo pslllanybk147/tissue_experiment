@@ -16,6 +16,11 @@ export const christmasMossPack: PlantPack = {
   growthFormId: "fragment-mat-no-node",
   genusId: "vesicularia",
   sequence: [...standardSequence],
+  mediaRecipeIdsByStep: {
+    "prep-media": ["bcdat-modified"],
+    multiply: ["bcdat-modified"],
+    root: ["bcdat-modified"],
+  },
   overrides: {
     "select-explant": {
       title: "เลือกส่วนที่เขียวสดที่สุดของกอ",

@@ -16,7 +16,7 @@ import type { RoundStep, RoundView } from "@/lib/rounds/round-adapter";
 import { bracketKey, buildBracketPlan, jarsPerArmKey } from "@/lib/rounds/bracket";
 import { evaluateStepEvidence } from "@/lib/rounds/evidence-policy";
 import { encodeStepValues, type StepResponses } from "@/lib/rounds/field-values";
-import { MEDIUM_CALCULATOR_STEP_IDS, initialRecipeIdForStep } from "@/lib/rounds/medium-steps";
+import { MEDIUM_CALCULATOR_STEP_IDS, initialRecipeIdForStep, recipeIdsForStep } from "@/lib/rounds/medium-steps";
 import { defaultMediumExecutionContext, type MediumExecutionContext } from "@/lib/rounds/medium-execution";
 import { BracketTable } from "./bracket-table";
 import { ChemicalPreparation } from "./chemical-preparation";
@@ -81,8 +81,8 @@ export function StepRunner({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState("");
   const [mediumContext, setMediumContext] = useState<MediumExecutionContext | null>(() => (
-    MEDIUM_CALCULATOR_STEP_IDS.has(step.id)
-      ? defaultMediumExecutionContext(view.mediaRecipes, initialRecipeIdForStep(step.id), tools)
+    MEDIUM_CALCULATOR_STEP_IDS.has(step.id) && recipeIdsForStep(view.mediaRecipes, step.id, view.mediaRecipeIdsByStep).length > 0
+      ? defaultMediumExecutionContext(view.mediaRecipes, initialRecipeIdForStep(step.id, view.mediaRecipes, view.mediaRecipeIdsByStep), tools)
       : null
   ));
   const preparationKey = step.id === "prep-media" ? "mediumPreparation" : "surfacePreparation";
@@ -188,7 +188,8 @@ export function StepRunner({
               <MediumCalculator
                 key={`${step.id}-${tools?.scaleMinimumMg ?? ""}-${tools?.pipetteMinimumMl ?? ""}-${tools?.msLabelRateGPerL ?? ""}-${tools?.bcdLabelRateGPerL ?? ""}-${tools?.naaStockMgPerMl ?? ""}-${tools?.baStockMgPerMl ?? ""}-${tools?.bapStockMgPerMl ?? ""}-${tools?.ibaStockMgPerMl ?? ""}`}
                 recipes={view.mediaRecipes}
-                initialRecipeId={initialRecipeIdForStep(step.id)}
+                availableRecipeIds={recipeIdsForStep(view.mediaRecipes, step.id, view.mediaRecipeIdsByStep)}
+                initialRecipeId={initialRecipeIdForStep(step.id, view.mediaRecipes, view.mediaRecipeIdsByStep)}
                 tools={tools}
                 onPlanChange={onMediumPlanChange}
               />

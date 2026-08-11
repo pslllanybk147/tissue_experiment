@@ -29,11 +29,18 @@ describe("mediumInstructionOverride", () => {
   it("แปลงผลคำนวณเป็นปริมาณจริงในข้อทำงาน ไม่ทิ้งคำว่า ตามสูตรที่เลือก", () => {
     const main = mediumInstructionOverride("ละลายส่วนผสมหลัก", context);
     const agar = mediumInstructionOverride("เติมผงวุ้น", context);
+    const heat = mediumInstructionOverride("ให้ความร้อนจนวุ้นละลาย", context);
+    const topUp = mediumInstructionOverride("เติมน้ำให้ครบปริมาตรสุดท้าย", context);
     const jars = mediumInstructionOverride("แบ่งและติดป้าย", context);
 
+    expect(main.action).toContain("น้ำตั้งต้น 138.4 mL");
+    expect(main.action).toContain("ปริมาตรสุดท้าย 173 mL");
     expect(main.quantity).toContain("MS basal salts 0.766 g");
     expect(main.quantity).toContain("Sucrose 5.19 g");
     expect(agar.action).toContain("Agar 1.298 g");
+    expect(agar.action).toContain("ก่อนให้ความร้อน");
+    expect(heat.action).toContain("วุ้นละลายหมด");
+    expect(topUp.action).toContain("173 mL");
     expect(jars.quantity).toContain("6 กระปุก");
     expect(jars.quantity).toContain("25 mL ต่อกระปุก");
     expect(JSON.stringify({ main, agar, jars })).not.toContain("ตามสูตรที่เลือก");
