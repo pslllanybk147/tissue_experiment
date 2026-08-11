@@ -7,6 +7,7 @@ export function CalculatorField({
   value,
   onChange,
   hint,
+  unit,
   step = "any",
   allowZero = false,
 }: {
@@ -15,12 +16,13 @@ export function CalculatorField({
   value: number;
   onChange: (next: number) => void;
   hint?: string;
+  unit?: string;
   step?: string;
   allowZero?: boolean;
 }) {
   const invalid = !Number.isFinite(value) || (allowZero ? value < 0 : value <= 0);
   return (
-    <FieldGroup id={id} label={label} hint={hint} error={invalid ? "ต้องมากกว่าศูนย์" : undefined}>
+    <FieldGroup id={id} label={label} hint={hint} unit={unit} error={invalid ? "ต้องมากกว่าศูนย์" : undefined}>
       <NumericInput
         aria-invalid={invalid}
         id={id}

@@ -9,6 +9,7 @@ import {
   type HaiterAutoResult,
 } from "@/lib/domain/haiter-calculations";
 import { CalculatorField } from "./calculator-field";
+import { FieldGroup } from "@/components/common/field-group";
 
 type Attempt<T> = { ok: true; result: T } | { ok: false; message: string };
 
@@ -69,46 +70,49 @@ export function HaiterCalculator({
   }, [onPlanChange, plan]);
 
   return (
-    <section className="cl-calculator cl-haiter-calculator">
+    <section className="cl-calculator cl-haiter-calculator cl-atlas-form-section">
       <h2 className="pl-h2">ไฮเตอร์ / สารฟอกฆ่าเชื้อ</h2>
 
-      <div className="cl-calculator-body" aria-live="polite">
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "12px" }}>
+      <div className="cl-calculator-body">
+        <div className="cl-atlas-field-grid">
           <CalculatorField
             id="hd-source"
-            label="ความเข้มข้นบนฉลากขวด (%)"
+            label="ความเข้มข้นบนฉลากขวด"
+            unit="%"
             value={sourcePercent}
             onChange={setSourcePercent}
             hint="ตัวเลข % ที่เขียนบนฉลากไฮเตอร์ เช่น 6"
           />
-          <label style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "14px" }}>
-            ฉลากเขียนกำกับว่า
+          <FieldGroup id="hd-label-basis" label="ฉลากเขียนกำกับว่า" hint="ไม่แน่ใจให้เลือกตัวแรก ฉลากบ้านเราส่วนใหญ่เป็นแบบนี้">
             <select
+              id="hd-label-basis"
               value={labelBasis}
               onChange={(event) => setLabelBasis(event.target.value as LabelBasis)}
-              className="pl-input"
+              className="cl-input"
             >
               <option value="w/v">w/v หรือไม่ได้ระบุ</option>
               <option value="w/w">w/w</option>
             </select>
-            <span className="pl-meta">ไม่แน่ใจให้เลือกตัวแรก ฉลากบ้านเราส่วนใหญ่เป็นแบบนี้</span>
-          </label>
+          </FieldGroup>
           <CalculatorField
             id="hd-target"
-            label="อยากได้น้ำยาความเข้มข้นเท่าไหร่ (%)"
+            label="อยากได้น้ำยาความเข้มข้นเท่าไหร่"
+            unit="%"
             value={targetPercent}
             onChange={setTargetPercent}
             hint="ดูจากสูตร/คู่มือที่ใช้อยู่"
           />
           <CalculatorField
             id="hd-volume"
-            label="อยากได้น้ำยาทั้งหมดกี่ mL"
+            label="อยากได้น้ำยาทั้งหมด"
+            unit="mL"
             value={finalVolumeMl}
             onChange={setFinalVolumeMl}
           />
           <CalculatorField
             id="hd-min"
-            label="อุปกรณ์ตวงที่มีละเอียดสุดกี่ mL"
+            label="อุปกรณ์ตวงที่มีละเอียดสุด"
+            unit="mL"
             value={minimumMeasurableMl}
             onChange={setMinimumMeasurableMl}
             hint="เช่น syringe เล็กมักละเอียด 0.1–1 mL"
@@ -123,7 +127,8 @@ export function HaiterCalculator({
         ) : null}
 
         {plan.ok && plan.result.mode === "direct" ? (
-          <div className="cl-calculator-result">
+          <div className="cl-calculator-result cl-atlas-result" aria-live="polite" aria-label="ผลการคำนวณไฮเตอร์">
+            <p className="cl-result-disclaimer">ค่าจากสูตร ยังไม่ใช่ค่าตรวจ</p>
             <p className="pl-mono">{plan.result.formula}</p>
             <p style={{ margin: "4px 0 0", fontSize: "26px", fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>
               {plan.result.sourceVolumeMl} mL
@@ -132,7 +137,8 @@ export function HaiterCalculator({
         ) : null}
 
         {plan.ok && plan.result.mode === "working-dilution" ? (
-          <div className="cl-calculator-result">
+          <div className="cl-calculator-result cl-atlas-result" aria-live="polite" aria-label="ผลการคำนวณไฮเตอร์">
+            <p className="cl-result-disclaimer">ค่าจากสูตร ยังไม่ใช่ค่าตรวจ</p>
             <p className="pl-mono">ขั้น 1: เตรียมน้ำยาเจือจางก่อน</p>
             <p style={{ margin: "4px 0 0" }}>
               ตวงไฮเตอร์ {plan.result.sourceVolumeMl} mL + น้ำ {plan.result.diluentVolumeMl} mL รวมเป็น{" "}

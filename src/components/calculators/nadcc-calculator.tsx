@@ -58,7 +58,7 @@ export function NadccCalculator({
   }, [onPlanChange, plan]);
 
   return (
-    <section className="cl-calculator cl-nadcc-calculator">
+    <section className="cl-calculator cl-nadcc-calculator cl-atlas-form-section">
       <h2 className="pl-h2">NaDCC (เม็ดคลอรีน)</h2>
       <p className="pl-lede" style={{ marginTop: "6px" }}>
         ทางเลือกทดลอง ยังไม่มีงานยืนยันเจาะจงพืชส่วนใหญ่ในระบบ ใช้เป็นจุดเริ่มต้นการทดสอบเอง ไม่ใช่สูตรสำเร็จ
@@ -67,44 +67,50 @@ export function NadccCalculator({
         ค่าตั้งต้นจากฉลากที่ผู้ใช้ส่ง: เม็ดทั้งเม็ด 5.4 g มี NaDCC 2.97 g และระบุคลอรีนออกฤทธิ์ 60%
       </p>
 
-      <div className="cl-calculator-body" aria-live="polite">
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "12px" }}>
+      <div className="cl-calculator-body">
+        <div className="cl-atlas-field-grid">
           <CalculatorField
             id="nd-tablet"
-            label="NaDCC บริสุทธิ์ต่อเม็ด (mg)"
+            label="NaDCC บริสุทธิ์ต่อเม็ด"
+            unit="mg"
             value={tabletMg}
             onChange={setTabletMg}
             hint="ดูจากฉลาก ไม่ใช่น้ำหนักเม็ดทั้งเม็ด เช่นเม็ด 5.4 g มี NaDCC 2970 mg"
           />
           <CalculatorField
             id="nd-percent"
-            label="Available chlorine ของ NaDCC (%)"
+            label="Available chlorine ของ NaDCC"
+            unit="%"
             value={availableChlorinePercent}
             onChange={setAvailableChlorinePercent}
             hint="ไม่ทราบให้ใช้ค่ามาตรฐาน 60"
           />
           <CalculatorField
             id="nd-stock-vol"
-            label="ละลายเม็ดในน้ำกี่ mL (stock)"
+            label="ละลายเม็ดในน้ำเพื่อทำ stock"
+            unit="mL"
             value={stockVolumeMl}
             onChange={setStockVolumeMl}
           />
           <CalculatorField
             id="nd-target"
-            label="อยากได้น้ำ rinse ความเข้มข้นเท่าไหร่ (ppm)"
+            label="อยากได้น้ำ rinse ความเข้มข้นเท่าไหร่"
+            unit="ppm"
             value={targetPpm}
             onChange={setTargetPpm}
             hint="ดูจากสูตร/คู่มือที่ใช้อยู่"
           />
           <CalculatorField
             id="nd-volume"
-            label="อยากได้น้ำ rinse ทั้งหมดกี่ mL"
+            label="อยากได้น้ำ rinse ทั้งหมด"
+            unit="mL"
             value={finalVolumeMl}
             onChange={setFinalVolumeMl}
           />
           <CalculatorField
             id="nd-min"
-            label="อุปกรณ์ตวงที่มีละเอียดสุดกี่ mL"
+            label="อุปกรณ์ตวงที่มีละเอียดสุด"
+            unit="mL"
             value={minimumMeasurableMl}
             onChange={setMinimumMeasurableMl}
             hint="เช่น syringe เล็กมักละเอียด 0.1–1 mL"
@@ -118,7 +124,8 @@ export function NadccCalculator({
         ) : null}
 
         {plan.ok && plan.result.mode === "direct" ? (
-          <div className="cl-calculator-result">
+          <div className="cl-calculator-result cl-atlas-result" aria-live="polite" aria-label="ผลการคำนวณ NaDCC">
+            <p className="cl-result-disclaimer">ค่าจากสูตร ยังไม่ใช่ค่าตรวจ</p>
             <p className="pl-mono">{plan.result.formula}</p>
             <p className="pl-meta" style={{ marginTop: "8px" }}>
               ค่าคำนวณก่อนปัด {plan.result.calculatedVolumeMl} mL
@@ -134,7 +141,8 @@ export function NadccCalculator({
         ) : null}
 
         {plan.ok && plan.result.mode === "working-dilution" ? (
-          <div className="cl-calculator-result">
+          <div className="cl-calculator-result cl-atlas-result" aria-live="polite" aria-label="ผลการคำนวณ NaDCC">
+            <p className="cl-result-disclaimer">ค่าจากสูตร ยังไม่ใช่ค่าตรวจ</p>
             <p className="pl-mono">ขั้น 1: เตรียม stock เจือจางก่อน</p>
             <p style={{ margin: "4px 0 0" }}>
               ตวง stock {plan.result.sourceVolumeMl} mL + น้ำ {plan.result.diluentVolumeMl} mL รวมเป็น{" "}

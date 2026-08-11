@@ -166,4 +166,38 @@ describe("ChemicalPreparation", () => {
     expect(html).toContain("ห้ามกรอกแทนค่าคลอรีน");
     expect(html).toContain("ยังไม่เลือก verified");
   });
+
+  it("groups preparation fields and distinguishes calculated ppm from a measured value", () => {
+    const html = renderToStaticMarkup(
+      <ChemicalPreparation
+        stepId="prep-media"
+        sterilization={{
+          ...base,
+          method: "haiter-chemical",
+          mediumSterilizationMethod: "haiter-chemical",
+          mediumPreparation: {
+            method: "haiter-chemical",
+            protocolVersion: "haiter-medium-v1",
+            status: "planned",
+            productName: "Haiter",
+            labelConcentration: 6,
+            labelBasis: "w/w",
+            lockedAt: "2026-08-10T08:00:00.000Z",
+          },
+        }}
+        defaultTargetPpm={120}
+        defaultFinalVolumeMl={170}
+        onConfirm={async () => {}}
+      />,
+    );
+
+    expect(html).toContain("cl-atlas-form-section");
+    expect(html).toContain("cl-atlas-field-grid");
+    expect(html).toContain('aria-live="polite"');
+    expect(html).toContain('aria-label="ผลการคำนวณไฮเตอร์"');
+    expect(html).not.toContain("<output");
+    expect(html).toContain("ค่าจากสูตร ยังไม่ใช่ค่าตรวจ");
+    expect(html).toContain("TDS/EC");
+    expect(html).not.toMatch(/Primary|Keyboard focus|Destructive|Disabled/);
+  });
 });

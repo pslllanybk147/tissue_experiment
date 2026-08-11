@@ -73,4 +73,16 @@ describe("MediumCalculator", () => {
     expect(html).toContain("ตรวจชื่อบนฉลากให้ตรงกับชื่อในสูตร");
     expect(html).not.toContain("BA/BAP stock");
   });
+
+  it("uses an atlas form grid and a clearly labelled calculated result", () => {
+    const html = renderToStaticMarkup(<MediumCalculator recipes={recipes} />);
+
+    expect(html).toContain("cl-atlas-form-section");
+    expect(html).toContain("cl-atlas-field-grid");
+    expect(html).toContain("cl-atlas-result");
+    expect(html).toContain('aria-live="polite"');
+    expect(html).toContain('aria-label="ผลการคำนวณปริมาตรอาหาร"');
+    expect(html).not.toContain("<output");
+    expect(html).toContain("ค่าจากสูตร ยังไม่ใช่ค่าตรวจ");
+  });
 });

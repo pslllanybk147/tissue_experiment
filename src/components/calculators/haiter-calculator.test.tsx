@@ -67,6 +67,18 @@ describe("HaiterCalculator", () => {
 
     expect(html).toContain("อุปกรณ์ตวงละเอียดไม่พอ");
   });
+
+  it("uses the atlas field grid and identifies outputs as calculated values", () => {
+    const html = renderToStaticMarkup(<HaiterCalculator />);
+
+    expect(html).toContain("cl-atlas-form-section");
+    expect(html).toContain("cl-atlas-field-grid");
+    expect(html).toContain("cl-atlas-result");
+    expect(html).toContain('aria-live="polite"');
+    expect(html).toContain('aria-label="ผลการคำนวณไฮเตอร์"');
+    expect(html).not.toContain("<output");
+    expect(html).toContain("ค่าจากสูตร ยังไม่ใช่ค่าตรวจ");
+  });
 });
 
 describe("HaiterCalculator · หน่วยบนฉลาก", () => {

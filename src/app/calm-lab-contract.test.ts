@@ -196,6 +196,14 @@ describe("Calm Lab contract", () => {
     expect(fieldUnit).toContain("word-break: normal");
   });
 
+  it("never lets a two-column workflow field shrink below twelve rem", () => {
+    for (const selector of [".cl-atlas-field-grid", ".cl-chemical-grid", ".cl-preparation-fields"]) {
+      expect(declarationBlock(calmLabCss, selector), selector).toContain(
+        "grid-template-columns: repeat(2, minmax(12rem, 1fr))",
+      );
+    }
+  });
+
   it("keeps one shared field spacing rule and shrink-safe primitive wrappers", () => {
     expect(calmLabCss.match(/\.cl-field-group\s*\{/g)).toHaveLength(1);
     expect(declarationBlock(calmLabCss, ".cl-field-group")).toContain("gap: var(--cl-space-2)");

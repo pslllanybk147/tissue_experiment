@@ -23,4 +23,17 @@ describe("WorkingStockCalculator", () => {
     expect(html).toContain("อัตราส่วน 1:100");
     expect(html).toContain("0.01 mg/mL");
   });
+
+  it("uses atlas form and result anatomy without legacy soft cards", () => {
+    const html = renderToStaticMarkup(<WorkingStockCalculator initialInput={{ requiredMassMg: 5 }} />);
+
+    expect(html).toContain("cl-atlas-form-section");
+    expect(html).toContain("cl-atlas-field-grid");
+    expect(html).toContain("cl-atlas-result");
+    expect(html).toContain('aria-live="polite"');
+    expect(html).toContain('aria-label="ผลการคำนวณน้ำยาแม่"');
+    expect(html).not.toContain("<output");
+    expect(html).toContain("ค่าจากสูตร ยังไม่ใช่ค่าตรวจ");
+    expect(html).not.toContain("pl-soft-card");
+  });
 });

@@ -51,13 +51,13 @@ function ChemicalFields({ profile, onChange }: { profile: EquipmentProfileV2; on
   };
 
   return (
-    <section className="cl-setup-section" aria-labelledby="chemical-heading">
+    <section className="cl-setup-section cl-atlas-form-section" aria-labelledby="chemical-heading">
       <header className="cl-section-heading">
         <p>ขั้นที่ 1</p>
         <h2 id="chemical-heading">ข้อมูลสารที่มีในมือ</h2>
         <p>NaDCC และ Haiter แสดงพร้อมกันและจะไม่หายเมื่อเลือกวิธี</p>
       </header>
-      <div className="cl-chemical-grid">
+      <div className="cl-chemical-grid cl-atlas-field-grid">
         <section className="cl-chemical-group">
           <h3>NaDCC {profile.chemicals.nadcc.availableChlorinePercent}%</h3>
           <p>เม็ดฟู่ · ใช้ค่าฉลากนี้เมื่อเลือก NaDCC</p>
@@ -151,7 +151,7 @@ export function RoundSetup({ profile, manual, onConfirm, onBack }: Props) {
       actions={<ActionBar secondary={secondaryAction} primary={primaryAction} />}
     >
       <div hidden={currentStep !== 0}><ChemicalFields profile={draftProfile} onChange={setDraftProfile} /></div>
-      <div className="cl-setup-section cl-method-stage" hidden={currentStep !== 1}>
+      <div className="cl-setup-section cl-atlas-form-section cl-method-stage" hidden={currentStep !== 1}>
         <header className="cl-section-heading"><p>ขั้นที่ 2</p><h2>เลือกวิธีที่จะใช้จริง</h2><p>เลือกหนึ่งวิธีในแต่ละหมวด ตัวเลือกอื่นยังคงมองเห็นได้</p></header>
         <MethodGroup legend="อาหารและกระปุก" note="เลือกวิธีทำให้อาหารและกระปุกปลอดเชื้อ 1 วิธี" group="mediumMethod" value={selection.mediumMethod} onSelect={select} onClear={clear} options={[
           { value: "pressure-sterilization", label: "หม้อนึ่งแรงดัน", description: "121°C · 15 psi · 15–20 นาที", status: pressureAvailable ? "อุปกรณ์พร้อม" : undefined, disabled: !pressureAvailable, disabledReason: pressureAvailable ? undefined : "ยังไม่มีอุปกรณ์แรงดันที่รองรับ" },
@@ -168,7 +168,7 @@ export function RoundSetup({ profile, manual, onConfirm, onBack }: Props) {
           { value: "low-dose-hypochlorite", label: "NaOCl / Haiter rinse 300 ppm", description: "R1–R3 รอบละประมาณ 1 นาที", status: "ทดลอง", disabled: chlorinatedRinseDisabled, disabledReason: chlorinatedRinseDisabled ? "หลัง NaDCC soak ต้องใช้น้ำปลอดเชื้อ" : undefined },
         ]} />
       </div>
-      <div className="cl-setup-section" hidden={currentStep !== 2}>
+      <div className="cl-setup-section cl-atlas-form-section" hidden={currentStep !== 2}>
         <header className="cl-section-heading"><p>ขั้นที่ 3</p><h2>ตรวจทานก่อนล็อกค่ากับรอบ</h2></header>
         <PreparationSummary value={summaryValue} />
         {chemistryComplete && selectionsComplete ? (

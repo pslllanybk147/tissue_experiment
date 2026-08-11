@@ -67,4 +67,15 @@ describe("RoundSetup", () => {
 
     expect(html).not.toMatch(/R4|final rinse|ล้างน้ำปลอดเชื้อ.*ต่อ/);
   });
+
+  it("uses Botanical Atlas form sections and explicit unit controls", () => {
+    const html = renderToStaticMarkup(
+      <RoundSetup profile={USER_REPORTED_PROFILE} manual={manual} onConfirm={() => {}} onBack={() => {}} />,
+    );
+
+    expect(html).toContain("cl-atlas-form-section");
+    expect(html).toContain("cl-atlas-field-grid");
+    expect(html).toContain("cl-field-unit");
+    expect(html).not.toMatch(/Primary|Keyboard focus|Destructive|Disabled/);
+  });
 });

@@ -167,8 +167,8 @@ export function ChemicalPreparation({
   }
 
   return (
-    <section className="cl-chemical-preparation">
-      <h2>ยืนยันการเตรียมสาร</h2>
+    <section className="cl-chemical-preparation cl-atlas-form-section" aria-labelledby="preparation-heading">
+      <h2 id="preparation-heading">ยืนยันการเตรียมสาร</h2>
       <p className="cl-meta">
         โปรโตคอล {preparation.protocolVersion} · สถานะที่ล็อกไว้ {preparation.status}
       </p>
@@ -178,7 +178,7 @@ export function ChemicalPreparation({
         </p>
       ) : null}
       <form onSubmit={(event) => void submit(event)}>
-        <div className="cl-preparation-fields">
+        <div className="cl-preparation-fields cl-atlas-field-grid">
           <FieldGroup id="preparation-product" label="ผลิตภัณฑ์"><input id="preparation-product" value={productName} onChange={(event) => setProductName(event.currentTarget.value)} /></FieldGroup>
           <FieldGroup id="preparation-batch" label="Batch / lot"><input id="preparation-batch" value={batchOrLot} onChange={(event) => setBatchOrLot(event.currentTarget.value)} /></FieldGroup>
           <FieldGroup id="preparation-target" label={isMediumHaiter ? "เป้าหมายคลอรีนออกฤทธิ์ (จาก 2 mL/L)" : "เป้าหมาย"} unit="ppm"><input id="preparation-target" type="number" step="any" value={targetPpm} onChange={(event) => setTargetPpm(event.currentTarget.value)} /></FieldGroup>
@@ -222,7 +222,14 @@ export function ChemicalPreparation({
           />
         )}
 
-        {dose ? <p className="cl-calculated-dose">ค่าคำนวณล่าสุด: {dose.value} {dose.unit}</p> : null}
+        {dose ? (
+          <div className="cl-calculated-dose cl-atlas-result" aria-live="polite" aria-label="ผลการคำนวณปริมาณสาร">
+            <strong>ค่าคำนวณล่าสุด: {dose.value} {dose.unit}</strong>
+            <span>ค่าจากสูตร ยังไม่ใช่ค่าตรวจ · ตวงจริงแล้วบันทึกค่าที่อ่านได้จากอุปกรณ์</span>
+          </div>
+        ) : (
+          <p className="cl-calculation-disclaimer">ค่าจากสูตร ยังไม่ใช่ค่าตรวจ · กรอกเป้าหมายและปริมาตรเพื่อคำนวณ</p>
+        )}
         <ActionBar primary={<button className="cl-button-primary" type="submit" disabled={saving}>{saving ? "กำลังบันทึก…" : "บันทึก preparation snapshot"}</button>} />
         {message ? <p role="status" className="cl-meta">{message}</p> : null}
       </form>

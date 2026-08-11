@@ -40,31 +40,34 @@ export function WorkingStockCalculator({
   );
 
   return (
-    <section>
+    <section className="cl-calculator cl-working-stock-calculator cl-atlas-form-section">
       <h2 className="pl-h2">น้ำยาแม่ (working stock)</h2>
       <p className="pl-lede" style={{ marginTop: "6px" }}>
         ใช้เมื่อปริมาณสารที่ต้องใช้น้อยเกินกว่าจะตวงจาก stock เดิมได้ตรง ๆ
       </p>
 
-      <div className="pl-soft-card" style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "12px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "12px" }}>
-          <CalculatorField id="ws-mass" label="มวลที่ต้องการ (mg)" value={requiredMassMg} onChange={setRequiredMassMg} />
+      <div className="cl-calculator-body">
+        <div className="cl-atlas-field-grid">
+          <CalculatorField id="ws-mass" label="มวลที่ต้องการ" unit="mg" value={requiredMassMg} onChange={setRequiredMassMg} />
           <CalculatorField
             id="ws-source"
-            label="ความเข้มข้น stock เดิม (mg/mL)"
+            label="ความเข้มข้น stock เดิม"
+            unit="mg/mL"
             value={sourceConcentrationMgPerMl}
             onChange={setSourceConcentrationMgPerMl}
           />
           <CalculatorField
             id="ws-tool-min"
-            label="ตวงได้ละเอียดสุด (mL)"
+            label="ตวงได้ละเอียดสุด"
+            unit="mL"
             value={minimumToolVolumeMl}
             onChange={setMinimumToolVolumeMl}
             hint="ดึงจากอุปกรณ์ของคุณถ้าตั้งค่าไว้"
           />
           <CalculatorField
             id="ws-volume"
-            label="ปริมาตร working solution ที่จะเตรียม (mL)"
+            label="ปริมาตร working solution ที่จะเตรียม"
+            unit="mL"
             value={workingSolutionVolumeMl}
             onChange={setWorkingSolutionVolumeMl}
           />
@@ -72,14 +75,15 @@ export function WorkingStockCalculator({
       </div>
 
       {result.state === "blocked" ? (
-        <div className="pl-soft-card" role="alert" style={{ marginTop: "14px", background: "var(--pl-stop)" }}>
-          <p style={{ margin: 0, fontWeight: 700 }}>{result.reason}</p>
-          <p className="pl-lede" style={{ marginTop: "6px" }}>{result.safeAction}</p>
+        <div className="cl-calculator-error" role="alert">
+          <p className="cl-result-title">{result.reason}</p>
+          <p>{result.safeAction}</p>
         </div>
       ) : null}
 
       {result.state === "direct" ? (
-        <div className="pl-soft-card" style={{ marginTop: "14px" }}>
+        <div className="cl-calculator-result cl-atlas-result" aria-live="polite" aria-label="ผลการคำนวณน้ำยาแม่">
+          <p className="cl-result-disclaimer">ค่าจากสูตร ยังไม่ใช่ค่าตรวจ</p>
           <p className="pl-mono">ตวงตรงจาก stock เดิม</p>
           <p style={{ margin: "4px 0 0", fontSize: "26px", fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>
             {formatVolume(result.directDoseMl)} mL
@@ -91,7 +95,8 @@ export function WorkingStockCalculator({
       ) : null}
 
       {result.state === "working-dilution" ? (
-        <div className="pl-soft-card" style={{ marginTop: "14px" }}>
+        <div className="cl-calculator-result cl-atlas-result" aria-live="polite" aria-label="ผลการคำนวณน้ำยาแม่">
+          <p className="cl-result-disclaimer">ค่าจากสูตร ยังไม่ใช่ค่าตรวจ</p>
           <p className="pl-mono">ต้องทำ working stock อัตราส่วน 1:{result.dilutionFactor}</p>
           <p style={{ margin: "4px 0 0", fontSize: "18px", fontWeight: 700 }}>
             ความเข้มข้น {formatNumber(result.workingConcentrationMgPerMl)} mg/mL

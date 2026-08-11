@@ -23,4 +23,25 @@ describe("CalculatorField", () => {
     expect(withHint).toContain("คำอธิบายเพิ่มเติม");
     expect(withoutHint).not.toContain("pl-meta");
   });
+
+  it("keeps a long label, hint, control, unit, and error in reading order", () => {
+    const html = renderToStaticMarkup(
+      <CalculatorField
+        id="long-field"
+        label="ปริมาตร working solution ที่จะเตรียมสำหรับการทดลองรอบนี้"
+        hint="อ่านค่าจากอุปกรณ์ที่ใช้จริง"
+        unit="mL"
+        value={Number.NaN}
+        onChange={() => {}}
+      />,
+    );
+
+    expect(html).toContain("cl-field-group");
+    expect(html).toContain("cl-field-control");
+    expect(html).toContain("cl-field-unit");
+    expect(html.indexOf("cl-field-label")).toBeLessThan(html.indexOf("cl-field-hint"));
+    expect(html.indexOf("cl-field-hint")).toBeLessThan(html.indexOf("cl-field-control"));
+    expect(html.indexOf("cl-field-control")).toBeLessThan(html.indexOf("cl-field-error"));
+    expect(html).toContain('value=""');
+  });
 });

@@ -221,13 +221,25 @@ h3 {
 .cl-button-quiet:disabled { border-color: var(--cl-disabled); background: var(--cl-disabled); color: var(--cl-on-disabled); cursor: not-allowed; text-decoration: none; }
 
 .cl-setup-section { display: grid; gap: var(--cl-space-6); }
+.cl-atlas-form-section {
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+.cl-atlas-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(12rem, 1fr));
+  gap: var(--cl-space-6);
+  min-width: 0;
+}
+.cl-atlas-field-grid > * { min-width: 0; }
 .cl-setup-section[hidden] { display: none; }
 .cl-section-heading { display: grid; gap: var(--cl-space-1); }
 .cl-section-heading > :where(p, h2) { margin: 0; }
 .cl-section-heading > p { color: var(--cl-text-muted); }
 .cl-section-heading > p:first-child { color: var(--cl-accent); font-size: var(--cl-text-meta); font-weight: 500; line-height: 1.5; }
 .cl-section-heading h2 { font-size: var(--cl-text-h2); font-weight: 600; line-height: 1.35; }
-.cl-chemical-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--cl-space-6); }
+.cl-chemical-grid { display: grid; grid-template-columns: repeat(2, minmax(12rem, 1fr)); gap: var(--cl-space-6); }
 .cl-chemical-group { display: grid; align-content: start; gap: var(--cl-space-4); padding-block-start: var(--cl-space-4); border-block-start: 2px solid var(--cl-border-strong); }
 .cl-chemical-group h3,
 .cl-chemical-group > p { margin: 0; }
@@ -415,22 +427,45 @@ h3 {
 .cl-chemical-preparation > :where(h2, p) { margin-block: 0; }
 .cl-calculator-body,
 .cl-medium-controls { display: grid; gap: var(--cl-space-4); padding: var(--cl-space-4); background: var(--cl-surface-subtle); }
-.cl-calculator-body > div:first-child,
-.cl-medium-controls > div { display: grid !important; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)) !important; gap: var(--cl-space-4) !important; }
+.cl-calculator-body > .cl-atlas-field-grid,
+.cl-medium-controls > .cl-atlas-field-grid { gap: var(--cl-space-4); }
 .cl-input { width: 100%; min-height: var(--cl-control-min); border: 1px solid var(--cl-border-strong); border-radius: var(--cl-radius-sm); background: var(--cl-surface); color: var(--cl-text); padding-inline: var(--cl-space-3); font-size: 16px; }
 .cl-calculator-result,
 .cl-medium-total { padding: var(--cl-space-4); border-inline-start: 4px solid var(--cl-action); background: var(--cl-surface); }
+.cl-atlas-result {
+  display: grid;
+  gap: var(--cl-space-2);
+  min-width: 0;
+  color: var(--cl-text);
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+.cl-atlas-result > * { margin-block: 0; }
+.cl-result-disclaimer,
+.cl-calculation-disclaimer {
+  margin: 0;
+  color: var(--cl-text-muted);
+  font-size: var(--cl-text-meta);
+  font-weight: 500;
+  line-height: 1.5;
+}
 .cl-calculator-error { margin: 0; padding: var(--cl-space-4); border-inline-start: 4px solid var(--cl-danger); background: var(--cl-danger-subtle); color: var(--cl-text); }
+.cl-calculator-error > * { margin-block: 0; }
+.cl-calculator-error > * + * { margin-block-start: var(--cl-space-2); }
+.cl-result-title { font-weight: 600; }
 .cl-medium-line { display: flex; align-items: baseline; gap: var(--cl-space-3); padding-block: var(--cl-space-3); border-block-end: 1px solid var(--cl-border); }
 .cl-medium-line[data-state="blocked"] { display: block; padding: var(--cl-space-4); border-inline-start: 4px solid var(--cl-danger); background: var(--cl-danger-subtle); }
 .cl-medium-note { padding-block: var(--cl-space-4); border-block: 1px solid var(--cl-border); }
-.cl-preparation-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--cl-space-4); margin-block: var(--cl-space-4); }
-.cl-calculated-dose { color: var(--cl-text); font-size: var(--cl-text-numeric); font-weight: 600; line-height: 1.35; }
+.cl-preparation-fields { display: grid; grid-template-columns: repeat(2, minmax(12rem, 1fr)); gap: var(--cl-space-4); margin-block: var(--cl-space-4); }
+.cl-calculated-dose { padding: var(--cl-space-4); border-inline-start: 4px solid var(--cl-action); background: var(--cl-surface-subtle); }
+.cl-calculated-dose strong { font-size: var(--cl-text-numeric); font-weight: 600; line-height: 1.35; }
+.cl-calculated-dose span { color: var(--cl-text-muted); font-size: var(--cl-text-meta); font-weight: 500; line-height: 1.5; }
 .cl-meta { color: var(--cl-text-muted); font-size: var(--cl-text-meta); font-weight: 500; line-height: 1.5; }
 
 @media (max-width: 767px) {
   .cl-step-pagination,
-  .cl-preparation-fields { grid-template-columns: 1fr; flex-direction: column; }
+  .cl-preparation-fields,
+  .cl-atlas-field-grid { grid-template-columns: minmax(0, 1fr); flex-direction: column; }
   .cl-atlas-step-card { padding: var(--cl-space-4); }
   .cl-atlas-step-card .execution-instruction-heading { grid-template-columns: 2.75rem minmax(0, 1fr); gap: var(--cl-space-3); }
   :where(.cl-protocol, .cl-guide-article) .execution-instruction-number { padding-inline-end: var(--cl-space-3); }

@@ -116,7 +116,7 @@ export function MediumCalculator({
 
   if (!recipe) {
     return (
-      <section className="cl-medium-calculator">
+      <section className="cl-medium-calculator cl-atlas-form-section">
         <h2 className="pl-h2">ยังไม่มีสูตรอาหารของขั้นนี้ในระบบ</h2>
         <p className="cl-calculator-error" role="alert">
           คู่มือยังไม่มีตัวเลขที่ตรวจสอบได้สำหรับขั้นนี้ ระบบจึงไม่แสดงสูตรของขั้นอื่นแทน และไม่ควรเดาค่าเอง
@@ -126,7 +126,7 @@ export function MediumCalculator({
   }
 
   return (
-    <section className="cl-medium-calculator">
+    <section className="cl-medium-calculator cl-atlas-form-section">
       <h2 className="pl-h2">จะทำอาหารเท่าไหร่ และชั่งอะไรกี่กรัม</h2>
       <p className="pl-lede" style={{ marginTop: "6px" }}>
         บอกจำนวนกระปุกที่อยากได้ ระบบคิดปริมาตรและปริมาณสารให้ พร้อมบอกตรง ๆ เมื่อสารบางตัวน้อยจนชั่งไม่ได้
@@ -134,39 +134,40 @@ export function MediumCalculator({
       <p style={{ marginTop: "10px" }}><EvidenceBadge level={recipe.evidence.level} /></p>
 
       <div className="cl-medium-controls">
-        <p style={{ margin: 0 }}>
-          <label htmlFor="recipe" style={{ display: "block", fontWeight: 600, marginBottom: "5px", fontSize: "14px" }}>
+        <div className="cl-field-group">
+          <label className="cl-field-label" htmlFor="recipe">
             สูตรที่จะทำ
           </label>
           <select className="cl-input" id="recipe" value={recipe.id} onChange={(event) => setRecipeId(event.target.value)}>
             {recipes.map((item) => <option key={item.id} value={item.id}>{item.title}</option>)}
           </select>
-        </p>
+        </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "12px" }}>
+        <div className="cl-atlas-field-grid">
           <CalculatorField id="culture-jars" label="กระปุกเพาะที่อยากได้" value={cultureJars} onChange={setCultureJars} step="1" />
           <CalculatorField id="blank-jars" label="กระปุกเปล่าคุม" value={blankJars} onChange={setBlankJars} hint="ไว้ตรวจว่าอาหารปลอดเชื้อจริง" step="1" allowZero />
           <CalculatorField id="spare-jars" label="กระปุกสำรอง" value={spareJars} onChange={setSpareJars} step="1" allowZero />
-          <CalculatorField id="ml-per-jar" label="อาหารต่อกระปุก (มล.)" value={mlPerJar} onChange={setMlPerJar} step="1" />
-          <CalculatorField id="loss-percent" label="เผื่อสูญเสีย (%)" value={lossPercent} onChange={setLossPercent} hint="งานเล็กเผื่อมากกว่างานใหญ่" step="1" allowZero />
+          <CalculatorField id="ml-per-jar" label="อาหารต่อกระปุก" unit="มล." value={mlPerJar} onChange={setMlPerJar} step="1" />
+          <CalculatorField id="loss-percent" label="เผื่อสูญเสีย" unit="%" value={lossPercent} onChange={setLossPercent} hint="งานเล็กเผื่อมากกว่างานใหญ่" step="1" allowZero />
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "12px" }}>
-          <CalculatorField id="scale-min" label="เครื่องชั่งอ่านต่ำสุด (มก.)" value={scaleMinimumMg} onChange={setScaleMinimumMg} />
-          <CalculatorField id="pipette-min" label="ตวงได้ละเอียดสุด (มล.)" value={pipetteMinimumMl} onChange={setPipetteMinimumMl} />
-          <CalculatorField id="ms-label" label="อัตรา MS บนฉลาก (ก./ล.)" value={msLabelRateGPerL} onChange={setMsLabelRateGPerL} hint="ดูจากถุงที่คุณซื้อมา" />
-          <CalculatorField id="bcd-label" label="อัตรา BCD บนฉลาก (ก./ล.)" value={bcdLabelRateGPerL} onChange={setBcdLabelRateGPerL} hint="ถ้าไม่มี ให้ใช้สูตรที่แจกแจงสาร BCD ทีละตัว" allowZero />
-          <CalculatorField id="naa-stock" label="NAA stock (มก./มล.)" value={naaStockMgPerMl} onChange={setNaaStockMgPerMl} allowZero />
-          <CalculatorField id="ba-stock" label="BA stock (มก./มล.)" value={baStockMgPerMl} onChange={setBaStockMgPerMl} allowZero />
-          <CalculatorField id="bap-stock" label="BAP stock (มก./มล.)" value={bapStockMgPerMl} onChange={setBapStockMgPerMl} allowZero />
-          <CalculatorField id="iba-stock" label="IBA stock (มก./มล.)" value={ibaStockMgPerMl} onChange={setIbaStockMgPerMl} allowZero />
+        <div className="cl-atlas-field-grid">
+          <CalculatorField id="scale-min" label="เครื่องชั่งอ่านต่ำสุด" unit="มก." value={scaleMinimumMg} onChange={setScaleMinimumMg} />
+          <CalculatorField id="pipette-min" label="ตวงได้ละเอียดสุด" unit="มล." value={pipetteMinimumMl} onChange={setPipetteMinimumMl} />
+          <CalculatorField id="ms-label" label="อัตรา MS บนฉลาก" unit="ก./ล." value={msLabelRateGPerL} onChange={setMsLabelRateGPerL} hint="ดูจากถุงที่คุณซื้อมา" />
+          <CalculatorField id="bcd-label" label="อัตรา BCD บนฉลาก" unit="ก./ล." value={bcdLabelRateGPerL} onChange={setBcdLabelRateGPerL} hint="ถ้าไม่มี ให้ใช้สูตรที่แจกแจงสาร BCD ทีละตัว" allowZero />
+          <CalculatorField id="naa-stock" label="NAA stock" unit="มก./มล." value={naaStockMgPerMl} onChange={setNaaStockMgPerMl} allowZero />
+          <CalculatorField id="ba-stock" label="BA stock" unit="มก./มล." value={baStockMgPerMl} onChange={setBaStockMgPerMl} allowZero />
+          <CalculatorField id="bap-stock" label="BAP stock" unit="มก./มล." value={bapStockMgPerMl} onChange={setBapStockMgPerMl} allowZero />
+          <CalculatorField id="iba-stock" label="IBA stock" unit="มก./มล." value={ibaStockMgPerMl} onChange={setIbaStockMgPerMl} allowZero />
         </div>
         <p className="pl-meta" style={{ margin: 0 }}>ตรวจชื่อบนฉลากให้ตรงกับชื่อในสูตร ระบบจะไม่ใช้ BA และ BAP แทนกันอัตโนมัติ</p>
       </div>
 
       {plan ? (
         <>
-          <div className="cl-medium-total">
+          <div className="cl-medium-total cl-atlas-result" aria-live="polite" aria-label="ผลการคำนวณปริมาตรอาหาร">
+            <p className="cl-result-disclaimer">ค่าจากสูตร ยังไม่ใช่ค่าตรวจ</p>
             <p className="pl-mono" style={{ color: "var(--pl-chip-ink)" }}>รวมต้องทำอาหาร</p>
             <p style={{ margin: "4px 0 0", fontSize: "30px", fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>
               {plan.totalVolumeMl} มิลลิลิตร
