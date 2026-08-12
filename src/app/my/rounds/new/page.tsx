@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { AuthGate } from "@/components/auth/auth-gate";
@@ -63,9 +64,20 @@ function CreateRound() {
   }
 
   if (!manual) {
+    // เดิมข้อความบอกให้ "กลับไปเลือกต้นจากหน้าแรก" แต่ไม่มีลิงก์ให้กด และหน้าแรกก็ไม่มีทางกลับมาที่นี่
+    // คนที่เปิด /my/rounds/new เปล่า ๆ จึงติดอยู่ตรงนี้
     return (
       <GuideShell action={<ThemeToggle />}>
-        <StatusNotice tone="error" title="ไม่รู้จักคู่มือที่ขอ">กลับไปเลือกต้นจากหน้าแรกอีกครั้ง</StatusNotice>
+        <StatusNotice tone="error" title="ยังไม่ได้บอกว่าจะเพาะต้นอะไร">
+          <p style={{ margin: 0 }}>
+            หน้านี้ใช้ตั้งค่ารอบของต้นที่เลือกไว้แล้ว ให้เลือกต้นก่อน แล้วกดปุ่ม “เริ่มรอบเพาะของฉัน”
+            ที่ท้ายหน้าคู่มือของต้นนั้น
+          </p>
+          <p style={{ margin: "12px 0 0", display: "flex", gap: "12px", flexWrap: "wrap" }}>
+            <Link className="cl-button-primary pl-link" href="/start">เลือกต้นที่จะเพาะ</Link>
+            <Link className="pl-link" href="/my/rounds">กลับไปรอบเพาะของฉัน</Link>
+          </p>
+        </StatusNotice>
       </GuideShell>
     );
   }

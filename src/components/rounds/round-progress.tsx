@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { EvidenceBadge } from "@/components/guide/evidence-badge";
 import type { RoundView } from "@/lib/rounds/round-adapter";
+import { roundCode, roundDisplayName } from "@/lib/rounds/round-code";
+import { measurementUnitLabel } from "@/lib/rounds/measurement-units";
 
 const statusLabel = {
   Pending: "ยังไม่ทำ",
@@ -17,7 +19,11 @@ function stateName(status: keyof typeof statusLabel, isCurrent: boolean): string
 export function RoundProgress({ view }: { view: RoundView }) {
   return (
     <>
-      <h1 className="pl-h1">{view.title}</h1>
+      <h1 className="pl-h1">{roundDisplayName(view.title, view.trialArmLabel)}</h1>
+      {/* คู่มือสั่งให้เขียน "รหัสรอบ" บนกระปุกตั้งแต่ขั้นแรก จึงต้องมีที่ให้อ่านรหัสได้ */}
+      <p className="pl-mono" style={{ marginTop: "6px" }}>
+        รหัสรอบ {roundCode(view.lotId)} <span className="pl-meta">— เขียนรหัสนี้กับวันที่ลงบนกระปุกทุกใบ</span>
+      </p>
       <p className="pl-meta" style={{ marginTop: "4px" }}>เริ่ม {view.startedAt}</p>
       <p className="pl-mono" style={{ marginTop: "10px" }}>
         ผ่านแล้ว {view.passedCount} จาก {view.steps.length} ขั้น
@@ -30,7 +36,7 @@ export function RoundProgress({ view }: { view: RoundView }) {
           // แสดงชื่อที่ผู้ใช้อ่านออก ไม่ใช่ id ภายในของช่องวัด
           const recorded = step.measurements
             .filter((measurement) => step.state.measurements[measurement.id] != null)
-            .map((measurement) => `${measurement.label} ${step.state.measurements[measurement.id]} ${measurement.unit}`);
+            .map((measurement) => `${measurement.label} ${step.state.measurements[measurement.id]} ${measurementUnitLabel(measurement.unit)}`);
           return (
             <li key={step.id} data-state={stateName(step.state.status, isCurrent)}>
               <Link

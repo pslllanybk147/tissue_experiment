@@ -45,7 +45,7 @@ describe("HaiterCalculator", () => {
     expect(html).toContain("น้ำ 16.666667 mL");
     expect(html).toContain("รวมเป็น 20 mL");
     expect(html).toContain("ขั้น 2");
-    expect(html).toContain("ตวง 0.5 mL");
+    expect(html).toContain("ตวงจริง 0.5 mL");
     expect(html).toContain("ผสมน้ำให้ครบ 10 mL");
     expect(html).toContain("เจือจาง 1:6");
   });

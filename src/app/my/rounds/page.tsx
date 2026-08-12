@@ -50,6 +50,7 @@ export default function MyRoundsPage() {
           startedAt: lot.startedAt,
           passedCount: runs.filter((run) => run.status === "Passed" && known.has(run.stepId)).length,
           stepCount: manual.steps.length,
+          ...(lot.armLabel ? { armLabel: lot.armLabel } : {}),
         };
       }));
       if (active) setRounds(summaries);
@@ -91,8 +92,15 @@ export default function MyRoundsPage() {
         <OnlineStatus />
         <h1 className="pl-h1">รอบเพาะของฉัน</h1>
         <p className="pl-lede">ทุกรอบที่เริ่มไว้ พร้อมความคืบหน้าของแต่ละรอบ</p>
-        <p className="pl-meta" style={{ marginTop: "8px", marginBottom: "22px" }}>
-          อยากเทียบวิธีฟอกฆ่าเชื้อ?{" "}
+        {/* หน้านี้เป็นที่แรกที่คนกลับมาหาเมื่ออยากเริ่มรอบใหม่ แต่เดิมมีทางออกทางเดียวคือชุดทดลอง 5 แขน
+            คนที่อยากเพาะรอบเดียวธรรมดาจึงไม่มีปุ่มให้กด ต้องย้อนไปหน้าคู่มือเองโดยไม่มีอะไรบอก */}
+        <p style={{ marginTop: "12px", marginBottom: "10px", display: "flex", gap: "12px", flexWrap: "wrap", alignItems: "center" }}>
+          <Link className="cl-button-primary pl-link" href="/start">+ เริ่มรอบเพาะใหม่</Link>
+          <Link className="pl-link" href="/my/equipment">ของที่ฉันมี</Link>
+        </p>
+        <p className="pl-meta" style={{ marginBottom: "22px" }}>
+          ปุ่มนี้พาไปเลือกต้นก่อน แล้วกด “เริ่มรอบเพาะของฉัน” ที่ท้ายหน้าคู่มือของต้นนั้น ·
+          อยากเทียบวิธีฟอกฆ่าเชื้อแทน?{" "}
           <Link className="pl-link" href="/my/trials/new">เริ่มชุดทดลอง NaDCC เทียบ Haiter</Link>
         </p>
         {failed ? (

@@ -1,6 +1,17 @@
 import Link from "next/link";
+import { roundCode, roundDisplayName } from "@/lib/rounds/round-code";
 
-export type RoundSummary = { lotId: string; slug: string; title: string; startedAt: string; passedCount: number; stepCount: number };
+export type RoundSummary = {
+  lotId: string;
+  slug: string;
+  title: string;
+  startedAt: string;
+  passedCount: number;
+  stepCount: number;
+  /** ป้ายแขนของชุดทดลอง (Control-A, T1, …) ถ้ารอบนี้เป็นส่วนหนึ่งของชุดทดลอง
+   *  ถ้าไม่แสดง การ์ดทุกใบของชุดทดลองเดียวกันจะเหมือนกันทุกตัวอักษรจนแยกไม่ออกว่าจะเปิดหรือลบใบไหน */
+  armLabel?: string;
+};
 export type LegacyRoundSummary = { lotId: string; title: string; startedAt: string };
 
 function EquipmentLink() {
@@ -33,8 +44,8 @@ export function RoundList({ rounds, legacy = [], onDelete }: { rounds: RoundSumm
       <ul className="cl-row-list cl-atlas-data-list">
         {rounds.map((round) => (
           <li className="cl-data-row" key={round.lotId}>
-            <div className="cl-row-copy"><strong>{round.title}</strong><small>เริ่ม {round.startedAt}</small><span>ผ่านแล้ว {round.passedCount} จาก {round.stepCount} ขั้น</span></div>
-            <div className="cl-row-actions"><Link className="cl-button-secondary" href={`/my/rounds/${round.lotId}`}>เปิดรอบ</Link>{onDelete ? <button type="button" className="cl-button-danger" aria-label={`ลบรอบ ${round.title}`} onClick={() => { if (window.confirm(`ลบรอบ “${round.title}” ออกจากรายการหรือไม่?`)) void onDelete(round); }}>ลบรอบนี้</button> : null}</div>
+            <div className="cl-row-copy"><strong>{roundDisplayName(round.title, round.armLabel)}</strong><small>รหัสรอบ {roundCode(round.lotId)} · เริ่ม {round.startedAt}</small><span>ผ่านแล้ว {round.passedCount} จาก {round.stepCount} ขั้น</span></div>
+            <div className="cl-row-actions"><Link className="cl-button-secondary" href={`/my/rounds/${round.lotId}`}>เปิดรอบ</Link>{onDelete ? <button type="button" className="cl-button-danger" aria-label={`ลบรอบ ${roundDisplayName(round.title, round.armLabel)} รหัส ${roundCode(round.lotId)}`} onClick={() => { if (window.confirm(`ลบรอบ “${roundDisplayName(round.title, round.armLabel)}” รหัส ${roundCode(round.lotId)} ออกจากรายการหรือไม่?`)) void onDelete(round); }}>ลบรอบนี้</button> : null}</div>
           </li>
         ))}
       </ul>

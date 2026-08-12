@@ -42,6 +42,7 @@ describe("evaluateStepEvidence", () => {
       missingFieldIds: [],
       missingPhotoCount: 1,
       missingCaptionCount: 0,
+      missingCriteriaCount: 0,
     });
     expect(evaluateStepEvidence(step("one-photo"), { "required-number": 1 }, [{ caption: "" }]).canPass).toBe(true);
   });
@@ -52,6 +53,7 @@ describe("evaluateStepEvidence", () => {
       missingFieldIds: [],
       missingPhotoCount: 0,
       missingCaptionCount: 1,
+      missingCriteriaCount: 0,
     });
     expect(evaluateStepEvidence(step("photo-with-caption"), { "required-number": 1 }, [{ caption: "อาหารยังใส" }]).canPass).toBe(true);
   });

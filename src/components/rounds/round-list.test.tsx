@@ -25,7 +25,7 @@ describe("RoundList", () => {
     const html = renderToStaticMarkup(<RoundList rounds={rounds} onDelete={async () => {}} />);
 
     expect(html).toContain("ลบรอบนี้");
-    expect(html).toContain('aria-label="ลบรอบ ฟิโลเดนดรอน พิงค์ปริ๊นเซส"');
+    expect(html).toContain('aria-label="ลบรอบ ฟิโลเดนดรอน พิงค์ปริ๊นเซส รหัส 1"');
     expect(html).toContain("cl-data-row");
     expect(html).toContain("เปิดรอบ");
     expect(html).toContain("cl-button-danger");

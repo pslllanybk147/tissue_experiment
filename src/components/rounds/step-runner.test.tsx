@@ -5,6 +5,7 @@ import { USER_REPORTED_PROFILE } from "@/lib/equipment/equipment-profile";
 import { resolveBySlug } from "@/lib/manual/registry";
 import { buildRoundView } from "@/lib/rounds/round-adapter";
 import { buildRoundSetupInput, buildRoundSterilizationSnapshot } from "@/lib/rounds/round-setup";
+import { passCriterionKey } from "@/lib/rounds/evidence-policy";
 import { StepRunner } from "./step-runner";
 
 const manual = resolveBySlug("pink-princess")!;
@@ -107,7 +108,8 @@ describe("StepRunner", () => {
     const prep = preparedView.steps.find((item) => item.id === "prep-media")!;
     const html = renderToStaticMarkup(<StepRunner view={preparedView} step={prep} onSave={noop} onConfirmPreparation={noop} />);
 
-    expect(html).toContain('value="120"');
+    // 6% w/w ต้องแปลงเป็น 6.48% w/v ก่อนคูณอัตรา 2 mL/L จึงได้ 129.6 ppm ไม่ใช่ 120
+    expect(html).toContain('value="129.6"');
     expect(html).toContain('value="173"');
     expect(html).toContain("อัตรา Haiter 2 mL/L");
   });
@@ -192,12 +194,17 @@ describe("ตารางทดสอบช่วงต้องอยู่ใ�
 });
 
 describe("หลักฐานขั้นต่ำก่อนบันทึกว่าผ่าน", () => {
+  // เกณฑ์ "ผ่านเมื่อ" ทุกข้อต้องถูกยืนยันด้วย จึงติ๊กไว้ล่วงหน้าเพื่อแยกทดสอบเฉพาะเรื่องรูป
+  const confirmedCriteria = Object.fromEntries(
+    sterilize.passCriteria.map((_, index) => [passCriterionKey(index), true]),
+  );
   const requiredPhotoStep = {
     ...sterilize,
     evidenceRequirement: "one-photo" as const,
     state: {
       ...sterilize.state,
       measurements: Object.fromEntries(sterilize.measurements.map((measurement) => [measurement.id, 1])),
+      responses: confirmedCriteria,
     },
   };
 
@@ -309,7 +316,9 @@ describe("rendered trial protocol semantics", () => {
     );
 
     expect(html).toContain("ยืนยันการเตรียมสาร");
-    expect(html).toContain("nadcc-soak-v1");
+    // รหัสโปรโตคอลภายในไม่ต้องโชว์ให้ผู้ใช้ แต่สถานะต้องอ่านออกเป็นภาษาไทย
+    expect(html).toContain("สถานะตอนนี้: วางแผนไว้ ยังไม่ได้ลงมือ");
+    expect(html).not.toContain("nadcc-soak-v1");
   });
 
   it("normal NaDCC-soak round renders the resolved protocol without a corrective banner", () => {

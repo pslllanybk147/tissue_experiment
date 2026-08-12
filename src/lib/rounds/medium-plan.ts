@@ -42,6 +42,11 @@ export type IngredientLine =
 
 export type MediumPlan = {
   totalJars: number;
+  /** แยกให้เห็นว่ากระปุกไหนใส่ชิ้นพืช กระปุกไหนเป็นกระปุกเปล่าคุม และกระปุกไหนสำรอง
+   *  คำสั่ง "แบ่งและติดป้าย" ต้องบอกให้ชัด ไม่งั้นผู้ใช้จะใส่ชิ้นพืชครบทุกใบแล้วเสียกระปุกควบคุมไป */
+  cultureJars: number;
+  blankJars: number;
+  spareJars: number;
   totalVolumeMl: number;
   /** ปริมาตรสุดท้ายหลังเติมน้ำครบและรวมส่วนผสมทุกตัวแล้ว */
   finalVolumeMl: number;
@@ -169,6 +174,9 @@ export function planMediumBatch(recipe: MediaRecipe, jars: JarPlanInput, tools: 
 
   return {
     totalJars: batch.totalJarCount,
+    cultureJars: jars.cultureJars,
+    blankJars: jars.blankJars,
+    spareJars: jars.spareJars,
     totalVolumeMl: batch.totalVolumeMl,
     finalVolumeMl: batch.totalVolumeMl,
     initialWaterMl: initialWaterVolume(batch.totalVolumeMl),

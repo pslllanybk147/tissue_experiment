@@ -83,7 +83,7 @@ describe("RoundProgress", () => {
     );
     const html = renderToStaticMarkup(<RoundProgress view={withMeasurement} />);
 
-    expect(html).toContain("เวลาฟอกที่ใช้จริง 12 min");
+    expect(html).toContain("เวลาฟอกที่ใช้จริง 12 นาที");
     expect(html).not.toContain("sterilize-minutes");
   });
 });

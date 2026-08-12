@@ -1,5 +1,6 @@
 import type { Dose } from "@/lib/manual/forms/types";
 import type { ResolvedStep } from "@/lib/manual/types";
+import type { RinseWaterMethod, SterilizationMethod } from "@/lib/domain/models";
 
 export type BracketArmId = "a" | "b" | "c";
 export type BracketField = "dose" | "clean" | "alive" | "usable";
@@ -32,15 +33,42 @@ export function formatDurationMinRange([low, high]: [number, number]): string {
   return low === high ? `${low}` : `${low} ถึง ${high}`;
 }
 
-/** คืนแผนทดสอบเมื่อขั้นนั้นมีค่าช่วงและยังไม่มีงานตรงพันธุ์
- *  ขั้นที่มีงานตรงพันธุ์แล้วไม่ต้องให้ผู้ใช้ทดลองเอง */
-export function buildBracketPlan(step: ResolvedStep): BracketPlan | null {
-  if (step.evidence.level === "species-direct") return null;
-  const keys = Object.keys(step.doses ?? {}).sort();
-  const doseKey = keys[0];
-  if (!doseKey) return null;
+/** สารที่รอบนี้ล็อกไว้จริง ใช้กรองว่าช่วงทดสอบไหนเกี่ยวกับรอบนี้
+ *  ค่า undefined แปลว่าไม่รู้ (เช่นหน้าคู่มืออ่านอย่างเดียว) ให้แสดงตามเดิม */
+export type BracketMethodContext = {
+  surfaceMethod?: SterilizationMethod | null;
+  rinseMethod?: RinseWaterMethod | null;
+};
 
-  const dose = step.doses![doseKey];
+/** map วิธีระดับรอบให้เป็นชื่อสารของ dose bracket */
+function activeDoseMethods(context: BracketMethodContext): Set<NonNullable<Dose["method"]>> {
+  const methods = new Set<NonNullable<Dose["method"]>>();
+  if (context.surfaceMethod === "haiter-chemical") methods.add("haiter");
+  if (context.surfaceMethod === "nadcc-soak") methods.add("nadcc");
+  if (context.rinseMethod === "nadcc") methods.add("nadcc");
+  if (context.rinseMethod === "low-dose-hypochlorite") methods.add("haiter");
+  return methods;
+}
+
+/** คืนแผนทดสอบเมื่อขั้นนั้นมีค่าช่วงและยังไม่มีงานตรงพันธุ์
+ *  ขั้นที่มีงานตรงพันธุ์แล้วไม่ต้องให้ผู้ใช้ทดลองเอง
+ *
+ *  เดิมฟังก์ชันนี้หยิบ dose key แรกตามลำดับตัวอักษรโดยไม่ดูว่ารอบนั้นล็อกวิธีอะไรไว้
+ *  รอบที่เลือก "น้ำปลอดเชื้อธรรมดา" จึงยังเจอตารางทดสอบช่วงของน้ำ rinse NaDCC ให้กรอก
+ *  ทั้งที่ไม่ได้ใช้ NaDCC เลย เป็นปัญหาเดียวกับที่แก้ไปแล้วในฝั่งคำสั่งลงมือทำ */
+export function buildBracketPlan(step: ResolvedStep, context?: BracketMethodContext): BracketPlan | null {
+  if (step.evidence.level === "species-direct") return null;
+  const entries = Object.entries(step.doses ?? {}).sort(([left], [right]) => left.localeCompare(right));
+  if (entries.length === 0) return null;
+
+  // ถ้ารู้ว่ารอบนี้ใช้วิธีอะไร ให้เหลือเฉพาะช่วงของสารที่ใช้จริง
+  // dose ที่ไม่ระบุ method ถือว่าเป็นช่วงกลางของขั้น ใช้ได้กับทุกวิธี
+  const relevant = context
+    ? entries.filter(([, dose]) => !dose.method || activeDoseMethods(context).has(dose.method))
+    : entries;
+  const chosen = relevant[0];
+  if (!chosen) return null;
+  const [doseKey, dose] = chosen;
   const middle = round2((dose.low + dose.high) / 2);
 
   return {

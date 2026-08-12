@@ -125,10 +125,26 @@ export function mediumInstructionOverride(label: string, context: MediumExecutio
     };
   }
   if (label === "แบ่งและติดป้าย") {
+    // เดิมเขียนว่า "แบ่งอาหารทั้งหมด 173 mL ลง 6 กระปุก กระปุกละ 25 mL" ซึ่งขัดกันเองในประโยคเดียว
+    // (6 × 25 = 150 ไม่ใช่ 173) ส่วนต่างคือเผื่อสูญเสียที่ตั้งใจให้เหลือ ต้องบอกให้ชัดว่าเหลือแล้วทำยังไง
+    const poured = plan.totalJars * context.mlPerJar;
+    const leftover = Math.round((plan.totalVolumeMl - poured) * 10) / 10;
+    const leftoverText = leftover > 0
+      ? ` อาหารที่เหลืออีกประมาณ ${leftover} mL คือส่วนเผื่อสูญเสีย ไม่ต้องฝืนแบ่งลงกระปุกให้หมด`
+      : "";
+    const blankText = plan.blankJars > 0
+      ? ` ในจำนวนนี้มีกระปุกเปล่าคุม ${plan.blankJars} ใบ เขียนป้ายว่า “กระปุกเปล่าคุม” ให้ชัดและห้ามใส่ชิ้นพืชลงไป เพราะใช้ตรวจว่าอาหารกับภาชนะปลอดเชื้อจริงหรือไม่`
+      : "";
     return {
-      action: `แบ่งอาหารทั้งหมด ${plan.totalVolumeMl} mL ลง ${plan.totalJars} กระปุก กระปุกละ ${context.mlPerJar} mL แล้วติดป้ายทุกใบ`,
-      quantity: `${plan.totalJars} กระปุก · ${context.mlPerJar} mL ต่อกระปุก · รวม ${plan.totalVolumeMl} mL`,
-      completion: `${plan.totalJars} กระปุกมีอาหารกระปุกละ ${context.mlPerJar} mL และติดป้ายครบ`,
+      action: `แบ่งอาหารลง ${plan.totalJars} กระปุก กระปุกละ ${context.mlPerJar} mL (ใช้อาหาร ${poured} mL)`
+        + `${leftoverText} แล้วติดป้ายทุกใบพร้อมวันที่และรหัสรอบ${blankText}`,
+      quantity: `${plan.totalJars} กระปุก · ${context.mlPerJar} mL ต่อกระปุก · ใช้อาหาร ${poured} mL จากที่ทำไว้ ${plan.totalVolumeMl} mL`
+        + (plan.blankJars > 0
+          ? ` · แยกเป็นกระปุกใส่ชิ้นพืช ${plan.cultureJars} ใบ, กระปุกเปล่าคุม ${plan.blankJars} ใบ, สำรอง ${plan.spareJars} ใบ`
+          : ""),
+      completion: `${plan.totalJars} กระปุกมีอาหารกระปุกละ ${context.mlPerJar} mL ติดป้ายครบ`
+        + (plan.blankJars > 0 ? ` และแยกกระปุกเปล่าคุม ${plan.blankJars} ใบไว้ต่างหากแล้ว` : ""),
+      next: "ฆ่าเชื้อกระปุกที่แบ่งไว้ตามวิธีที่ล็อกกับรอบนี้ ก่อนนำไปใช้",
     };
   }
   return { action: "", quantity: "" };

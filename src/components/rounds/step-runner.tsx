@@ -9,21 +9,26 @@ import { Illustration } from "@/components/guide/illustrations";
 import { RichText } from "@/components/guide/rich-text";
 import { formatDurationMinutes } from "@/lib/manual/duration";
 import { troubleshootingById } from "@/lib/manual/troubleshooting";
-import type { DoseValue, GuidedStepStatus, LotSterilizationSnapshot } from "@/lib/domain/models";
+import type { GuidedStepStatus, LotSterilizationSnapshot } from "@/lib/domain/models";
 import type { ObservationMedia } from "@/lib/domain/models";
 import type { CalibrationEntry } from "@/lib/domain/calibration";
 import type { RoundStep, RoundView } from "@/lib/rounds/round-adapter";
 import { bracketKey, buildBracketPlan, jarsPerArmKey } from "@/lib/rounds/bracket";
-import { evaluateStepEvidence } from "@/lib/rounds/evidence-policy";
+import { evaluateStepEvidence, passCriterionKey } from "@/lib/rounds/evidence-policy";
 import { encodeStepValues, type StepResponses } from "@/lib/rounds/field-values";
 import { MEDIUM_CALCULATOR_STEP_IDS, initialRecipeIdForStep, recipeIdsForStep } from "@/lib/rounds/medium-steps";
+import { mediumHaiterTargetPpmFor } from "@/lib/rounds/medium-haiter";
+import { surfaceStartingPpm } from "@/lib/rounds/surface-dose";
+import { measurementUnitLabel } from "@/lib/rounds/measurement-units";
+import { roundCode, roundDisplayName } from "@/lib/rounds/round-code";
 import { defaultMediumExecutionContext, type MediumExecutionContext } from "@/lib/rounds/medium-execution";
 import { BracketTable } from "./bracket-table";
 import { ChemicalPreparation } from "./chemical-preparation";
 import { MediumCalculator } from "./medium-calculator";
 import { OnlineStatus } from "./online-status";
+import { RoundRecordSummary } from "./round-record-summary";
 import { StepPhotos } from "./step-photos";
-import { StepSections } from "./step-section";
+import { StepSections, type StepChemicalDose } from "./step-section";
 
 export type StepPhotoProps = {
   observationId: string | null;
@@ -72,7 +77,12 @@ export function StepRunner({
   demoMode?: boolean;
   onConfirmPreparation?: (snapshot: LotSterilizationSnapshot) => Promise<void>;
 }) {
-  const bracketPlan = buildBracketPlan(step);
+  // ตารางทดสอบช่วงต้องตรงกับสารที่รอบนี้ล็อกไว้จริง ไม่งั้นรอบที่ใช้น้ำปลอดเชื้อธรรมดา
+  // จะยังเจอตารางของน้ำ rinse NaDCC ให้กรอกทั้งที่ไม่ได้ใช้
+  const bracketPlan = buildBracketPlan(step, view.sterilization ? {
+    surfaceMethod: view.sterilization.method,
+    rinseMethod: view.sterilization.rinseMethod ?? view.sterilization.rinseWater?.method ?? null,
+  } : undefined);
   const number = step.displayNumber;
   const total = view.steps.length;
   const previous = number > 1 ? number - 1 : null;
@@ -86,11 +96,14 @@ export function StepRunner({
       : null
   ));
   const preparationKey = step.id === "prep-media" ? "mediumPreparation" : "surfacePreparation";
-  const [chemicalDose, setChemicalDose] = useState<DoseValue | undefined>(
+  const [chemicalDose, setChemicalDose] = useState<StepChemicalDose | undefined>(
     () => view.sterilization?.[preparationKey]?.calculatedDose,
   );
   const mediumHaiterTargetPpm = step.id === "prep-media" && view.sterilization?.mediumPreparation?.method === "haiter-chemical"
-    ? Math.round((view.sterilization.mediumPreparation.labelConcentration ?? 6) * 20 * 100) / 100
+    ? mediumHaiterTargetPpmFor(
+      view.sterilization.mediumPreparation.labelConcentration,
+      view.sterilization.mediumPreparation.labelBasis,
+    )
     : undefined;
   const onMediumPlanChange = useCallback((context: MediumExecutionContext | null) => setMediumContext(context), []);
   const [measurementValues, setMeasurementValues] = useState<StepResponses>(
@@ -105,6 +118,7 @@ export function StepRunner({
     ...(gate.missingFieldIds.length > 0 ? ["กรอกช่องที่ระบุว่าต้องกรอกให้ครบ"] : []),
     ...(gate.missingPhotoCount > 0 ? ["ต้องแนบอย่างน้อย 1 รูป"] : []),
     ...(gate.missingCaptionCount > 0 ? ["ต้องมีคำบรรยายอย่างน้อย 1 รูป"] : []),
+    ...(gate.missingCriteriaCount > 0 ? [`ยังไม่ได้ยืนยันเกณฑ์ "ผ่านเมื่อ" อีก ${gate.missingCriteriaCount} ข้อ`] : []),
     ...(locked ? [lockReason || "ขั้นนี้ยังถูกล็อก"] : []),
   ];
 
@@ -124,6 +138,11 @@ export function StepRunner({
         values[measurement.id] = raw === "" ? null : measurement.kind && measurement.kind !== "number" ? raw : Number(raw);
       }
     }
+    // ช่องยืนยันเกณฑ์ "ผ่านเมื่อ" ใช้ name จากฟังก์ชันสร้างคีย์เหมือนช่องอื่น
+    step.passCriteria.forEach((_, index) => {
+      values[passCriterionKey(index)] = form.has(passCriterionKey(index));
+    });
+
     // ค่าของตารางทดสอบช่วงใช้ name ที่มาจากฟังก์ชันสร้างคีย์ จึงอ่านด้วยวิธีเดียวกับช่องอื่น
     if (bracketPlan) {
       const keys = [jarsPerArmKey()];
@@ -164,7 +183,7 @@ export function StepRunner({
     <article className="cl-protocol">
       <OnlineStatus />
       <header className="cl-protocol-header">
-        <p><Link className="pl-link" href={`/my/rounds/${view.lotId}`}>{view.title}</Link>{" · "}ขั้นที่ {number} จาก {total}</p>
+        <p><Link className="pl-link" href={`/my/rounds/${view.lotId}`}>{roundDisplayName(view.title, view.trialArmLabel)}</Link>{" · "}รหัสรอบ {roundCode(view.lotId)}{" · "}ขั้นที่ {number} จาก {total}</p>
         <h1>{step.title}</h1>
         <p><EvidenceBadge level={step.evidence.level} />{step.durationMinutes != null ? <>{" "}<span>ใช้เวลาราว {formatDurationMinutes(step.durationMinutes)}</span></> : null}</p>
       </header>
@@ -180,7 +199,7 @@ export function StepRunner({
                 sterilization={view.sterilization}
                 onConfirm={onConfirmPreparation}
                 onDoseChange={setChemicalDose}
-                defaultTargetPpm={mediumHaiterTargetPpm}
+                defaultTargetPpm={step.id === "prep-media" ? mediumHaiterTargetPpm : surfaceStartingPpm(step)}
                 defaultFinalVolumeMl={step.id === "prep-media" ? mediumContext?.plan.totalVolumeMl : undefined}
               />
             ) : null}
@@ -197,6 +216,8 @@ export function StepRunner({
             {step.illustrationId ? (
               <div className="cl-protocol-media"><Illustration id={step.illustrationId} /></div>
             ) : null}
+            {/* ขั้นปิดรอบสั่งให้ "ทบทวนบันทึกทุกขั้น" จึงต้องมีบันทึกทุกขั้นให้อ่านตรงนี้จริง ๆ */}
+            {step.id === "close-round" ? <RoundRecordSummary view={view} /> : null}
           </>
         )}
       />
@@ -246,7 +267,7 @@ export function StepRunner({
             color: "var(--pl-ink)",
             fontSize: "16px",
           } as const;
-          const label = `${measurement.label}${["number"].includes(kind) ? ` (${measurement.unit})` : ""}${measurement.required ? " · ต้องกรอก" : ""}`;
+          const label = `${measurement.label}${["number"].includes(kind) ? ` (${measurementUnitLabel(measurement.unit)})` : ""}${measurement.required ? " · ต้องกรอก" : ""}`;
           const updateText = (raw: string) => setMeasurementValues((currentValues) => ({
             ...currentValues,
             [measurement.id]: raw.trim() === "" ? null : raw,
@@ -327,6 +348,31 @@ export function StepRunner({
             }}
           />
         </p>
+
+        {step.passCriteria.length > 0 ? (
+          <fieldset className="cl-pass-criteria" style={{ marginTop: "18px", border: "2.5px solid var(--pl-line)", borderRadius: "12px", padding: "14px 16px" }}>
+            <legend style={{ fontWeight: 700, padding: "0 6px" }}>ยืนยันว่าทำครบตามเกณฑ์ผ่านแล้ว</legend>
+            <p className="pl-meta" style={{ margin: "0 0 10px" }}>
+              ติ๊กเองทีละข้อ ระบบเก็บคำยืนยันนี้ไว้กับรอบ ถ้ายังไม่ครบจะกดปุ่มผ่านด้านล่างไม่ได้
+            </p>
+            {step.passCriteria.map((criterion, index) => (
+              <label key={passCriterionKey(index)} htmlFor={passCriterionKey(index)} className="cl-check-row">
+                <input
+                  id={passCriterionKey(index)}
+                  name={passCriterionKey(index)}
+                  type="checkbox"
+                  defaultChecked={step.state.responses?.[passCriterionKey(index)] === true}
+                  onChange={(event) => setMeasurementValues((currentValues) => ({
+                    ...currentValues,
+                    [passCriterionKey(index)]: event.currentTarget.checked,
+                  }))}
+                  style={{ width: "22px", height: "22px", flex: "none" }}
+                />
+                <span><RichText source={criterion} /></span>
+              </label>
+            ))}
+          </fieldset>
+        ) : null}
 
         <ActionBar
           primary={<button type="submit" disabled={saving || !gate.canPass || locked} className="cl-button-primary">บันทึกว่าผ่าน</button>}

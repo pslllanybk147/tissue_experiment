@@ -124,8 +124,19 @@ export type HaiterAutoInput = {
   minimumMeasurableMl: number;
 };
 
+/** ตัวเลขที่ตวงได้จริงตามความละเอียดของอุปกรณ์ พร้อมผลกระทบหลังปัด
+ *  เครื่องคำนวณ NaDCC ทำแบบนี้อยู่แล้ว แต่ฝั่ง Haiter เคยคืนเลขดิบ เช่น 15.432099 mL
+ *  ซึ่งไม่มีใครตวงได้ และไม่บอกด้วยว่าถ้าปัดแล้วความเข้มข้นจะเพี้ยนไปเท่าไหร่ */
+export type HaiterRounding = {
+  calculatedVolumeMl: number;
+  actionableVolumeMl: number;
+  resolutionMl: number;
+  roundingDirection: "up" | "down" | "none";
+  actionableTargetPercent: number;
+};
+
 export type HaiterAutoResult =
-  | { mode: "direct"; sourceVolumeMl: number; formula: string }
+  | { mode: "direct"; sourceVolumeMl: number; formula: string; rounding: HaiterRounding }
   | {
       mode: "working-dilution";
       dilutionFactor: number;
@@ -134,6 +145,7 @@ export type HaiterAutoResult =
       sourceVolumeMl: number;
       diluentVolumeMl: number;
       workingDoseMl: number;
+      rounding: HaiterRounding;
     };
 
 /** ลิสต์อัตราเจือจางและปริมาตร working stock สำเร็จรูปที่ระบบไล่หาให้เอง แทนที่จะให้ผู้ใช้เดา
@@ -147,10 +159,28 @@ const haiterWorkingVolumesMl = [20, 50, 100, 200, 500, 1000];
  *  ที่จะเตรียม" อีกต่อไป ไล่หาคู่อัตราเจือจาง/ปริมาตรที่ตวงได้จริงทั้งสองขั้น
  *  (ทั้งตอนตวงต้นทางลงไปทำ working stock และตอนตวง working stock ไปใช้จริง)
  *  แล้วเลือกคู่แรกที่เจือจางน้อยที่สุดและเปลืองน้อยที่สุด */
+function roundToTool(calculatedVolumeMl: number, resolutionMl: number, concentrationPercent: number, finalVolumeMl: number): HaiterRounding {
+  const safeResolution = Number.isFinite(resolutionMl) && resolutionMl > 0 ? resolutionMl : 0.1;
+  const decimals = Math.max(0, (String(safeResolution).split(".")[1] ?? "").length);
+  const actionableVolumeMl = Number((Math.round(calculatedVolumeMl / safeResolution) * safeResolution).toFixed(decimals));
+  return {
+    calculatedVolumeMl,
+    actionableVolumeMl,
+    resolutionMl: safeResolution,
+    roundingDirection: actionableVolumeMl === calculatedVolumeMl ? "none" : actionableVolumeMl > calculatedVolumeMl ? "up" : "down",
+    actionableTargetPercent: round((concentrationPercent * actionableVolumeMl) / finalVolumeMl),
+  };
+}
+
 export function planHaiterCleaningDose(input: HaiterAutoInput): HaiterAutoResult {
   const dose = calculateHaiterDose(input);
   if (!dose.needsWorkingDilution) {
-    return { mode: "direct", sourceVolumeMl: dose.sourceVolumeMl, formula: dose.formula };
+    return {
+      mode: "direct",
+      sourceVolumeMl: dose.sourceVolumeMl,
+      formula: dose.formula,
+      rounding: roundToTool(dose.sourceVolumeMl, input.minimumMeasurableMl, input.sourcePercent, input.finalVolumeMl),
+    };
   }
 
   for (const dilutionFactor of haiterDilutionFactors) {
@@ -183,6 +213,7 @@ export function planHaiterCleaningDose(input: HaiterAutoInput): HaiterAutoResult
         sourceVolumeMl: candidate.sourceVolumeMl,
         diluentVolumeMl: candidate.diluentVolumeMl,
         workingDoseMl: candidate.workingDoseMl,
+        rounding: roundToTool(candidate.workingDoseMl, input.minimumMeasurableMl, candidate.workingPercent, input.finalVolumeMl),
       };
     }
   }

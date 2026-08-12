@@ -108,7 +108,7 @@ function CreateTrial() {
     <GuideShell action={<ThemeToggle />}>
       <h1 className="pl-h1">เริ่มชุดทดลอง NaDCC เทียบ Haiter</h1>
       <p className="pl-lede" style={{ marginTop: "8px" }}>
-        เปรียบเทียบวิธีฟอกฆ่าเชื้อและน้ำ rinse คลอรีนต่ำบน{manual.commonName} ตามแบบชุดทดลองในหัวข้อ 15 ของ new_idea.md
+        เปรียบเทียบวิธีฟอกฆ่าเชื้อและน้ำ rinse คลอรีนต่ำบน{manual.commonName} ตามแบบชุดทดลองเปรียบเทียบที่วางแผนไว้ของระบบนี้
       </p>
 
       <div className="pl-card" style={{ marginTop: "18px" }}>

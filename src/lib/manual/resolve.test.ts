@@ -50,11 +50,12 @@ describe("resolveManual", () => {
     const manual = resolveManual(basePack, { library });
     const receive = manual.steps.find((item) => item.id === "receive")!;
 
+    // ป้ายชุดสำเร็จรูปของ receive มีสามข้อ แต่ pack ตัวอย่างมีคำสั่งข้อเดียว
+    // จำนวนไม่ตรงแบบนี้ต้องย่อป้ายจากคำสั่งจริง ไม่ใช่หยิบป้ายข้อแรกมาแปะมั่ว
     expect(receive.executionInstructions).toMatchObject([
       {
-        label: "ติดรหัสต้น",
+        label: "ลงมือทำตามตัวอย่าง",
         action: "ลงมือทำตามตัวอย่าง",
-        materials: ["อุปกรณ์ตัวอย่าง"],
         completion: "ผ่านตามตัวอย่าง",
       },
     ]);

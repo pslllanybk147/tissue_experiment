@@ -164,7 +164,7 @@ describe("ChemicalPreparation", () => {
     expect(html).toContain("ค่าที่อ่านได้จากเครื่อง");
     expect(html).toContain("TDS/EC");
     expect(html).toContain("ห้ามกรอกแทนค่าคลอรีน");
-    expect(html).toContain("ยังไม่เลือก verified");
+    expect(html).toContain("อย่าเลือก “ตรวจยืนยันแล้ว”");
   });
 
   it("groups preparation fields and distinguishes calculated ppm from a measured value", () => {

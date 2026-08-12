@@ -25,7 +25,7 @@ function ReadinessSummary({ readiness }: { readiness: TrialReadiness }) {
             <p className="pl-mono">{readinessLabel[item.status]}</p>
             <h3 className="pl-h2" style={{ marginTop: "4px" }}>{item.title}</h3>
             <p className="pl-lede" style={{ marginTop: "8px" }}><strong>มีอะไร</strong> {item.have}</p>
-            <p className="pl-lede" style={{ marginTop: "6px" }}><strong>ยังขาดอะไร</strong> {item.missing}</p>
+            {item.missing ? <p className="pl-lede" style={{ marginTop: "6px" }}><strong>ยังขาดอะไร</strong> {item.missing}</p> : null}
             <p className="pl-lede" style={{ marginTop: "6px" }}><strong>ทำอะไรต่อ</strong> {item.next}</p>
           </article>
         ))}

@@ -32,6 +32,21 @@ function preparationQuantity(
   return `${calculated.value} ${calculated.unit} (ใช้จริง ${actual.value} ${actual.unit})`;
 }
 
+/** ขั้นทำอาหารประกาศเป้าหมายไว้เองว่า "ทำให้อาหารและภาชนะปลอดเชื้อ" และหน้าอุปกรณ์ก็บอกให้
+ *  "ใช้วิธีเคมีกับกระปุกพลาสติกตาม protocol ที่เลือก" แต่ไม่เคยมีคำสั่งไหนบอกวิธีฆ่าเชื้อภาชนะเลย
+ *  วิธีนึ่งความดันครอบคลุมภาชนะอยู่แล้วเพราะนึ่งทั้งกระปุก ส่วนวิธีเคมีต้องมีขั้นของตัวเอง */
+function vesselInstruction(agent: string): ExecutionInstruction {
+  return {
+    label: "ฆ่าเชื้อกระปุกและฝาก่อนใช้",
+    action: `เช็ดหรือจุ่มกระปุกและฝาทุกใบด้วย${agent}ที่ความเข้มข้นเดียวกับที่ใช้กับอาหาร `
+      + "ให้ทั่วทั้งด้านในและขอบฝา แล้วคว่ำผึ่งในพื้นที่สะอาดจนแห้งก่อนเทอาหารหรือปิดฝา "
+      + "ห้ามใช้กระปุกที่ยังเปียกน้ำยา เพราะน้ำยาที่ค้างจะไปสัมผัสชิ้นพืชโดยตรง",
+    materials: [agent, "พื้นที่สะอาดสำหรับคว่ำผึ่ง"],
+    completion: "กระปุกและฝาทุกใบผ่านการฆ่าเชื้อและแห้งสนิทแล้ว รวมถึงกระปุกเปล่าคุม",
+    tone: "warning",
+  };
+}
+
 function withMediumMethod(step: ResolvedStep, snapshot: LotSterilizationSnapshot): ResolvedStep {
   const method = snapshot.mediumSterilizationMethod;
   if (!method) return cloneStep(step);
@@ -78,37 +93,44 @@ function withMediumMethod(step: ResolvedStep, snapshot: LotSterilizationSnapshot
   if (method === "nadcc-chemical") {
     const product = preparationProduct(snapshot, "mediumPreparation", "NaDCC ตามฉลากที่ล็อกไว้กับรอบ");
     const quantity = preparationQuantity(snapshot, "mediumPreparation");
-    const action = "เติม NaDCC ลงในอาหารตามปริมาณที่คำนวณและยืนยันใน protocol ของรอบนี้ แล้วบันทึกปริมาณที่ใช้จริง";
+    const action = "เติม NaDCC ลงในอาหารตามปริมาณที่คำนวณและยืนยันไว้ในกล่อง “ยืนยันการเตรียมสาร” ด้านบน "
+      + "ดูบรรทัด “ตวงจาก…” ให้ชัดก่อนตวง เพราะระบบอาจสั่งให้ละลายเม็ดเป็นน้ำยาแม่แล้วตวงจากน้ำยาแม่นั้น "
+      + "ไม่ใช่ชั่งผงเม็ดลงไปตรง ๆ แล้วบันทึกปริมาณที่ใช้จริง";
     return {
       ...base,
       materials: uniqueStrings([...base.materials, product]),
       actions: insertActionBeforeFinalTopUp(neutralActions, action),
-      executionInstructions: insertInstructionBeforeFinalTopUp(neutralInstructions, {
+      executionInstructions: [...insertInstructionBeforeFinalTopUp(neutralInstructions, {
         label: "ฆ่าเชื้ออาหารด้วย NaDCC",
         action,
         materials: [product, "เครื่องชั่งที่ละเอียดพอกับปริมาณที่คำนวณ"],
         ...(quantity ? { quantity } : {}),
-        completion: "ยืนยัน product/batch ปริมาณคำนวณ และปริมาณที่ใช้จริงไว้กับรอบแล้ว ก่อนเติมน้ำให้ครบปริมาตรสุดท้าย",
+        completion: "ยืนยันผลิตภัณฑ์ batch/lot ปริมาณคำนวณ และปริมาณที่ใช้จริงไว้กับรอบแล้ว ก่อนเติมน้ำให้ครบปริมาตรสุดท้าย",
         tone: "warning",
-      }),
+      }), vesselInstruction("สารละลาย NaDCC")],
     };
   }
 
   const product = preparationProduct(snapshot, "mediumPreparation", "Haiter ตามฉลากที่ล็อกไว้กับรอบ");
   const quantity = preparationQuantity(snapshot, "mediumPreparation");
-  const action = "เติม Haiter ลงในอาหารตามปริมาณที่คำนวณและยืนยันใน protocol ของรอบนี้ แล้วบันทึกปริมาณที่ใช้จริง";
+  // เดิมเขียนว่า "เติม Haiter" เฉย ๆ ทั้งที่เครื่องคำนวณอาจสั่งให้ทำน้ำยาเจือจางก่อน
+  // แล้วตัวเลขที่แสดงเป็นปริมาณของน้ำยาเจือจาง ไม่ใช่ของในขวด ผู้ใช้ที่ตวงจากขวดตามตัวเลขนั้น
+  // จะได้คลอรีนเกินไปหลายเท่า จึงต้องเขียนกำกับให้ดูว่ากล่องผลคำนวณบอกให้ตวงจากอะไร
+  const action = "เติมน้ำยาฟอกลงในอาหารตามปริมาณที่คำนวณและยืนยันไว้ในกล่อง “ยืนยันการเตรียมสาร” ด้านบน "
+    + "ดูบรรทัด “ตวงจาก…” ให้ชัดก่อนตวง เพราะถ้าระบบสั่งให้ทำน้ำยาเจือจางก่อน ตัวเลขนั้นคือปริมาณของน้ำยาเจือจาง "
+    + "ไม่ใช่ปริมาณที่ตวงจากขวดโดยตรง แล้วบันทึกปริมาณที่ใช้จริง";
   return {
     ...base,
     materials: uniqueStrings([...base.materials, product]),
     actions: insertActionBeforeFinalTopUp(neutralActions, action),
-    executionInstructions: insertInstructionBeforeFinalTopUp(neutralInstructions, {
+    executionInstructions: [...insertInstructionBeforeFinalTopUp(neutralInstructions, {
       label: "ฆ่าเชื้ออาหารด้วย Haiter",
       action,
-      materials: [product, "syringe ที่ละเอียดพอกับปริมาณที่คำนวณ"],
+      materials: [product, "syringe ที่ละเอียดพอกับปริมาณที่คำนวณ", "ภาชนะผสมน้ำยาเจือจาง (ใช้เมื่อระบบสั่งให้เจือจางก่อน)"],
       ...(quantity ? { quantity } : {}),
-      completion: "ยืนยัน product/batch ปริมาณคำนวณ และปริมาณที่ใช้จริงไว้กับรอบแล้ว ก่อนเติมน้ำให้ครบปริมาตรสุดท้าย",
+      completion: "ยืนยันผลิตภัณฑ์ batch/lot ปริมาณคำนวณ และปริมาณที่ใช้จริงไว้กับรอบแล้ว ก่อนเติมน้ำให้ครบปริมาตรสุดท้าย",
       tone: "warning",
-    }),
+    }), vesselInstruction("น้ำยาฟอกที่เจือจางแล้ว")],
   };
 }
 

@@ -14,13 +14,48 @@ import type {
   LotSterilizationSnapshot,
   PreparationStatus,
 } from "@/lib/domain/models";
+import type { StepChemicalDose } from "./step-section";
 
 type EditableStepId = "prep-media" | "sterilize";
 
-function calculatedDose(plan: HaiterAutoResult | NadccAutoResult | null): DoseValue | undefined {
+/** สถานะเดิมโชว์เป็น planned/prepared/verified กลางฟอร์มไทย ผู้ใช้มือใหม่อ่านไม่ออก
+ *  ค่าที่เก็บยังเป็นภาษาอังกฤษเหมือนเดิม เปลี่ยนเฉพาะข้อความที่แสดง */
+const preparationStatusLabel: Record<PreparationStatus, string> = {
+  planned: "วางแผนไว้ ยังไม่ได้ลงมือ",
+  prepared: "เตรียมแล้ว",
+  verified: "ตรวจยืนยันแล้ว",
+};
+
+const preparationStatusOptions: { value: PreparationStatus; label: string }[] = [
+  { value: "planned", label: "วางแผนไว้ ยังไม่ได้ลงมือ" },
+  { value: "prepared", label: "เตรียมแล้ว" },
+  { value: "verified", label: "ตรวจยืนยันแล้ว (มีค่าจากชุดตรวจ)" },
+];
+
+/** ตัวเลขที่คำนวณได้ไม่ได้หมายถึงของขวดเดียวกันเสมอไป
+ *
+ *  โหมด working-dilution สั่งให้ทำน้ำยาเจือจางก่อน แล้วตัวเลขที่คืนมาคือปริมาณของ
+ *  "น้ำยาเจือจาง" ไม่ใช่ของในขวดเดิม ถ้าไม่ติดชื่อของเหลวไปกับตัวเลข ผู้ใช้จะตวงจากขวดเดิม
+ *  ตามตัวเลขนั้น แล้วได้ความเข้มข้นเกินไปหลายเท่า */
+function calculatedDose(plan: HaiterAutoResult | NadccAutoResult | null): (DoseValue & { source?: string }) | undefined {
   if (!plan) return undefined;
-  if ("actionableVolumeMl" in plan) return { value: plan.actionableVolumeMl, unit: "mL" };
-  return { value: plan.mode === "direct" ? plan.sourceVolumeMl : plan.workingDoseMl, unit: "mL" };
+  if ("actionableVolumeMl" in plan) {
+    return {
+      value: plan.actionableVolumeMl,
+      unit: "mL",
+      source: plan.mode === "direct"
+        ? "น้ำยาแม่ (stock) ที่ละลายเม็ดไว้"
+        : `น้ำยาเจือจางที่เพิ่งเตรียมไว้ (${plan.workingPpm} ppm) ไม่ใช่จากน้ำยาแม่โดยตรง`,
+    };
+  }
+  if (plan.mode === "direct") {
+    return { value: plan.rounding.actionableVolumeMl, unit: "mL", source: "ขวดน้ำยาฟอกโดยตรง" };
+  }
+  return {
+    value: plan.rounding.actionableVolumeMl,
+    unit: "mL",
+    source: `น้ำยาเจือจาง ${plan.workingPercent}% ที่เพิ่งเตรียมไว้ ไม่ใช่จากขวดโดยตรง`,
+  };
 }
 
 function roundPpm(value: number): number {
@@ -73,7 +108,7 @@ export function ChemicalPreparation({
   stepId: EditableStepId;
   sterilization: LotSterilizationSnapshot;
   onConfirm: (snapshot: LotSterilizationSnapshot) => Promise<void>;
-  onDoseChange?: (dose: DoseValue | undefined) => void;
+  onDoseChange?: (dose: StepChemicalDose | undefined) => void;
   defaultTargetPpm?: number;
   defaultFinalVolumeMl?: number;
 }) {
@@ -92,13 +127,18 @@ export function ChemicalPreparation({
   const [saving, setSaving] = useState(false);
   const onHaiterPlanChange = useCallback((next: HaiterAutoResult | null) => setPlan(next), []);
   const onNadccPlanChange = useCallback((next: NadccAutoResult | null) => setPlan(next), []);
-  const dose = calculatedDose(plan) ?? preparation?.calculatedDose;
+  const dose: StepChemicalDose | undefined = calculatedDose(plan) ?? preparation?.calculatedDose;
   const doseValue = dose?.value;
   const doseUnit = dose?.unit;
+  const doseSource = dose?.source;
 
   useEffect(() => {
-    onDoseChange?.(doseValue === undefined || doseUnit === undefined ? undefined : { value: doseValue, unit: doseUnit });
-  }, [doseUnit, doseValue, onDoseChange]);
+    onDoseChange?.(
+      doseValue === undefined || doseUnit === undefined
+        ? undefined
+        : { value: doseValue, unit: doseUnit, source: doseSource },
+    );
+  }, [doseSource, doseUnit, doseValue, onDoseChange]);
 
   if (!preparation || preparation.method === "pressure-sterilization") return null;
 
@@ -113,14 +153,14 @@ export function ChemicalPreparation({
     ? estimatePpmFromDose(plan, lockedPreparation, doseForEstimate, volume)
     : undefined;
   const actualDoseHint = dose
-    ? `ผลคำนวณ ${dose.value} ${dose.unit} เป็นค่าทางสูตร ไม่ใช่ค่าที่ต้องเดา · ตวงด้วย syringe หรือเครื่องชั่ง แล้วกรอกค่าที่ตวงจริงตามที่อ่านได้ (ถ้าขีดละเอียด 0.1 mL ให้ปัดตามขีด เช่น 1.281481 mL อ่านเป็นประมาณ 1.3 mL)`
+    ? `ระบบปัดให้ตวงได้จริงแล้วที่ ${dose.value} ${dose.unit}${doseSource ? ` (ตวงจาก${doseSource})` : ""} · ถ้าเครื่องมือของคุณอ่านได้ต่างจากนี้ ให้กรอกค่าที่อ่านได้จริง ไม่ใช่ค่าที่ระบบแสดง`
     : "ผลคำนวณด้านล่างเป็นค่าทางสูตร ไม่ใช่ค่าที่ต้องเดา · ตวงด้วย syringe หรือเครื่องชั่ง แล้วกรอกค่าที่ตวงจริงตามที่อ่านได้ (ถ้าขีดละเอียด 0.1 mL ให้ปัดตามขีด)";
   const actualPpmHint = [
     estimatedPpm !== undefined
       ? `จากปริมาตร ${doseForEstimate} mL ระบบคำนวณได้ประมาณ ${estimatedPpm} ppm (ค่าจากสูตร ยังไม่ใช่ค่าตรวจ)`
       : null,
     "ถ้าจะบันทึกค่าตรวจจริง ให้เก็บตัวอย่างหลังผสมแล้ววัดด้วยชุดทดสอบคลอรีนอิสระ (free chlorine เช่น DPD) หรือเครื่องที่ระบุว่าวัด free chlorine โดยตรง",
-    "กรอกค่าที่อ่านได้จากเครื่องเท่านั้น · เครื่องวัด ppm ในน้ำทั่วไปมักวัด TDS/EC ไม่ใช่คลอรีน ห้ามกรอกแทนค่าคลอรีน · ถ้าไม่มีชุดตรวจ ให้ยังไม่เลือก verified",
+    "กรอกค่าที่อ่านได้จากเครื่องเท่านั้น · เครื่องวัด ppm ในน้ำทั่วไปมักวัด TDS/EC ไม่ใช่คลอรีน ห้ามกรอกแทนค่าคลอรีน · ถ้าไม่มีชุดตรวจ ให้เลือกแค่ “เตรียมแล้ว” อย่าเลือก “ตรวจยืนยันแล้ว”",
   ].filter(Boolean).join(" · ");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -133,11 +173,11 @@ export function ChemicalPreparation({
       return;
     }
     if (status !== "planned" && (!(actualDoseValue > 0) || !dose)) {
-      setMessage("สถานะ prepared/verified ต้องมีทั้งค่าคำนวณและปริมาณที่ใช้จริง");
+      setMessage("สถานะ “เตรียมแล้ว” หรือ “ตรวจยืนยันแล้ว” ต้องมีทั้งค่าคำนวณและปริมาณที่ใช้จริง");
       return;
     }
     if (status === "verified" && !(actualPpmValue > 0)) {
-      setMessage("สถานะ verified ต้องบันทึกความเข้มข้นที่ตรวจได้จริง");
+      setMessage("สถานะ “ตรวจยืนยันแล้ว” ต้องบันทึกความเข้มข้นที่ตรวจได้จริง");
       return;
     }
 
@@ -158,9 +198,9 @@ export function ChemicalPreparation({
     setSaving(true);
     try {
       await onConfirm({ ...sterilization, [key]: next });
-      setMessage("บันทึก preparation snapshot แล้ว");
+      setMessage("บันทึกค่าที่เตรียมจริงแล้ว");
     } catch {
-      setMessage("บันทึก preparation snapshot ไม่สำเร็จ ค่าที่กรอกยังอยู่ในฟอร์ม");
+      setMessage("บันทึกค่าที่เตรียมจริงไม่สำเร็จ ค่าที่กรอกยังอยู่ในฟอร์ม");
     } finally {
       setSaving(false);
     }
@@ -170,7 +210,7 @@ export function ChemicalPreparation({
     <section className="cl-chemical-preparation cl-atlas-form-section" aria-labelledby="preparation-heading">
       <h2 id="preparation-heading">ยืนยันการเตรียมสาร</h2>
       <p className="cl-meta">
-        โปรโตคอล {preparation.protocolVersion} · สถานะที่ล็อกไว้ {preparation.status}
+        สูตรที่ล็อกไว้กับรอบนี้ · สถานะตอนนี้: {preparationStatusLabel[preparation.status]}
       </p>
       {isMediumHaiter ? (
         <p className="cl-lede" style={{ marginTop: "8px" }}>
@@ -184,14 +224,21 @@ export function ChemicalPreparation({
           <FieldGroup id="preparation-target" label={isMediumHaiter ? "เป้าหมายคลอรีนออกฤทธิ์ (จาก 2 mL/L)" : "เป้าหมาย"} unit="ppm"><input id="preparation-target" type="number" step="any" value={targetPpm} onChange={(event) => setTargetPpm(event.currentTarget.value)} /></FieldGroup>
           <FieldGroup id="preparation-volume" label={isMediumHaiter ? "ปริมาตรอาหาร batch นี้" : "ปริมาตรสุดท้าย"} unit="mL"><input id="preparation-volume" type="number" step="any" value={finalVolumeMl} onChange={(event) => setFinalVolumeMl(event.currentTarget.value)} /></FieldGroup>
           <FieldGroup id="preparation-time" label="วันเวลาที่เตรียม"><input id="preparation-time" type="datetime-local" value={preparedAt} onChange={(event) => setPreparedAt(event.currentTarget.value)} /></FieldGroup>
-          <FieldGroup id="preparation-status" label="สถานะ"><select id="preparation-status" value={status} onChange={(event) => setStatus(event.currentTarget.value as PreparationStatus)}><option value="planned">planned</option><option value="prepared">prepared</option><option value="verified">verified</option></select></FieldGroup>
+          <FieldGroup id="preparation-status" label="สถานะ"><select id="preparation-status" value={status} onChange={(event) => setStatus(event.currentTarget.value as PreparationStatus)}>{preparationStatusOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></FieldGroup>
           <FieldGroup id="preparation-actual-dose" label="ปริมาณที่ใช้จริง" hint={actualDoseHint} unit={dose?.unit ?? "mL"}><input id="preparation-actual-dose" type="number" step="any" value={actualDose} onChange={(event) => setActualDose(event.currentTarget.value)} /></FieldGroup>
           <FieldGroup id="preparation-actual-ppm" label="ความเข้มข้นที่ตรวจได้จริง" hint={actualPpmHint} unit="ppm"><input id="preparation-actual-ppm" type="number" step="any" value={actualPpm} onChange={(event) => setActualPpm(event.currentTarget.value)} /></FieldGroup>
         </div>
 
         {!(target > 0) || !(volume > 0) ? (
-          <StatusNotice tone="blocked" title="ยังคำนวณไม่ได้">
-            ต้องระบุ target concentration และ final volume จากโปรโตคอลที่ทบทวนแล้วก่อน ระบบจะไม่สร้างค่าทางวิทยาศาสตร์ให้เอง
+          <StatusNotice tone="blocked" title="ยังคำนวณให้ไม่ได้">
+            <p style={{ margin: 0 }}>
+              ต้องมีทั้ง <strong>ความเข้มข้นเป้าหมาย (ppm)</strong> และ <strong>ปริมาตรสุดท้ายที่จะผสม (mL)</strong> ก่อน
+              ระบบถึงจะคำนวณปริมาณให้ได้ และจะไม่เดาค่าทางวิทยาศาสตร์ให้เอง
+            </p>
+            <ul style={{ margin: "8px 0 0", paddingLeft: "20px" }}>
+              {!(target > 0) ? <li>กรอกช่อง “{isMediumHaiter ? "เป้าหมายคลอรีนออกฤทธิ์ (จาก 2 mL/L)" : "เป้าหมาย"}” — ถ้าคู่มือของขั้นนี้ระบุจุดตั้งต้นไว้ ระบบเติมให้แล้ว</li> : null}
+              {!(volume > 0) ? <li>กรอกช่อง “{isMediumHaiter ? "ปริมาตรอาหาร batch นี้" : "ปริมาตรสุดท้าย"}” — {isMediumHaiter ? "ใช้ตัวเลขจากเครื่องคำนวณสูตรอาหารด้านล่าง" : "ใส่ปริมาตรน้ำยาฟอกที่จะเตรียมในภาชนะ S ให้พอท่วมชิ้นพืช"}</li> : null}
+            </ul>
           </StatusNotice>
         ) : isNadcc ? (
           <NadccCalculator
@@ -225,12 +272,13 @@ export function ChemicalPreparation({
         {dose ? (
           <div className="cl-calculated-dose cl-atlas-result" aria-live="polite" aria-label="ผลการคำนวณปริมาณสาร">
             <strong>ค่าคำนวณล่าสุด: {dose.value} {dose.unit}</strong>
+            {doseSource ? <span><strong>ตวงจาก{doseSource}</strong></span> : null}
             <span>ค่าจากสูตร ยังไม่ใช่ค่าตรวจ · ตวงจริงแล้วบันทึกค่าที่อ่านได้จากอุปกรณ์</span>
           </div>
         ) : (
           <p className="cl-calculation-disclaimer">ค่าจากสูตร ยังไม่ใช่ค่าตรวจ · กรอกเป้าหมายและปริมาตรเพื่อคำนวณ</p>
         )}
-        <ActionBar primary={<button className="cl-button-primary" type="submit" disabled={saving}>{saving ? "กำลังบันทึก…" : "บันทึก preparation snapshot"}</button>} />
+        <ActionBar primary={<button className="cl-button-primary" type="submit" disabled={saving}>{saving ? "กำลังบันทึก…" : "บันทึกค่าที่เตรียมจริง"}</button>} />
         {message ? <p role="status" className="cl-meta">{message}</p> : null}
       </form>
     </section>

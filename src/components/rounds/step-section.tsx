@@ -4,6 +4,9 @@ import { RichText } from "@/components/guide/rich-text";
 import { StatusNotice } from "@/components/common/status-notice";
 import { mediumInstructionOverride, type MediumExecutionContext } from "@/lib/rounds/medium-execution";
 
+/** ปริมาณที่คำนวณได้ พร้อมชื่อของเหลวที่ต้องตวงจริง (ขวดเดิม หรือน้ำยาเจือจางที่เพิ่งทำ) */
+export type StepChemicalDose = DoseValue & { source?: string };
+
 function TextList({ items }: { items: string[] }) {
   return <ul style={{ margin: "8px 0 0", paddingLeft: "20px", display: "flex", flexDirection: "column", gap: "6px" }}>{items.map((item) => <li key={item}><RichText source={item} /></li>)}</ul>;
 }
@@ -19,7 +22,7 @@ function ExecutionInstructions({
 }: {
   step: ResolvedStep;
   mediumContext?: MediumExecutionContext | null;
-  chemicalDose?: DoseValue;
+  chemicalDose?: StepChemicalDose;
 }) {
   if (!step.executionInstructions || step.executionInstructions.length === 0) return null;
 
@@ -35,8 +38,10 @@ function ExecutionInstructions({
             {(() => {
               const override = mediumContext ? mediumInstructionOverride(instruction.label, mediumContext) : null;
               const action = override?.action || instruction.action;
+              // ตัวเลขเดียวกันหมายถึงคนละของได้ ถ้าเครื่องคำนวณสั่งให้ทำน้ำยาเจือจางก่อน
+              // จึงต้องพ่วงชื่อของเหลวที่ต้องตวงไปกับตัวเลขเสมอ ไม่งั้นผู้ใช้จะตวงจากขวดตรง ๆ
               const calculatedQuantity = chemicalDose && /ฆ่าเชื้ออาหารด้วย (?:Haiter|NaDCC)/.test(instruction.label)
-                ? `${chemicalDose.value} ${chemicalDose.unit}`
+                ? `${chemicalDose.value} ${chemicalDose.unit}${chemicalDose.source ? ` — ตวงจาก${chemicalDose.source}` : ""}`
                 : undefined;
               const quantity = override?.quantity || instruction.quantity || calculatedQuantity;
               const completion = override?.completion || instruction.completion;
@@ -78,7 +83,7 @@ export function StepSections({
   step: ResolvedStep;
   actionPrelude?: React.ReactNode;
   mediumContext?: MediumExecutionContext | null;
-  chemicalDose?: DoseValue;
+  chemicalDose?: StepChemicalDose;
 }) {
   return (
     <>
@@ -114,11 +119,13 @@ export function StepSections({
         <TextList items={step.passCriteria} />
       </Section>
 
-      <Section title="หยุดเมื่อ">
-        <StatusNotice tone="blocked" title="เงื่อนไขให้หยุดทันที">
-          <TextList items={step.stopConditions} />
-        </StatusNotice>
-      </Section>
+      {step.stopConditions.length > 0 ? (
+        <Section title="หยุดเมื่อ">
+          <StatusNotice tone="blocked" title="เงื่อนไขให้หยุดทันที">
+            <TextList items={step.stopConditions} />
+          </StatusNotice>
+        </Section>
+      ) : null}
 
     </>
   );

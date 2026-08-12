@@ -25,9 +25,16 @@ function cleanAction(action: string): string {
     .trim();
 }
 
+/** ตัวเลขที่เขียนเป็นคำต้องแปลงกลับเป็นเลขก่อนแสดง ไม่งั้นจะได้ "หนึ่ง วัน" ที่มีเว้นวรรคคั่นกลาง
+ *  และไม่ตรงกับ "1 วัน" ที่หัวขั้นแสดงจาก durationMinutes ของค่าเดียวกัน */
+const spelledNumbers: Record<string, string> = { หนึ่ง: "1", สอง: "2", สาม: "3", ครึ่ง: "ครึ่ง" };
+
 function durationFrom(action: string): string | undefined {
-  const explicit = action.match(/(\d+(?:\s*ถึง\s*\d+)?|หนึ่ง|ครึ่ง)\s*(นาที|วินาที|ชั่วโมง|วัน)/);
-  if (explicit) return `${explicit[1]} ${explicit[2]}`;
+  const explicit = action.match(/(\d+(?:\s*ถึง\s*\d+)?|หนึ่ง|สอง|สาม|ครึ่ง)\s*(นาที|วินาที|ชั่วโมง|วัน)/);
+  if (explicit) {
+    const amount = spelledNumbers[explicit[1]] ?? explicit[1];
+    return amount === "ครึ่ง" ? `ครึ่ง${explicit[2]}` : `${amount} ${explicit[2]}`;
+  }
   if (/รอบละ(?:ประมาณ)?หนึ่งนาที/.test(action)) return "รอบละ 1 นาที";
   if (/รอบสั้น ๆ|รอบสั้นๆ/.test(action)) return "รอบสั้น ๆ — บันทึกเวลาจริงของแต่ละรอบ";
   return undefined;
@@ -38,23 +45,36 @@ function completionFor(step: ManualStepDef, index: number, total: number): strin
   return "ทำรายการนี้ครบแล้ว ตรวจของหรือข้อมูลให้พร้อมก่อนทำข้อต่อไป";
 }
 
-function nextFor(step: ManualStepDef, index: number, total: number): string | undefined {
+function nextFor(labels: string[], index: number, total: number): string | undefined {
   if (index >= total - 1) return undefined;
-  const labels = stepLabels[step.id];
-  return `ไปข้อ ${index + 2}${labels?.[index + 1] ? ` (${labels[index + 1]})` : ""}`;
+  return `ไปข้อ ${index + 2}${labels[index + 1] ? ` (${labels[index + 1]})` : ""}`;
+}
+
+/** ป้ายสำรองเมื่อใช้ป้ายชุดสำเร็จรูปไม่ได้ ย่อจากคำสั่งจริงให้อ่านรู้เรื่องกว่า "ขั้น — ข้อ 3"
+ *  ตัดที่คำเชื่อมหรือเครื่องหมายวรรคตอนตัวแรก เพื่อให้ได้ใจความสั้น ๆ ของข้อนั้น */
+function derivedLabel(action: string, fallback: string): string {
+  const head = action.split(/[,·:(]|\sแล้ว\s|\sจากนั้น\s|\sเพื่อ\s/)[0].trim();
+  if (head.length === 0) return fallback;
+  if (head.length <= 34) return head;
+  const words = head.slice(0, 34).split(" ");
+  return `${words.length > 1 ? words.slice(0, -1).join(" ") : words[0]}…`;
 }
 
 function genericInstructions(step: ManualStepDef): ExecutionInstruction[] {
-  const labels = stepLabels[step.id] ?? [];
+  // ป้ายหัวข้อจับคู่กับคำสั่งด้วยลำดับ index ล้วน ๆ ถ้าพันธุ์ไหน override actions จนจำนวนไม่ตรง
+  // ป้ายจะเลื่อนไปติดคำสั่งคนละข้อแบบเงียบ ๆ (เคยเกิดจริงที่ขั้น cut ของ violin-variegated
+  // จนป้าย "เตรียมน้ำพักชิ้น" ไปอยู่บนคำสั่ง "ตัดยอดอ่อน") จำนวนไม่ตรงเมื่อไหร่ให้เลิกใช้ป้ายชุดนี้
+  const canned = stepLabels[step.id] ?? [];
+  const labels = canned.length === step.actions.length ? canned : [];
   return step.actions.map((rawAction, index) => {
     const action = cleanAction(rawAction);
     const instruction: ExecutionInstruction = {
-      label: labels[index] ?? `${step.title} — ข้อ ${index + 1}`,
+      label: labels[index] ?? derivedLabel(action, `${step.title} — ข้อ ${index + 1}`),
       action,
       completion: completionFor(step, index, step.actions.length),
-      next: nextFor(step, index, step.actions.length),
+      next: nextFor(labels, index, step.actions.length),
     };
-    if (index === 0 && step.materials.length > 0) instruction.materials = step.materials;
+
     const duration = durationFrom(action);
     if (duration) instruction.durationLabel = duration;
     return instruction;

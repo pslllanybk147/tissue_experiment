@@ -7,6 +7,7 @@ import {
   type LabelBasis,
   type HaiterAutoInput,
   type HaiterAutoResult,
+  type HaiterRounding,
 } from "@/lib/domain/haiter-calculations";
 import { CalculatorField } from "./calculator-field";
 import { FieldGroup } from "@/components/common/field-group";
@@ -26,6 +27,34 @@ function tryPlan(input: HaiterAutoInput): Attempt<HaiterAutoResult> {
   } catch (error) {
     return { ok: false, message: error instanceof Error ? error.message : String(error) };
   }
+}
+
+/** แสดงผลแบบเดียวกับเครื่องคำนวณ NaDCC: ค่าคำนวณ → ค่าที่ตวงได้จริง → ผลหลังปัด
+ *  เดิมฝั่ง Haiter โชว์เลขทศนิยมหกตำแหน่งเฉย ๆ ซึ่งตวงไม่ได้และไม่บอกว่าเพี้ยนแค่ไหน */
+function Rounding({
+  rounding,
+  source,
+  targetPercent,
+}: {
+  rounding: HaiterRounding;
+  source: string;
+  targetPercent: number;
+}) {
+  const directionLabel = { up: "ปัดขึ้น", down: "ปัดลง", none: "ตวงได้พอดี" }[rounding.roundingDirection];
+  return (
+    <>
+      <p className="pl-meta" style={{ marginTop: "8px" }}>ค่าคำนวณก่อนปัด {rounding.calculatedVolumeMl} mL</p>
+      <p style={{ margin: "4px 0 0", fontSize: "26px", fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>
+        ตวงจริง {rounding.actionableVolumeMl} mL
+      </p>
+      <p className="pl-meta" style={{ marginTop: "4px" }}>ตวงจาก{source} · ความละเอียด {rounding.resolutionMl} mL · {directionLabel}</p>
+      {rounding.roundingDirection !== "none" ? (
+        <p className="pl-meta" style={{ marginTop: "4px" }}>
+          หลังปัดจะได้ประมาณ {rounding.actionableTargetPercent}% ไม่ใช่ {targetPercent}% พอดี
+        </p>
+      ) : null}
+    </>
+  );
 }
 
 export function HaiterCalculator({
@@ -130,9 +159,7 @@ export function HaiterCalculator({
           <div className="cl-calculator-result cl-atlas-result" aria-live="polite" aria-label="ผลการคำนวณไฮเตอร์">
             <p className="cl-result-disclaimer">ค่าจากสูตร ยังไม่ใช่ค่าตรวจ</p>
             <p className="pl-mono">{plan.result.formula}</p>
-            <p style={{ margin: "4px 0 0", fontSize: "26px", fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>
-              {plan.result.sourceVolumeMl} mL
-            </p>
+            <Rounding rounding={plan.result.rounding} source="ขวดน้ำยาฟอกโดยตรง" targetPercent={targetPercent} />
           </div>
         ) : null}
 
@@ -146,8 +173,9 @@ export function HaiterCalculator({
             </p>
             <p className="pl-mono" style={{ marginTop: "12px" }}>ขั้น 2: จากน้ำยาเจือจางที่เตรียมไว้</p>
             <p style={{ margin: "4px 0 0" }}>
-              ตวง {plan.result.workingDoseMl} mL ผสมน้ำให้ครบ {finalVolumeMl} mL
+              ตวงจาก<strong>น้ำยาเจือจาง</strong>ที่เพิ่งทำ (ไม่ใช่จากขวดเดิม) แล้วผสมน้ำให้ครบ {finalVolumeMl} mL
             </p>
+            <Rounding rounding={plan.result.rounding} source={`น้ำยาเจือจาง ${plan.result.workingPercent}%`} targetPercent={targetPercent} />
             <p className="pl-meta" style={{ marginTop: "10px" }}>
               (เจือจาง 1:{plan.result.dilutionFactor} ได้น้ำยาเจือจางเข้มข้น {plan.result.workingPercent}%)
             </p>
