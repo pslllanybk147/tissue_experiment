@@ -189,6 +189,7 @@ export function StepRunner({
       </header>
       <StepSections
         step={step}
+        mode="do"
         mediumContext={mediumContext}
         chemicalDose={chemicalDose}
         actionPrelude={(

@@ -15,6 +15,23 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return <section className="cl-protocol-section"><h2>{title}</h2>{children}</section>;
 }
 
+/** โหมดอ่าน (หน้าคู่มือ) กางทุกหัวข้อไว้เพราะคนกำลังศึกษาก่อนลงมือ
+ *  โหมดทำ (หน้ารอบเพาะ) พับเหตุผลไว้ เพราะคนที่ถือมีดอยู่ต้องการคำสั่งกับเกณฑ์ผ่านเท่านั้น
+ *  เนื้อหาเป็นชุดเดียวกันทั้งสองโหมด ต่างกันแค่ว่าอะไรกางอยู่ตั้งแต่แรก */
+export type StepSectionsMode = "read" | "do";
+
+/** หัวข้อที่ยังอยู่ครบแต่ไม่กางเอง กดเปิดได้ตลอดและอยู่ใน DOM เสมอเพื่อให้ค้นในหน้าเจอ */
+function CollapsedSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <section className="cl-protocol-section cl-protocol-section-collapsed">
+      <details>
+        <summary><h2>{title}</h2></summary>
+        {children}
+      </details>
+    </section>
+  );
+}
+
 function ExecutionInstructions({
   step,
   mediumContext,
@@ -79,12 +96,21 @@ export function StepSections({
   actionPrelude,
   mediumContext,
   chemicalDose,
+  mode = "read",
 }: {
   step: ResolvedStep;
   actionPrelude?: React.ReactNode;
   mediumContext?: MediumExecutionContext | null;
   chemicalDose?: StepChemicalDose;
+  mode?: StepSectionsMode;
 }) {
+  const WhySection = mode === "do" ? CollapsedSection : Section;
+  const why = (
+    <WhySection title="ทำไปทำไม">
+      <div className="pl-lede" style={{ marginTop: "8px" }}><RichText source={step.why} /></div>
+    </WhySection>
+  );
+
   return (
     <>
       <Section title="ขั้นนี้ต้องได้อะไร">
@@ -111,9 +137,9 @@ export function StepSections({
         </Section>
       )}
 
-      <Section title="ทำไปทำไม">
-        <div className="pl-lede" style={{ marginTop: "8px" }}><RichText source={step.why} /></div>
-      </Section>
+      {/* โหมดอ่านวางเหตุผลไว้ต่อจากคำสั่งตามลำดับเดิมของคู่มือ ส่วนโหมดทำเลื่อนไปไว้ท้ายสุด
+          เพื่อไม่ให้คั่นระหว่างคำสั่งกับเกณฑ์ผ่านที่ต้องติ๊กจริง */}
+      {mode === "read" ? why : null}
 
       <Section title="ผ่านเมื่อ">
         <TextList items={step.passCriteria} />
@@ -127,6 +153,7 @@ export function StepSections({
         </Section>
       ) : null}
 
+      {mode === "do" ? why : null}
     </>
   );
 }

@@ -268,6 +268,21 @@ h3 {
 .cl-protocol-header h1 { font-size: var(--cl-text-display); font-weight: 600; line-height: 1.25; }
 .cl-protocol-section { display: grid; gap: var(--cl-space-3); padding-block: var(--cl-space-6); border-block-end: 1px solid var(--cl-border); }
 .cl-protocol-section > h2 { margin: 0; font-size: var(--cl-text-h2); font-weight: 600; line-height: 1.35; }
+/* หัวข้อที่พับไว้ในโหมดทำ ยังต้องกดง่ายด้วยนิ้วและมองเห็นว่ากดได้ ไม่ใช่หัวข้อธรรมดา */
+.cl-protocol-section-collapsed > details > summary {
+  display: flex;
+  align-items: center;
+  gap: var(--cl-space-2);
+  min-height: 44px;
+  cursor: pointer;
+  color: var(--cl-text-muted);
+  list-style: none;
+}
+.cl-protocol-section-collapsed > details > summary::-webkit-details-marker { display: none; }
+.cl-protocol-section-collapsed > details > summary::before { content: "▸"; flex: none; }
+.cl-protocol-section-collapsed > details[open] > summary::before { content: "▾"; }
+.cl-protocol-section-collapsed > details > summary > h2 { display: inline; margin: 0; font-size: var(--cl-text-h2); font-weight: 600; line-height: 1.35; }
+.cl-protocol-section-collapsed > details > summary:focus-visible { outline: 2px solid var(--cl-focus, currentColor); outline-offset: 2px; }
 .cl-protocol .execution-instructions {
   display: grid;
   gap: var(--cl-space-6);
