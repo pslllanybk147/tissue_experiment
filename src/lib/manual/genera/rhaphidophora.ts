@@ -16,10 +16,11 @@ export const rhaphidophora: GenusPack = {
   deviations: {
     "select-explant": {
       summary: "เลือกข้อที่มีตาข้างจากท่อนเถาที่ยังไม่แก่จัด เหมือนหลักการของ Monstera/Epipremnum",
+      // รายละเอียดว่างานชิ้นเดียวของสกุลนี้ (Lin Dehui 1988) เข้าถึงได้แค่หัวเรื่อง
+      // อยู่ในหมายเหตุของ evidence ด้านล่างแล้ว ไม่ต้องเล่าซ้ำในช่องเหตุผล
       why:
-        "ยังไม่มีงานที่ทำกับ Rhaphidophora tetrasperma โดยตรง งานเดียวของสกุลนี้ (Lin Dehui 1988) " +
-        "เข้าถึงได้แค่หัวเรื่อง อ่านรายละเอียดไม่ได้ จึงยืมหลักการจากวงศ์ย่อยเดียวกัน (Monsteroideae " +
-        "เผ่า Monstereae) ซึ่งใกล้ชิดกว่าการยืมแค่ระดับวงศ์ Araceae ทั่วไป",
+        "ยังไม่มีงานที่ทำกับ Rhaphidophora tetrasperma โดยตรง จึงยืมหลักการจากวงศ์ย่อยเดียวกัน " +
+        "(Monsteroideae เผ่า Monstereae) ซึ่งใกล้ชิดกว่าการยืมแค่ระดับวงศ์ Araceae ทั่วไป",
       evidence: {
         level: "adapted",
         sourceIds: ["source-chan-tan-chew-2003", "source-monstera-fonnesbech-1980"],

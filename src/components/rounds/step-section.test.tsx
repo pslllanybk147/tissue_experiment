@@ -19,6 +19,24 @@ describe("StepSections", () => {
     expect(html).not.toContain("pl-soft-card");
   });
 
+  it("โหมดทำพับเหตุผลไว้ท้ายสุด แต่ยังเก็บคำสั่งกับเกณฑ์ผ่านไว้กางเหมือนเดิม", () => {
+    const step = resolveBySlug("violin-variegated")!.steps.find((item) => item.id === "sterilize")!;
+    const html = renderToStaticMarkup(<StepSections step={step} mode="do" />);
+    const headings = [...html.matchAll(/<h2[^>]*>(.*?)<\/h2>/g)].map((match) => match[1]);
+
+    expect(headings).toEqual(["ขั้นนี้ต้องได้อะไร", "เตรียมของ", "ทำตามลำดับ", "ผ่านเมื่อ", "หยุดเมื่อ", "ทำไปทำไม"]);
+    // เนื้อหายังอยู่ใน DOM ครบ พับไว้เฉย ๆ ไม่ได้ตัดทิ้ง จึงยังค้นในหน้าเจอและอ่านด้วย screen reader ได้
+    expect(html).toContain("cl-protocol-section-collapsed");
+    expect(html).toContain(step.why.slice(0, 20));
+  });
+
+  it("โหมดอ่านกางเหตุผลไว้ตามเดิม ไม่พับ", () => {
+    const step = resolveBySlug("violin-variegated")!.steps.find((item) => item.id === "sterilize")!;
+    const html = renderToStaticMarkup(<StepSections step={step} mode="read" />);
+
+    expect(html).not.toContain("cl-protocol-section-collapsed");
+  });
+
   it("แสดงความปลอดภัยเป็น alert แต่ไม่สลับลำดับหัวข้อหลัก", () => {
     const step = resolveBySlug("violin-variegated")!.steps.find((item) => item.id === "sterilize")!;
     const html = renderToStaticMarkup(<StepSections step={step} />);
