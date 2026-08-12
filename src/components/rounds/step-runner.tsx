@@ -281,7 +281,13 @@ export function StepRunner({
                   name={measurement.id}
                   type="checkbox"
                   defaultChecked={savedValue === true}
-                  onChange={(event) => setMeasurementValues((currentValues) => ({ ...currentValues, [measurement.id]: event.currentTarget.checked }))}
+                  onChange={(event) => {
+                    // ต้องอ่านค่าออกมาก่อนเรียก setState เพราะ React ล้าง currentTarget ทิ้ง
+                    // ทันทีที่ handler จบ ส่วน updater แบบฟังก์ชันจะถูกเรียกตอน render ถัดไป
+                    // ถ้าไปอ่าน event.currentTarget ข้างในจะได้ null แล้วหน้าทั้งหน้าพัง
+                    const { checked } = event.currentTarget;
+                    setMeasurementValues((currentValues) => ({ ...currentValues, [measurement.id]: checked }));
+                  }}
                   aria-required={measurement.required ? "true" : undefined}
                   style={{ width: "22px", height: "22px", flex: "none" }}
                 />
@@ -362,10 +368,10 @@ export function StepRunner({
                   name={passCriterionKey(index)}
                   type="checkbox"
                   defaultChecked={step.state.responses?.[passCriterionKey(index)] === true}
-                  onChange={(event) => setMeasurementValues((currentValues) => ({
-                    ...currentValues,
-                    [passCriterionKey(index)]: event.currentTarget.checked,
-                  }))}
+                  onChange={(event) => {
+                    const { checked } = event.currentTarget;
+                    setMeasurementValues((currentValues) => ({ ...currentValues, [passCriterionKey(index)]: checked }));
+                  }}
                   style={{ width: "22px", height: "22px", flex: "none" }}
                 />
                 <span><RichText source={criterion} /></span>
