@@ -113,6 +113,13 @@ export type ProtocolTemplate = {
 export type SterilizationMethod = "haiter-chemical" | "pressure-sterilization" | "nadcc-soak";
 export type RinseWaterMethod = "low-dose-hypochlorite" | "nadcc" | "commercial-sterile" | "pressure-steam";
 export type MediumSterilizationMethod = "haiter-chemical" | "nadcc-chemical" | "pressure-sterilization";
+
+/** แนวทางที่ผู้ใช้เลือกตอนตั้งค่ารอบ และล็อกไว้กับรอบนั้นตลอด
+ *  "full" คือเส้นทางเดิมที่เก็บข้อมูลครบเพื่อเอาไปเทียบรอบต่อรอบ
+ *  "simple" คือเส้นทางแบบคลิปสาธิต ทำตามได้จนจบโดยไม่ต้องกรอกงานบันทึกผล
+ *  ทั้งสองแนวทางใช้คู่มือ สูตร และแหล่งอ้างอิงชุดเดียวกัน ต่างกันแค่ว่าอะไรถูกบังคับ
+ *  ข้อที่ไม่ต่างกันเลยคือความปลอดภัยและเงื่อนไขให้หยุด ดู round-mode.ts */
+export type RoundMode = "simple" | "full";
 export type PreparationStatus = "planned" | "prepared" | "verified";
 export type RinsePreparationStatus = PreparationStatus;
 export type DoseValue = { value: number; unit: "mL" | "g" | "tablet" };
@@ -212,6 +219,8 @@ export type LotSterilizationSnapshot = {
   profileId: string;
   profileVersion: string;
   method: SterilizationMethod;
+  /** ไม่มีค่าในรอบที่สร้างก่อนมีโหมดง่าย รอบเหล่านั้นอ่านเป็น "full" เสมอ */
+  mode?: RoundMode;
   mediumSterilizationMethod?: MediumSterilizationMethod;
   rinseMethod?: RinseWaterMethod;
   chemistry?: RoundSetupChemistry;

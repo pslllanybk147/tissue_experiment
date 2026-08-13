@@ -4,12 +4,14 @@ import type {
   GuidedStepStatus,
   LotSterilizationSnapshot,
   ProtocolStepRun,
+  RoundMode,
   TrialArmRole,
 } from "@/lib/domain/models";
 import type { MediaRecipe, MediaRecipeIdsByStep, ResolvedManual, ResolvedStep } from "@/lib/manual/types";
 import { projectTrialSteps } from "@/lib/trials/project-trial-steps";
 import { evaluateT3Eligibility, type T3Eligibility } from "@/lib/trials/t3-eligibility";
 import { decodeStepValues, type StepResponses } from "./field-values";
+import { applyRoundMode, roundModeOf } from "./round-mode";
 import { buildRoundSterilizationSnapshot, type RoundSetupInput } from "./round-setup";
 import { resolveSterilizationStep } from "./sterilization-plan";
 
@@ -36,6 +38,7 @@ export type RoundView = {
   slug: string;
   title: string;
   startedAt: string;
+  mode: RoundMode;
   steps: RoundStep[];
   mediaRecipes: MediaRecipe[];
   mediaRecipeIdsByStep?: MediaRecipeIdsByStep;
@@ -77,13 +80,17 @@ export function buildRoundView(
   for (const run of runs) byStepId.set(run.stepId, run);
 
   const projectedSteps = projectTrialSteps(manual.steps, lot);
-  const applicableSteps = lot.isBlank
+  const sterilizedSteps = lot.isBlank
     ? projectedSteps
     : projectedSteps.map((step) =>
         lot.armRole && step.id === "sterilize"
           ? step
           : resolveSterilizationStep(step, lot.sterilization),
       );
+  // กรองตามโหมดเป็นชั้นสุดท้าย เพราะขั้นฟอกได้ช่องบันทึกของตัวเอง (rinse-actual-ppm, soak-hours)
+  // มาจาก resolveSterilizationStep ถ้ากรองก่อนหน้านั้น ช่องพวกนี้จะรอดการกรองไปทั้งหมด
+  const mode = roundModeOf(lot.sterilization);
+  const applicableSteps = applyRoundMode(sterilizedSteps, mode);
 
   const steps: RoundStep[] = applicableSteps.map((step, index) => {
     const run = byStepId.get(step.id);
@@ -109,6 +116,7 @@ export function buildRoundView(
     slug: lot.protocolId,
     title: manual.commonName,
     startedAt: lot.startedAt,
+    mode,
     steps,
     mediaRecipes: manual.mediaRecipes,
     ...(manual.mediaRecipeIdsByStep ? { mediaRecipeIdsByStep: manual.mediaRecipeIdsByStep } : {}),

@@ -2,6 +2,41 @@
 
 # Philodendron Lab — Handoff
 
+## 2026-08-13 — โหมดง่าย: แนวทางที่สองของรอบเพาะ
+
+- ที่มา: ผู้ใช้ทำตามคลิป `การเพาะเลี้ยงเนื้อเยื่อกุหลาบอย่างง่ายๆ` ได้ง่ายมาก แต่ทำตาม PlantLover ไม่ไหว
+  จึงให้เทียบ protocol จริงในคลิปกับระบบ แล้วเพิ่มโหมดง่ายเข้าไปเป็นอีกแนวทาง
+- **ดึงคำบรรยายคลิปไม่สำเร็จ** timedtext ตอบ 200 แต่ตัวไฟล์ยาว 0, `youtubei/v1/get_transcript` ตอบ 400
+  `Precondition check failed` และตัวเล่นค้างไม่ยอม seek ลองทั้ง panel ถอดเสียง, scrape caption overlay,
+  innertube client ANDROID และสุ่มเฟรม จึงยัง**ไม่ได้เทียบคำต่อคำ** ผู้ใช้รับปากจะวาง transcript มาให้
+  เมื่อได้แล้วต้องกลับมาใส่สูตรอาหารแบบครัวของคลิปเป็น MediaRecipe ใหม่ และห้ามเดาตัวเลขเอง
+- แก้บั๊กข้อมูลที่เจอตอนเปิดหน้าคลิป: แหล่ง `source-cmu-rose-home-tc` และ evidence note ของขั้น `prep-tools`
+  เขียนว่า `มหาวิทยาลัยเชียงใหม่` แต่คำอธิบายใต้คลิประบุ `มหาวิทยาลัยราชภัฏเชียงใหม่` คนละสถาบัน แก้ทั้งสองจุดแล้ว
+- เพิ่ม `RoundMode` (`simple` | `full`) ล็อกกับรอบใน `LotSterilizationSnapshot.mode`
+  รอบที่สร้างก่อนหน้านี้ไม่มีฟิลด์นี้และอ่านเป็น `full` เสมอ
+- `src/lib/rounds/round-mode.ts` เป็นจุดเดียวที่นิยามว่าโหมดง่ายต่างจากโหมดเต็มตรงไหน
+  - ช่องบันทึกที่ยังบังคับเหลือเฉพาะ `active-chlorine-percent`, `rinse-actual-ppm`, `sterilize-minutes`,
+    `soak-hours`, `sterile-rinses` เพราะพลาดแล้วชิ้นพืชตายหรือคนทำเจอสารเข้มเกิน
+  - `medium-ph` กับ `medium-volume` ตั้งใจไม่อยู่ในชุดนี้ เพราะเป็นสองช่องที่บังคับให้ต้องมี pH meter
+  - ไม่ลบ actions, executionInstructions, passCriteria, stopConditions, safetyNotes ออกเลยแม้ข้อเดียว
+  - ช่องที่ไม่บังคับแล้วยังอยู่ให้กรอกได้ ไม่ได้ถูกลบทิ้ง
+- **ลำดับสำคัญ**: `buildRoundView` กรองโหมดหลัง `resolveSterilizationStep` เพราะขั้นฟอกได้ช่อง
+  `rinse-actual-ppm`/`soak-hours` มาจากขั้นนั้น ถ้ากรองก่อน ช่องพวกนี้จะรอดการกรองไปทั้งหมด (มีเทสต์ตรึงไว้)
+- หน้าตั้งค่ารอบเปลี่ยนจาก 3 เป็น 4 ขั้น โดยถามแนวทางเป็นขั้นแรกและ**ไม่เลือกให้ล่วงหน้า**
+  เพราะถ้าเดาให้ คนที่ตั้งใจเก็บข้อมูลจะรู้ตัวว่าเสียรอบตอนปิดรอบไปแล้ว
+- เลือกโหมดง่ายแล้วระบบตั้งวิธีให้เป็น `SIMPLE_MODE_DEFAULT_METHODS` คือ haiter ในอาหาร + haiter ฟอกผิว +
+  rinse แบบ low-dose hypochlorite ซึ่งเป็นเส้นทางเดียวกับคลิป ไม่ใช้หม้อนึ่งและไม่ต้องซื้อน้ำปลอดเชื้อ
+  และซ่อนช่อง NaDCC สามช่องออกจากขั้นข้อมูลสาร พร้อมถอดออกจากเงื่อนไขปลดปุ่มด้วย
+  (ถ้าซ่อนอย่างเดียวจะติดค้างที่ปุ่มกดไม่ได้โดยไม่มีช่องบนจอให้แก้)
+- **ยังไม่ได้ทำและควรทำต่อ**: จำนวนขั้น 15 ขั้นยังเท่าเดิมในทั้งสองโหมด โหมดง่ายลดแค่สิ่งที่บังคับ
+  ไม่ได้ลดจำนวนขั้น และ execution card `วัดน้ำก่อนผสม` ยังขัดกับ `core-steps.ts` ที่บอกว่า TDS ไม่บังคับ
+- Verification รอบนี้:
+  - `npx vitest run src/lib/rounds/ src/components/rounds/`: ผ่าน 26 files / 184 tests
+  - `npm test`: ผ่าน 1021 tests, skip 10, เหลือ 2 failed ใน `calm-lab-contract.test.ts`
+    ซึ่ง**ล้มอยู่ก่อนแล้วบน HEAD สะอาด** (ยืนยันด้วย `git stash` แล้วรันซ้ำ) เป็นเรื่อง CSS contract ไม่ใช่งานรอบนี้
+  - `npm run lint`: ผ่าน
+  - `npm run build`: ผ่าน
+
 ## 2026-08-11 — Botanical Atlas Plan 3 Task 4: full viewport gate hardening
 
 - full dev-server matrix พบ compile/screenshot timeout แบบลูกโซ่ จึงเพิ่ม `UI_SERVER_MODE=production`
