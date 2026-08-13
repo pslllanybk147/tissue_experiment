@@ -18,15 +18,28 @@ describe("RoundSetup", () => {
     expect(html).toContain("cl-method-selector");
   });
 
-  it("renders the approved three-stage workflow and one primary action", () => {
+  it("renders the approved four-stage workflow and one primary action", () => {
     const html = renderToStaticMarkup(
       <RoundSetup profile={USER_REPORTED_PROFILE} manual={manual} onConfirm={() => {}} onBack={() => {}} />,
     );
 
-    expect(html).toContain("1 ข้อมูลสาร");
-    expect(html).toContain("2 เลือกวิธี");
-    expect(html).toContain("3 ตรวจทาน");
+    expect(html).toContain("1 แนวทาง");
+    expect(html).toContain("2 ข้อมูลสาร");
+    expect(html).toContain("3 เลือกวิธี");
+    expect(html).toContain("4 ตรวจทาน");
     expect((html.match(/cl-action-primary/g) ?? [])).toHaveLength(1);
+  });
+
+  it("ถามแนวทางของรอบเป็นอย่างแรก และไม่เลือกให้ล่วงหน้า", () => {
+    const html = renderToStaticMarkup(
+      <RoundSetup profile={USER_REPORTED_PROFILE} manual={manual} onConfirm={() => {}} onBack={() => {}} />,
+    );
+
+    expect(html).toContain("รอบนี้จะทำแนวไหน");
+    expect(html).toContain("โหมดง่าย");
+    expect(html).toContain("โหมดเก็บข้อมูล");
+    // ไม่มี checked ในหมู่ตัวเลือกโหมด เพราะเป็นการตัดสินใจที่เดาแทนผู้ใช้ไม่ได้
+    expect(html).not.toMatch(/name="roundMode"[^>]*checked/);
   });
 
   it("uses native grouped methods without nested legacy cards", () => {
@@ -45,7 +58,8 @@ describe("RoundSetup", () => {
     );
 
     expect(html).toContain("ยังไม่พร้อมยืนยัน");
-    expect(html).toContain("ต้องเลือกให้ครบทุกหมวด");
+    // ด่านแรกคือแนวทาง ข้อความจึงต้องชี้ที่สิ่งที่ยังขาดจริง ไม่ใช่หมวดวิธีที่ยังไปไม่ถึง
+    expect(html).toContain("ต้องเลือกแนวทางของรอบนี้ก่อน");
     expect(html).toContain('disabled=""');
   });
 

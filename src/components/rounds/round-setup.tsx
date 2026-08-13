@@ -7,10 +7,11 @@ import { MethodSelector, type MethodOption } from "@/components/common/method-se
 import { NumericInput } from "@/components/common/numeric-input";
 import { StatusNotice } from "@/components/common/status-notice";
 import { WorkflowShell } from "@/components/common/workflow-shell";
-import type { RoundSetupChemistry } from "@/lib/domain/models";
+import type { RoundMode, RoundSetupChemistry } from "@/lib/domain/models";
 import type { EquipmentProfileV2 } from "@/lib/equipment/equipment-profile";
 import { resolvePath } from "@/lib/equipment/resolve-path";
 import type { ResolvedManual } from "@/lib/manual/types";
+import { SIMPLE_MODE_DEFAULT_METHODS } from "@/lib/rounds/round-mode";
 import { buildRoundSetupInput, type RoundSetupInput, type RoundSetupSelection } from "@/lib/rounds/round-setup";
 import { PreparationSummary } from "./preparation-summary";
 
@@ -33,7 +34,9 @@ function ChemicalField({ id, label, value, onChange, unit }: { id: string; label
   );
 }
 
-function ChemicalFields({ profile, onChange }: { profile: EquipmentProfileV2; onChange: (profile: EquipmentProfileV2) => void }) {
+/** โหมดง่ายกรอกแค่ % ไฮเตอร์จากฉลาก เพราะเส้นทางตั้งต้นของโหมดนี้ไม่แตะ NaDCC เลย
+ *  การบังคับกรอกค่าเม็ด NaDCC สามช่องทั้งที่รอบนี้จะไม่ใช้ คือด่านแรกที่ทำให้คนถอยตั้งแต่ยังไม่เริ่ม */
+function ChemicalFields({ mode, profile, onChange }: { mode: RoundMode; profile: EquipmentProfileV2; onChange: (profile: EquipmentProfileV2) => void }) {
   const updateChemistry = (chemistry: Partial<RoundSetupChemistry>) => {
     onChange({
       ...profile,
@@ -53,12 +56,14 @@ function ChemicalFields({ profile, onChange }: { profile: EquipmentProfileV2; on
   return (
     <section className="cl-setup-section cl-atlas-form-section" aria-labelledby="chemical-heading">
       <header className="cl-section-heading">
-        <p>ขั้นที่ 1</p>
+        <p>ขั้นที่ 2</p>
         <h2 id="chemical-heading">ข้อมูลสารที่มีในมือ</h2>
-        <p>NaDCC และ Haiter แสดงพร้อมกันและจะไม่หายเมื่อเลือกวิธี</p>
+        <p>{mode === "simple"
+          ? "โหมดง่ายใช้ไฮเตอร์อย่างเดียว กรอกแค่ตัวเลขบนฉลากขวด"
+          : "NaDCC และ Haiter แสดงพร้อมกันและจะไม่หายเมื่อเลือกวิธี"}</p>
       </header>
       <div className="cl-chemical-grid cl-atlas-field-grid">
-        <section className="cl-chemical-group">
+        <section className="cl-chemical-group" hidden={mode === "simple"}>
           <h3>NaDCC {profile.chemicals.nadcc.availableChlorinePercent}%</h3>
           <p>เม็ดฟู่ · ใช้ค่าฉลากนี้เมื่อเลือก NaDCC</p>
           <ChemicalField id="nadcc-available-chlorine" label="คลอรีนออกฤทธิ์" unit="%" value={profile.chemicals.nadcc.availableChlorinePercent} onChange={(value) => updateChemistry({ nadccAvailableChlorinePercent: value })} />
@@ -96,6 +101,9 @@ function MethodGroup({ legend, note, group, value, options, onSelect, onClear }:
 export function RoundSetup({ profile, manual, onConfirm, onBack }: Props) {
   const [draftProfile, setDraftProfile] = useState(() => structuredClone(profile));
   const [currentStep, setCurrentStep] = useState(0);
+  // ไม่ตั้งค่าเริ่มต้นให้โหมด เพราะเป็นการตัดสินใจว่ารอบนี้จะเก็บข้อมูลไปเทียบรอบหน้าหรือไม่
+  // ถ้าเดาให้ คนที่ตั้งใจเก็บข้อมูลจะเสียรอบไปโดยรู้ตัวตอนปิดรอบแล้ว
+  const [mode, setMode] = useState<RoundMode | null>(null);
   const [selection, setSelection] = useState<RoundSetupSelection>({
     mediumMethod: profile.medium.sterilizationMethod,
     surfaceMethod: null,
@@ -103,11 +111,21 @@ export function RoundSetup({ profile, manual, onConfirm, onBack }: Props) {
   });
   const selectionsComplete = Boolean(selection.mediumMethod && selection.surfaceMethod && selection.rinseMethod);
   const chemistryComplete = [
-    draftProfile.chemicals.nadcc.availableChlorinePercent,
-    draftProfile.chemicals.nadcc.tabletMassG,
-    draftProfile.chemicals.nadcc.nadccMassGPerTablet,
     draftProfile.chemicals.bleach.percentWw,
+    // โหมดง่ายไม่ถามค่า NaDCC จึงต้องไม่เอามาเป็นเงื่อนไขปลดปุ่มด้วย ไม่งั้นจะติดค้าง
+    // ที่ปุ่มที่กดไม่ได้โดยไม่มีช่องไหนบนหน้าจอให้แก้
+    ...(mode === "simple" ? [] : [
+      draftProfile.chemicals.nadcc.availableChlorinePercent,
+      draftProfile.chemicals.nadcc.tabletMassG,
+      draftProfile.chemicals.nadcc.nadccMassGPerTablet,
+    ]),
   ].every((value) => Number.isFinite(value) && value > 0);
+
+  /** เลือกโหมดง่ายแล้วตั้งวิธีให้เป็นเส้นทางแบบคลิปสาธิตทันที ผู้ใช้ยังเปลี่ยนได้ในขั้นถัดไป */
+  function selectMode(next: RoundMode) {
+    setMode(next);
+    if (next === "simple") setSelection({ ...SIMPLE_MODE_DEFAULT_METHODS });
+  }
   const sterileMediumMethod = resolvePath(draftProfile).capabilities.find((item) => item.capability === "sterile-medium")?.method;
   const pressureAvailable = sterileMediumMethod?.id === "medium-autoclave" || sterileMediumMethod?.id === "medium-pressure-cooker";
   const chlorinatedRinseDisabled = selection.surfaceMethod === "nadcc-soak";
@@ -125,12 +143,14 @@ export function RoundSetup({ profile, manual, onConfirm, onBack }: Props) {
   }
 
   const summaryValue = { manualName: manual.commonName, profile: draftProfile, selection };
-  const primaryAction = currentStep < 2 ? (
-    <button className="cl-button-primary" type="button" disabled={currentStep === 0 ? !chemistryComplete : !selectionsComplete} onClick={() => setCurrentStep((step) => Math.min(2, step + 1))}>
-      {currentStep === 0 ? "ต่อไป: เลือกวิธี" : "ต่อไป: ตรวจทาน"}
+  const stageReady = [Boolean(mode), chemistryComplete, selectionsComplete];
+  const nextLabels = ["ต่อไป: ข้อมูลสาร", "ต่อไป: เลือกวิธี", "ต่อไป: ตรวจทาน"];
+  const primaryAction = currentStep < 3 ? (
+    <button className="cl-button-primary" type="button" disabled={!stageReady[currentStep]} onClick={() => setCurrentStep((step) => Math.min(3, step + 1))}>
+      {nextLabels[currentStep]}
     </button>
   ) : (
-    <button className="cl-button-primary" type="button" disabled={!chemistryComplete || !selectionsComplete} onClick={() => void onConfirm({ ...buildRoundSetupInput(selection, draftProfile, new Date().toISOString()), profile: draftProfile })}>
+    <button className="cl-button-primary" type="button" disabled={!mode || !chemistryComplete || !selectionsComplete} onClick={() => void onConfirm({ ...buildRoundSetupInput({ ...selection, mode: mode ?? "full" }, draftProfile, new Date().toISOString()), profile: draftProfile })}>
       ยืนยันและเข้า protocol
     </button>
   );
@@ -145,14 +165,47 @@ export function RoundSetup({ profile, manual, onConfirm, onBack }: Props) {
     <WorkflowShell
       title="ตั้งค่ารอบก่อนเริ่ม"
       description={`${manual.commonName} · เลือกวิธีที่จะทำจริง ระบบจะล็อกค่ากับรอบนี้`}
-      steps={["ข้อมูลสาร", "เลือกวิธี", "ตรวจทาน"]}
+      steps={["แนวทาง", "ข้อมูลสาร", "เลือกวิธี", "ตรวจทาน"]}
       currentStep={currentStep}
       aside={<PreparationSummary value={summaryValue} />}
       actions={<ActionBar secondary={secondaryAction} primary={primaryAction} />}
     >
-      <div hidden={currentStep !== 0}><ChemicalFields profile={draftProfile} onChange={setDraftProfile} /></div>
-      <div className="cl-setup-section cl-atlas-form-section cl-method-stage" hidden={currentStep !== 1}>
-        <header className="cl-section-heading"><p>ขั้นที่ 2</p><h2>เลือกวิธีที่จะใช้จริง</h2><p>เลือกหนึ่งวิธีในแต่ละหมวด ตัวเลือกอื่นยังคงมองเห็นได้</p></header>
+      <div className="cl-setup-section cl-atlas-form-section cl-method-stage" hidden={currentStep !== 0}>
+        <header className="cl-section-heading">
+          <p>ขั้นที่ 1</p>
+          <h2>รอบนี้จะทำแนวไหน</h2>
+          <p>ทั้งสองแนวทางใช้คู่มือ สูตร และคำเตือนความปลอดภัยชุดเดียวกัน ต่างกันแค่ว่าต้องกรอกอะไรบ้าง เลือกแล้วล็อกกับรอบนี้</p>
+        </header>
+        <MethodSelector
+          legend="แนวทางของรอบนี้"
+          name="roundMode"
+          value={mode}
+          onChange={(next) => selectMode(next as RoundMode)}
+          options={[
+            {
+              value: "simple",
+              label: "โหมดง่าย",
+              description: "ทำตามให้จบก่อน · บังคับกรอกเฉพาะความเข้มข้น เวลาฟอก และจำนวนรอบล้าง · ตั้งวิธีให้เป็นเส้นทางไฮเตอร์ที่ไม่ใช้หม้อนึ่ง",
+              status: "เริ่มต้นที่นี่ถ้าเพิ่งเคยทำ",
+            },
+            {
+              value: "full",
+              label: "โหมดเก็บข้อมูล",
+              description: "บังคับกรอกครบทุกช่องเพื่อให้ปิดรอบแล้วเทียบกับรอบหน้าได้ว่าตัวแปรไหนมีผล",
+              status: "เดิม",
+            },
+          ]}
+        />
+        {mode === "simple" ? (
+          <StatusNotice tone="warning" title="โหมดง่ายไม่ได้ลดความปลอดภัย">
+            คำเตือน เงื่อนไขให้หยุด และคำสั่งทุกข้อยังอยู่ครบเหมือนเดิม สิ่งที่หายไปคือช่องบันทึกที่บังคับกรอก
+            รอบนี้จึงเอาไปเทียบกับรอบอื่นแบบตัวเลขต่อตัวเลขไม่ได้
+          </StatusNotice>
+        ) : null}
+      </div>
+      <div hidden={currentStep !== 1}><ChemicalFields mode={mode ?? "full"} profile={draftProfile} onChange={setDraftProfile} /></div>
+      <div className="cl-setup-section cl-atlas-form-section cl-method-stage" hidden={currentStep !== 2}>
+        <header className="cl-section-heading"><p>ขั้นที่ 3</p><h2>เลือกวิธีที่จะใช้จริง</h2><p>{mode === "simple" ? "โหมดง่ายเลือกให้แล้วตามเส้นทางที่ไม่ต้องใช้หม้อนึ่ง เปลี่ยนได้ถ้ามีอุปกรณ์อื่น" : "เลือกหนึ่งวิธีในแต่ละหมวด ตัวเลือกอื่นยังคงมองเห็นได้"}</p></header>
         <MethodGroup legend="อาหารและกระปุก" note="เลือกวิธีทำให้อาหารและกระปุกปลอดเชื้อ 1 วิธี" group="mediumMethod" value={selection.mediumMethod} onSelect={select} onClear={clear} options={[
           { value: "pressure-sterilization", label: "หม้อนึ่งแรงดัน", description: "121°C · 15 psi · 15–20 นาที", status: pressureAvailable ? "อุปกรณ์พร้อม" : undefined, disabled: !pressureAvailable, disabledReason: pressureAvailable ? undefined : "ยังไม่มีอุปกรณ์แรงดันที่รองรับ" },
           { value: "haiter-chemical", label: "Haiter / NaOCl ในอาหาร", description: "ใช้ข้อมูล Haiter ด้านบน ระบบจะคำนวณปริมาณให้", status: "เลือกได้" },
@@ -168,13 +221,19 @@ export function RoundSetup({ profile, manual, onConfirm, onBack }: Props) {
           { value: "low-dose-hypochlorite", label: "NaOCl / Haiter rinse 300 ppm", description: "R1–R3 รอบละประมาณ 1 นาที", status: "ทดลอง", disabled: chlorinatedRinseDisabled, disabledReason: chlorinatedRinseDisabled ? "หลัง NaDCC soak ต้องใช้น้ำปลอดเชื้อ" : undefined },
         ]} />
       </div>
-      <div className="cl-setup-section cl-atlas-form-section" hidden={currentStep !== 2}>
-        <header className="cl-section-heading"><p>ขั้นที่ 3</p><h2>ตรวจทานก่อนล็อกค่ากับรอบ</h2></header>
+      <div className="cl-setup-section cl-atlas-form-section" hidden={currentStep !== 3}>
+        <header className="cl-section-heading"><p>ขั้นที่ 4</p><h2>ตรวจทานก่อนล็อกค่ากับรอบ</h2></header>
         <PreparationSummary value={summaryValue} />
-        {chemistryComplete && selectionsComplete ? (
-          <StatusNotice tone="success" title="พร้อมยืนยัน">ระบบจะเก็บข้อมูล NaDCC และ Haiter ทั้งคู่ แล้วล็อกเฉพาะวิธีที่เลือกไว้ในรอบนี้</StatusNotice>
+        {mode && chemistryComplete && selectionsComplete ? (
+          <StatusNotice tone="success" title="พร้อมยืนยัน">
+            {mode === "simple"
+              ? "รอบนี้จะล็อกเป็นโหมดง่าย เปลี่ยนทีหลังไม่ได้ ถ้าอยากเก็บข้อมูลไปเทียบต้องเริ่มรอบใหม่ในโหมดเก็บข้อมูล"
+              : "ระบบจะเก็บข้อมูล NaDCC และ Haiter ทั้งคู่ แล้วล็อกเฉพาะวิธีที่เลือกไว้ในรอบนี้"}
+          </StatusNotice>
         ) : (
-          <StatusNotice tone="blocked" title="ยังไม่พร้อมยืนยัน">ต้องเลือกให้ครบทุกหมวด: อาหารและกระปุก, ฟอกผิวชิ้นพืช, น้ำล้าง</StatusNotice>
+          <StatusNotice tone="blocked" title="ยังไม่พร้อมยืนยัน">
+            {!mode ? "ต้องเลือกแนวทางของรอบนี้ก่อน" : "ต้องเลือกให้ครบทุกหมวด: อาหารและกระปุก, ฟอกผิวชิ้นพืช, น้ำล้าง"}
+          </StatusNotice>
         )}
       </div>
     </WorkflowShell>

@@ -3,6 +3,7 @@ import type {
   LotSterilizationSnapshot,
   MediumSterilizationMethod,
   RinseWaterMethod,
+  RoundMode,
   RoundSetupChemistry,
   SterilizationMethod,
 } from "@/lib/domain/models";
@@ -13,12 +14,15 @@ import {
 } from "@/lib/domain/rinse-water-planning";
 
 export type RoundSetupSelection = {
+  /** ไม่ระบุ = เส้นทางเดิม ("full") เพื่อให้จุดเรียกที่มีอยู่ก่อนมีโหมดง่ายยังหมายความเหมือนเดิม */
+  mode?: RoundMode;
   mediumMethod: MediumSterilizationMethod | null;
   surfaceMethod: Exclude<SterilizationMethod, "pressure-sterilization"> | null;
   rinseMethod: RinseWaterMethod | null;
 };
 
 export type RoundSetupInput = {
+  mode: RoundMode;
   mediumMethod: MediumSterilizationMethod;
   surfaceMethod: Exclude<SterilizationMethod, "pressure-sterilization">;
   rinseMethod: RinseWaterMethod;
@@ -129,6 +133,7 @@ export function buildRoundSetupInput(
   const rinseWater = preparedRinse ?? plannedRinse;
 
   return {
+    mode: selection.mode ?? "full",
     mediumMethod: selection.mediumMethod,
     surfaceMethod: selection.surfaceMethod,
     rinseMethod: selection.rinseMethod,
@@ -153,6 +158,7 @@ export function buildRoundSterilizationSnapshot(input: RoundSetupInput): LotSter
     profileId: input.surfaceMethod === "nadcc-soak" ? "nadcc-soak-v1" : "haiter-chemical-v1",
     profileVersion: "1.0.0",
     method: input.surfaceMethod,
+    mode: input.mode,
     mediumSterilizationMethod: input.mediumMethod,
     rinseMethod: input.rinseMethod,
     chemistry: structuredClone(input.chemistry),
